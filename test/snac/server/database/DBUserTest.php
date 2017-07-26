@@ -18,7 +18,7 @@ namespace test\snac\server\database;
  * @author Tom Laudeman
  *
  */
-class DBUserTest extends \PHPUnit_Framework_TestCase
+class DBUserTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -95,6 +95,7 @@ class DBUserTest extends \PHPUnit_Framework_TestCase
      */
     public function __construct()
     {
+        parent::__construct(); // Must call the parent constructor
         $this->dbu = new \snac\server\database\DBUser();
         $this->dbutil = new \snac\server\database\DBUtil();
 

@@ -95,6 +95,10 @@ foreach ($arks as $ark) {
     // index ES
     indexESearch($written);
 
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
+
     $seenArks[$written->getID()] = $written->getArk();
 
     echo "   Relations: \n";
@@ -138,6 +142,11 @@ foreach ($arks as $ark) {
 
             $dbu->writeConstellationStatus($user, $written->getID(), "published");
             indexESearch($written);
+
+            // If this is published, then it should point to itself in the lookup table.
+            $selfDirect = array($written);
+            $dbu->updateConstellationLookup($written, $selfDirect);
+
             //echo ".";
 
             // Push the ark onto the list of seen arks (so we don't duplicate)
@@ -171,6 +180,11 @@ foreach ($seenArks as $id => $ark) {
         $written = $dbu->writeConstellation($user, $constellation, "updated Constellation Relations", 'locked editing');
         $dbu->writeConstellationStatus($user, $written->getID(), "published");
         indexESearch($written);
+
+        // If this is published, then it should point to itself in the lookup table.
+        $selfDirect = array($written);
+        $dbu->updateConstellationLookup($written, $selfDirect);
+
         file_put_contents("log", $written->toJSON(), FILE_APPEND);
         echo "\n    Published\n";
     } catch (\Exception $e) {

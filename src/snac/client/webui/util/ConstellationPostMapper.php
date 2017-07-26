@@ -50,9 +50,14 @@ class ConstellationPostMapper {
     private $lookupTerms = false;
 
     /**
-    * @var \snac\client\util\ServerConnect Whether or not to look up Term values in the database
-    */
+     * @var \snac\client\util\ServerConnect Whether or not to look up Term values in the database
+     */
     private $lookupTermsConnector = null;
+
+    /**
+     * @var boolean $mapAsNew Whether or not to map the POST values to a new Constellation object
+     */
+    private $mapAsNew = false;
 
     /**
      * @var \Monolog\Logger $logger Logger for this class
@@ -94,6 +99,28 @@ class ConstellationPostMapper {
         $this->lookupTermsConnector = null;
     }
 
+    /**
+     * Map to new Constellation
+     *
+     * Call this method to have the CPM map the Post data to a Constellation object
+     * without keeping IDs or version numbers.  It will also set all data element's
+     * operation as "insert".  This effectively will map it as a new Constellation for
+     * having the server write it as new.
+     */
+    public function mapAsNewConstellation() {
+        $this->mapAsNew = true;
+    }
+
+    /**
+     * Map to Constellation with IDs
+     *
+     * Call this method to have the CPM map the Post data to a Constellation object
+     * while keeping the IDs and version numbers intact.
+     */
+    public function mapWithIDs() {
+        $this->mapAsNew = false;
+    }
+
 
     /**
      * Parse a boolean
@@ -129,6 +156,9 @@ class ConstellationPostMapper {
      * @return string|NULL The operation associated with this data
      */
     private function getOperation($data) {
+
+        if ($this->mapAsNew)
+            return \snac\data\AbstractData::$OPERATION_INSERT;
 
         if (isset($data['operation'])) {
             $op = $data["operation"];
@@ -192,16 +222,19 @@ class ConstellationPostMapper {
             if (($scm["id"] == null || $scm["id"] == "") && $scm["operation"] != "insert")
                 continue;
             $scmObject = new \snac\data\SNACControlMetadata();
-            if ($scm["id"] != "")
-                $scmObject->setID($scm["id"]);
-            if ($scm["version"] != "")
-                $scmObject->setVersion($scm["version"]);
+            if (!$this->mapAsNew) {
+                if ($scm["id"] != "")
+                    $scmObject->setID($scm["id"]);
+                if ($scm["version"] != "")
+                    $scmObject->setVersion($scm["version"]);
+            }
             $scmObject->setOperation($this->getOperation($scm));
             $scmObject->setSubCitation($scm["subCitation"]);
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
-
-            $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
+            
+            if (isset($scm["descriptiveRule"]))
+                $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
 
             $scmObject->setLanguage($this->parseSubLanguage($scm, "scm_". $short, $j . "_". $i));
 
@@ -255,6 +288,9 @@ class ConstellationPostMapper {
     private function parseSubLanguage($object, $short, $i) {
 
         // If there is no language to parse, then just return null and don't do anything
+        if (!isset($object["language"]))
+            return null;
+        
         if ($object["language"]["id"] == "" &&
                 $object["language"]["version"] == "" &&
                 (!isset($object["languagelanguage"]) ||
@@ -265,10 +301,12 @@ class ConstellationPostMapper {
         }
 
         $lang = new \snac\data\Language();
-        if ($object["language"]["id"] != "")
-            $lang->setID($object["language"]["id"]);
-        if ($object["language"]["version"] != "")
-            $lang->setVersion($object["language"]["version"]);
+        if (!$this->mapAsNew) {
+            if ($object["language"]["id"] != "")
+                $lang->setID($object["language"]["id"]);
+            if ($object["language"]["version"] != "")
+                $lang->setVersion($object["language"]["version"]);
+        }
 
         if ($lang->getID() == null && $lang->getVersion() == null &&
                 $this->getOperation($object) == \snac\data\Language::$OPERATION_UPDATE) {
@@ -474,6 +512,7 @@ class ConstellationPostMapper {
                             $this->reconcileObject($contributor, $otherContrib);
                         }
                     }
+                    // TODO Add rule objects here
                     foreach ($nameEntry->getComponents() as $component) {
                         foreach ($other->getComponents() as $otherComponent) {
                             $this->reconcileObject($component, $otherComponent);
@@ -572,8 +611,10 @@ class ConstellationPostMapper {
         if ($data["id"] == "" && $data["operation"] != "insert")
             return null;
         $date = new \snac\data\SNACDate();
-        $date->setID($data["id"]);
-        $date->setVersion($data["version"]);
+        if (!$this->mapAsNew) {
+            $date->setID($data["id"]);
+            $date->setVersion($data["version"]);
+        }
         $date->setOperation($this->getOperation($data));
 
         $date->setNote($data["note"]);
@@ -726,12 +767,14 @@ class ConstellationPostMapper {
         $this->logger->addDebug("parsed values", $nested);
 
         // NRD-level Information
-        if (isset($nested["ark"]))
-            $this->constellation->setArkID($nested["ark"]);
-        if (isset($nested["constellationid"]))
-            $this->constellation->setID($nested["constellationid"]);
-        if (isset($nested["version"]))
-            $this->constellation->setVersion($nested["version"]);
+        if (!$this->mapAsNew) {
+            if (isset($nested["ark"]))
+                $this->constellation->setArkID($nested["ark"]);
+            if (isset($nested["constellationid"]))
+                $this->constellation->setID($nested["constellationid"]);
+            if (isset($nested["version"]))
+                $this->constellation->setVersion($nested["version"]);
+        }
         if (isset($nested["operation"]))
             $this->constellation->setOperation($this->getOperation($nested));
         if (isset($nested["entityType"])) {
@@ -747,8 +790,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $source = new \snac\data\Source();
-            $source->setID($data["id"]);
-            $source->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $source->setID($data["id"]);
+                $source->setVersion($data["version"]);
+            }
             $source->setOperation($this->getOperation($data));
 
             $source->setDisplayName($data["displayName"]);
@@ -776,8 +821,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $gender = new \snac\data\Gender();
-            $gender->setID($data["id"]);
-            $gender->setVersion($data["id"]);
+            if (!$this->mapAsNew) {
+                $gender->setID($data["id"]);
+                $gender->setVersion($data["id"]);
+            }
             $gender->setTerm($this->parseTerm($data["term"]));
             $gender->setOperation($this->getOperation($data));
 
@@ -801,8 +848,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $bh = new \snac\data\BiogHist();
-            $bh->setID($data["id"]);
-            $bh->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $bh->setID($data["id"]);
+                $bh->setVersion($data["version"]);
+            }
             $bh->setOperation($this->getOperation($data));
 
             $bh->setText($data["text"]);
@@ -822,8 +871,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $lang = new \snac\data\Language();
-            $lang->setID($data["id"]);
-            $lang->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $lang->setID($data["id"]);
+                $lang->setVersion($data["version"]);
+            }
             $lang->setOperation($this->getOperation($data));
 
             $lang->setLanguage($this->parseTerm($data["language"]));
@@ -842,8 +893,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $nationality = new \snac\data\Nationality();
-            $nationality->setID($data["id"]);
-            $nationality->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $nationality->setID($data["id"]);
+                $nationality->setVersion($data["version"]);
+            }
             $nationality->setOperation($this->getOperation($data));
 
             $nationality->setTerm($this->parseTerm($data["term"]));
@@ -860,8 +913,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $fun = new \snac\data\SNACFunction();
-            $fun->setID($data["id"]);
-            $fun->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $fun->setID($data["id"]);
+                $fun->setVersion($data["version"]);
+            }
             $fun->setOperation($this->getOperation($data));
 
             $fun->setTerm($this->parseTerm($data["term"]));
@@ -878,8 +933,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $legalStatus = new \snac\data\LegalStatus();
-            $legalStatus->setID($data["id"]);
-            $legalStatus->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $legalStatus->setID($data["id"]);
+                $legalStatus->setVersion($data["version"]);
+            }
             $legalStatus->setOperation($this->getOperation($data));
 
             $legalStatus->setTerm($this->parseTerm($data["term"]));
@@ -896,8 +953,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $conventionDeclaration = new \snac\data\ConventionDeclaration();
-            $conventionDeclaration->setID($data["id"]);
-            $conventionDeclaration->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $conventionDeclaration->setID($data["id"]);
+                $conventionDeclaration->setVersion($data["version"]);
+            }
             $conventionDeclaration->setOperation($this->getOperation($data));
 
             $conventionDeclaration->setText($data["text"]);
@@ -914,8 +973,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $generalContext = new \snac\data\GeneralContext();
-            $generalContext->setID($data["id"]);
-            $generalContext->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $generalContext->setID($data["id"]);
+                $generalContext->setVersion($data["version"]);
+            }
             $generalContext->setOperation($this->getOperation($data));
 
             $generalContext->setText($data["text"]);
@@ -932,8 +993,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $structureOrGenealogy = new \snac\data\StructureOrGenealogy();
-            $structureOrGenealogy->setID($data["id"]);
-            $structureOrGenealogy->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $structureOrGenealogy->setID($data["id"]);
+                $structureOrGenealogy->setVersion($data["version"]);
+            }
             $structureOrGenealogy->setOperation($this->getOperation($data));
 
             $structureOrGenealogy->setText($data["text"]);
@@ -950,8 +1013,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $mandate = new \snac\data\Mandate();
-            $mandate->setID($data["id"]);
-            $mandate->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $mandate->setID($data["id"]);
+                $mandate->setVersion($data["version"]);
+            }
             $mandate->setOperation($this->getOperation($data));
 
             $mandate->setText($data["text"]);
@@ -969,12 +1034,19 @@ class ConstellationPostMapper {
                 continue;
             $this->logger->addDebug("Parsing Name Entry", $data);
             $nameEntry = new \snac\data\NameEntry();
-            $nameEntry->setID($data["id"]);
-            $nameEntry->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $nameEntry->setID($data["id"]);
+                $nameEntry->setVersion($data["version"]);
+            }
             $nameEntry->setOperation($this->getOperation($data));
 
             $nameEntry->setOriginal($data["original"]);
-            $nameEntry->setPreferenceScore($data["preferenceScore"]);
+
+            $preferred = 0;
+            if (isset($data["preferenceScore"]) && $data["preferenceScore"] == "checked")
+                $preferred = 99;
+
+            $nameEntry->setPreferenceScore($preferred);
 
             $nameEntry->setLanguage($this->parseSubLanguage($data, "nameEntry", $k));
 
@@ -987,8 +1059,10 @@ class ConstellationPostMapper {
                         continue;
                     $this->logger->addDebug("Parsing through contributor", $cData);
                     $contributor = new \snac\data\Contributor();
-                    $contributor->setID($cData["id"]);
-                    $contributor->setVersion($cData["version"]);
+                    if (!$this->mapAsNew) {
+                        $contributor->setID($cData["id"]);
+                        $contributor->setVersion($cData["version"]);
+                    }
                     if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
                         $contributor->setOperation($this->getOperation($cData));
                     else {
@@ -1005,6 +1079,33 @@ class ConstellationPostMapper {
                     $nameEntry->addContributor($contributor);
                 }
             }
+            
+            // right now, update rules if updating name entry TODO
+            // TODO: use rule not contributor going forward! need to update
+            if (isset($data["rule"])) {
+                foreach ($data["rule"] as $l => $cData) {
+                    if ($cData["id"] == "" && $cData["operation"] != "insert")
+                        continue;
+                    $this->logger->addDebug("Parsing through name rume", $cData);
+                    $contributor = new \snac\data\Contributor();
+                    $contributor->setID($cData["id"]);
+                    $contributor->setVersion($cData["version"]);
+                    if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
+                        $contributor->setOperation($this->getOperation($cData));
+                    else {
+                        $cData["operation"] = $this->getOperation($data);
+                        $contributor->setOperation($this->getOperation($data));
+                    }
+                    if (isset($cData["name"]))
+                        $contributor->setName($cData["name"]);
+                    $contributor->setType($this->parseTerm($cData["type"]));
+                    $contributor->setRule($this->parseTerm($cData["rule"]));
+
+                    $this->addToMapping("nameEntry_rule_".$l, $k, $cData, $contributor);
+
+                    $nameEntry->addContributor($contributor);
+                }
+            }
 
             // right now, update components if updating name entry
             if (isset($data["component"])) {
@@ -1013,8 +1114,10 @@ class ConstellationPostMapper {
                         continue;
                     $this->logger->addDebug("Parsing through component", $cData);
                     $component = new \snac\data\NameComponent();
-                    $component->setID($cData["id"]);
-                    $component->setVersion($cData["version"]);
+                    if (!$this->mapAsNew) {
+                        $component->setID($cData["id"]);
+                        $component->setVersion($cData["version"]);
+                    }
                     if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
                         $component->setOperation($this->getOperation($cData));
                     else {
@@ -1053,8 +1156,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $sameas = new \snac\data\SameAs();
-            $sameas->setID($data["id"]);
-            $sameas->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $sameas->setID($data["id"]);
+                $sameas->setVersion($data["version"]);
+            }
             $sameas->setOperation($this->getOperation($data));
 
             $sameas->setText($data["text"]);
@@ -1074,8 +1179,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $sameas = new \snac\data\EntityId();
-            $sameas->setID($data["id"]);
-            $sameas->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $sameas->setID($data["id"]);
+                $sameas->setVersion($data["version"]);
+            }
             $sameas->setOperation($this->getOperation($data));
 
             $sameas->setText($data["text"]);
@@ -1094,13 +1201,20 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $relation = new \snac\data\ResourceRelation();
-            $relation->setID($data["id"]);
-            $relation->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $relation->setID($data["id"]);
+                $relation->setVersion($data["version"]);
+            }
             $relation->setOperation($this->getOperation($data));
 
-            $resource = new \snac\data\Resource();
-            $resource->setID($data["resourceid"]);
-            $resource->setVersion($data["resourceversion"]);
+            $resource = null;
+            if ($this->lookupTerms) {
+                $resource = $this->lookupTermsConnector->lookupResource($data["resourceid"], $data["resourceversion"]);
+            } else {
+                $resource = new \snac\data\Resource();
+                $resource->setID($data["resourceid"]);
+                $resource->setVersion($data["resourceversion"]);
+            }
             $relation->setResource($resource);
 
             $relation->setContent($data["content"]);
@@ -1121,8 +1235,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $relation = new \snac\data\ConstellationRelation();
-            $relation->setID($data["id"]);
-            $relation->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $relation->setID($data["id"]);
+                $relation->setVersion($data["version"]);
+            }
             $relation->setOperation($this->getOperation($data));
 
             $relation->setSourceConstellation($this->constellation->getID());
@@ -1152,8 +1268,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $subject = new \snac\data\Subject();
-            $subject->setID($data["id"]);
-            $subject->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $subject->setID($data["id"]);
+                $subject->setVersion($data["version"]);
+            }
             $subject->setOperation($this->getOperation($data));
 
             $subject->setTerm($this->parseTerm($data["term"]));
@@ -1170,8 +1288,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $occupation = new \snac\data\Occupation();
-            $occupation->setID($data["id"]);
-            $occupation->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $occupation->setID($data["id"]);
+                $occupation->setVersion($data["version"]);
+            }
             $occupation->setOperation($this->getOperation($data));
 
             $occupation->setTerm($this->parseTerm($data["term"]));
@@ -1188,8 +1308,10 @@ class ConstellationPostMapper {
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
             $place = new \snac\data\Place();
-            $place->setID($data["id"]);
-            $place->setVersion($data["version"]);
+            if (!$this->mapAsNew) {
+                $place->setID($data["id"]);
+                $place->setVersion($data["version"]);
+            }
             $place->setOperation($this->getOperation($data));
 
             $place->setOriginal($data["original"]);
@@ -1199,6 +1321,13 @@ class ConstellationPostMapper {
             $place->setType($this->parseTerm($data["type"]));
 
             $place->setRole($this->parseTerm($data["role"]));
+
+            if (isset($data["geoplaceSuggested"]) && $data["geoplaceSuggested"] != null && isset($data["geoplaceSuggested"]["id"])
+                    && $data["geoplaceSuggested"]["id"] != null && $data["geoplaceSuggested"]["id"] != "") {
+                $geoterm = new \snac\data\GeoTerm();
+                $geoterm->setID($data["geoplaceSuggested"]["id"]);
+                $place->setGeoTerm($geoterm);
+            }
 
             if (isset($data["geoplace"]) && $data["geoplace"] != null && isset($data["geoplace"]["id"])
                     && $data["geoplace"]["id"] != null && $data["geoplace"]["id"] != "") {
@@ -1221,8 +1350,10 @@ class ConstellationPostMapper {
                         continue;
                     $this->logger->addDebug("Parsing through address", $aData);
                     $part = new \snac\data\AddressLine();
-                    $part->setID($aData["id"]);
-                    $part->setVersion($aData["version"]);
+                    if (!$this->mapAsNew) {
+                        $part->setID($aData["id"]);
+                        $part->setVersion($aData["version"]);
+                    }
                     if ($aData["operation"] == "insert" || $aData["operation"] == "delete")
                         $part->setOperation($this->getOperation($aData));
                     else {

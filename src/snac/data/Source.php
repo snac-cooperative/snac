@@ -23,34 +23,34 @@ namespace snac\data;
  * SNACControlMetadata->citation is a Source object. Constellation->sources is a list of sources.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class Source extends AbstractData {
 
     /**
      * Language
-     * 
+     *
      * @var \snac\data\Language The language this source was written in
      */
     private $language;
-    
+
     /**
-     * @var string Display name of this source. 
+     * @var string Display name of this source.
      */
     private $displayName;
 
     /**
-     * @var string Text of this source. 
+     * @var string Text of this source.
      */
     private $text;
 
     /**
-     * @var string Note related to this source 
+     * @var string Note related to this source
      */
     private $note;
 
     /**
-     * @var string URI of this source 
+     * @var string URI of this source
      */
     private $uri;
 
@@ -58,10 +58,10 @@ class Source extends AbstractData {
      * @var \snac\data\Term Type of this source
      */
     private $type;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param string[] $data optional An array of data to pre-fill this object
      */
     public function __construct($data = null) {
@@ -71,9 +71,9 @@ class Source extends AbstractData {
 
     /**
      * Get Language
-     * 
+     *
      * Get the language this source was written in
-     * 
+     *
      * @return \snac\data\Language Language of this source
      *
      */
@@ -81,7 +81,7 @@ class Source extends AbstractData {
     {
         return $this->language;
     }
-    
+
     /**
      * Get the note of this source
      *
@@ -92,7 +92,7 @@ class Source extends AbstractData {
     {
         return $this->note;
     }
-    
+
     /**
      * Get the text of this source
      *
@@ -103,7 +103,7 @@ class Source extends AbstractData {
     {
         return $this->text;
     }
-    
+
 
     /**
      * Get the display name of this source
@@ -150,7 +150,7 @@ class Source extends AbstractData {
             "note" => $this->note,
             "uri" => $this->uri
         );
-            
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -213,8 +213,8 @@ class Source extends AbstractData {
     }
 
     /**
-     * Set the language of this source 
-     * 
+     * Set the language of this source
+     *
      * @param \snac\data\Language $language the language of this source
      */
     public function setLanguage($language) {
@@ -224,27 +224,27 @@ class Source extends AbstractData {
 
     /**
      * Set the text/xml of this Source
-     * 
+     *
      * @param string $text The full text/xml of this source
      */
     public function setText($text) {
 
         $this->text = $text;
     }
-    
+
     /**
      * Set the display name of this Source
      *
      * @param string $displayName The display name of this source
      */
     public function setDisplayName($displayName) {
-    
+
         $this->displayName = $displayName;
     }
 
     /**
      * Set the note of this Source
-     * 
+     *
      * @param string $note the note attached to this source
      */
     public function setNote($note) {
@@ -277,14 +277,14 @@ class Source extends AbstractData {
      * @param \snac\data\Source $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\Source))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
 
@@ -296,16 +296,16 @@ class Source extends AbstractData {
             return false;
         if ($this->getNote() != $other->getNote())
             return false;
-        
-        
-        if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
-                 ($this->getType() == null && $other->getType() != null))
-            return false;
-            
+
+        // Right now, we will ignore Type, since it is always "simple"
+        //if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
+        //         ($this->getType() == null && $other->getType() != null))
+        //    return false;
+
         if (($this->getLanguage() != null && ! $this->getLanguage()->equals($other->getLanguage(), $strict)) ||
                  ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;
-        
+
         return true;
     }
 

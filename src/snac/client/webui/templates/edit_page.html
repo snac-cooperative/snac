@@ -20,6 +20,10 @@
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
+<!-- Form Validation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/additional-methods.min.js"></script>
+
 <!-- Helper Scripts -->
 <!--
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
@@ -43,7 +47,10 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="css/select2-bootstrap.min.css">
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 
 <!-- Leaflet JS Javascript and Styles-->
 <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
@@ -64,6 +71,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
+<meta name="viewport" content="initial-scale = 1.0" />
 </head>
 <body role="document">
 {% import 'widgets.html' as widgets %}
@@ -88,6 +96,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
         <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
         <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>
+        <input id="reviewer" name="reviewer" type="hidden" value=""/>
 
 
         <div class="row">
@@ -99,7 +108,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 
                 <!-- Nav tabs -->
-                {{ components.displayEditTabs(X) }}
+                {{ components.displayEditTabs(X, false) }}
 
                 <div class="tab-content">
 
@@ -148,8 +157,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 </div>
 
                                 {% set i = 0 %}
+                                {% set isPrimary = true %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, true, true, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, true, true, nameEntry, i, isPrimary) }}
+                                    {% set isPrimary = false %}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
@@ -325,7 +336,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="list-group">
                                 <a href="#" class="list-group-item list-group-item-info" id="save_and_continue"><span class="glyphicon glyphicon-floppy-disk"></span> Save &amp; Continue <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Save the current state of the constellation and continue working." data-toggle="popover" data-placement="top"></span></a>
                                 <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard"><span class="glyphicon glyphicon-floppy-saved"></span> Save &amp; Dashboard <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and return to the dashboard.  It will not be published, but will remain in your "In Progress Edits" list.' data-toggle="popover" data-placement="top"></span></a>
-                                <a href="#" class="list-group-item list-group-item-review" id="save_and_review"><span class="glyphicon glyphicon-send"></span> Save &amp; Send for Review <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and send it to the reviewers.  It will be removed from your "In Progress Edits" list.'  data-toggle="popover" data-placement="top"></span></a>
+                                <a href="#" class="list-group-item list-group-item-review" data-toggle="modal" data-target="#sendReviewPane"><span class="glyphicon glyphicon-send"></span> Save &amp; Send for Review <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and send it to the reviewers.  It will be removed from your "In Progress Edits" list.'  data-toggle="popover" data-placement="top"></span></a>
                                 {% if permissions.Publish %}
                                 <a href="#" class="list-group-item list-group-item-warning" id="save_and_publish"><span class="glyphicon glyphicon-floppy-open"></span> Save &amp; Publish <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and publish it.  The changes will be globally visible and it will be removed from your "In Progress Edits" list.'  data-toggle="popover" data-placement="top"></span></a>
                                 {% endif %}
@@ -351,6 +362,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             </div>
                         </div>
                     </div>
+
+
+
 
                     {% if false %}
                     <div class="panel panel-danger">
@@ -414,7 +428,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     {{ components.displayGender(X, true, true, null, 'ZZ') }}
     </div>
     <div id="nameEntry_template" style="display:none">
-    {{ components.displayNameEntry(X, true, true, null, 'ZZ') }}
+    {{ components.displayNameEntry(X, true, true, null, 'ZZ', false) }}
     </div>
     <div id="sameAs_template" style="display:none">
     {{ components.displaySameAs(X, true, true, null, 'ZZ') }}
@@ -432,7 +446,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     {{ components.displayResourceRelation(X, true, true, null, 'ZZ', data.entityType.term, data.nameEntries.0.original) }}
     </div>
     <div id="constellationRelation_template" style="display:none">
-    {{ components.displayConstellationRelation(X, true, true, null, 'ZZ', data.entityType.term, data.nameEntries.0.original) }}
+    {{ components.displayConstellationRelation(X, true, true, null, 'ZZ', data.entityType.term, data.nameEntries.0.original, false) }}
     </div>
     <div id="language_template" style="display:none">
     {{ components.displayLanguageUsed(X, true, true, null, 'ZZ') }}
@@ -485,8 +499,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     <div id="component_template" style="display:none">
     {{ components.displayComponent(X, true, true, null, 'ZZ', 'YY') }}
     </div>
-    <div id="contributor_template" style="display:none">
-    {{ components.displayContributor(X, true, true, null, 'ZZ', 'YY') }}
+    <div id="rule_template" style="display:none">
+    {{ components.displayNameRule(X, true, true, null, 'ZZ', 'YY') }}
     </div>
     <div id="addressline_template" style="display:none">
     {{ components.displayAddressLine(X, true, true, null, 'ZZ', 'YY') }}
@@ -496,6 +510,41 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     </div>
     </div>
 
+    <div class="modal fade" id="sendReviewPane" tabindex="-1" role="dialog" aria-labelledby="sendReviewPane">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="sendReviewPaneLabel">Send for Review Options</h4>
+                </div>
+                <div class="modal-body" id="sendReviewPaneContent">
+                        <div class="modal-body">
+                            <p>Search for a User's name or primary email address below to send this constellation to that person
+                            for review.  Alternatively, you may send it for review to the general reviewer pool.</p>
+                            <div class="input-group select2-bootstrap-append">
+                                <select class="form-control"
+                                    placeholder="Name or Email..." id="reviewersearchbox">
+                                    <option></option>
+                                </select>
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-primary" id="save_and_review_touser" data-dismiss="modal">Send for Review</button>
+                                </span>
+                            </div>
+
+                            <div id="user-results-box">
+                            </div>
+                            <div style="text-align: center; margin-top: 10px;">
+                                <p>OR</p>
+                                <button type="button" class="btn btn-success" id="save_and_review_general" data-dismiss="modal"><span class="glyphicon glyphicon-send"></span> Send to General Reviewer Pool</button>
+                            </div>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <div class="modal fade" id="previewPane" tabindex="-1" role="dialog" aria-labelledby="previewPane">
     <div class="modal-dialog" role="document" style="width:90%;">
@@ -583,6 +632,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         </div>
     </div>
 </div>
+
+
 
 <div class="modal fade" id="resourceCreatePane" tabindex="-1" role="dialog" aria-labelledby="resourceCreatePane">
     <div class="modal-dialog" role="document">

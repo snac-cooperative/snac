@@ -34,6 +34,11 @@ class Config {
     public static $SITE_OFFLINE = false;
 
     /**
+     * @var boolean Whether the system is in READONLY (Maintenance) mode.  This is a lighter lock than fully offline.
+     */
+    public static $READ_ONLY = false;
+
+    /**
      * @var string The interface version: "development", "demo", or "production"
      */
     public static $INTERFACE_VERSION = "production";
@@ -52,6 +57,16 @@ class Config {
      * @var the full path of this project (to the root of the repository)
      */
     public static $PROJECT_DIR = "";
+
+    /**
+     * @var string URL of the webui
+     */
+    public static $WEBUI_URL = "http://localhost";
+
+    /**
+     * @var string URL of the rest server
+     */
+    public static $REST_URL = "http://localhost:81";
 
     /**
      *
@@ -79,31 +94,37 @@ class Config {
      * @var string directory to write the log files. Must be / terminated.
      */
     public static $LOG_DIR = "";
-    
+
     /**
      *
      * @var string filename for the Server log
      */
     public static $SERVER_LOGFILE = "server.log";
-    
+
     /**
      *
      * @var string filename for the WebUI log
      */
     public static $WEBUI_LOGFILE = "webui.log";
-    
+
     /**
      *
      * @var string filename for the REST log
      */
     public static $REST_LOGFILE = "rest.log";
-    
+
     /**
      *
      * @var string filename for the UnitTesting log
      */
     public static $UNITTEST_LOGFILE = "unit_test.log";
-    
+
+    /**
+     *
+     * @var string filename for the CRON log
+     */
+    public static $CRON_LOGFILE = "cron.log";
+
     /**
      * Whether or not the database is in testing mode. In testing mode,
      * database calls will only be logged and not committed to the database.
@@ -117,11 +138,16 @@ class Config {
      *  @var integer Default for offset in selectListByStatus() and selectEditList()
      */
     public static $SQL_OFFSET = 0;
-    
+
     /**
      *  @var integer Default for limit selectListByStatus() and selectEditList()
      */
     public static $SQL_LIMIT = 42;
+    
+    /**
+     * @var string Location of the REST commands file 
+     */
+    public static $REST_COMMAND_FILE = "full/path/to/src/snac/client/rest/commands.json";
 
     /**
      * @var string Location of the cpf.rng RELAX NG files, and probably other stuff as well.
@@ -178,27 +204,27 @@ class Config {
      * @var string Elastic Search URL
      */
     public static $ELASTIC_SEARCH_URI = "http://localhost:9200";
-    
+
     /**
      * @var string Main index for the search functionality of snac
      */
     public static $ELASTIC_SEARCH_BASE_INDEX = "";
-    
+
     /**
      * @var string Main type for the search functionality of snac
      */
     public static $ELASTIC_SEARCH_BASE_TYPE = "";
-    
+
     /**
      * @var string Search base for ALL of the snac name entries (and alternates)
      */
     public static $ELASTIC_SEARCH_ALL_TYPE = "";
-    
+
     /**
      * @var string Resource index for the resource search functionality of snac
      */
     public static $ELASTIC_SEARCH_RESOURCE_INDEX = "";
-    
+
     /**
      * @var string Resource type for the resource search functionality of snac
      */
@@ -213,12 +239,36 @@ class Config {
      * @var string Neo4J Bolt URL
      */
     public static $NEO4J_BOLT_URI = "bolt://user:password@localhost:7687";
-    
+
 
     /**
      * @var string Google Analytics Tracking ID (of the form UA-xxxxxxxx-x)
      */
     public static $GOOGLE_ANALYTICS_TRACKING_ID = null;
-    
+
+    /**
+     * @var string Location of the email template directory
+     */
+    public static $EMAIL_TEMPLATE_DIR = "/full/path/to/src/snac/server/mailer/templates";
+
+    /**
+     * @var boolean Whether or not to use SMTP to send emails
+     */
+    public static $EMAIL_SMTP = false;
+
+    /**
+     * @var string[] Email configuration.  If not using SMTP, only from_email and from_name need to be set
+     */
+    public static $EMAIL_CONFIG = array (
+        "host" => "smtp.gmail.com",
+        "smtp_auth" => true,
+        "username" => "user@gmail.com",
+        "password" => "password",
+        "security" => "tls",
+        "port" => 25, //587,
+        "from_email" => "",
+        "from_name" => "SNAC Web"
+    );
+
 
 }

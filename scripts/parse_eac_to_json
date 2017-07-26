@@ -16,7 +16,7 @@ use \Monolog\Logger;
 use \Monolog\Handler\StreamHandler;
 
 // Set up the global log stream
-$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
+$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$UNITTEST_LOGFILE, Logger::DEBUG);
 
 // If no file was parsed, then print the output that something went wrong
 if ($argc < 2) {

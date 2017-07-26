@@ -1,5 +1,9 @@
-{% macro displayEditTabs(X) %}
+{% macro displayEditTabs(X, vertical) %}
+    {% if vertical == true %}
+    <ul class="nav nav-pills nav-stacked" role="tablist">
+    {% else %}
     <ul class="nav nav-tabs" role="tablist">
+    {% endif %}
         <li class="active"><a href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">Core Data</a></li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">History <span class="caret"></span></a>
@@ -55,12 +59,12 @@
 
         <div class="panel panel-default" id="gender_panel_{{i}}">
             <div class="panel-body">
-                    <div class="col-xs-10" id="gender_datapart_{{i}}">
+                    <div class="col-sm-10" id="gender_datapart_{{i}}">
                         <input type="hidden" id="gender_id_{{i}}" name="gender_id_{{i}}" value="{{gender.id}}"/>
                         <input id="gender_version_{{i}}" name="gender_version_{{i}}" type="hidden" value="{{ gender.version}}"/>
                         <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value="{{ gender.operation}}"/>
                         <div class="form-group">
-                            <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                            <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
                                {{ X.term.display }}
                             </label>
                             <div class="col-xs-8" id="select_gender_term_{{i}}">
@@ -89,12 +93,16 @@
 
 {% endmacro %}
 
-{% macro displayNameEntry(X, inEdit, showSubElements, nameEntry, i) %}
+{% macro displayNameEntry(X, inEdit, showSubElements, nameEntry, i, isPrimary) %}
     {% import 'widgets.html' as widgets %}
     {% import _self as components %}
+        {% if not inEdit and isPrimary %}
+        <div class="panel panel-primary" id="nameEntry_panel_{{i}}">
+        {% else %}
         <div class="panel panel-default" id="nameEntry_panel_{{i}}">
+        {% endif %}
         <div class="panel-body">
-            <div class="col-xs-10" id="nameEntry_datapart_{{i}}">
+            <div class="col-sm-10" id="nameEntry_datapart_{{i}}">
                 <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
                 <input id="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
                 <input id="nameEntry_operation_{{i}}" name="nameEntry_operation_{{i}}" type="hidden" value="{{ nameEntry.operation }}"/>
@@ -127,15 +135,21 @@
 
                     </div>
                 </div>
+                {% if inEdit %}
                 <div class="form-group">
                     <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4" data-content="{{X.preferenceScore.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.preferenceScore.display }}
                     </label>
-                    <div class="col-xs-8" id="text_nameEntry_preferenceScore_{{i}}">
-                        <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.preferenceScore }}"/>
-                        <p class="form-control-static">{{ nameEntry.preferenceScore }}</p>
+                    <div class="col-xs-8" id="checkbox_nameEntry_preferenceScore_{{i}}">
+                        <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="hidden" class="form-control" value="{{ isPrimary ? 'checked' }}"/>
+                        <input id="nameEntry_preferenceScore_placeholderOn_{{i}}" type="hidden" class="form-control" value="Preferred"/>
+                        <input id="nameEntry_preferenceScore_placeholderOff_{{i}}" type="hidden" class="form-control" value="Not Preferred"/>
+                        <p class="form-control-static">{{ isPrimary ? 'Preferred' : 'Not Preferred' }}</p>
                     </div>
                 </div>
+                {% endif %}
+
+                {% if inEdit or nameEntry.language %}
                 <input type="hidden" id="nameEntry_language_id_{{i}}" name="nameEntry_language_id_{{i}}" value="{{nameEntry.language.id}}"/>
                 <input type="hidden" id="nameEntry_language_version_{{i}}" name="nameEntry_language_version_{{i}}" value="{{nameEntrys.language.version}}"/>
                 <div class="form-group">
@@ -162,7 +176,31 @@
                         <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
                     </div>
                 </div>
+                {% endif %}
+                <div class="form-group">
+                    <label class="control-label col-xs-4" data-content="{{X.rules.tooltip}}" data-toggle="popover" data-placement="top">
+                        {{ X.rules.display }}
+                    </label>
+                    <div class="col-xs-8 well well-sm">
+                        {% set j = 0 %}
+                        {% for contributor in nameEntry.contributors %}
+                            {{ components.displayNameRule(X, inEdit, showSubElements, contributor, i, j) }}
+                            {% set j = j + 1 %}
+                        {% endfor %}
+                        <span id='nameEntry_rule_next_j_{{i}}' style='display:none;'>{{j}}</span>
+                        
+                        <div class="form-group" id="nameEntry_rule_add_div_{{i}}">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success snac-hidden" id="nameEntry_rule_add_{{i}}" 
+                                    onClick="return newNameEntryRule({{i}});" disabled>
+                                    <span class="glyphicon glyphicon-plus-sign"></span> Add Rule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
             {{ widgets.dateModal(X, inEdit, showSubElements, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
             {{ widgets.scmModal(X, inEdit, showSubElements, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
             {{ widgets.optionsListWithDate(X, inEdit, showSubElements, "nameEntry", i) }}
@@ -234,6 +272,85 @@
         </div>
 
 {% endmacro %}
+
+{% macro displayNameRule(X, inEdit, showSubElements, rule, i, j) %}
+        <div class="col-xs-12" id="nameEntry_rule_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
+            <div id="nameEntry_rule_{{j}}_datapart_{{i}}">
+                <input type="hidden" id="nameEntry_rule_{{j}}_id_{{i}}"
+                    name="nameEntry_rule_{{j}}_id_{{i}}"
+                    value="{{rule.id}}"/>
+                <input type="hidden" id="nameEntry_rule_{{j}}_version_{{i}}"
+                    name="nameEntry_rule_{{j}}_version_{{i}}"
+                    value="{{rule.version}}"/>
+                <input type="hidden" id="nameEntry_rule_{{j}}_operation_{{i}}"
+                    name="nameEntry_rule_{{j}}_operation_{{i}}"
+                    value="{{rule.operation}}"/>
+                <input id="nameEntry_rule_{{j}}_name_{{i}}"
+                    name="nameEntry_rule_{{j}}_name_{{i}}"
+                    type="hidden" value="{{rule.name}}">
+                <div>
+                    <div class="input-group select2-bootstrap-append">
+                        <div id="select_nameEntry_rule_{{j}}_type_{{i}}" style="width: 50%">
+                            <input id="nameEntry_rule_{{j}}_type_id_{{i}}"
+                                name="nameEntry_rule_{{j}}_type_id_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ rule.type.id }}"/>
+                            <input id="nameEntry_rule_{{j}}_type_term_{{i}}"
+                                name="nameEntry_rule_{{j}}_type_term_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ rule.type.term }}"/>
+                            <input id="nameEntry_rule_{{j}}_type_vocabtype_{{i}}"
+                                name="nameEntry_rule_{{j}}_type_vocabtype_{{i}}"
+                                type="hidden" class="form-control" value="name_type"/>
+                            <input id="nameEntry_rule_{{j}}_type_minlength_{{i}}"
+                                name="nameEntry_rule_{{j}}_type_minlength_{{i}}"
+                                type="hidden" class="form-control" value="0"/>
+                            <input id="nameEntry_rule_{{j}}_type_placeholder_{{i}}"
+                                   type="hidden" value="{{X.rulesForm.display}}"/>
+                            <p class="form-control-static">{{ rule.type.term }}</p>
+                        </div>
+                        <div id="select_nameEntry_rule_{{j}}_rule_{{i}}" style="width:50%; clear: none; float: left;">
+                            <input id="nameEntry_rule_{{j}}_rule_id_{{i}}"
+                                name="nameEntry_rule_{{j}}_rule_id_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ rule.rule.id }}"/>
+                            <input id="nameEntry_rule_{{j}}_rule_term_{{i}}"
+                                name="nameEntry_rule_{{j}}_rule_term_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ rule.rule.term }}"/>
+                            <input id="nameEntry_rule_{{j}}_rule_vocabtype_{{i}}"
+                                name="nameEntry_rule_{{j}}_rule_vocabtype_{{i}}"
+                                type="hidden" class="form-control" value="name_rule"/>
+                            <input id="nameEntry_rule_{{j}}_rule_minlength_{{i}}"
+                                name="nameEntry_rule_{{j}}_rule_minlength_{{i}}"
+                                type="hidden" class="form-control" value="0"/>
+                            <input id="nameEntry_rule_{{j}}_rule_placeholder_{{i}}"
+                                   type="hidden" value="{{X.rulesSet.display}}"/>
+                            <p class="form-control-static">
+                            {% if rule.rule.term %}
+                                {{ rule.rule.term }}
+                            {% elseif rule.name %}
+                                unknown ({{rule.name}})
+                            {% else %}
+                                unknown
+                            {% endif %}
+                            </p>
+                        </div>
+
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger snac-hidden"
+                                id="nameEntry_rule_{{j}}_remove_{{i}}" disabled
+                                onClick="setRepeatedDataDeleted('nameEntry_rule_{{j}}', '{{i}}'); return false;">
+                                <span class="glyphicon glyphicon-minus-sign"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% endmacro %}
+
 
 
 {% macro displayContributor(X, inEdit, showSubElements, contributor, i, j) %}
@@ -317,7 +434,7 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="sameAs_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="sameAs_datapart_{{i}}">
+                <div class="col-sm-10" id="sameAs_datapart_{{i}}">
                     <input id="sameAs_id_{{i}}" name="sameAs_id_{{i}}" type="hidden" value="{{ other.id }}"/>
                     <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
                     <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value="{{ other.operation }}"/>
@@ -364,7 +481,7 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="entityID_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="entityID_datapart_{{i}}">
+                <div class="col-sm-10" id="entityID_datapart_{{i}}">
                     <input id="entityID_id_{{i}}" name="entityID_id_{{i}}" type="hidden" value="{{ other.id }}"/>
                     <input id="entityID_version_{{i}}" name="entityID_version_{{i}}" type="hidden" value="{{ other.version }}"/>
                     <input id="entityID_operation_{{i}}" name="entityID_operation_{{i}}" type="hidden" value="{{ other.operation }}"/>
@@ -402,7 +519,7 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default"  id="source_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="source_datapart_{{i}}">
+                <div class="col-sm-10" id="source_datapart_{{i}}">
                     <input id="source_id_{{i}}" name="source_id_{{i}}" type="hidden" value="{{ source.id }}"/>
                     <input id="source_version_{{i}}" name="source_version_{{i}}" type="hidden" value="{{ source.version }}"/>
                     <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value="{{ source.operation }}"/>
@@ -485,7 +602,7 @@
     {% import _self as components %}
         <div class="panel panel-default" id="resource_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="resource_datapart_{{i}}">
+                <div class="col-sm-10" id="resource_datapart_{{i}}">
                     <input id="resource_id_{{i}}" name="resource_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                     <input id="resource_version_{{i}}" name="resource_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                     <input id="resource_operation_{{i}}" name="resource_operation_{{i}}" type="hidden" value="{{ resource.operation }}"/>
@@ -580,7 +697,7 @@
     {% import _self as components %}
         <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="resourceRelation_datapart_{{i}}">
+                <div class="col-sm-10" id="resourceRelation_datapart_{{i}}">
                     <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                     <input id="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                     <input id="resourceRelation_operation_{{i}}" name="resourceRelation_operation_{{i}}" type="hidden" value="{{ relation.operation }}"/>
@@ -595,6 +712,8 @@
                                 <i class="fa fa-building" aria-hidden="true"></i><br/>
                                 {% elseif entityType == 'family' %}
                                 <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                {% else %}
+                                <i class="fa fa-question" aria-hidden="true"></i><br/>
                                 {% endif %}
                             </p>
                             <p class="relation-icon-caption">
@@ -714,11 +833,15 @@
 
 
 
-{% macro displayConstellationRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName) %}
+{% macro displayConstellationRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName, reverse) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
             <div class="panel-body">
+                {% if not showSubElements %}
+                <div class="col-xs-12" id="constellationRelation_datapart_{{i}}">
+                {% else %}
                 <div class="col-xs-10" id="constellationRelation_datapart_{{i}}">
+                {% endif %}
                     <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                     <input id="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                     <input id="constellationRelation_operation_{{i}}" name="constellationRelation_operation_{{i}}" type="hidden" value="{{ relation.operation }}"/>
@@ -728,18 +851,33 @@
                     <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="hidden" value="{{ relation.targetEntityType.id }}"/>
                     <div class="form-group well well-sm text-center">
                         <div class="col-xs-4 text-center">
-                            <p class="relation-icon">
-                                {% if entityType == 'person' %}
-                                <i class="fa fa-user" aria-hidden="true"></i><br/>
-                                {% elseif entityType == 'corporateBody' %}
-                                <i class="fa fa-building" aria-hidden="true"></i><br/>
-                                {% elseif entityType == 'family' %}
-                                <i class="fa fa-users" aria-hidden="true"></i><br/>
-                                {% endif %}
-                            </p>
-                            <p class="relation-icon-caption">
-                                {{ preferredName }}
-                            </p>
+                            {% if not reverse %}
+                                <p class="relation-icon">
+                                    {% if entityType == 'person' %}
+                                    <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                    {% elseif entityType == 'corporateBody' %}
+                                    <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                    {% elseif entityType == 'family' %}
+                                    <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                    {% endif %}
+                                </p>
+                                <p class="relation-icon-caption">
+                                    {{ preferredName }}
+                                </p>
+                            {% else %}
+                                <p class="relation-icon" id="constellationRelation_relationPictureIcon_{{i}}">
+                                    {% if relation.targetEntityType.term == 'person' %}
+                                    <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                    {% elseif relation.targetEntityType.term == 'corporateBody' %}
+                                    <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                    {% elseif relation.targetEntityType.term == 'family' %}
+                                    <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                    {% endif %}
+                                </p>
+                                <p class="relation-icon-caption" id="constellationRelation_relationPictureTitle_{{i}}">
+                                    {{relation.content}}
+                                </p>
+                            {% endif %}
                         </div>
                         <div class="col-xs-4 text-center">
                             <p class="relation-icon">
@@ -751,18 +889,33 @@
 
                         </div>
                         <div class="col-xs-4 text-center">
-                            <p class="relation-icon" id="constellationRelation_relationPictureIcon_{{i}}">
-                                {% if relation.targetEntityType.term == 'person' %}
-                                <i class="fa fa-user" aria-hidden="true"></i><br/>
-                                {% elseif relation.targetEntityType.term == 'corporateBody' %}
-                                <i class="fa fa-building" aria-hidden="true"></i><br/>
-                                {% elseif relation.targetEntityType.term == 'family' %}
-                                <i class="fa fa-users" aria-hidden="true"></i><br/>
-                                {% endif %}
-                            </p>
-                            <p class="relation-icon-caption" id="constellationRelation_relationPictureTitle_{{i}}">
-                                {{relation.content}}
-                            </p>
+                            {% if not reverse %}
+                                <p class="relation-icon" id="constellationRelation_relationPictureIcon_{{i}}">
+                                    {% if relation.targetEntityType.term == 'person' %}
+                                    <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                    {% elseif relation.targetEntityType.term == 'corporateBody' %}
+                                    <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                    {% elseif relation.targetEntityType.term == 'family' %}
+                                    <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                    {% endif %}
+                                </p>
+                                <p class="relation-icon-caption" id="constellationRelation_relationPictureTitle_{{i}}">
+                                    {{relation.content}}
+                                </p>
+                            {% else %}
+                                <p class="relation-icon">
+                                    {% if entityType == 'person' %}
+                                    <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                    {% elseif entityType == 'corporateBody' %}
+                                    <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                    {% elseif entityType == 'family' %}
+                                    <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                    {% endif %}
+                                </p>
+                                <p class="relation-icon-caption">
+                                    {{ preferredName }}
+                                </p>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="form-group">
@@ -788,7 +941,7 @@
                             <input id="constellationRelation_type_term_{{i}}" name="constellationRelation_type_term_{{i}}" type="hidden" class="form-control" value="{{ relation.type.term }}"/>
                             <input id="constellationRelation_type_vocabtype_{{i}}" name="constellationRelation_type_vocabtype_{{i}}" type="hidden" class="form-control" value="relation_type"/>
                             <input id="constellationRelation_type_minlength_{{i}}" name="constellationRelation_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ relation.type.term }}</p>
+                            <p class="form-control-static" id="constellationRelation_typeText_{{i}}">{{ relation.type.term }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -797,7 +950,7 @@
                         </label>
                         <div class="col-xs-8" id="textarea_constellationRelation_note_{{i}}">
                             <textarea id="constellationRelation_note_{{i}}" name="constellationRelation_note_{{i}}" class="form-control" style="display:none;">{{ relation.note }}</textarea>
-                            <p class="form-control-static">{{ relation.note }}</p>
+                            <p class="form-control-static" id="constellationRelation_noteText_{{i}}">{{ relation.note }}</p>
                         </div>
                     </div>
                 </div>
@@ -813,7 +966,7 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="language_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="language_datapart_{{i}}">
+                <div class="col-sm-10" id="language_datapart_{{i}}">
                     <input id="language_id_{{i}}" name="language_id_{{i}}" type="hidden" value="{{ language.id }}"/>
                     <input id="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
                     <input id="language_operation_{{i}}" name="language_operation_{{i}}" type="hidden" value="{{ language.operation }}"/>
@@ -856,15 +1009,15 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="subject_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="subject_datapart_{{i}}">
+                <div class="col-sm-10" id="subject_datapart_{{i}}">
                     <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
                     <input id="subject_version_{{i}}" name="subject_version_{{i}}" type="hidden" value="{{ subject.version }}"/>
                     <input id="subject_operation_{{i}}" name="subject_operation_{{i}}" type="hidden" value="{{ subject.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_subject_term_{{i}}">
+                        <div class="col-xs-8" id="select_subject_term_{{i}}">
                             <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
                             <input type="hidden" id="subject_term_term_{{i}}" name="subject_term_term_{{i}}" value="{{subject.term.term}}"/>
                             <input type="hidden" id="subject_term_vocabtype_{{i}}" name="subject_term_vocabtype_{{i}}" value="subject"/>
@@ -893,15 +1046,15 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="nationality_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="nationality_datapart_{{i}}">
+                <div class="col-sm-10" id="nationality_datapart_{{i}}">
                     <input type="hidden" id="nationality_id_{{i}}" name="nationality_id_{{i}}" value="{{nationality.id}}"/>
                     <input id="nationality_version_{{i}}" name="nationality_version_{{i}}" type="hidden" value="{{ nationality.version }}"/>
                     <input id="nationality_operation_{{i}}" name="nationality_operation_{{i}}" type="hidden" value="{{ nationality.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_nationality_term_{{i}}">
+                        <div class="col-xs-8" id="select_nationality_term_{{i}}">
                             <input type="hidden" id="nationality_term_id_{{i}}" name="nationality_term_id_{{i}}" value="{{nationality.term.id}}"/>
                             <input type="hidden" id="nationality_term_term_{{i}}" name="nationality_term_term_{{i}}" value="{{nationality.term.term}}"/>
                             <input type="hidden" id="nationality_term_vocabtype_{{i}}" name="nationality_term_vocabtype_{{i}}" value="nationality"/>
@@ -931,15 +1084,15 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="function_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="function_datapart_{{i}}">
+                <div class="col-sm-10" id="function_datapart_{{i}}">
                     <input type="hidden" id="function_id_{{i}}" name="function_id_{{i}}" value="{{function.id}}"/>
                     <input id="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
                     <input id="function_operation_{{i}}" name="function_operation_{{i}}" type="hidden" value="{{ function.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_function_term_{{i}}">
+                        <div class="col-xs-8" id="select_function_term_{{i}}">
                             <input type="hidden" id="function_term_id_{{i}}" name="function_term_id_{{i}}" value="{{function.term.id}}"/>
                             <input type="hidden" id="function_term_term_{{i}}" name="function_term_term_{{i}}" value="{{function.term.term}}"/>
                             <input type="hidden" id="function_term_vocabtype_{{i}}" name="function_term_vocabtype_{{i}}" value="function"/>
@@ -968,15 +1121,15 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="occupation_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="occupation_datapart_{{i}}">
+                <div class="col-sm-10" id="occupation_datapart_{{i}}">
                     <input type="hidden" id="occupation_id_{{i}}" name="occupation_id_{{i}}" value="{{occupation.id}}"/>
                     <input id="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
                     <input id="occupation_operation_{{i}}" name="occupation_operation_{{i}}" type="hidden" value="{{ occupation.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_occupation_term_{{i}}">
+                        <div class="col-xs-8" id="select_occupation_term_{{i}}">
                             <input type="hidden" id="occupation_term_id_{{i}}" name="occupation_term_id_{{i}}" value="{{occupation.term.id}}"/>
                             <input type="hidden" id="occupation_term_term_{{i}}" name="occupation_term_term_{{i}}" value="{{occupation.term.term}}"/>
                             <input type="hidden" id="occupation_term_vocabtype_{{i}}" name="occupation_term_vocabtype_{{i}}" value="occupation"/>
@@ -1005,15 +1158,15 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="legalStatus_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="legalStatus_datapart_{{i}}">
+                <div class="col-sm-10" id="legalStatus_datapart_{{i}}">
                     <input type="hidden" id="legalStatus_id_{{i}}" name="legalStatus_id_{{i}}" value="{{legalStatus.id}}"/>
                     <input id="legalStatus_version_{{i}}" name="legalStatus_version_{{i}}" type="hidden" value="{{ legalStatus.version }}"/>
                     <input id="legalStatus_operation_{{i}}" name="legalStatus_operation_{{i}}" type="hidden" value="{{ legalStatus.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_legalStatus_term_{{i}}">
+                        <div class="col-xs-8" id="select_legalStatus_term_{{i}}">
                             <input type="hidden" id="legalStatus_term_id_{{i}}" name="legalStatus_term_id_{{i}}" value="{{legalStatus.term.id}}"/>
                             <input type="hidden" id="legalStatus_term_term_{{i}}" name="legalStatus_term_term_{{i}}" value="{{legalStatus.term.term}}"/>
                             <input type="hidden" id="legalStatus_term_vocabtype_{{i}}" name="legalStatus_term_vocabtype_{{i}}" value="legal_status"/>
@@ -1043,19 +1196,72 @@
     {% import _self as components %}
         <div class="panel panel-default" id="place_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="place_datapart_{{i}}">
+                <div class="col-sm-10" id="place_datapart_{{i}}">
                     <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
                     <input id="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
                     <input id="place_operation_{{i}}" name="place_operation_{{i}}" type="hidden" value="{{ place.operation }}"/>
+                    <input id="place_original_{{i}}" name="place_original_{{i}}" type="hidden" class="form-control" value="{{ place.original }}" readonly/>
+                    <input id="place_score_{{i}}" name="place_score_{{i}}" type="hidden" class="form-control" value="{{ place.score }}"/>
+
                     <div class="form-group">
-                        <label for="place_original_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeOriginal.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.placeOriginal.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_place_original_{{i}}">
-                            <input id="place_original_{{i}}" name="place_original_{{i}}" type="hidden" class="form-control" value="{{ place.original }}"/>
-                            <p class="form-control-static">{{ place.original }}</p>
+                        <div class="col-sm-9">
+
+                            {% if place.confirmed and place.geoplace.id %}
+                                <h4 class="text-center geoterm-heading" id="place_geoterm_text_{{i}}">{{place.geoplace.name}}</h4>
+                                <p class="caption text-center geoterm-caption" id="place_geoterm_caption_{{i}}">{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</p>
+                                <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="true"/>
+                            {% else %}
+                                {% if place.original and place.original != "" %}
+                                    {% if inEdit %}
+                                        <h4 class="text-center geoterm-heading" id="place_geoterm_text_{{i}}"><em>Unconfirmed</em></h4>
+                                        <p class="caption text-center geoterm-caption" id="place_geoterm_caption_{{i}}">Recorded as: {{place.original}}</p>
+                                    {% else %}
+                                        <h4 class="text-center geoterm-heading" id="place_geoterm_text_{{i}}"><em>{{place.original}}</em></h4>
+                                        <p class="caption text-center geoterm-caption" id="place_geoterm_caption_{{i}}">as recorded (not vetted)</p>
+                                    {% endif %}
+                                {% else %}
+                                    <h4 class="text-center geoterm-heading" id="place_geoterm_text_{{i}}">--</h4>
+                                    <p class="caption text-center geoterm-caption" id="place_geoterm_caption_{{i}}">GeoPlace term not specified</p>
+                                {% endif %}
+                                <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="false"/>
+                            {% endif %}
+                            {% if inEdit %}
+                                {% if place.geoplace.id and not place.confirmed %}
+                                    <input id="place_geoplaceSuggested_id_{{i}}" name="place_geoplaceSuggested_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
+                                    <p class="caption text-center geoterm-caption" id="place_geoterm_matchconfidence_{{i}}">Possibly:
+                                    {{ place.geoplace.name }}
+                                    {% if place.geoplace.administrationCode or place.geoplace.countryCode %}
+                                        ({{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}})
+                                    {% endif %}
+                                    -- {{(place.score * 100)|round(1, 'floor')}}% confidence
+                                    <a class="label label-info snac-hidden" onclick="chooseSuggestedGeoPlace('place_geoplace_id_{{i}}', {{i}}, '{{place.geoplace.id}}')">
+                                        choose</a>
+                                    </p>
+                                {% endif %}
+                            {% endif %}
+
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="list-group snac-options-list">
+                            {% if place.geoplace.id and place.confirmed %}
+                                <a class="list-group-item list-group-item-download" onClick="openGeoPlaceViewer('{{place.geoplace.id}}'); return false;" id="place_geoterm_maplink_{{i}}" style="cursor: pointer;"><span class="fa fa-2x fa-map-marker" aria-hidden="true"></span><br>View GeoPlace</a>
+                            {% else %}
+                                <a class="list-group-item list-group-item-download disabled" id="place_geoterm_maplink_{{i}}" style="cursor: pointer;"><span class="fa fa-2x fa-map-marker" aria-hidden="true"></span><br>View GeoPlace</a>
+                            {% endif %}
+                            </div>
                         </div>
                     </div>
+
+
+                    <div class="form-group">
+                        <div class="col-xs-12" id="selectGeo_place_geoplace_{{i}}">
+                            <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
+                            <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }} ({{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}})"/>
+                        </div>
+                    </div>
+
+
+
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.placeType.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.placeType.display }}
@@ -1102,45 +1308,6 @@
                                 </div>
                             </div>
 
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.placeGeoTerm.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.placeGeoTerm.display }}
-                        </label>
-                        <div class="col-xs-8" id="select_place_geoplace_{{i}}">
-                            <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
-                            <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
-                            <input id="place_geoplace_vocabtype_{{i}}" name="place_geoplace_vocabtype_{{i}}" type="hidden" class="form-control" value="geo_place"/>
-                            <input id="place_geoplace_minlength_{{i}}" name="place_geoplace_minlength_{{i}}" type="hidden" class="form-control" value="2"/>
-                            <p class="form-control-static">
-                                {{ place.geoplace.name }}
-                                {% if place.geoplace.id %}
-                                    <a class="label label-info" onClick="openGeoPlaceViewer('{{place.geoplace.id}}'); return false;">View</a>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="place_score_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeGeoTermScore.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.placeGeoTermScore.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_place_score_{{i}}">
-                            <input id="place_score_{{i}}" name="place_score_{{i}}" type="hidden" class="form-control" value="{{ place.score }}"/>
-                            <p class="form-control-static">{{ place.score }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="place_confirmed_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeGeoTermConfirmed.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.placeGeoTermConfirmed.display }}
-                        </label>
-                        <div class="col-xs-8">
-                            <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_true_{{i}}" value="true"
-                                {{ place.confirmed == 't' ? 'checked' : '' }}
-                                readonly/> True</label>
-                            <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_false_{{i}}" value="false"
-                                {{ place.confirmed == 't' ? '' : 'checked' }}
-                                readonly/> False</label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -1225,7 +1392,7 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="conventionDeclaration_panel_{{i}}">
             <div class="panel-body">
-                    <div class="col-xs-10" id="conventionDeclaration_datapart_{{i}}">
+                    <div class="col-sm-10" id="conventionDeclaration_datapart_{{i}}">
                         <input type="hidden" id="conventionDeclaration_id_{{i}}" name="conventionDeclaration_id_{{i}}" value="{{conventionDeclaration.id}}"/>
                         <input id="conventionDeclaration_version_{{i}}" name="conventionDeclaration_version_{{i}}" type="hidden" value="{{ conventionDeclaration.version }}"/>
                         <input id="conventionDeclaration_operation_{{i}}" name="conventionDeclaration_operation_{{i}}" type="hidden" value="{{ conventionDeclaration.operation }}"/>
@@ -1250,7 +1417,7 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="generalContext_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="generalContext_datapart_{{i}}">
+                <div class="col-sm-10" id="generalContext_datapart_{{i}}">
                     <input type="hidden" id="generalContext_id_{{i}}" name="generalContext_id_{{i}}" value="{{generalContext.id}}"/>
                     <input id="generalContext_version_{{i}}" name="generalContext_version_{{i}}" type="hidden" value="{{ generalContext.version }}"/>
                     <input id="generalContext_operation_{{i}}" name="generalContext_operation_{{i}}" type="hidden" value="{{ generalContext.operation }}"/>
@@ -1274,7 +1441,7 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="structureOrGenealogy_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="structureOrGenealogy_datapart_{{i}}">
+                <div class="col-sm-10" id="structureOrGenealogy_datapart_{{i}}">
                     <input type="hidden" id="structureOrGenealogy_id_{{i}}" name="structureOrGenealogy_id_{{i}}" value="{{structureOrGenealogy.id}}"/>
                     <input id="structureOrGenealogy_version_{{i}}" name="structureOrGenealogy_version_{{i}}" type="hidden" value="{{ structureOrGenealogy.version }}"/>
                     <input id="structureOrGenealogy_operation_{{i}}" name="structureOrGenealogy_operation_{{i}}" type="hidden" value="{{ structureOrGenealogy.operation }}"/>
@@ -1298,7 +1465,7 @@
 {% macro displayBiogHist(X, inEdit, showSubElements, biogHist, i) %}
     {% import 'widgets.html' as widgets %}
     <div class="panel-body" id="biogHist_panel_{{i}}">
-        <div class="col-xs-10" id="biogHist_datapart_{{i}}">
+        <div class="col-sm-10" id="biogHist_datapart_{{i}}">
             <input type="hidden" id="biogHist_id_{{i}}" name="biogHist_id_{{i}}" value="{{biogHist.id}}"/>
             <input type="hidden" id="biogHist_version_{{i}}" name="biogHist_version_{{i}}" value="{{biogHist.version}}"/>
             {% if biogHist.id %}
@@ -1351,7 +1518,7 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="mandate_panel_{{i}}">
             <div class="panel-body">
-                    <div class="col-xs-10" id="mandate_datapart_{{i}}">
+                    <div class="col-sm-10" id="mandate_datapart_{{i}}">
                         <input type="hidden" id="mandate_id_{{i}}" name="mandate_id_{{i}}" value="{{mandate.id}}"/>
                         <input id="mandate_version_{{i}}" name="mandate_version_{{i}}" type="hidden" value="{{ mandate.version }}"/>
                         <input id="mandate_operation_{{i}}" name="mandate_operation_{{i}}" type="hidden" value="{{ mandate.operation }}"/>
@@ -1388,19 +1555,20 @@
     {% import 'widgets.html' as widgets %}
        <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
             <div class="panel-body">
-                <div class="col-xs-10" id="scm_{{short}}_datapart_{{j}}_{{i}}">
+                <div class="{{ showSubElements and inEdit ? 'col-xs-10' : 'col-xs-12' }}" id="scm_{{short}}_datapart_{{j}}_{{i}}">
                     <input id="scm_{{short}}_id_{{j}}_{{i}}" name="scm_{{short}}_id_{{j}}_{{i}}" type="hidden" value="{{ scm.id }}"/>
                     <input id="scm_{{short}}_version_{{j}}_{{i}}" name="scm_{{short}}_version_{{j}}_{{i}}" type="hidden" value="{{ scm.version }}"/>
                     <input id="scm_{{short}}_operation_{{j}}_{{i}}" name="scm_{{short}}_operation_{{j}}_{{i}}" type="hidden" value="{{ scm.operation }}"/>
-                    <div class="form-group">
-                        <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.scmSourceData.display }}
-                        </label>
-                        <div class="col-xs-8" id="textarea_scm_{{short}}_sourceData_{{j}}_{{i}}">
-                            <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.sourceData }}</textarea>
-                            <p class="form-control-static">{{ scm.sourceData }}</p>
-                        </div>
+                    <div class="form-group well well-sm">
+                        <h5 class="text-center" style="font-weight: bold">Source Citation</h5>
+                        <p id="scm_{{short}}_source_text_{{j}}_{{i}}" class="panel panel-body scm-source-panel {{ not scm.citation.text ? 'hidden'}}">{{scm.citation.text|raw}}</p>
+                        <p id="scm_{{short}}_source_uri_{{j}}_{{i}}" class="form-control-static text-center">
+                            {% if scm.citation.uri %}
+                            <a href="{{scm.citation.uri}}" target="_blank">{{scm.citation.uri}}</a>
+                            {% endif %}
+                        </p>
                     </div>
+                    {% if inEdit %}
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.scmCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmCitation.display }}
@@ -1413,59 +1581,30 @@
                             <p class="form-control-static">{{scm.citation.displayName}}</p>
                         </div>
                     </div>
+                    {% endif %}
 
 
                     <div class="form-group">
                         <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSubCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSubCitation.display }}
                         </label>
-                        <div class="col-xs-8" id="textarea_scm_{{short}}_subCitation_{{j}}_{{i}}">
-                            <textarea id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.subCitation }}</textarea>
+                        <div class="col-xs-8" id="text_scm_{{short}}_subCitation_{{j}}_{{i}}">
+                            <input id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.subCitation }}"/>
                             <p class="form-control-static">{{ scm.subCitation }}</p>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.scmDescriptiveRule.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.scmDescriptiveRule.display }}
-                            </label>
-                        <div class="col-xs-8" id="select_scm_{{short}}_descriptiveRule_{{j}}_{{i}}">
-                            <input id="scm_{{short}}_descriptiveRule_id_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.id }}"/>
-                            <input id="scm_{{short}}_descriptiveRule_term_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.term }}"/>
-                            <input id="scm_{{short}}_descriptiveRule_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="name_rule"/>
-                            <input id="scm_{{short}}_descriptiveRule_minlength_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ scm.descriptiveRule.term }}</p>
-                        </div>
-                    </div>
-
-                    <input type="hidden" id="scm_{{short}}_language_id_{{j}}_{{i}}" name="scm_{{short}}_language_id_{{j}}_{{i}}" value="{{scm.language.id}}"/>
-                    <input type="hidden" id="scm_{{short}}_language_version_{{j}}_{{i}}" name="scm_{{short}}_language_version_{{j}}_{{i}}" value="{{scm.language.version}}"/>
-                    <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.language.display }}
+                        <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.scmSourceData.display }}
                         </label>
-                        <div class="col-xs-8" id="select_scm_{{short}}_languagelanguage_{{j}}_{{i}}">
-                            <input id="scm_{{short}}_languagelanguage_id_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.language.id }}"/>
-                            <input id="scm_{{short}}_languagelanguage_term_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.language.language.term }}"/>
-                            <input id="scm_{{short}}_languagelanguage_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                            <input id="scm_{{short}}_languagelanguage_minlength_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ scm.language.language.term }}</p>
+                        <div class="col-xs-8" id="textarea_scm_{{short}}_sourceData_{{j}}_{{i}}">
+                            <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.sourceData }}</textarea>
+                            <p class="form-control-static">{{ scm.sourceData | replace({" ": "&nbsp;"}) | raw | nl2br }}</p>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.script.display }}
-                        </label>
-                        <div class="col-xs-8" id="select_scm_{{short}}_languagescript_{{j}}_{{i}}">
-                            <input id="scm_{{short}}_languagescript_id_{{j}}_{{i}}" name="scm_{{short}}_languagescript_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.id }}"/>
-                            <input id="scm_{{short}}_languagescript_term_{{j}}_{{i}}" name="scm_{{short}}_languagescript_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.term }}"/>
-                            <input id="scm_{{short}}_languagescript_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_languagescript_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                            <input id="scm_{{short}}_languagescript_minlength_{{j}}_{{i}}" name="scm_{{short}}_languagescript_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ scm.language.script.term }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.descriptiveNote.display }}
+                        <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmNote.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.scmNote.display }}
                         </label>
                         <div class="col-xs-8" id="textarea_scm_{{short}}_note_{{j}}_{{i}}">
                             <textarea id="scm_{{short}}_note_{{j}}_{{i}}" name="scm_{{short}}_note_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.note }}</textarea>

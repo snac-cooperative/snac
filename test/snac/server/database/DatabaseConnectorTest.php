@@ -19,7 +19,7 @@ use \snac\server\database\DatabaseConnector;
  * @author Robbie Hott
  *
  */
-class DatabaseConnectorTest extends \PHPUnit_Framework_TestCase {
+class DatabaseConnectorTest extends \PHPUnit\Framework\TestCase {
     
     /**
      * Tests the generic connection (part of the constructor) 

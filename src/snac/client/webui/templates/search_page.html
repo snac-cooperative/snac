@@ -13,7 +13,7 @@
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
@@ -39,6 +39,7 @@
 <!-- SNAC includes -->
 <script src="javascript/search.js{{control.noCache}}"></script>
 
+<meta name="viewport" content="initial-scale = 1.0" />
 </head>
 
 <body role="document">
@@ -52,29 +53,49 @@
 		<h1>Search</h1>
 
 		<form class="form-horizontal" id="search_form" method="GET" action="?">
-			<div class="well well-lg text-center">
+			<div class="well well-lg text-center search-box">
                     <input type="hidden" id="count" name="count" value="10">
                     <input type="hidden" id="start" name="start" value="0">
 					<div class="input-group select2-bootstrap-append">
-                        <select id="entityType" name="entity_type" style="width: 18%;">
-                            <option value="" {{data.entityType == '' ? 'selected'}}>All Types</option>
-                            <option value="person" {{data.entityType == 'person' ? 'selected'}}>Person</option>
-                            <option value="corporateBody" {{data.entityType == 'corporateBody' ? 'selected'}}>Corporate Body</option>
-                            <option value="family" {{data.entityType == 'family' ? 'selected'}}>Family</option>
-                        </select>
-						<input type="text" class="form-control" style="width: 82%;"
+                        <span class="search-entity-type">
+                            <select id="entityType" name="entity_type" class="search-entity-type-select">
+                                <option value="" {{data.entityType == '' ? 'selected'}}>All Types</option>
+                                <option value="person" {{data.entityType == 'person' ? 'selected'}}>Person</option>
+                                <option value="corporateBody" {{data.entityType == 'corporateBody' ? 'selected'}}>Corporate Body</option>
+                                <option value="family" {{data.entityType == 'family' ? 'selected'}}>Family</option>
+                            </select>
+                        </span>
+						<input type="text" class="form-control search-box-text"
 							placeholder="Search for..." id="searchbox" name="term" value="{{data.query}}">
-							<span class="input-group-btn">
-							     <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
-						    </span>
+                        <span class="input-group-btn search-box-button">
+                             <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
+                        </span>
 					</div>
-                    <div id="advancedSearch" class="text-left" style="margin-top: 15px;">
-                        <label>
-                            <input type="checkbox" value="advanced" name="search_type" id="advanced" data-toggle="toggle" data-target="advancedSearchText" {{data.searchType == 'advanced' ? 'checked'}}>
-                            <span style="padding-left: 10px; font-weight: normal;">Advanced Search</span>
-                        </label>
+                    <div class="row">
+                        <div class="col-xs-6 text-left">
+                            <div id="advancedSearch" class="text-left" style="margin-top: 15px;">
+                                <label>
+                                    <input type="checkbox" value="advanced" name="search_type" id="advanced" data-toggle="toggle" data-target="advancedSearchText" {{data.searchType == 'advanced' ? 'checked'}}>
+                                    <span style="padding-left: 10px; font-weight: normal;">Advanced Search</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 text-right">
+                            <div id="otherOptions" class="text-right" style="margin-top: 15px;">
+                                <span style="padding-right: 5px; font-weight: normal;">Show</span>
+                                <select id="count" name="count" style="width: 70px;">
+                                    <option value="10" {{data.count == 10 ? 'selected'}}>10</option>
+                                    <option value="25" {{data.count == 25 ? 'selected'}}>25</option>
+                                    <option value="50" {{data.count == 50 ? 'selected'}}>50</option>
+                                    <option value="100" {{data.count == 100 ? 'selected'}}>100</option>
+                                </select>
+                                <span style="padding-left: 5px; font-weight: normal;">per page</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
 
-                        <div id="advancedSearchText" class="collapse {{ data.searchType == 'advanced' ? 'in'}}">
+                        <div id="advancedSearchText" class="text-left collapse {{ data.searchType == 'advanced' ? 'in'}}">
                             <h4>The following commands may be used for advanced searching</h4>
                             <dl>
                                 <dt>*</dt> <dd>Prefix search. Ex: <em>Wash*</em> will match anything starting with <em>Wash</em> including <em>Washington</em>.</dd>
@@ -100,6 +121,16 @@
                 Showing up to {{data.count * data.pagination}} of the total results.
                 {% endif %}
                 </p>
+                <form class="form-horizontal" id="compare_form" method="POST" action="?command=diff">
+                    <div id="compareBox" class="collapse">
+                    <div class="well well-sm">
+                        <input type="hidden" name="constellationid1" id="compare1">
+                        <input type="hidden" name="constellationid2" id="compare2">
+                            <button type="submit" class="btn btn-primary" id="compareButton" disabled>Compare Selected Constellations</button>
+                            <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
+                    </div>
+                    </div>
+                </form>
                 {% for result in data.results %}
                     <h4><a href="?command=view&constellationid={{result.id}}">{{result.nameEntries.0.original}}</a></h4>
                     <p class="identity-info">
@@ -107,11 +138,14 @@
                         <span>({{result.entityType.term}})</span>
                     </p>
                     {% if result.biogHists.0.text %}
-                        <p>{{result.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                    <p>{{result.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}</p>
                     {% else %}
                         <p class="missing">No biographical history available for this identity.</p>
                     {% endif %}
+                    <p class="final"><input class="compare-checkbox" type="checkbox" value="{{result.id}}"> Select this Identity Constellation to compare</p>
                 {% endfor %}
+
+
 
                 {% if data.pagination > 1 %}
                     <nav class="text-center"><ul class='pagination'>

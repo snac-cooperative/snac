@@ -20,23 +20,23 @@ use \snac\exceptions\SNACDatabaseException;
 
 /**
  * Database Connector Class
- * 
+ *
  * This class provides a thin layer in front of the standard PHP Postgres library functions, so that
  * correct error handling may happen throughout the code.  The methods in this class throw the appropriate SNAC
  * Exception object when something goes wrong during database connection and use.
- * 
+ *
  * @author Robbie Hott
  *
  */
 class DatabaseConnector {
-    
+
     /**
      * @var \resource Database handle for postgres connection
      */
     private $dbHandle = null;
-    
+
     /**
-     * Convert php boolean to Postgres 
+     * Convert php boolean to Postgres
      *
      * pg_execute() doesn't know to convert boolean to 't' and 'f' as required by Postgres. We can do it
      * ourselves.  Interestingly, the return value is a single character string containing t or f. In SQL it
@@ -62,7 +62,7 @@ class DatabaseConnector {
         }
         /*
          * We can easily change the above code so we never get here, but if we do get here, this exception will be thrown.
-         */ 
+         */
         // printf("\nDatabaseConnector.php boolToPg() Unable convert arg to bool: $arg\n");
         throw new \snac\exceptions\SNACDatabaseException("DatabaseConnector.php boolToPg() Unable convert arg to bool: $arg");
     }
@@ -74,7 +74,7 @@ class DatabaseConnector {
      * it ourselves.
      *
      * This is for Postgres boolean types which may only have values 't' or 'f'. Any other value is an error.
-     * 
+     *
      * @throws \snac\exceptions\SNACDatabaseException
 
      * @param string $arg A php boolean of whatever type as long as it will test true or false.
@@ -98,20 +98,20 @@ class DatabaseConnector {
 
     /**
      * Constructor
-     * 
+     *
      * Opens the connection to the database on construct
-     * 
+     *
      * @throws \snac\exceptions\SNACDatabaseException
      */
     public function __construct() {
-        
+
         // Read the configuration file
         $host = Config::$DATABASE["host"];
         $port = Config::$DATABASE["port"];
         $database = Config::$DATABASE["database"];
         $password = Config::$DATABASE["password"];
         $user = Config::$DATABASE["user"];
-        
+
         try {
             // Try to connect to the database
             $this->dbHandle = \pg_connect("host=$host port=$port dbname=$database user=$user password=$password");
@@ -124,21 +124,21 @@ class DatabaseConnector {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out.
             throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
         }
-        
+
     }
-    
+
     /**
      * Prepare A Statement
-     * 
+     *
      * Calls php postgres pg_prepare method.  The statement should be named, and the query given.
-     *  
+     *
      * @param string $statementName Name for the statement (allows multiple prepares)
      * @param string $query Query to prepare (with $1, $2, .. placeholders)
      */
     public function prepare($statementName, $query) {
         try {
             $result = \pg_prepare($this->dbHandle, $statementName, $query);
-            
+
             // Check for error
             if ($result === false) {
                 $errorMessage = \pg_last_error($this->dbHandle);
@@ -149,13 +149,13 @@ class DatabaseConnector {
             throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
         }
     }
-    
+
     /**
      * Execute a prepared database statement
-     * 
+     *
      * Executes the statement prepared earlier as $statementName, with the given array of values used to fill the
      * placeholders in the prepared statement.  Any values passed in the array will be converted to strings.
-     * 
+     *
      * @param string $statementName Statement name to execute
      * @param mixed[] $values Parameters to fill the prepared statement (will be cast to string)
      * @throws \snac\exceptions\SNACDatabaseException
@@ -164,20 +164,20 @@ class DatabaseConnector {
     public function execute($statementName, $values) {
         try {
             $result = \pg_execute($this->dbHandle, $statementName, $values);
-           
+
             // Check for error
             if ($result === false) {
                 $errorMessage = \pg_last_error($this->dbHandle);
                 throw new \Exception("Database Execute Error: " . $errorMessage);
             }
-            
+
             $resultError = \pg_result_error($result);
             if ($resultError === false) {
                 throw new \Exception("Database Execute Error: Could not return results -- malformed result");
             } else if (!empty($resultError)) {
                 throw new \Exception("Database Execute Error: " . $resultError);
             }
-            
+
             return $result;
         } catch (\Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out
@@ -192,7 +192,7 @@ class DatabaseConnector {
      * current session.
      *
      * Handles both the prepare and execute stages.
-     * 
+     *
      * @param string $query Query to prepare (with $1, $2, .. placeholders)
      * @param mixed[] $values Parameters to fill the prepared statement (will be cast to string)
      * @throws \snac\exceptions\SNACDatabaseException
@@ -213,7 +213,7 @@ class DatabaseConnector {
      *
      * @return void
      *
-     * 
+     *
      */
 
     public function deallocate($query) {
@@ -225,22 +225,52 @@ class DatabaseConnector {
 
     /**
      * Fetch the next row
-     * 
+     *
      * Fetches the next row from the given resource and returns it as an associative array.
-     * 
+     *
      * @param \resource $resource Postgres result resource (From $db->execute())
      * @return string[] Next row from the database as an associative array, or false if no rows to return
      * @throws \snac\exceptions\SNACDatabaseException
      */
     public function fetchRow($resource) {
         try {
-            $row = \pg_fetch_assoc($resource); 
+            $row = \pg_fetch_assoc($resource);
             return $row;
         } catch (\Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out
             throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
         }
     }
-    
-    
+
+
+    /**
+     * Fetch all rows
+     *
+     * Fetches all rows from the given resource and returns it as an array of associative arrays.
+     *
+     * @param \resource $resource Postgres result resource (From $db->execute())
+     * @return string[][] All rows from the database as an associative array, or false if no rows to return
+     * @throws \snac\exceptions\SNACDatabaseException
+     */
+    public function fetchAll($resource) {
+        try {
+            $rows = \pg_fetch_all($resource);
+            return $rows;
+        } catch (\Exception $e) {
+            // Replace any exceptions with the SNAC Database Exception and re-throw back out
+            throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get the DB Handle
+     *
+     * This method returns the handle to the database.   This should never be used except in scripting.
+     *
+     * @return \resource Database handle for postgres connection
+     */
+    public function getHandle() {
+        return $this->dbHandle;
+    }
+
 }

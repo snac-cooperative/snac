@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{data.constellation.nameEntries.0.original}} - Maybe-Same - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC includes -->
+<script src="javascript/search.js{{control.noCache}}"></script>
+</head>
+
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+
+    <div class="container snac" role="main">
+
+
+        <h1>Possible Matching Constellations</h1>
+
+        <!-- Constellation Data -->
+        <input id="constellationid" name="constellationid" type="hidden" value="{{ data.constellation.id }}"/>
+        <input id="version" name="version" type="hidden" value="{{ data.constellation.version }}"/>
+        <input id="ark" name="ark" type="hidden" value="{{ data.constellation.ark }}"/>
+
+    	<div class="well well-lg">
+            <h2>
+              {% if data.constellation.entityType.term == 'person' %}
+               <i class="fa fa-user" aria-hidden="true"></i>
+              {% elseif data.constellation.entityType.term == 'corporateBody' %}
+               <i class="fa fa-building" aria-hidden="true"></i>
+              {% elseif data.constellation.entityType.term == 'family' %}
+               <i class="fa fa-users" aria-hidden="true"></i>
+              {% endif %}
+               {{data.constellation.nameEntries.0.original}}
+            </h2>
+
+            {% if data.constellation.biogHists.0.text %}
+                <p>{{ data.constellation.biogHists.0.text| striptags | slice(0,1000) }}...</p>
+            {% else %}
+                <p class="missing">No biographical history available for this identity.</p>
+            {% endif %}
+
+            <p><a href="?command=view&constellationid={{data.constellation.id}}" class="btn btn-primary">View Constellation</a></p>
+    	</div>
+
+        <div class="row">
+            <div class="col-md-12 search-results">
+                {% if data.maybeSameList %}
+                    <p class="search-info">There are {{data.maybeSameList|length}} possible matching Constellations.
+                    </p>
+                    {% for maybeSame in data.maybeSameList %}
+                        <h4><a href="?command=view&constellationid={{maybeSame.constellation.id}}">{{maybeSame.constellation.nameEntries.0.original}}</a></h4>
+                        <p class="identity-info">
+                            <span>{{maybeSame.constellation.ark}}</span>
+                            <span>({{maybeSame.constellation.entityType.term}})</span>
+                        </p>
+                        {% if maybeSame.constellation.biogHists.0.text %}
+                            <p>{{maybeSame.constellation.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                        {% else %}
+                            <p class="missing">No biographical history available for this identity.</p>
+                        {% endif %}
+                        <p class="final" style="margin-top: 5px;">
+                            <a href="?command=diff&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
+                            {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
+                            <a href="?command=diff_merge&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
+                            {% endif %}
+                        </p>
+                    {% endfor %}
+
+                {% else %}
+                    <p>No Constellations are listed as possible matches at this time.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

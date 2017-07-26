@@ -76,6 +76,19 @@ class SQL
         $this->enableLogging();
     }
 
+
+    /**
+     * Get the DB Connector object
+     *
+     * Utility function to return the Database connector for this SQL object.
+     *
+     * @return \snac\server\database\DatabaseConnector The database connector for this SQL object
+     */
+    public function connectorObj()
+    {
+        return $this->sdb;
+    }
+
     /**
      * Enable logging
      *
@@ -1043,15 +1056,12 @@ class SQL
      * @param integer $offset An offset to jump into the list of records in the database. Not optional
      * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
      *
+     * @param boolean $secondary Whether to search the secondary user field rather than the primary user field.
+     *
      * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
      */
-    public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset)
+    public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset, $secondary)
     {
-        if ($status != 'locked editing' &&
-            $status != 'currently editing')
-        {
-            return array();
-        }
         $limitStr = '';
         $offsetStr = '';
         $limitStr = $this->doLOValue('limit', $limit);
@@ -1068,6 +1078,19 @@ class SQL
                         aa.version=cc.version and
                         aa.user_id=$1 and
                         aa.status = $2 %s %s', $limitStr, $offsetStr);
+        if ($secondary) {
+            $queryString = sprintf(
+                    'select aa.version, aa.id as ic_id
+                        from version_history as aa,
+                            (select max(version) as version, id from version_history
+                                where id in (select distinct id from version_history where user_id_secondary=$1)
+                                group by id) as cc
+                        where
+                            aa.id=cc.id and
+                            aa.version=cc.version and
+                            aa.user_id_secondary=$1 and
+                            aa.status = $2 %s %s', $limitStr, $offsetStr);
+        }
 
         $this->logger->addDebug("Sending the following SQL request: " . $queryString);
 
@@ -1240,37 +1263,188 @@ class SQL
     }
 
     /**
-     * select mainID by arkID
+     * select Current IC_IDs by arkID
      *
-     * nrd.ic_id is the constellation id.
-     *
-     * Do not use nrd.id. The row identifier for nrd is nrd.ic_id. Do not join to table nrd. If you need to
-     * join to the constellation use version_history.id. They are both the same, but nrd is a data table,
-     * and version_history is the "root" of the constellation.
-     *
-     * Constellation->getID() gets the ic_id aka constellation id aka nrd.ic_id aka
-     * version_history.id.
-     *
-     * non-constellation->getID() gets the row id. Non-constellation objects get the ic_id from the
-     * constellation, and it is not stored in the php objects themselves. I mention this (again) because it
-     * (again) caused confusion in the SQL below (now fixed).
+     * Returns the current IC ic_id (main_id in Tom's code) for the given Ark ID.  If the constellation pointed
+     * to by the ARK was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     * If the ic was split, it will return a list of ic_ids relating to the split.
      *
      * @param string $arkID The ARK id of a constellation
-     *
-     * @return integer The constellation ID aka mainID akd ic_id aka version_history.id.
+     * @return integer[] The constellation IDs aka mainIDs akd ic_ids aka version_history.ids.
      */
-    public function selectMainID($arkID)
+    public function selectCurrentMainIDsForArk($arkID)
     {
         $result = $this->sdb->query(
-            'select nrd.ic_id
-            from nrd
+            'select current_ic_id
+            from constellation_lookup
             where
-            nrd.ark_id=$1',
+            ark_id=$1',
             array($arkID));
-        $row = $this->sdb->fetchrow($result);
-        return $row['ic_id'];
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['current_ic_id']);
+        }
+        return $all;
     }
 
+    /**
+     * select Current IC_IDs by IC_ID
+     *
+     * Returns the current IC ic_id (main_id in Tom's code) for the given ic_id.  If the constellation pointed
+     * to by the given ic_id was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     * If the ic was split, it will return a list of ic_ids relating to the split.
+     *
+     * @param integer $icid The Constellation ID of the IC to lookup
+     * @return integer[] The constellation IDs aka mainIDs akd ic_ids aka version_history.ids.
+     */
+    public function selectCurrentMainIDsForID($icid)
+    {
+        $result = $this->sdb->query(
+            'select current_ic_id
+            from constellation_lookup
+            where
+            ic_id=$1',
+            array($icid));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['current_ic_id']);
+        }
+        return $all;
+    }
+
+    /**
+     * Update the constellation lookup table
+     *
+     * Updates the mappings for icid/ark to current icid/ark by modifiying the current values.  If
+     * the given icid and ark are not in the table, this method adds them first.  The `$currents` parameter
+     * may contain solely the other parameters, i.e. `$currents = [$icid => $ark]`, with `count($currents) = 1`,
+     * but in general the domain of this function (`$icid`, `$ark`) should NEVER appear in the range (`$currents`).
+     *
+     * This is a very tricky set of logic meant to maintain the endpoints of an implicit DAG of merge
+     * and split activity throughout the system. The lookup table maintains a list of id/ark (possibly stale) to
+     * current correct id/arks, but the lookup may not be unique (in the case of a split).  This method attempts
+     * to keep track of updates to the lookup table, such as removing duplicates on a merge of a previous split,
+     * etc.
+     *
+     * We do not store the entire DAG, but use an implicit 2-level version.  In the traditional DAG, we would need
+     * to follow the path from a queried icid down to the end of the path (no out-edges) to get the current icid(s)
+     * for that icid.  In our implicit DAG, we only store links from each node (possibly duplicated) directly to the
+     * DAG's paths' endpoint(s).  Therefore, those links must be updated when a new endpoint (on a merge) or new endpoints
+     * (on a split) are added and the DAG modified.  The DAG itself may be reconstructed from the version_history table.
+     *
+     * @param int $icid The ICID to re-map
+     * @param string $ark The Ark ID to re-map
+     * @param string[] $currents The associative array of icid->ark for current ids/arks to redirect to.
+     */
+    public function updateConstellationLookup($icid, $ark, $currents=null) {
+        if ($currents === null || empty($currents)) {
+            return;
+        }
+
+        $result = $this->sdb->query('select ic_id from constellation_lookup where ic_id = $1;', array($icid));
+        if ($this->sdb->fetchrow($result) === false) {
+            // If the ICID doesn't exist, then add it. Nothing could be pointing to it in this case.
+            foreach ($currents as $currentICID => $currentArk) {
+                $result = $this->sdb->query('insert into constellation_lookup
+                    (ic_id, ark_id, current_ic_id, current_ark_id) values ($1, $2, $3, $4);',
+                    array($icid, $ark, $currentICID, $currentArk));
+            }
+        } else if (count($currents) == 1 && isset($currents[$icid])) {
+            // If the icid and the current[icid] are both the same, then we should not redirect because id->id already exists
+            // and we don't want to accidentally delete the lookup
+            return;
+        } else {
+            // Not trying to update a self-referencing link, so we should modify the table appropriately
+            // Note: In this case, the user should NEVER ask to redirect "A" to "A" and "B"
+            //       (the domain should not be a subset of the range)
+
+            // Get anything pointing to $icid, as it will need to be redirected to each icid in the currents list
+            $result1 = $this->sdb->query('select ic_id, ark_id, current_ic_id, current_ark_id from constellation_lookup where current_ic_id = $1;', array($icid));
+            $toDelete = array();
+            $toInsert = array();
+            while($row = $this->sdb->fetchrow($result1))
+            {
+                // Keep a list if icid=>ark that will need to be rewritten to the database
+                $toInsert[$row["ic_id"]] = $row["ark_id"];
+                // We will eventually want to delete these
+                array_push($toDelete, $row);
+            }
+
+            // Build the SQL prepare string
+            $tmp = array();
+            for ($i = 1; $i <= count($currents); $i++) {
+                array_push($tmp, '$'.$i);
+            }
+            $inString = implode(",", $tmp);
+
+            // Build a cache for relevant pieces of the lookup table
+            $result2 = $this->sdb->query('select * from constellation_lookup where current_ic_id in ('.$inString.');',
+                                        array_keys($currents));
+            $cache = array();
+            while($row = $this->sdb->fetchrow($result2))
+            {
+                if (!isset($cache[$row['current_ic_id']]))
+                    $cache[$row['current_ic_id']] = array();
+                // Cache is a reverse lookup (current <- ic_id) where current is in our list of $currents
+                $cache[$row['current_ic_id']][$row['ic_id']] = $row['ark_id'];
+            }
+
+            // Do the insert of the correct redirects
+            foreach ($toInsert as $oICID => $oArk) {
+                foreach ($currents as $nICID => $nArk) {
+                    if (!isset($cache[$nICID]) || !isset($cache[$nICID][$oICID])) {
+                        // if nothing is pointing to nICID OR oICID is not pointing to nICID, then add the link
+                        $result = $this->sdb->query('insert into constellation_lookup
+                            (ic_id, ark_id, current_ic_id, current_ark_id) values ($1, $2, $3, $4);',
+                            array($oICID, $oArk, $nICID, $nArk));
+                    }
+                }
+            }
+
+            // Remove any of the old redirects that are no longer active.
+            foreach ($toDelete as $row) {
+                $result = $this->sdb->query('delete from constellation_lookup
+                    where current_ic_id = $3 and current_ark_id = $4 and
+                    current_ic_id = $1 and current_ark_id = $2;',
+                    $row);
+            }
+        }
+
+    }
+
+    /**
+     * Update MaybeSame Links
+     *
+     * Updates the maybe same table to point any maybesame references from icid to currentICID.
+     * After doing an update, it will remove any self-referencing maybesames.
+     *
+     * @param int $icid The icid to re-map in the maybe same table
+     * @param int $currentICID The updated ICID to use instead of $icid
+     */
+    public function updateMaybeSameLinks($icid, $currentICID) {
+        $result = $this->sdb->query('update maybe_same
+            set ic_id1 = $2 where ic_id1 = $1;',
+            array($icid, $currentICID));
+        $result = $this->sdb->query('update maybe_same
+            set ic_id2 = $2 where ic_id2 = $1;',
+            array($icid, $currentICID));
+
+        // Remove any self-referencing links
+        $result = $this->sdb->query('delete from maybe_same where ic_id1 = ic_id2;', array());
+    }
+
+    /**
+     * Remove MaybeSame Links
+     *
+     * Removes the maybe same links between the two ic_ids given.
+     *
+     * @param int $icid1 One ICID
+     * @param int $icid2 Another ICID
+     */
+    public function removeMaybeSameLink($icid1, $icid2) {
+        $result = $this->sdb->query('delete from maybe_same where (ic_id1 = $1 and ic_id2 = $2) or (ic_id2 = $1 and ic_id1 = $2);',
+            array($icid1, $icid2));
+    }
 
     /**
      * Select records from table source by foreign key
@@ -1585,10 +1759,11 @@ class SQL
      * code. Something.
      *
      * @param string $note A string the user enters to identify what changed in this version.
+     * @param integer $useridSecondary optional Foreign key to appuser.id, the secondary user's appuser id value.
      *
      * @return string[] $vhInfo An assoc list with keys 'version', 'ic_id'.
      */
-    public function insertVersionHistory($mainID, $userid, $role, $status, $note)
+    public function insertVersionHistory($mainID, $userid, $role, $status, $note, $useridSecondary=null)
     {
         if (! $mainID)
         {
@@ -1598,12 +1773,12 @@ class SQL
         // We need version_history.id and version_history.id returned.
         $this->sdb->prepare($qq,
                             'insert into version_history
-                            (id, user_id, role_id, status, is_current, note)
+                            (id, user_id, role_id, status, is_current, note, user_id_secondary)
                             values
-                            ($1, $2, $3, $4, $5, $6)
+                            ($1, $2, $3, $4, $5, $6, $7)
                             returning version');
 
-        $result = $this->sdb->execute($qq, array($mainID, $userid, $role, $status, true, $note));
+        $result = $this->sdb->execute($qq, array($mainID, $userid, $role, $status, true, $note, $useridSecondary));
         $row = $this->sdb->fetchrow($result);
         $vhInfo['version'] = $row['version'];
         $vhInfo['ic_id'] = $mainID;
@@ -3344,6 +3519,62 @@ class SQL
 
 
     /**
+     * Insert a Controlled Vocabulary Term
+     *
+     * @param  String $type        Type of the term
+     * @param  String $term        Value of the Term
+     * @param  String $uri         The URI of the term
+     * @param  String $description Term description
+     * @return int|boolean              ID on success or false on failure
+     */
+    public function insertVocabularyTerm($type,
+                                   $term,
+                                   $uri,
+                                   $description)
+    {
+        $result = $this->sdb->query('insert into vocabulary (type, value, uri, description) values ($1, $2, $3, $4) returning *;',
+                                array($type, $term, $uri, $description));
+
+        $row = $this->sdb->fetchrow($result);
+
+        if ($row && $row["id"]) {
+            return $row["id"];
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Insert Controlled GeoTerm
+     * @param  string $name        Name of the place
+     * @param  string $uri         URI for the vocab term
+     * @param  string $latitude    Latitude
+     * @param  string $longitude   Longitude
+     * @param  string $adminCode   Administration Code (state)
+     * @param  string $countryCode Country Code
+     * @return int|bool              ID on success, false on failure
+     */
+    public function insertGeoTerm($name,
+                                   $uri,
+                                   $latitude,
+                                   $longitude,
+                                   $adminCode,
+                                   $countryCode)
+    {
+        $result = $this->sdb->query('insert into geo_place (name, uri, latitude, longitude, admin_code, country_code) values ($1, $2, $3, $4, $5, $6) returning *;',
+                                array($name, $uri, $latitude, $longitude, $adminCode, $countryCode));
+
+        $row = $this->sdb->fetchrow($result);
+
+        if ($row && $row["id"]) {
+            return $row["id"];
+        }
+
+        return false;
+    }
+
+    /**
      * Get Next Resource ID
      *
      * Gets the next resource id number from the resource_id sequence
@@ -3690,9 +3921,9 @@ class SQL
                             'select
                             aa.version, aa.ic_id, aa.id, aa.text
                             from biog_hist as aa,
-                            (select ic_id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by ic_id) as bb
+                            (select id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
-                            aa.ic_id=bb.ic_id
+                            aa.id=bb.id
                             and aa.version=bb.version');
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
@@ -3730,7 +3961,7 @@ class SQL
                             aa.id, aa.version, aa.ic_id, aa.text, aa.uri, aa.type
                             from otherid as aa,
                             (select id,max(version) as version from otherid where version<=$1 and ic_id=$2 group by id) as bb
-                            where
+                            where not aa.is_deleted and
                             aa.id = bb.id and
                             aa.version = bb.version order by id asc');
 
@@ -4167,7 +4398,7 @@ class SQL
     public function selectUnversionedConstellationIDsForRelationTarget($icid) {
         $qq = 'selectrelatedicids';
         $this->sdb->prepare($qq,
-                            'select aa.ic_id, aa.id
+                            'select distinct aa.ic_id, aa.id
                             from related_identity as aa
                             where not aa.is_deleted and
                             aa.related_id = $1');
@@ -4945,15 +5176,13 @@ class SQL
      * well in most situations where a hash aka associative list is being used in a control statement.
      *
      * @param string $term The "type" term for what type of vocabulary to search
-     *
      * @param string $query The string to search through the vocabulary
-     *
      * @param integer $entityTypeID Numeric key related to vocabulary.id where type='entity_type' of one of
      * the three entity types.
-     *
+     * @param int $count optional The number of search results to request
      * @return string[][] Returns a list of lists with keys id, value.
      */
-    public function searchVocabulary($term, $query, $entityTypeID)
+    public function searchVocabulary($term, $query, $entityTypeID, $count = 100)
     {
         $useStartsWith = array('script_code' => 1,
                                'language_code' => 1,
@@ -4975,10 +5204,10 @@ class SQL
         if ($entityTypeID == null)
         {
             $queryStr =
-                      'select id,value
+                      'select id,value,type,uri,description
                       from vocabulary
-                      where type=$1 and value ilike $2 order by value asc limit 100';
-            $result = $this->sdb->query($queryStr, array($term, $likeStr));
+                      where type=$1 and value ilike $2 order by value asc limit $3';
+            $result = $this->sdb->query($queryStr, array($term, $likeStr, $count));
         }
         else
         {
@@ -5048,6 +5277,194 @@ class SQL
         }
         return $all;
     }
+
+    /**
+     * Search Users 
+     *
+     * Search the users in the appuser table of the database.  Returns only the userid and
+     * full name of the query.  Searches the string in the full name, user name, and email
+     * columns.
+     *
+     * @param string $query The string to search through the user tables
+     * @param int $count optional The number of results to return (default null)
+     * @param string $roleFilter optional Role name by which to filter the results (default null)
+     * @param boolean $everyone optional Whether to include inactive users (default false)
+     *
+     * @return string[][] Returns a list of lists of search results.
+     */
+    public function searchUsers($query, $count=null, $roleFilter=null, $everyone=false) {
+        $realCount = \snac\Config::$SQL_LIMIT;
+        if ($count != null)
+            $realCount = $count;
+
+        $activeFilter = "and u.active";
+        if ($everyone)
+            $activeFilter = "";
+
+        $result = null;
+
+        if ($roleFilter == null) {
+            $queryStr = "select u.id, u.fullname from appuser u
+                        where u.fullname ilike $1 or u.username ilike $1 or u.email ilike $1
+                        $activeFilter
+                        order by u.fullname asc limit $2";
+            $result = $this->sdb->query($queryStr, array("%$query%", $realCount));
+        } else {
+            $queryStr = "select u.id, u.fullname from appuser u, appuser_role_link rl, role r
+                        where (u.fullname ilike $1 or u.username ilike $1 or u.email ilike $1)
+                        and rl.uid = u.id and rl.rid = r.id and r.label = $2
+                        $activeFilter
+                        order by u.fullname asc limit $3";
+            $result = $this->sdb->query($queryStr, array("%$query%", $roleFilter, $realCount));
+        }
+
+        $all = array();
+        if ($result != null) {
+            while($row = $this->sdb->fetchrow($result))
+            {
+                array_push($all, $row);
+            }
+        }
+        return $all;
+
+    }
+
+    /**
+     * Browse Name Index
+     *
+     * This function contains the SQL code required to browse through the name index in postgres
+     * in (mostly) alphabetical order.
+     *
+     * @param string $query The string to search for
+     * @param string $position The position of the search term in the results: before, middle, after
+     * @param string $entityType The string representation of entity type: person, corporateBody, family
+     * @param int    $icid The identity constellation ID to break ties on sorting (or 0 if ignored)
+     * @return string[] List of name index results in raw format
+     */
+    public function browseNameIndex($query, $position, $entityType, $icid)
+    {
+        $entityQuery = "";
+        if ($entityType != null && $entityType != "") {
+            // Do this for safety concerns with SQL injections...
+            switch ($entityType) {
+                case "person":
+                    $entityQuery = "and entity_type = 'person'";
+                    break;
+                case "corporateBody":
+                    $entityQuery = "and entity_type = 'corporateBody'";
+                    break;
+                case "family":
+                    $entityQuery = "and entity_type = 'family'";
+                    break;
+            }
+        }
+
+        $result = null;
+
+        if ($position == "after") {
+            $queryStr = "select * from (select * from name_index where (name_entry = $1 and ic_id >= $2) $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) a union all (select * from name_index where name_entry > $1 $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) order by name_entry, ic_id asc limit 20;";
+            $result = $this->sdb->query($queryStr, array($query, $icid));
+        } else if ($position == "before") {
+            if ($icid !== 0) {
+                // query using the ICID as well
+                $queryStr = "select * from (select * from (select * from name_index where (name_entry = $1 and ic_id <= $2) $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) a union all (select * from name_index where name_entry < $1 $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) order by name_entry desc, ic_id desc limit 20) a order by name_entry asc, ic_id asc limit 20;";
+                $result = $this->sdb->query($queryStr, array($query, $icid));
+            } else {
+                // query without the ICID, since it is meaningless
+                $queryStr = "select * from (select * from name_index where name_entry_lower <= lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a order by name_entry, ic_id asc;";
+                $result = $this->sdb->query($queryStr, array($query));
+            }
+        } else {
+            $queryStr =
+                "select * from (select * from name_index where name_entry_lower >= lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 10) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 10) order by name_entry, ic_id asc;";
+
+            $result = $this->sdb->query($queryStr, array($query));
+        }
+
+
+        $all = array();
+        while($row = $this->sdb->fetchRow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Update the Name Index
+     *
+     * Checks to see if the ICID is in the name index.  If so, it will update the values there with the parameters.  Else,
+     * it will insert the new ICID and related values into the name index.
+     *
+     * @param string $nameEntry The name entry to include in the index
+     * @param int $icid The ICID for this constellation
+     * @param string $ark The ARK ID for this constellation
+     * @param string $entityType The string representation of the entity type
+     * @param int $degree The degree of the constellation (number of out-edges to other constellations in snac)
+     * @param int $resources The number of resource relations for the constellation
+     *
+     * @return string[]|boolean The updated name index values or false on failure
+     */
+    public function updateNameIndex($nameEntry, $icid, $ark, $entityType, $degree, $resources) {
+        // First query to see if the name is already in the index.  If so, then do an update.  Else, this is an insert.
+        $resultTest = $this->sdb->query("select * from name_index where ic_id = $1;", array($icid));
+        $check = array();
+        while($row = $this->sdb->fetchRow($resultTest))
+        {
+            array_push($check, $row);
+        }
+
+        if (empty($check)) {
+            // Doing an insert, since nothing found
+            $result = $this->sdb->query("insert into name_index
+                                            (ic_id, ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) values
+                                            ($1, $2, $3, $4, lower($4), $5, $6, now()) returning *;",
+                                        array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
+            $all = array();
+            while($row = $this->sdb->fetchRow($result))
+            {
+                array_push($all, $row);
+            }
+            return $all;
+        } else {
+            // Doing an update, since ic_id was found
+            $result = $this->sdb->query("update name_index set
+                                            (ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) =
+                                            ($2, $3, $4, lower($4), $5, $6, now()) where ic_id = $1 returning *;",
+                                        array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
+            $all = array();
+            while($row = $this->sdb->fetchRow($result))
+            {
+                array_push($all, $row);
+            }
+            return $all;
+        }
+        return false;
+    }
+
+    /**
+     * Delete from Name Index
+     *
+     * Deletes the given ICID's values in the name index.  This would remove the name from the browsing index.
+     *
+     * @param int $icid The ICID of the constellation to remove
+     * @return boolean True if successfully deleted, False if nothing to delete (failure)
+     */
+    public function deleteFromNameIndex($icid) {
+        $result = $this->sdb->query("delete from name_index where ic_id = $1 returning *;", array($icid));
+        $check = array();
+        while($row = $this->sdb->fetchRow($result))
+        {
+            array_push($check, $row);
+        }
+
+        if (!empty($check)) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Temporary function to brute force order name components.
@@ -5441,7 +5858,7 @@ class SQL
      * @return string[] An associative list with keys corresponding to the version_history table columns.
      */
     public function selectVersionHistory($vhInfo,$listAll = false) {
-        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\')';
+        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstone\' or v.status=\'ingest cpf\')';
         if ($listAll === true)
             $limitHistory = "";
         $result = $this->sdb->query(
@@ -5451,12 +5868,212 @@ class SQL
                 '.$limitHistory.'
             order by v.timestamp asc',
             array($vhInfo["ic_id"], $vhInfo["version"]));
-        $usernames = "";
+
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
         }
         return $all;
+    }
+
+    /**
+     * Select Message by ID
+     *
+     * Reads the message data out of the database for the given ID.
+     *
+     * @param int $id The message ID to read
+     * @return string[] The message data
+     */
+    public function selectMessageByID($id) {
+        $result = $this->sdb->query(
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where m.id = $1',
+            array($id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        if (count($all) === 1)
+            return $all[0];
+
+        return array();
+
+    }
+
+    /**
+     * Delete Message
+     *
+     * Sets the deleted flag for the given message ID, denoting that this message has been deleted
+     * in the system.
+     *
+     * @param int $id The message ID to delete
+     * @return boolean True on success, false otherwise
+     */
+    public function deleteMessageByID($id) {
+        $result = $this->sdb->query(
+            'update messages set deleted = true where id = $1 returning *',
+            array($id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        if (count($all) === 1)
+            return true;
+
+        return false;
+
+    }
+
+    /**
+     * Mark Message Read
+     *
+     * Marks the message with given id as read in the database.  This just sets the read flag to
+     * true.
+     *
+     * @param int $id The message ID to mark as read
+     */
+    public function markMessageReadByID($id) {
+        $result = $this->sdb->query(
+            'update messages set read = TRUE where id = $1',
+            array($id));
+    }
+
+    /**
+     * Insert Message
+     *
+     * Writes the given message data into the database as a new message.
+     *
+     * @param int $toUser The user id this message is directed to
+     * @param int $fromUser The user id this message is from
+     * @param string $fromString The string representation this message is from (if no user, such as feedback from IP address)
+     * @param string $subject The subject of the message
+     * @param string $body The body of the message (HTML)
+     * @param string $attachmentContent The attached file encoded as a string
+     * @param string $attachmentFilename The filename to give the attachment on reading
+     * @return boolean True if succeeded, false otherwise
+     */
+    public function insertMessage($toUser,
+                                    $fromUser,
+                                    $fromString,
+                                    $subject,
+                                    $body,
+                                    $attachmentContent,
+                                    $attachmentFilename) {
+
+        try {
+            $this->sdb->prepare("insert_message",'insert into messages
+                    (to_user, from_user, from_string, subject, body, attachment_content, attachment_filename)
+                    values ($1, $2, $3, $4, $5, $6, $7);');
+
+            $this->sdb->execute("insert_message",
+                array($toUser, $fromUser, $fromString, $subject, $body, $attachmentContent, $attachmentFilename));
+        } catch (\snac\exceptions\SNACDatabaseException $e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Select Messages for UserID
+     *
+     * Selects all non-deleted messages for the given userID.  By default, it gives both read and unread messages
+     * sent to this user.
+     *
+     * @param int $userid The userid of the user
+     * @param boolean $toUser optional Whether or not to select messages to this user (or from this user)
+     * @param boolean $unreadOnly optional Whether to query only unread messages (default false)
+     * @return string[] The list of message data for the user
+     */
+    public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false) {
+        $searchUser = 'to_user';
+        if (!$toUser) {
+            $searchUser = 'from_user';
+        }
+        $readFilter = '';
+        if ($unreadOnly) {
+            $readFilter = 'and not read';
+        }
+        $result = $this->sdb->query(
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where not deleted and '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
+            array($userid));
+
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+
+    }
+
+    /**
+     * List MaybeSameIDs
+     *
+     * Gets a list of ICIDs that may be the same as the given parameter.
+     *
+     * @param  integer $icid IC ID for which to search
+     * @return integer[]       List of ICIDs listed to be maybe the same
+     */
+    public function listMaybeSameIDsFor($icid) {
+        $result = $this->sdb->query(
+            'select ic_id1, ic_id2 from maybe_same where ic_id1=$1 or ic_id2=$1;',
+            array($icid));
+        $usernames = "";
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            // Assign the ids as keys as well as values to ensure no duplicates
+            if ($row['ic_id1'] == $icid) {
+                $all[$row['ic_id2']] = $row['ic_id2'];
+            } else {
+                $all[$row['ic_id1']] = $row['ic_id1'];
+            }
+        }
+        return $all;
+    }
+
+    /**
+     * Insert Report
+     *
+     * Inserts the report into the database.
+     *
+     * @param string $name The name of the report
+     * @param string $report The full text of the report (JSON)
+     * @param int $userid The userid that requested the report
+     * @param int $affiliationid The affiliation of the user that requested the report
+     */
+    public function insertReport($name, $report, $userid, $affiliationid) {
+        $this->sdb->query('insert into reports (name, report, user_id, affiliation_id) values
+                            ($1, $2, $3, $4)', array($name, $report, $userid, $affiliationid));
+    }
+
+    /**
+     * Select Report By Time
+     *
+     * Reads the report from the database with the given name for the given timestamp.  By default,
+     * this method will read the latest report by that name.
+     *
+     * @param string $name The name of the report to read
+     * @param string $timestamp optional The timestamp for the report to read
+     * @return string[] The report data from the database
+     */
+    public function selectReportByTime($name, $timestamp = null) {
+        $result = null;
+        if ($timestamp == null) {
+            $result = $this->sdb->query("select * from reports where name = $1 order by timestamp desc limit 1",
+                                        array($name));
+        } else {
+            $result = $this->sdb->query("select * from reports where name = $1 and timestamp = $2",
+                                        array($name, $timestamp));
+        }
+
+        if (!$result)
+            return false;
+
+        return $this->sdb->fetchrow($result);
     }
 }

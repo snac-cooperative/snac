@@ -38,7 +38,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Leaflet JS Javascript and Styles-->
 <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
@@ -51,6 +52,7 @@
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
 
+<meta name="viewport" content="initial-scale = 1.0" />
 <style>
 body {
     padding-top: 70px;
@@ -92,12 +94,20 @@ body {
 {{ topNavigation(X, user, permissions, control) }}
 
 
+
       <!-- Constellation Data -->
       <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
       <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
       <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
 
       <div class="main_content">
+          {% if data.message %}
+              <div class="alert alert-warning alert-dismissible" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <strong>Notice:</strong> Please update your bookmarks.  The Constellation you requested has been merged into a new identifier, <a href="{{data.message.info.redirect}}">{{data.message.info.redirect}}</a>, displayed below.
+              </div>
+          {% endif %}
+
          <div id="identity">
             <div class="name">
                <h1 style="display:inline;">
@@ -113,17 +123,21 @@ body {
                </h1>
                <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
 
-               {% if data.preview %}
-               <h3 style="padding-left: 30px; display: inline; color: #3c763d;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
-               {% endif %}
+
             </div>
             <div>
                <div class="biog">
                   <div class="facts">
                      <div class="life">
+                        {% if data.dates %}
                             <dt>Dates:</dt>
-                            <dd>{{data.dates.0.fromType.term}} {{data.dates.0.fromDate}}</dd>
-                            <dd>{{data.dates.0.toType.term}} {{data.dates.0.toDate}}</dd>
+                            {% for date in data.dates %}
+                                <dd>{{date.fromType.term}} {{date.fromDate}}</dd>
+                                {% if date.toDate %}
+                                    <dd>{{date.toType.term}} {{date.toDate}}</dd>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                         {% if data.genders.0.term.term %}
                             <dt>Gender:</dt>
                             <dd>{{data.genders.0.term.term}}</dd>
@@ -151,15 +165,11 @@ body {
                          </div>
                         {% endif %}
 
-                        <div data-xsl="authoritySource">
-                           <label>Authority Source:</label>
-                           <!-- TEMPLATE_SOURCE  -->
-                        </div>
                         {% if data.nationalities %}
                         <div data-xsl="nationality">
                            <label>Nationality: </label>
                            {% for nat in data.nationalities %}
-                                {{ nat.term.term }},
+                               {{ nat.term.term }}{{loop.last ? '' : ','}}
                            {% endfor %}
                         </div>
                         {% endif %}
@@ -167,7 +177,8 @@ body {
                         <div data-xsl="language">
                            <label>Language: </label>
                             {% for lang in data.languagesUsed %}
-                                {{ lang.language.description }},
+                                {{ lang.language.description }}{{loop.last ? '' : ','}}
+
                             {% endfor %}
                         </div>
                         {% endif %}
@@ -586,6 +597,12 @@ body {
                   </div>
                </div>
                <div class="others">
+                   {% if data.preview %}
+                   <div class="alert alert-success" style="margin-top: 15px;">
+                       <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+                       <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
+                   </div>
+                   {% else %}
                    <div class="panel panel-info" style="margin-top: 15px;">
                        <div class="panel-heading">
                            <h3 class="panel-title">Constellation Options</h3>
@@ -596,6 +613,14 @@ body {
                                 <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
                                 <a class="list-group-item list-group-item-warning"
                                    href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
+                                {% if data.maybeSameCount > 0 %}
+                                <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
+                                       class="list-group-item list-group-item-merge" id="merge">
+                                       <span class="glyphicon glyphicon-random"></span> View Maybe Same
+                                       <span class="badge">{{ data.maybeSameCount }}</span></a>
+                                {% endif %}
+                                   <a class="list-group-item list-group-item-history"
+                                      href="?command=history&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-time"></span> Constellation History</a>
                           </div>
                           <h5>Export As</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
@@ -604,9 +629,10 @@ body {
                           </div>
                       </div>
                   </div>
+                    {% endif %}
 
 
-                  {% if user.email and (permissions.Edit or debug) %}
+                  {% if user.email and (permissions.Edit or debug) and not data.preview %}
                    <div class="panel panel-warning" style="margin-top: 15px;">
                        <div class="panel-heading">
                            <h3 class="panel-title">Actions</h3>
@@ -617,11 +643,28 @@ body {
                           <div class="list-group" style="margin-bottom: 0px;">
                                 {% if data.status == 'editable' %}
                                 <a class="list-group-item list-group-item-info"
-                                   href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                   href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><i class="fa fa-fw fa-pencil" aria-hidden="true"></i>
+                                   Edit Constellation</a>
+                                <a class="list-group-item list-group-item-danger" id="reserveForEdit"
+                                   href="#"><i class="fa fa-fw fa-bookmark" aria-hidden="true"></i>
+                                   <span id="reserveForEditText">Reserve for Editing</span></a>
                                 {% else %}
-                                <a class="list-group-item list-group-item-danger disabled"
-                                   href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                    <a class="list-group-item list-group-item-danger disabled"
+                                       href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
+                                        <span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation
+                                    </a>
+                                    {% if data.editingUser %}
+                                        <div class="list-group-item">
+                                            <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
+                                            <div class="list-group" style="margin-bottom: 0px;">
+                                                <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
+                                                    <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
+
                           </div>
                           {% endif %}
                           {% if false %}
@@ -670,6 +713,21 @@ body {
                     <div class="alert alert-info">not available for this record</div>
                   {% endif %}
 
+                  <h4>Places:</h4>
+                  {% if data.places|length > 0 %}
+                    <ul>
+                    <!-- {% for place in data.places %} -->
+                        {% if place.confirmed and place.geoplace.id %}
+                            <li>{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
+                        {% elseif place.original and place.original != "" %}
+                            <li>{{place.original}} <em>(as recorded)</em></li>
+                        {% endif %}
+                    <!-- {% endfor %} -->
+                    </ul>
+                  {% else %}
+                    <div class="alert alert-info">not available for this record</div>
+                  {% endif %}
+
               </div> <!-- end of others -->
                <div>
                   <div class="modal fade" id="alternative_names" tabindex="-1" role="dialog"
@@ -707,8 +765,11 @@ body {
                                   </div>
                                   <script>
                                     var holdingsMapView = null;
+                                    var bounds = new L.LatLngBounds();
                                     function displayHoldingsMap() {
-                                        if (holdingsMapView != null) return;
+                                        if (holdingsMapView != null) {
+                                            return;
+                                        }
                                         // Add a slight delay to the map viewing so that the modal window has time to load
                                         setTimeout(function() {
                                             holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
@@ -716,11 +777,14 @@ body {
                                                 maxZoom: 19,
                                                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                                             }).addTo(holdingsMapView);
+                                            var bounds = new L.LatLngBounds();
                                             {% for location in data.holdings %}
                                             {% if location.latitude and location.longitude %}
                                             var marker = L.marker([{{location.latitude}}, {{location.longitude}}]).addTo(holdingsMapView).bindPopup("{{location.name}}");
+                                            bounds.extend(marker.getLatLng());
                                             {% endif %}
                                             {% endfor %}
+                                            holdingsMapView.fitBounds(bounds);
                                             }, 400);
                                     }
                                     $(document).ready(function() {

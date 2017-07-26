@@ -16,7 +16,7 @@ namespace test\snac\util;
  * @author Tom Laudeman
  * @author Robbie Hott
  */
-class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
+class EACCPFSerializerTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * DBUtil object for this class
@@ -55,6 +55,7 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
     public function __construct()
     {
         global $log;
+        parent::__construct(); // Must call the parent constructor
         // create a log channel
         $this->logger = new \Monolog\Logger('EACCPFSerializer');
         $this->logger->pushHandler($log);
@@ -110,6 +111,10 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
                                                  null,
                                                  'ingest cpf');
         $this->dbu->writeConstellationStatus($this->user,$retObj->getID(), "published");
+
+        // If this is published, then it should point to itself in the lookup table.
+        $selfDirect = array($retObj);
+        $this->dbu->updateConstellationLookup($retObj, $selfDirect);
 
         $fromDB = $this->dbu->readPublishedConstellationByID($retObj->getID(), \snac\server\database\DBUtil::$FULL_CONSTELLATION
                                                                 | \snac\server\database\DBUtil::$READ_MAINTENANCE_INFORMATION);
