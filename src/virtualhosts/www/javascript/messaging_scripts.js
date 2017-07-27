@@ -44,7 +44,10 @@ function showMessage(messageID) {
                 messageBody = data.message.body;
 
             if (typeof data.message.attachmentContent !== 'undefined') {
-                messageBody += "<p class='text-center'><img style=\"max-width: 90%; max-height: 1000px\" src=\"" + data.message.attachmentContent + "\"></p>";
+                messageBody += "<p class='text-center'>"+
+                    "<a href=\""+data.message.attachmentContent+"\" target=\"_blank\">"+
+                    "<img style=\"max-width: 90%; max-height: 1000px\" src=\"" + data.message.attachmentContent + "\">"+
+                    "</a></p>";
             }
 
 
