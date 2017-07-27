@@ -14,7 +14,7 @@ var messageList = null;
 var tinymceInstance = null;
 
 tinymce.init({
-    selector:'textarea', 
+    selector:'#body', 
     min_height: 250,
     menubar: false,
     statusbar: false,
