@@ -43,6 +43,11 @@ function showMessage(messageID) {
                 //messageBody = (data.message.body).replace(/(?:\r\n|\r|\n)/g, '<br />');
                 messageBody = data.message.body;
 
+            if (typeof data.message.attachmentContent !== 'undefined') {
+                messageBody += "<p class='text-center'><img style=\"max-width: 90%; max-height: 1000px\" src=\"" + data.message.attachmentContent + "\"></p>";
+            }
+
+
             var text = $('#message_template').clone();
             var html = text.html().replace(/MESSAGE_SUBJECT/g, data.message.subject)
                                 .replace(/MESSAGE_BODY/g, messageBody)
