@@ -13,7 +13,7 @@
 var feedbackButtonHTML = "<div style=\"z-index: 999; position: fixed; right: 15px; bottom: 15px; padding: 0px; background:transparent;\">"
 	+ "    <a id=\"feedbackButton\" href=\"#\" title=\"Send feedback\">"
 	+ "        <span class=\"fa-stack fa-lg text-center\">"
-	+ "            <i class=\"fa fa-comment fa-stack-2x text-info\"></i>"
+	+ "            <i class=\"fa fa-comment fa-flip-horizontal fa-stack-2x text-info\"></i>"
 	+ "            <i class=\"fa fa-question fa-stack-1x fa-inverse\"></i>"
 	+ "        </span>"
 	+ "    </a>"
