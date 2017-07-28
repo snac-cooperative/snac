@@ -84,6 +84,19 @@ body {
 .nav-tabs {
     margin-bottom: 0;
 }
+
+.older a {
+    color: #660000;
+}
+.updated a {
+    color: #006600;
+}
+.older {
+    color: #990000;
+}
+.updated {
+    color: #009900;
+}
 </style>
 
 
@@ -111,7 +124,12 @@ body {
          <div id="identity">
             <div class="name">
                <h1 style="display:inline;">
-                  <span title="authorized form of name" class="person" data-xsl="identity">{{data.nameEntries.0.original}}
+                  <span title="authorized form of name" class="person" data-xsl="identity">
+                      {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
+                          <span class="updated">{{data.new.nameEntries.0.original}}</span>
+                      {% else %}
+                        {{data.nameEntries.0.original}}
+                      {% endif %}
                     {% if data.entityType.term == 'person' %}
                      <span class="icon-ind x2"></span>
                     {% elseif data.entityType.term == 'corporateBody' %}
@@ -129,56 +147,66 @@ body {
                <div class="biog">
                   <div class="facts">
                      <div class="life">
-                        {% if data.dates %}
+                        {% if data.dates or data.new.dates or data.old.dates %}
                             <dt>Dates:</dt>
+                            {% for date in data.new.dates %}
+                                <dd><span class="updated">{{date.fromType.term}} {{date.fromDate}}</span></dd>
+                                {% if date.toDate %}
+                                    <dd><span class="updated">{{date.toType.term}} {{date.toDate}}</span></dd>
+                                {% endif %}
+                            {% endfor %}
                             {% for date in data.dates %}
                                 <dd>{{date.fromType.term}} {{date.fromDate}}</dd>
                                 {% if date.toDate %}
                                     <dd>{{date.toType.term}} {{date.toDate}}</dd>
                                 {% endif %}
                             {% endfor %}
+                            {% for date in data.old.dates %}
+                                <dd><span class="older">{{date.fromType.term}} {{date.fromDate}}</span></dd>
+                                {% if date.toDate %}
+                                    <dd><span class="older">{{date.toType.term}} {{date.toDate}}</span></dd>
+                                {% endif %}
+                            {% endfor %}
                         {% endif %}
-                        {% if data.genders.0.term.term %}
+                        {% if data.genders or data.new.genders or data.old.genders%}
                             <dt>Gender:</dt>
-                            <dd>{{data.genders.0.term.term}}</dd>
+                            {% for gender in data.new.genders %}
+                                <dd><span class="updated">{{gender.term.term}}</span></dd>
+                            {% endfor %}
+                            {% for gender in data.genders %}
+                                <dd>{{gender.term.term}}</dd>
+                            {% endfor %}
+                            {% for gender in data.old.genders %}
+                                <dd><span class="older">{{gender.term.term}}</span></dd>
+                            {% endfor %}
                         {% endif %}
                      </div>
                      <div>
-                         {# This should eventually be pulled from the maybe same table #}
-                         {% set numRels = 0 %}
-                         {% for relation in data.relations %}
-                            {% if relation.type.term == 'mayBeSameAs' %}
-                                {% set numRels = numRels + 1 %}
-                            {% endif %}
-                         {% endfor %}
-
-                         {% if numRels > 0 %}
-                         <div data-xsl="maybeSame">
-                           <label>Maybe same as:</label>
-                            {% for relation in data.relations %}
-                                {% if relation.type.term == 'mayBeSameAs' %}
-                                <div>
-                                   <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
-                                </div>
-                                {% endif %}
-                            {% endfor %}
-                         </div>
-                        {% endif %}
-
-                        {% if data.nationalities %}
+                        {% if data.nationalities or data.new.nationalities or data.old.nationalities %}
                         <div data-xsl="nationality">
                            <label>Nationality: </label>
+                           {% for nat in data.new.nationalities %}
+                               <span class="updated">{{ nat.term.term }},</span>
+                           {% endfor %}
                            {% for nat in data.nationalities %}
                                {{ nat.term.term }}{{loop.last ? '' : ','}}
                            {% endfor %}
+                           {% for nat in data.old.nationalities %}
+                               <span class="older">{{ nat.term.term }},</span>
+                           {% endfor %}
                         </div>
                         {% endif %}
-                        {% if data.languagesUsed %}
+                        {% if data.languagesUsed or data.new.languagesUsed or data.old.languagesUsed %}
                         <div data-xsl="language">
                            <label>Language: </label>
+                            {% for lang in data.new.languagesUsed %}
+                                <span class="updated">{{ lang.language.description }},</span>
+                            {% endfor %}
                             {% for lang in data.languagesUsed %}
                                 {{ lang.language.description }}{{loop.last ? '' : ','}}
-
+                            {% endfor %}
+                            {% for lang in data.old.languagesUsed %}
+                                <span class="older">{{ lang.language.description }},</span>
                             {% endfor %}
                         </div>
                         {% endif %}
@@ -187,13 +215,23 @@ body {
                   <h2>Biographical notes:</h2>
                   <div class="wikipedia_thumbnail" id="wikipediaImage">
                   </div>
-                  <div class="biogHist">
-                  {% if data.biogHists.0.text %}
-                    {{ data.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
+                  {% if data.new.biogHists.0.text %}
+                      <div class="biogHist updated">
+                      {{ data.new.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
+                      </div>
+                  {% elseif data.old.biogHists.0.text %}
+                      <div class="biogHist older">
+                      {{ data.old.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
+                      </div>
                   {% else %}
-                    <div class="alert alert-info" style="clear: both;">not available for this record</div>
+                      <div class="biogHist">
+                      {% if data.biogHists.0.text %}
+                        {{ data.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
+                      {% else %}
+                        <div class="alert alert-info" style="clear: both;">not available for this record</div>
+                      {% endif %}
+                      </div>
                   {% endif %}
-                  </div>
                   <br clear="both"></br>
                   <div class="well well-sm">Biographical notes are generated from
                      the bibliographic and archival source records supplied by
@@ -208,6 +246,16 @@ body {
                            <h4>
 
                                         {% set numRels = 0 %}
+                                        {% for relation in data.new.resourceRelations %}
+                                        {% if relation.resource.documentType.term == 'ArchivalResource' %}
+                                            {% set numRels = numRels + 1 %}
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% for relation in data.old.resourceRelations %}
+                                        {% if relation.resource.documentType.term == 'ArchivalResource' %}
+                                            {% set numRels = numRels + 1 %}
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.resource.documentType.term == 'ArchivalResource' %}
                                             {% set numRels = numRels + 1 %}
@@ -235,14 +283,14 @@ body {
                                  </ul>
                                  <div class="tab-content">
                                     <div class="tab-pane active list" id="creatorOf">
-                                        <!--
-                                       <div class="related">
-                                          <a href="http://www.worldcat.org/oclc/725108369">Cleveland, Frances Folsom, 1864-1947. Frances F. Cleveland Preston letter to Mrs. Charles S. Fairchild, 1922.</a>
-                                          <div>
-                                             <namePart xmlns="http://www.loc.gov/mods/v3">New-York Historical Society Library</namePart>
-                                          </div>
-                                       </div>
-                                        -->
+                                        {% for relation in data.new.resourceRelations %}
+                                        {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
+                                            <div class="related updated">
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
@@ -251,16 +299,24 @@ body {
                                             </div>
                                         {% endif %}
                                         {% endfor %}
+                                        {% for relation in data.old.resourceRelations %}
+                                        {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
+                                            <div class="related older">
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                     </div>
                                     <div class="tab-pane list" id="referencedIn">
-                                       <!--
-                                          <div class="related">
-                                          <a href="http://oasis.lib.harvard.edu//oasis/deliver/deepLink?_collection=oasis&amp;uniqueId=hou01429">Autograph File, F, 1447-1994.</a>
-                                          <div>
-                                             <repository xmlns="urn:isbn:1-931666-22-9">Houghton Library, Harvard College Library, Harvard University</repository>
-                                          </div>
-                                       </div>
-                                       -->
+                                        {% for relation in data.new.resourceRelations %}
+                                        {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
+                                            <div class="related updated">
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
@@ -269,19 +325,37 @@ body {
                                             </div>
                                         {% endif %}
                                         {% endfor %}
+                                        {% for relation in data.old.resourceRelations %}
+                                        {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
+                                            <div class="related older">
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                     </div>
                                     <div class="tab-pane list" id="other">
-                                       <!--
-                                          <div class="related">
-                                          <a href="http://oasis.lib.harvard.edu//oasis/deliver/deepLink?_collection=oasis&amp;uniqueId=hou01429">Autograph File, F, 1447-1994.</a>
-                                          <div>
-                                             <repository xmlns="urn:isbn:1-931666-22-9">Houghton Library, Harvard College Library, Harvard University</repository>
-                                          </div>
-                                       </div>
-                                       -->
+                                        {% for relation in data.new.resourceRelations %}
+                                        {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
+                                            <div class="related updated">
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.role.term}}</div>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.role.term}}</div>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% for relation in data.old.resourceRelations %}
+                                        {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
+                                            <div class="related older">
                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
                                                 <div>{{relation.role.term}}</div>
                                                 <div>{{relation.resource.repository.nameEntries.0.original}}</div>
@@ -295,6 +369,16 @@ body {
                         </div>
                      </div>
                                         {% set numRels = 0 %}
+                                        {% for relation in data.new.resourceRelations %}
+                                        {% if relation.resource.documentType.term != 'ArchivalResource' %}
+                                            {% set numRels = numRels + 1 %}
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% for relation in data.old.resourceRelations %}
+                                        {% if relation.resource.documentType.term != 'ArchivalResource' %}
+                                            {% set numRels = numRels + 1 %}
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             {% set numRels = numRels + 1 %}
@@ -311,16 +395,29 @@ body {
                         </div>
                         <div id="relatedWorks" class="panel-collapse collapse">
                            <div class="panel-body">
-                              <!--
-                              <div class="related">
-                                 <a href="http://www.worldcat.org/search?q=ti:Charles%20S.%20Fairchild%20papers+au:Fairchild%2C%20Charles%20S.%20%28Charles%20Stebbins%29%2C%201842-1924">Charles S. Fairchild papers</a>
-                                 <span class="arcrole">creatorOf</span>
-                                 <div></div>
-                              </div>
-                              -->
+                                        {% for relation in data.new.resourceRelations %}
+                                        {% if relation.resource.documentType.term != 'ArchivalResource' %}
+                                            <div class="related updated" style="margin-top: 5px;">
+                                                <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <!--<span class="arcrole">{{relation.role.term}}</span>-->
+                                                <div>{{relation.role.term}}</div>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             <div class="related" style="margin-top: 5px;">
+                                                <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <!--<span class="arcrole">{{relation.role.term}}</span>-->
+                                                <div>{{relation.role.term}}</div>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% for relation in data.old.resourceRelations %}
+                                        {% if relation.resource.documentType.term != 'ArchivalResource' %}
+                                            <div class="related older" style="margin-top: 5px;">
                                                 <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content|default(relation.resource.title)}}</a>
                                                 <!--<span class="arcrole">{{relation.role.term}}</span>-->
                                                 <div>{{relation.role.term}}</div>
@@ -335,6 +432,16 @@ body {
                         <div class="panel-heading">
                            <h4>
                             {% set numRels = 0 %}
+                            {% for relation in data.new.otherRecordIDs %}
+                            {% if relation.type.term == 'sameAs' %}
+                                {% set numRels = numRels + 1 %}
+                            {% endif %}
+                            {% endfor %}
+                            {% for relation in data.old.otherRecordIDs %}
+                            {% if relation.type.term == 'sameAs' %}
+                                {% set numRels = numRels + 1 %}
+                            {% endif %}
+                            {% endfor %}
                             {% for relation in data.otherRecordIDs %}
                             {% if relation.type.term == 'sameAs' %}
                                 {% set numRels = numRels + 1 %}
@@ -375,6 +482,35 @@ body {
                                  <a href="http://www.worldcat.org/wcidentities/lccn-n88-071278">WorldCat Identities</a>
                               </div>
                         -->
+                                        {% for sameas in data.new.otherRecordIDs %}
+                                            {% if sameas.type.term == 'sameAs' %}
+                                                {% if 'wikipedia' in sameas.uri %}
+                                                   <div class="updated">
+                                                     <div class="sprite-icons-wikipedia"></div>
+                                                     <a href="{{sameas.uri}}">Wikipedia</a>
+                                                  </div>
+                                                {% elseif 'loc.gov/authorities' in sameas.uri %}
+                                                   <div class="updated">
+                                                     <div class="sprite-icons-idlocgov"></div>
+                                                     <a href="{{sameas.uri}}">LC Name Authority File</a>
+                                                  </div>
+                                                {% elseif 'viaf.org' in sameas.uri %}
+                                                   <div class="updated">
+                                                     <div class="sprite-icons-viaf"></div>
+                                                     <a href="{{sameas.uri}}">Virtual International Authority File</a>
+                                                  </div>
+                                                {% elseif 'worldcat.org/wcidentities' in sameas.uri %}
+                                                   <div class="updated">
+                                                     <div class="sprite-icons-worldcat"></div>
+                                                     <a href="{{sameas.uri}}">WorldCat Identities</a>
+                                                  </div>
+                                                {% else %}
+                                                    <div class="related updated">
+                                                        <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
                                         {% for sameas in data.otherRecordIDs %}
                                             {% if sameas.type.term == 'sameAs' %}
                                                 {% if 'wikipedia' in sameas.uri %}
@@ -407,6 +543,35 @@ body {
                                                 {% endif %}
                                             {% endif %}
                                         {% endfor %}
+                                        {% for sameas in data.old.otherRecordIDs %}
+                                            {% if sameas.type.term == 'sameAs' %}
+                                                {% if 'wikipedia' in sameas.uri %}
+                                                   <div class="older">
+                                                     <div class="sprite-icons-wikipedia"></div>
+                                                     <a href="{{sameas.uri}}">Wikipedia</a>
+                                                  </div>
+                                                {% elseif 'loc.gov/authorities' in sameas.uri %}
+                                                   <div class="older">
+                                                     <div class="sprite-icons-idlocgov"></div>
+                                                     <a href="{{sameas.uri}}">LC Name Authority File</a>
+                                                  </div>
+                                                {% elseif 'viaf.org' in sameas.uri %}
+                                                   <div class="older">
+                                                     <div class="sprite-icons-viaf"></div>
+                                                     <a href="{{sameas.uri}}">Virtual International Authority File</a>
+                                                  </div>
+                                                {% elseif 'worldcat.org/wcidentities' in sameas.uri %}
+                                                   <div class="older">
+                                                     <div class="sprite-icons-worldcat"></div>
+                                                     <a href="{{sameas.uri}}">WorldCat Identities</a>
+                                                  </div>
+                                                {% else %}
+                                                    <div class="related older">
+                                                        <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
                            </div>
                         </div>
                      </div>
@@ -415,6 +580,16 @@ body {
                      </h3>
 
                         {% set numRels = 0 %}
+                        {% for relation in data.new.relations %}
+                        {% if relation.targetEntityType.term == 'person' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
+                        {% for relation in data.old.relations %}
+                        {% if relation.targetEntityType.term == 'person' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
                         {% for relation in data.relations %}
                         {% if relation.targetEntityType.term == 'person' %}
                             {% set numRels = numRels + 1 %}
@@ -443,16 +618,27 @@ body {
                                  </ul>
                                  <div class="tab-content">
                                     <div class="tab-pane active list" id="relatedPeopleDirect">
-                              <!--
-                              <div class="person">
-                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
-                                 <span class="arcrole">correspondedWith</span>
-                                 <div></div>
-                              </div>
-                              -->
+                                        {% for relation in data.new.relations %}
+                                        {% if relation.targetEntityType.term == 'person' %}
+                                            <div class="person updated">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.relations %}
                                         {% if relation.targetEntityType.term == 'person' %}
                                             <div class="person">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% for relation in data.old.relations %}
+                                        {% if relation.targetEntityType.term == 'person' %}
+                                            <div class="person older">
                                                 <span class="arcrole">{{relation.type.term}}</span>
                                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                                 <div></div>
@@ -476,6 +662,16 @@ body {
                      </div>
 
                         {% set numRels = 0 %}
+                        {% for relation in data.new.relations %}
+                        {% if relation.targetEntityType.term == 'family' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
+                        {% for relation in data.old.relations %}
+                        {% if relation.targetEntityType.term == 'family' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
                         {% for relation in data.relations %}
                         {% if relation.targetEntityType.term == 'family' %}
                             {% set numRels = numRels + 1 %}
@@ -504,16 +700,27 @@ body {
                                  </ul>
                                  <div class="tab-content">
                                     <div class="tab-pane active list" id="relatedFamiliesDirect">
-                              <!--
-                              <div class="person">
-                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
-                                 <span class="arcrole">correspondedWith</span>
-                                 <div></div>
-                              </div>
-                              -->
+                                        {% for relation in data.new.relations %}
+                                        {% if relation.targetEntityType.term == 'family' %}
+                                            <div class="family updated">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.relations %}
                                         {% if relation.targetEntityType.term == 'family' %}
                                             <div class="family">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% for relation in data.old.relations %}
+                                        {% if relation.targetEntityType.term == 'family' %}
+                                            <div class="family older">
                                                 <span class="arcrole">{{relation.type.term}}</span>
                                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                                 <div></div>
@@ -539,6 +746,16 @@ body {
                      </div>
 
                         {% set numRels = 0 %}
+                        {% for relation in data.new.relations %}
+                        {% if relation.targetEntityType.term == 'corporateBody' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
+                        {% for relation in data.old.relations %}
+                        {% if relation.targetEntityType.term == 'corporateBody' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
                         {% for relation in data.relations %}
                         {% if relation.targetEntityType.term == 'corporateBody' %}
                             {% set numRels = numRels + 1 %}
@@ -567,9 +784,27 @@ body {
                                  </ul>
                                  <div class="tab-content">
                                     <div class="tab-pane active list" id="relatedOrganizationsDirect">
+                                        {% for relation in data.new.relations %}
+                                        {% if relation.targetEntityType.term == 'corporateBody' %}
+                                            <div class="corporateBody updated">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
                                         {% for relation in data.relations %}
                                         {% if relation.targetEntityType.term == 'corporateBody' %}
                                             <div class="corporateBody">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% for relation in data.old.relations %}
+                                        {% if relation.targetEntityType.term == 'corporateBody' %}
+                                            <div class="corporateBody older">
                                                 <span class="arcrole">{{relation.type.term}}</span>
                                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                                 <div></div>
@@ -602,6 +837,15 @@ body {
                        <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
                        <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
                    </div>
+                   {% elseif data.comparison %}
+                   <div class="alert alert-info" style="margin-top: 15px;">
+                       <h3 class="text-center" style="margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Comparison</h3>
+                       <p>This is only a preview comparison of Constellations.  It will only exist until this window is closed.</p>
+                       <ul>
+                           <li class="updated">Added or updated</li>
+                           <li class="older">Deleted or outdated</li>
+                       </ul>
+                   </div>
                    {% else %}
                    <div class="panel panel-info" style="margin-top: 15px;">
                        <div class="panel-heading">
@@ -632,7 +876,7 @@ body {
                     {% endif %}
 
 
-                  {% if user.email and (permissions.Edit or debug) and not data.preview %}
+                  {% if user.email and (permissions.Edit or debug) and not data.preview and not data.comparison %}
                    <div class="panel panel-warning" style="margin-top: 15px;">
                        <div class="panel-heading">
                            <h3 class="panel-title">Actions</h3>
@@ -692,10 +936,16 @@ body {
                   </div>
 
                   <h4>Subjects:</h4>
-                  {% if data.subjects|length > 0 %}
+                  {% if data.subjects|length > 0 or data.new.subjects|length > 0 or data.old.subjects|length > 0 %}
                     <ul>
+                    <!-- {% for subject in data.new.subjects %} -->
+                        <li class="updated">{{subject.term.term}}</li>
+                    <!-- {% endfor %} -->
                     <!-- {% for subject in data.subjects %} -->
                         <li>{{subject.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    <!-- {% for subject in data.old.subjects %} -->
+                        <li class="older">{{subject.term.term}}</li>
                     <!-- {% endfor %} -->
                     </ul>
                   {% else %}
@@ -703,10 +953,16 @@ body {
                   {% endif %}
 
                   <h4>Occupations:</h4>
-                  {% if data.occupations|length > 0 %}
+                  {% if data.occupations|length > 0 or data.new.occupations|length > 0 or data.old.occupations|length > 0 %}
                     <ul>
+                    <!-- {% for occupation in data.new.occupations %} -->
+                        <li class="updated">{{occupation.term.term}}</li>
+                    <!-- {% endfor %} -->
                     <!-- {% for occupation in data.occupations %} -->
                         <li>{{occupation.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    <!-- {% for occupation in data.old.occupations %} -->
+                        <li class="older">{{occupation.term.term}}</li>
                     <!-- {% endfor %} -->
                     </ul>
                   {% else %}
@@ -714,13 +970,27 @@ body {
                   {% endif %}
 
                   <h4>Places:</h4>
-                  {% if data.places|length > 0 %}
+                  {% if data.places|length > 0 or data.new.places|length > 0 or data.old.places|length > 0 %}
                     <ul>
+                    <!-- {% for place in data.new.places %} -->
+                        {% if place.confirmed and place.geoplace.id %}
+                            <li class="updated">{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
+                        {% elseif place.original and place.original != "" %}
+                            <li class="updated">{{place.original}} <em>(as recorded)</em></li>
+                        {% endif %}
+                    <!-- {% endfor %} -->
                     <!-- {% for place in data.places %} -->
                         {% if place.confirmed and place.geoplace.id %}
                             <li>{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
                         {% elseif place.original and place.original != "" %}
                             <li>{{place.original}} <em>(as recorded)</em></li>
+                        {% endif %}
+                    <!-- {% endfor %} -->
+                    <!-- {% for place in data.old.places %} -->
+                        {% if place.confirmed and place.geoplace.id %}
+                            <li class="older">{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
+                        {% elseif place.original and place.original != "" %}
+                            <li class="older">{{place.original}} <em>(as recorded)</em></li>
                         {% endif %}
                     <!-- {% endfor %} -->
                     </ul>
@@ -740,8 +1010,14 @@ body {
                               <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
                            </div>
                            <div title="alternative forms of name" class="extra-names modal-body">
+                              {% for nameEntry in data.new.nameEntries %}
+                                <div class="updated">{{nameEntry.original}}</div>
+                              {% endfor %}
                               {% for nameEntry in data.nameEntries %}
                                 <div>{{nameEntry.original}}</div>
+                              {% endfor %}
+                              {% for nameEntry in data.old.nameEntries %}
+                                <div class="older">{{nameEntry.original}}</div>
                               {% endfor %}
                            </div>
                            <div class="modal-footer">

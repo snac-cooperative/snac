@@ -144,9 +144,19 @@ $(document).ready(function() {
                                     </div>
                                 </div>
                             {% else %}
-                                <p>
-                                    <a class='btn btn-sm btn-info' href="?command=view&constellationid={{data.constellation.id}}&version={{history.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT</a>
-                                    <a  class='btn btn-sm btn-success' href="?command=details&constellationid={{data.constellation.id}}&version={{history.version}}"><span class="glyphicon glyphicon-tasks"></span> Details</a>
+                                <p class="btn-group">
+                                    <a class='btn btn-sm btn-success' href="?command=details&constellationid={{data.constellation.id}}&version={{history.version}}"><span class="glyphicon glyphicon-tasks"></span> Details</a>
+                                    <a class='btn btn-sm btn-primary' href="?command=view&constellationid={{data.constellation.id}}&version={{history.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT</a>
+                                    {% if not loop.last %}
+                                        <a title="See changes in this version" class='btn btn-sm btn-info' href="?command=history_diff&constellationid={{data.constellation.id}}&version1={{data.history[loop.index0 + 1].version}}&version2={{history.version}}"><span class="fa fa-fw fa-retweet"></span> Changes</a>
+                                    {% else %}
+                                        <a class='btn btn-sm btn-info disabled' href="#" disabled="true"><span class="fa fa-fw fa-retweet"></span> Changes</a>
+                                    {% endif %}
+                                    {% if data.constellation.version != history.version %}
+                                        <a title="Compare to Current Version" class='btn btn-sm btn-warning' href="?command=history_diff&constellationid={{data.constellation.id}}&version1={{history.version}}&version2={{data.constellation.version}}"><span class="fa fa-fw fa-history"></span> Compare</a>
+                                    {% else %}
+                                        <a class='btn btn-sm btn-warning disabled' href="#" disabled="true"><span class="fa fa-fw fa-history"></span> Compare</a>
+                                    {% endif %}
                                 </p>
                             {% endif %}
                         </p></td>

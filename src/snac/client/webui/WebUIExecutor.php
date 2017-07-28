@@ -481,6 +481,48 @@ class WebUIExecutor {
             $this->drawErrorPage($serverResponse, $display);
         }
     }
+    
+    /**
+     * Display Constellation History Compare Page
+     *
+     * Loads the view page in comparison mode for the two versions of the
+     * given constellation.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayHistoryComparePage(&$input, &$display) {
+        $query = array();
+        if (isset($input["constellationid"]))
+            $query["constellationid1"] = $input["constellationid"];
+            $query["constellationid2"] = $input["constellationid"];
+        if (isset($input["version1"]))
+            $query["version1"] = $input["version1"];
+        if (isset($input["version2"]))
+            $query["version2"] = $input["version2"];
+        $query["command"] = "constellation_diff";
+
+        $serverResponse = $this->connect->query($query);
+
+        if (isset($serverResponse["intersection"])) {
+            $display->setTemplate("view_page");
+            $constellation = $serverResponse["intersection"];
+
+            $this->logger->addDebug("Setting constellation data into the page template");
+
+            $display->setData(array_merge(
+                $constellation,
+                array(
+                    "comparison"=> true,
+                    "old" => $serverResponse["constellation1"],
+                    "new" => $serverResponse["constellation2"])
+                )
+            );
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
 
     /**
      * Display Constellation History Page

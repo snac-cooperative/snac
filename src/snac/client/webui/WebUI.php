@@ -115,6 +115,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "diff",
                 "explore",
                 "history",
+                "history_diff",
                 "feedback"
         );
 
@@ -129,6 +130,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "quicksearch",
             "relations",
             "explore",
+            "history_diff",
             "history"
         );
 
@@ -391,6 +393,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
             case "history":
                 $executor->displayHistoryPage($this->input, $display);
+                break;
+
+            case "history_diff":
+                $executor->displayHistoryComparePage($this->input, $display);
                 break;
 
             case "preview":
