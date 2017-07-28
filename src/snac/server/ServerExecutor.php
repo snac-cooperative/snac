@@ -2123,11 +2123,13 @@ class ServerExecutor {
                         $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId));
                     }
 
+                    $reviewNote = $this->cStore->readLastReviewStatusForConstellation($cId);
+                    if ($reviewNote != null)
+                        $response["review_note"] = $reviewNote;
+
                     // read the constellation into response
                     $constellation = $this->cStore->readConstellation($cId);
-
-
-
+                    
                     $this->logger->addDebug("Finished reading constellation from the database");
                     $response["constellation"] = $constellation->toArray();
                     $this->logger->addDebug("Serialized constellation for output to client");

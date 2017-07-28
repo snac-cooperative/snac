@@ -820,6 +820,18 @@ class DBUtil
         return $result;
     }
 
+    public function readLastReviewStatusForConstellation($mainID, $version=null) {
+        $history = $this->listVersionHistory($mainID, $version, false);
+
+        foreach ($history as $event) {
+            if ($event['status'] == 'published' || $event['status'] == 'deleted' || $event['status'] == 'tombstoned')
+                return null;
+            else if ($event["status"] == 'needs review')
+                return $event;
+        }
+        return null;
+    }
+
 
     /**
      * Safely call object getID method

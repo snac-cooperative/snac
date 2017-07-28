@@ -200,8 +200,13 @@ class WebUIExecutor {
                 if (isset($serverResponse))
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
+            
+                
             $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData($constellation);
+            $display->setData(array_merge(
+                $constellation,
+                array("reviewNote" => isset($serverResponse["review_note"]) ? $serverResponse["review_note"] : null)
+            ));
         } else {
                 $this->logger->addDebug("Error page being drawn");
                 $this->drawErrorPage($serverResponse, $display);
