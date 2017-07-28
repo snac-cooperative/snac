@@ -2246,13 +2246,19 @@ class ServerExecutor {
                 $this->logger->addDebug("Reading constellation statuses from the database");
 
                 $cId1 = $input["constellationid1"];
-                $status1 = $this->cStore->readConstellationStatus($cId1);
+                $cV1 = null;
+                if (isset($input["version1"]))
+                    $cV1 = $input["version1"];
+                $status1 = $this->cStore->readConstellationStatus($cId1, $cV1);
 
                 $cId2 = $input["constellationid2"];
-                $status2 = $this->cStore->readConstellationStatus($cId2);
+                $cV2 = null;
+                if (isset($input["version2"]))
+                    $cV2 = $input["version2"];
+                $status2 = $this->cStore->readConstellationStatus($cId2, $cV2);
 
                 // Right now, only published constellations can be merged, so that we can keep a "clean" history
-                if ($status1 == "published" && $status2 == "published") {
+                if ($status1 == "published" && $status2 == "published" && $cV1 == null && $cV2 == null) {
                     $response["mergeable"] = true;
 
                     // If they asked to start the merge, then check these constellations out to that user as
@@ -2286,8 +2292,8 @@ class ServerExecutor {
                     $response["mergeable"] = false;
                 }
                 $this->logger->addDebug("Reading Constellations from the database");
-                $constellation1 = $this->cStore->readConstellation($cId1, null, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
-                $constellation2 = $this->cStore->readConstellation($cId2, null, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
+                $constellation1 = $this->cStore->readConstellation($cId1, $cV1, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
+                $constellation2 = $this->cStore->readConstellation($cId2, $cV2, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
 
                 $this->logger->addDebug("Starting Diff");
                 $diffParts = $constellation1->diff($constellation2);
