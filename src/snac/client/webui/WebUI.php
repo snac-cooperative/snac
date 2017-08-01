@@ -499,6 +499,21 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
+            case "save_send":
+                $response = $executor->saveAndSendConstellation($this->input);
+                break;
+
+            case "send":
+                $response = $executor->sendConstellation($this->input);
+                // if sent for review by constellationid parameter alone, then send them to the dashboard.
+                if (!isset($response["error"]) && !isset($this->input["entityType"])) {
+                    header("Location: index.php?command=dashboard&message=Constellation successfully sent to editor");
+                    return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
+                }
+                break;
+
             case "save_publish":
                 $response = $executor->saveAndPublishConstellation($this->input);
                 break;

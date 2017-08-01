@@ -1306,6 +1306,10 @@ class ServerExecutor {
                 $constellation = new \snac\data\Constellation($input["constellation"]);
                 $toUser = new \snac\data\User($input["to_user"]);
 
+                $logNote = "Constellation reassigned by " . $this->user->getUserName();
+                if (isset($input["message"]) && $input["message"] != "")
+                    $logNote = $input["message"];
+
                 // Get the full User object
                 $toUser = $this->uStore->readUser($toUser);
                 if ($toUser === false) {
@@ -1322,6 +1326,8 @@ class ServerExecutor {
 
                 // If the admin user has the current version AND permission to change locks
                 if ($current->getVersion() == $constellation->getVersion() && $this->hasPermission("Change Locks")) {
+                    $result = $this->cStore->writeConstellationStatus($toUser, $constellation->getID(), "change locks",
+                            $logNote);
                     $result = $this->cStore->writeConstellationStatus($toUser, $constellation->getID(), "locked editing",
                             "Constellation reassigned by " . $this->user->getUserName());
 

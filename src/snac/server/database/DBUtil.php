@@ -220,6 +220,7 @@ class DBUtil
                                 'needs review' => 1,
                                 'rejected' => 1,
                                 'locked editing' => 1,
+                                'change locks' => 1,
                                 'bulk ingest' => 1,
                                 'deleted' =>1,
                                 'currently editing' => 1,
@@ -826,7 +827,7 @@ class DBUtil
         foreach ($history as $event) {
             if ($event['status'] == 'published' || $event['status'] == 'deleted' || $event['status'] == 'tombstoned')
                 return null;
-            else if ($event["status"] == 'needs review')
+            else if ($event["status"] == 'needs review' || $event["status"] == 'change locks')
                 return $event;
         }
         return null;
