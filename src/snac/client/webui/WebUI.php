@@ -115,6 +115,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "diff",
                 "explore",
                 "history",
+                "api_help",
                 "feedback"
         );
 
@@ -129,6 +130,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "quicksearch",
             "relations",
             "explore",
+            "api_help",
             "history"
         );
 
