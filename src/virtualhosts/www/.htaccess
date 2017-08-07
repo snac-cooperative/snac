@@ -1,0 +1,60 @@
+# Error Documents use our nice error page
+ErrorDocument 400 /snac_server/www/index.php?command=error&type=400
+ErrorDocument 402 /snac_server/www/index.php?command=error&type=402
+ErrorDocument 403 /snac_server/www/index.php?command=error&type=403
+ErrorDocument 404 /snac_server/www/index.php?command=error&type=404
+ErrorDocument 405 /snac_server/www/index.php?command=error&type=405
+ErrorDocument 406 /snac_server/www/index.php?command=error&type=406
+ErrorDocument 407 /snac_server/www/index.php?command=error&type=407
+ErrorDocument 408 /snac_server/www/index.php?command=error&type=408
+ErrorDocument 409 /snac_server/www/index.php?command=error&type=409
+ErrorDocument 410 /snac_server/www/index.php?command=error&type=410
+ErrorDocument 411 /snac_server/www/index.php?command=error&type=411
+ErrorDocument 412 /snac_server/www/index.php?command=error&type=412
+ErrorDocument 413 /snac_server/www/index.php?command=error&type=413
+ErrorDocument 414 /snac_server/www/index.php?command=error&type=414
+ErrorDocument 415 /snac_server/www/index.php?command=error&type=415
+ErrorDocument 416 /snac_server/www/index.php?command=error&type=416
+ErrorDocument 417 /snac_server/www/index.php?command=error&type=417
+ErrorDocument 421 /snac_server/www/index.php?command=error&type=421
+ErrorDocument 422 /snac_server/www/index.php?command=error&type=422
+ErrorDocument 423 /snac_server/www/index.php?command=error&type=423
+ErrorDocument 424 /snac_server/www/index.php?command=error&type=424
+ErrorDocument 426 /snac_server/www/index.php?command=error&type=426
+ErrorDocument 500 /snac_server/www/index.php?command=error&type=500
+ErrorDocument 501 /snac_server/www/index.php?command=error&type=501
+ErrorDocument 502 /snac_server/www/index.php?command=error&type=502
+ErrorDocument 503 /snac_server/www/index.php?command=error&type=503
+ErrorDocument 504 /snac_server/www/index.php?command=error&type=504
+ErrorDocument 505 /snac_server/www/index.php?command=error&type=505
+ErrorDocument 506 /snac_server/www/index.php?command=error&type=506
+ErrorDocument 507 /snac_server/www/index.php?command=error&type=507
+ErrorDocument 508 /snac_server/www/index.php?command=error&type=508
+ErrorDocument 510 /snac_server/www/index.php?command=error&type=510
+
+# Enable mod_rewrite engine
+RewriteEngine on
+RewriteBase /
+ 
+# Store the current location in an environment variable CWD
+RewriteCond $0#%{REQUEST_URI} ([^#]*)#(.*)\1$
+RewriteRule ^.*$ - [E=CWD:%2]
+ 
+#RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([a-zA-Z_]+)/([0-9]+)/([0-9]+)/?$ %{ENV:CWD}index.php?command=$1&constellationid=$2&version=$3 [L,QSA]
+RewriteRule ^([a-zA-Z_]+)/([0-9]+)/?$ %{ENV:CWD}index.php?command=$1&constellationid=$2 [L,QSA]
+RewriteRule ^([a-zA-Z_]+)/?$ %{ENV:CWD}index.php?command=$1 [L,QSA]
+RewriteRule ^[a-zA-Z0-9_]*/javascript/([a-zA-Z_]+\.js)$ %{ENV:CWD}javascript/$1 [L,QSA]
+RewriteRule ^[a-zA-Z0-9_]*/css/([a-zA-Z_/\.]+\.css)$ %{ENV:CWD}css/$1 [L,QSA]
+
+# Handle ARKs appropriately
+#RewriteRule ^ark:/([0-9]+/[0-9a-zA-Z]+)$ index.php?command=view&arkid=http://n2t\.net/ark:/$1 [L,QSA]
+RewriteRule ^ark:/([0-9]+/[0-9a-zA-Z]+)$ %{ENV:CWD}index.php?command=view&arkid=http://n2t\.net/ark:/$1 [L,QSA]
+RewriteRule ^ark:/[a-zA-Z0-9_]*/javascript/([a-zA-Z_]+\.js)$ %{ENV:CWD}javascript/$1 [L,QSA]
+RewriteRule ^ark:/[a-zA-Z0-9_]*/css/([a-zA-Z_/\.]+\.css)$ %{ENV:CWD}css/$1 [L,QSA]
+
+# Static content rewrites
+RewriteRule ^static/([a-zA-Z_/\.]+\.html)$ %{ENV:CWD}index.php?command=static&page=$1 [L,QSA]
+RewriteRule ^static/.*/([a-zA-Z_\.\-0-9]+\.js)$ %{ENV:CWD}javascript/$1 [L,QSA]
+RewriteRule ^static/.*/([a-zA-Z_\.\-0-9]+\.css)$ %{ENV:CWD}css/$1 [L,QSA]
+
