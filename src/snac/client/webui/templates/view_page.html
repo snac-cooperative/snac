@@ -85,7 +85,7 @@
 </head>
 <body role="document">
 
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation, footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -827,6 +827,7 @@
     </div>
     {% endif %}
 
+    {{ footer(X, user, permissions, control) }}
 
     </body>
     </html>
