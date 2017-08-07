@@ -206,4 +206,28 @@ class Display {
         $template($this->data);
         return "<html><body><h1>Testing</h1></body></html>";
     }
+
+    public function setStaticDisplay($filename) {
+        if (is_file(\snac\Config::$STATIC_FILE_DIR ."/". $filename)) {
+            $dom = new \DOMDocument;
+            $dom->preserveWhiteSpace = false;
+            $dom->formatOutput = true;
+            $dom->loadHTMLFile(\snac\Config::$STATIC_FILE_DIR ."/". $filename, LIBXML_NOERROR);
+            $title = $dom->getElementsByTagName('title')->item(0)->textContent;
+            $body = $dom->getElementsByTagName('body')->item(0);
+
+            $newBody = new \DOMDocument;
+            foreach ($body->childNodes as $child) {
+                $newBody->appendChild($newBody->importNode($child, true));
+            }
+            $bodyHTML = $newBody->saveHTML();
+            $this->setTemplate("static_page");
+            $this->setData(array(
+                "body" => $bodyHTML,
+                "title" => $title
+            ));
+            return true;
+        }
+        return false;
+    }
 }

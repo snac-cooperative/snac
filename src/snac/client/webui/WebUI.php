@@ -115,6 +115,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "diff",
                 "explore",
                 "history",
+                "static",
                 "feedback"
         );
 
@@ -129,6 +130,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "quicksearch",
             "relations",
             "explore",
+            "static",
             "history"
         );
 
@@ -563,6 +565,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->drawErrorPage($error, $display);
                 break;
 
+            case "static":
+                $found = $executor->displayStaticPage($this->input, $display);
+                if (!$found)
+                    array_push($this->responseHeaders, "HTTP/1.0 404 Not Found");
+                break;
 
             // If dropping through, then show the landing page
             default:

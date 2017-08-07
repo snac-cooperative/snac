@@ -753,6 +753,23 @@ class WebUIExecutor {
     }
 
     /**
+     * Display Static Page
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayStaticPage(&$input, &$display) {
+        if (!isset($input["page"]) || !$display->setStaticDisplay($input["page"])) {
+            $error = array("error" => array(
+                "type" => "Not Found",
+                "message" => "The resource you were looking for does not exist."
+            ));
+            $this->drawErrorPage($error, $display);
+            return false;
+        }
+        return true;
+    }
+    /**
      * Display Preview Page
      *
      * Fills the display for a view page for the constellation object passed as input.  This is useful for the
