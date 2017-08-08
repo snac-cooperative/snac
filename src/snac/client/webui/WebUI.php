@@ -116,6 +116,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "explore",
                 "history",
                 "api_help",
+                "contact",
                 "feedback"
         );
 
@@ -554,6 +555,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             case "user_search":
                 $response = $executor->performUserSearch($this->input);
+                break;
+
+            case "contact":
+                $executor->displayContactPage($display);
                 break;
 
             // Error command

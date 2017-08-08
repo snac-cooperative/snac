@@ -60,6 +60,12 @@ var feedbackPaneHTML = "<div class=\"modal fade\" id=\"feedback_pane\" tabindex=
 	+ "                                <input type=\"hidden\" id=\"feedback_screenshot\"/>"
 	+ "                            </div>"
 	+ "                        </div>"
+	+ "                        <div class=\"form-group\">"
+	+ "                            <label class=\"control-label col-xs-3\"></label>"
+	+ "                            <div class=\"col-xs-9\">"
+	+ "                                <div class=\"g-recaptcha\" data-sitekey=\"6LdjGCwUAAAAAJSU24QBnENdvbcX6oHJbjTzO1jN\"></div>"
+	+ "                            </div>"
+	+ "                        </div>"
 	+ "                    </div>"
 	+ "                </form>"
 	+ "            </div>"
@@ -100,7 +106,8 @@ function sendFeedback() {
                     "<p><strong>Page:</strong> " + $(document).find("title").text() + "<br>" +
                     "<strong>URL:</strong> " + $("#feedback_page_url").val() + "<br>" +
                     "<strong>Referer</strong>:" + $("#feedback_page_referrer").val() + "</p>",
-        "screenshot" : $("#feedback_screenshot").val()
+        "screenshot" : $("#feedback_screenshot").val(),
+        "token" : $("#g-recaptcha-response").val()
     };
 
     $.post("?command=feedback", feedbackBody, function (data) {
@@ -137,11 +144,13 @@ $(document).ready(function() {
 
     $("body").append(feedbackButtonHTML).append(feedbackPaneHTML);
 
-    $("#feedbackButton").click(function() {
-        feedbackTakeScreenshot();
-        $("#send_feedback").off("click").prop("disabled", true).addClass("disabled");
-        $("#feedback_pane").modal("show");
-        return false;
+    $.getScript('https://www.google.com/recaptcha/api.js', function() {
+        $("#feedbackButton").click(function() {
+            feedbackTakeScreenshot();
+            $("#send_feedback").off("click").prop("disabled", true).addClass("disabled");
+            $("#feedback_pane").modal("show");
+            return false;
+        });
     });
 
 });

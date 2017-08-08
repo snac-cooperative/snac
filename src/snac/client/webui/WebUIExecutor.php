@@ -994,31 +994,54 @@ class WebUIExecutor {
      */
     public function sendFeedbackMessage(&$input) {
         $response = array();
-        if (isset($input["subject"]) && isset($input["body"])) {
-            // split out the users to send to
-            $message = new \snac\data\Message();
-            $message->setSubject($input["subject"]);
-            $message->setBody($input["body"]);
-            if (isset($this->user) && $this->user !== null) {
-                $message->setFromUser($this->user);
+        if (isset($input["subject"]) && isset($input["body"]) && isset($input["token"])) {
+
+            // confirm the token first
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+                "secret" => "6LdjGCwUAAAAAMRzQh-sVk9DF7ST9oVBGLDIogHv",
+                "response" => $input["token"]
+            ));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $verifyResponse = curl_exec($ch);
+            curl_close($ch);
+            $verified = array ("success" => false);
+
+            if ($verifyResponse != null) {
+                $verified = json_decode($verifyResponse, true);
+            }
+
+            if (isset($verified["success"]) && $verified["success"] === true) {
+                // split out the users to send to
+                $message = new \snac\data\Message();
+                $message->setSubject($input["subject"]);
+                $message->setBody($input["body"]);
+                if (isset($this->user) && $this->user !== null) {
+                    $message->setFromUser($this->user);
+                } else {
+                    // set this message from the IP address:
+                    $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+                }
+
+                if (isset($input["screenshot"])) {
+                    $message->setAttachmentContent($input["screenshot"]);
+                    $message->setAttachmentFilename("screenshot.png"); 
+                }
+
+                $ask = array("command"=>"send_feedback",
+                            "message"=>$message->toArray());
+                $serverResponse = $this->connect->query($ask);
+
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                    $response["result"] = "error";
+                }
+                $response["result"] = "success";
             } else {
-                // set this message from the IP address:
-                $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
-            }
-
-            if (isset($input["screenshot"])) {
-                $message->setAttachmentContent($input["screenshot"]);
-                $message->setAttachmentFilename("screenshot.png"); 
-            }
-
-            $ask = array("command"=>"send_feedback",
-                        "message"=>$message->toArray());
-            $serverResponse = $this->connect->query($ask);
-
-            if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
                 $response["result"] = "error";
+                $this->logger->addWarning("Failed feedback attempt", array_merge($input, $verified));
             }
-            $response["result"] = "success";
         } else {
             $response["result"] = "error";
         }
@@ -1440,6 +1463,15 @@ class WebUIExecutor {
         $display->setData([
             "commands" => $commands
         ]);
+    }
+    
+    /**
+     * Display Contact Us Page
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayContactPage(&$display) {
+        $display->setTemplate("contact_page");
     }
 
     /**
