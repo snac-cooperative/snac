@@ -144,14 +144,13 @@ $(document).ready(function() {
 
     $("body").append(feedbackButtonHTML).append(feedbackPaneHTML);
 
-    $.getScript('https://www.google.com/recaptcha/api.js', function() {
         $("#feedbackButton").click(function() {
-            feedbackTakeScreenshot();
-            $("#send_feedback").off("click").prop("disabled", true).addClass("disabled");
-            $("#feedback_pane").modal("show");
+            $.getScript('https://www.google.com/recaptcha/api.js', function() {
+                feedbackTakeScreenshot();
+                $("#send_feedback").off("click").prop("disabled", true).addClass("disabled");
+                $("#feedback_pane").modal("show");
+            });
             return false;
         });
-    });
-
 });
 
