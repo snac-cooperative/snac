@@ -14,7 +14,7 @@ var messageList = null;
 var tinymceInstance = null;
 
 tinymce.init({
-    selector:'textarea', 
+    selector:'#body', 
     min_height: 250,
     menubar: false,
     statusbar: false,
@@ -42,6 +42,14 @@ function showMessage(messageID) {
             if (typeof data.message.body !== 'undefined')
                 //messageBody = (data.message.body).replace(/(?:\r\n|\r|\n)/g, '<br />');
                 messageBody = data.message.body;
+
+            if (typeof data.message.attachmentContent !== 'undefined') {
+                messageBody += "<p class='text-center'>"+
+                    "<a href=\""+data.message.attachmentContent+"\" target=\"_blank\">"+
+                    "<img style=\"max-width: 90%; max-height: 1000px\" src=\"" + data.message.attachmentContent + "\">"+
+                    "</a></p>";
+            }
+
 
             var text = $('#message_template').clone();
             var html = text.html().replace(/MESSAGE_SUBJECT/g, data.message.subject)

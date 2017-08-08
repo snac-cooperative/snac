@@ -1006,6 +1006,11 @@ class WebUIExecutor {
                 $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
             }
 
+            if (isset($input["screenshot"])) {
+                $message->setAttachmentContent($input["screenshot"]);
+                $message->setAttachmentFilename("screenshot.png"); 
+            }
+
             $ask = array("command"=>"send_feedback",
                         "message"=>$message->toArray());
             $serverResponse = $this->connect->query($ask);

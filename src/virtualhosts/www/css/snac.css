@@ -553,9 +553,9 @@ button.list-group-item-merge.active:focus {
 }
 
 /* Fix the width of font-awesome icons so their text aligns nicely beside them */
-.fa {
+/*.fa {
     width: 1.2em;
-}
+}*/
 
 #message_list tbody {
     cursor: pointer;

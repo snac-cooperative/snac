@@ -26,53 +26,11 @@ $('.selectpicker').selectpicker();
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
-<script>
-function sendFeedback() {
-    var feedbackBody = {
-        "subject" : "Error Page feedback form",
-        "body" : $("#body").val() + "<br><strong>URL:</strong> " + $("#page_url").val()
-                + "<br><strong>Referer:" + $("#page_referrer").val() + "<br><strong>Error:</strong><br>"
-                + $("#error").val()
-    };
-
-    $.post("?command=feedback", feedbackBody, function (data) {
-        if (data.result == "success") {
-            // show success alert
-            $("#send_status_message").addClass("alert-success").html("<p>Feedback sent successfully.</p>");
-            $('#send_status_message').slideDown();
-
-            // After 2 seconds, we'll start doing things:
-            setTimeout(function() {
-                // close the alert
-                $('#send_status_message').slideUp();
-                $('#send_status_message').removeClass("alert-success").html("");
-
-                // Hide the modal window
-                $("#feedback_pane").modal("hide");
-            }, 2000);
-
-        } else {
-            // show an error alert
-            $("#send_status_message").addClass("alert-warning").html("<p>Error: "+data.message+"</p>");
-            $('#send_status_message').slideDown();
-
-            // close the alert after 10 seconds
-            setTimeout(function() {
-                $('#send_status_message').slideUp();
-                $('#send_status_message').removeClass("alert-warning").html("");
-            }, 10000);
-        }
-    });
-}
-
-$(document).ready(function() {
-
-    $("#send_feedback").click(sendFeedback);
-
-});
-</script>
-
+<!-- SNAC Javascript -->
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="javascript/feedback.js{{control.noCache}}"></script>
 </head>
+
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
 {{ topNavigation(X, user, permissions, control) }}
@@ -103,66 +61,7 @@ $(document).ready(function() {
 			</div>
             {% endif %}
         </div>
-        <div class="row row-centered">
-            <div class="col-md-12 col-centered">
-                <p class="text-center">
-                    <button class="btn btn-warning" id="open_feedback_dialog" data-toggle="modal" data-target="#feedback_pane"><i class="fa fa-paper-plane-o" aria-hidden="true"></i>
- Send Feedback</button>
-                </p>
-			</div>
-        </div>
 
-
-</div>
-
-<div class="modal fade" id="feedback_pane" tabindex="-1" role="dialog" aria-labelledby="feedback_pane">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header primary">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="feedback_title">Send Feedback</h4>
-            </div>
-            <div class="modal-body" id="feedback_content">
-                <div class="row">
-                    <div class="alert alert-01" id="send_status_message" style="display: none">
-                    </div><!-- end alert -->
-                </div>
-                <p>Please add any personal notes in the box below.  The system will also attach a copy of the error message as well as the page URL and referrer.</p>
-                <form id="feedback_form">
-                    <div class="form-horizontal">
-                        <div class="form-group">
-                            <div class="col-xs-12">
-                                <textarea id="body" name="body" class="form-control" placeholder="Message Body"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-xs-2">URL</label>
-                            <div class="col-xs-10">
-                                <p class="form-control-static">{{control.currentURL}}</p>
-                                <textarea id="page_url" name="page_url" class="form-control" style="display:none;">{{control.currentURL}}</textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-xs-2">Referrer</label>
-                            <div class="col-xs-10">
-                                <p class="form-control-static">{{control.referringURL}}</p>
-                                <textarea id="page_referrer" name="page_referrer" class="form-control" style="display:none;">{{control.referringURL}}</textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <textarea id="error" name="error" class="form-control" style="display:none;"><pre><strong>{{data.type}}</strong>{{ data.type ? ':' : ''}} <br>{{data.message}}</pre></textarea>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times-circle-o" aria-hidden="true"></i>
- Cancel</button>
-                <button type="button" class="btn btn-primary" id="send_feedback"><i class="fa fa-paper-plane-o" aria-hidden="true"></i>
-Send</button>
-            </div>
-        </div>
-    </div>
 </div>
 </body>
 </html>
