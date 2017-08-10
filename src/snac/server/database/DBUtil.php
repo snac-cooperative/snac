@@ -643,13 +643,16 @@ class DBUtil
      * @param integer $offset optional An offset to jump into the list of records in the database. Optional defaults to
      * a config value. Must be -1 for all, or an integer. Default to the config when missing.
      *
+     * @param boolean $secondary optional Whether to search the version_history by secondary user for this status (default false)
+     *
      * @return \snac\data\Constellation[] A list of PHP constellation object (which might be summary objects),
      * or an empty array when there are no constellations.
      */
     public function listConstellationsWithStatusForUser($user,
                                                         $status='locked editing',
                                                         $limit=null,
-                                                        $offset=null)
+                                                        $offset=null,
+                                                        $secondary=false)
     {
         if ($user == null || $user->getUserID() == null) {
             return false;
@@ -664,7 +667,7 @@ class DBUtil
             $offset = \snac\Config::$SQL_OFFSET;
         }
 
-        $infoList = $this->sql->selectEditList($user->getUserID(), $status, $limit, $offset);
+        $infoList = $this->sql->selectEditList($user->getUserID(), $status, $limit, $offset, $secondary);
         if ($infoList)
         {
             $constellationList = array();
@@ -779,7 +782,7 @@ class DBUtil
      * @param int $version optional The latest version of the history to return (else returns all)
      * @param boolean $publicOnly optional Only return the publicly available versionings (default true)
      * @return string[] Version History information for the Constellation
-     */ 
+     */
     public function listVersionHistory($mainID, $version=null, $publicOnly=true) {
         $fromVersion = $version;
         if (!$version || !is_int($version)) {
@@ -3454,18 +3457,16 @@ class DBUtil
      * write optional note if supplied
      *
      * @param \snac\data\User $user The user to perform the write status
-     *
      * @param integer $mainID A constellation ID
-     *
      * @param string $status The new status value. 'deleted' is allowed, and will cause the constellation to
      * be deleted. The status must be one of the known values.
-     *
      * @param string $note optional text note to write to the version_history table.
+     * @param \snac\data\User $userSecondary The secondary user on the version update, such as "sent for review to X"
      *
      * @return integer|boolean Returns the new version number on success or false on failure.
      *
      */
-    public function writeConstellationStatus($user, $mainID, $status, $note="")
+    public function writeConstellationStatus($user, $mainID, $status, $note="", $userSecondary=null)
     {
         if ($user == null || $user->getUserID() == null) {
             return false;
@@ -3498,8 +3499,13 @@ class DBUtil
                 return false;
             }
 
+            $secondUserID = null;
+            if ($userSecondary  != null) {
+                $secondUserID = $userSecondary->getUserID();
+            }
+
             // Right now, we're passing null as the role ID.  We may change this to a role from the user object
-            $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
+            $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note, $secondUserID);
             return $vhInfo['version'];
         }
         else
@@ -4041,6 +4047,25 @@ class DBUtil
     }
 
     /**
+     * Count maybe-same constellations
+     *
+     * Gets a count of constellations that may be the same as the search
+     *
+     * @param  int  $icid  Identity Constellation ID for which to get maybe same
+     * @return int Count of maybesame constellations
+     */
+    public function countMaybeSameConstellations($icid) {
+        $response = array();
+
+        $icids = $this->sql->listMaybeSameIDsFor($icid);
+        
+        if ($icids === false || $icids == null)
+            return 0;
+
+        return count($icids);
+    }
+
+    /**
      * List maybe-same constellations
      *
      * Gets a list of constellations that may be the same as the search
@@ -4557,7 +4582,7 @@ class DBUtil
      * Checks to see if the ICID is in the name index.  If so, it will update the values there with the parameters.  Else,
      * it will insert the new ICID and related values into the name index.
      *
-     * @param \snac\data\Constellation $constellation The Constellation to include in the name index 
+     * @param \snac\data\Constellation $constellation The Constellation to include in the name index
      *
      * @return string[]|boolean The updated name index values or false on failure
      */
@@ -4575,7 +4600,7 @@ class DBUtil
      *
      * Deletes the given ICID's values in the name index.  This would remove the name from the browsing index.
      *
-     * @param \snac\data\Constellation $constellation The Constellation to delete from the name index 
+     * @param \snac\data\Constellation $constellation The Constellation to delete from the name index
      * @return boolean True if successfully deleted, False if nothing to delete (failure)
      */
     public function deleteFromNameIndex(&$constellation) {

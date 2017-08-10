@@ -39,6 +39,7 @@
 <!-- SNAC includes -->
 <script src="javascript/search.js{{control.noCache}}"></script>
 
+<meta name="viewport" content="initial-scale = 1.0" />
 </head>
 
 <body role="document">
@@ -52,21 +53,23 @@
 		<h1>Search</h1>
 
 		<form class="form-horizontal" id="search_form" method="GET" action="?">
-			<div class="well well-lg text-center">
+			<div class="well well-lg text-center search-box">
                     <input type="hidden" id="count" name="count" value="10">
                     <input type="hidden" id="start" name="start" value="0">
 					<div class="input-group select2-bootstrap-append">
-                        <select id="entityType" name="entity_type" style="width: 18%;">
-                            <option value="" {{data.entityType == '' ? 'selected'}}>All Types</option>
-                            <option value="person" {{data.entityType == 'person' ? 'selected'}}>Person</option>
-                            <option value="corporateBody" {{data.entityType == 'corporateBody' ? 'selected'}}>Corporate Body</option>
-                            <option value="family" {{data.entityType == 'family' ? 'selected'}}>Family</option>
-                        </select>
-						<input type="text" class="form-control" style="width: 82%;"
+                        <span class="search-entity-type">
+                            <select id="entityType" name="entity_type" class="search-entity-type-select">
+                                <option value="" {{data.entityType == '' ? 'selected'}}>All Types</option>
+                                <option value="person" {{data.entityType == 'person' ? 'selected'}}>Person</option>
+                                <option value="corporateBody" {{data.entityType == 'corporateBody' ? 'selected'}}>Corporate Body</option>
+                                <option value="family" {{data.entityType == 'family' ? 'selected'}}>Family</option>
+                            </select>
+                        </span>
+						<input type="text" class="form-control search-box-text"
 							placeholder="Search for..." id="searchbox" name="term" value="{{data.query}}">
-							<span class="input-group-btn">
-							     <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
-						    </span>
+                        <span class="input-group-btn search-box-button">
+                             <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
+                        </span>
 					</div>
                     <div class="row">
                         <div class="col-xs-6 text-left">
@@ -135,7 +138,7 @@
                         <span>({{result.entityType.term}})</span>
                     </p>
                     {% if result.biogHists.0.text %}
-                        <p>{{result.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                    <p>{{result.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}</p>
                     {% else %}
                         <p class="missing">No biographical history available for this identity.</p>
                     {% endif %}

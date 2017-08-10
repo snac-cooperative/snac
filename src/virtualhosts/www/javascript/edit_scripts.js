@@ -142,6 +142,10 @@ function undoEdit(short, i) {
 	// restore the old content
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
     turnOnTooltips(short,i);
+    $("#" + short + "_datapart_" + i + " input[type='checkbox']").each(function() {
+        var obj = $(this);
+        obj.bootstrapToggle();
+    });
 }
 
 /**
@@ -209,10 +213,111 @@ function textToSelect(shortName, idStr) {
                     "<input type=\"hidden\" id=\""+shortName+"_"+name+"_minlength_"+idStr+"\" " +
                         "name=\""+shortName+"_"+name+"_minlength_"+idStr+"\" value=\""+minlength+"\"/>");
 
-            vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
+            if (name == "citation")
+                scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
+            else
+                vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
 
         }
     });
+}
+
+function textToCheckbox(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='checkbox_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^checkbox_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+            var placeholderOn = "";
+            if ($("#"+shortName+"_"+name+"_placeholderOn_"+idStr).exists()) {
+                placeholderOn = $("#"+shortName+"_"+name+"_placeholderOn_"+idStr).val();
+            }
+            var placeholderOff = "";
+            if ($("#"+shortName+"_"+name+"_placeholderOff_"+idStr).exists()) {
+                placeholderOff = $("#"+shortName+"_"+name+"_placeholderOff_"+idStr).val();
+            }
+
+            var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' class='form-control' type='checkbox' value=\"checked\""+
+                    "data-on=\""+placeholderOn+"\" data-off=\""+placeholderOff+"\"";
+            if (value == 'checked')
+                html += " checked";
+            html += "/>";
+            if (placeholderOn != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOn_"+idStr+"\" " +
+                "value=\""+placeholderOn+"\"/>";
+            }
+            if (placeholderOff != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOff_"+idStr+"\" " +
+                "value=\""+placeholderOff+"\"/>";
+            }
+
+            cont.html(html);
+            $("#"+shortName+"_"+name+"_"+idStr).bootstrapToggle(); 
+        }
+    });
+
+
+}
+
+
+function checkboxToText(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='checkbox_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^checkbox_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+            var checked = $("#"+shortName+"_"+name+"_"+idStr).prop('checked'); 
+            var placeholderOn = "";
+            if ($("#"+shortName+"_"+name+"_placeholderOn_"+idStr).exists()) {
+                placeholderOn = $("#"+shortName+"_"+name+"_placeholderOn_"+idStr).val();
+            }
+            var placeholderOff = "";
+            if ($("#"+shortName+"_"+name+"_placeholderOff_"+idStr).exists()) {
+                placeholderOff = $("#"+shortName+"_"+name+"_placeholderOff_"+idStr).val();
+            }
+
+
+            var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' type='hidden' value=\"";
+            if (checked)
+                html += "checked";
+            html +="\"/>";
+
+            html += "<p class='form-control-static'>";
+            if (checked) {
+                if (placeholderOn != "")
+                   html += placeholderOn;
+                else
+                   html += value;
+            } else {
+                if (placeholderOff != "")
+                   html += placeholderOff;
+            } 
+            html += "</p>";
+            if (placeholderOn != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOn_"+idStr+"\" " +
+                "value=\""+placeholderOn+"\"/>";
+            }
+            if (placeholderOff != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOff_"+idStr+"\" " +
+                "value=\""+placeholderOff+"\"/>";
+            }
+
+            $("#"+shortName+"_"+name+"_"+idStr).bootstrapToggle("destroy");
+            cont.html(html);
+        }
+    });
+
+
 }
 
 function textToInput(shortName, idStr) {
@@ -517,6 +622,7 @@ function subMakeEditable(short, i) {
 
     textToInput(short, i);
     textToTextArea(short, i);
+    textToCheckbox(short, i);
 
     var idstr = "_" + i;
 
@@ -530,6 +636,14 @@ function subMakeEditable(short, i) {
     // Enable buttons
     $("#"+short+"_datapart_" + i + " a.label").each(function() {
         $(this).removeClass("snac-hidden");
+    });
+    
+    // Enable checkboxes
+    $("#"+short+"_datapart_" + i + " input[type='checkbox']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
+            obj.bootstrapToggle('enable');
+        }
     });
 
     // Turn on CodeMirror Editors
@@ -677,9 +791,17 @@ function subMakeUneditable(shortName, i) {
         $(this).addClass("snac-hidden");
     });
 
+    // Disable checkboxes
+    $("#"+shortName+"_datapart_" + i + " input[type='checkbox']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
+            obj.bootstrapToggle("disable");
+        }
+    });
 
     inputToText(shortName, i);
     textAreaToText(shortName, i);
+    checkboxToText(shortName, i);
     // Check for a select box
     var sawSelect = false;
     $("#"+shortName+"_datapart_" + i + " select[id^='"+shortName+"_']").each(function() {
@@ -1135,30 +1257,30 @@ function updateNameEntryHeading(i) {
 
 
 /**
- * Create a new Name Entry Contributor object on page
+ * Create a new Name Entry Rules object on page
  *
- * Puts a new Name Entry contributor object DIV on the page and attaches it correctly to the DOM and javascript.
+ * Puts a new Name Entry rule object DIV on the page and attaches it correctly to the DOM and javascript.
  *
- * @param  int     i    The index on the page of the nameEntry to add this contributor to
+ * @param  int     i    The index on the page of the nameEntry to add this rule to
  * @return boolean      false to play nice with the browser.
  */
-function newNameEntryContributor(i) {
+function newNameEntryRule(i) {
 	var nextid = 1;
-	if ($('#nameEntry_contributor_next_j_'+i).exists()) {
-	    nextid = parseInt($('#nameEntry_contributor_next_j_'+i).text());
+	if ($('#nameEntry_rule_next_j_'+i).exists()) {
+	    nextid = parseInt($('#nameEntry_rule_next_j_'+i).text());
 	}
-	console.log("Creating new name entry contributor for nameEntry " + i + " with id: " + nextid);
+	console.log("Creating new name entry rule for nameEntry " + i + " with id: " + nextid);
     somethingHasBeenEdited = true;
-    var text = $('#contributor_template').clone();
+    var text = $('#rule_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
-    $('#nameEntry_contributor_add_div_'+i).before(html);
+    $('#nameEntry_rule_add_div_'+i).before(html);
 
-    $('#nameEntry_contributor_' + nextid + '_operation_' + 1).val("insert");
-    turnOnTooltips("nameEntry_contributor_" + nextid, i);
-    subMakeEditable("nameEntry_contributor_" + nextid, i);
+    $('#nameEntry_rule_' + nextid + '_operation_' + 1).val("insert");
+    turnOnTooltips("nameEntry_rule_" + nextid, i);
+    subMakeEditable("nameEntry_rule_" + nextid, i);
 
     // Put the updated version number back in the DOM
-    $('#nameEntry_contributor_next_j_'+i).text(++nextid);
+    $('#nameEntry_rule_next_j_'+i).text(++nextid);
 
     return false;
 }

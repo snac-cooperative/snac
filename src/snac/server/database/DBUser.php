@@ -68,6 +68,11 @@ class DBUser
     private $dbutil;
 
     /**
+     * @var \Monolog\Logger $logger Logger for this class
+     */
+    private $logger = null;
+
+    /**
      * Constructor
      *
      * The constructor for the class. Set up a database connector, and SQL object. All database layers
@@ -75,6 +80,7 @@ class DBUser
      */
     public function __construct()
     {
+        global $log;
         $this->db = new \snac\server\database\DatabaseConnector();
         $this->dbutil = new \snac\server\database\DBUtil();
 
@@ -86,6 +92,11 @@ class DBUser
          */
 
         $this->sql = new SQL($this->db, 'deleted');
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger('DBUser');
+        $this->logger->pushHandler($log);
+
     }
 
 
@@ -227,7 +238,7 @@ class DBUser
                                                 $user->getUserActive());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
-            
+
             /*
              * Admins can run this on behalf of another user. It requires authorization to save roles and save
              * groups.
@@ -418,6 +429,7 @@ class DBUser
         $user->setWorkEmail($record['work_email']);
         $user->setWorkPhone($record['work_phone']);
         $user->setUserActive($record['active']);
+
         /*
          * We may need the functions listUserRoles() and listGroupsForUser() for uses outside of simply building
          * user objects, although no other uses are possible as long as these functions take $user as an
@@ -1056,6 +1068,35 @@ class DBUser
     }
 
     /**
+     * Search Users
+     *
+     * Search through the list of users in the system.  By default, it will search users
+     * of every role but only active users.  It will not return any user with id less than 100,
+     * that is, system users.
+     *
+     * @param string $query The search string to look for
+     * @param int $count The number of results to return
+     * @param string $roleFilter optional Limit the search to only users with this role (default null)
+     * @param boolean $everyone optional Whether or not to show inactive users (default false)
+     * @return \snac\data\User[] List of users that match the query
+     */
+    public function searchUsers($query, $count, $roleFilter=null, $everyone=false) {
+        $resultList = $this->sql->searchUsers($query, $count, $roleFilter, $everyone);
+        $userList = array();
+        foreach($resultList as $user)
+        {
+            // System users only below 100
+            if ($user["id"] < 100)
+                continue;
+                
+            $newUserRec = $this->sql->selectUserByID($user["id"]);
+            $newUser = $this->populateUser($newUserRec);
+            array_push($userList, $newUser);
+        }
+        return $userList;
+    }
+
+    /**
      * Write or update a group to the database
      *
      * @param \snac\data\Group $group The group object
@@ -1289,4 +1330,116 @@ class DBUser
     {
         $this->sql->deleteInstitution($institutionObj->getID());
     }
+
+
+
+    /**
+     * Delete Message 
+     *
+     * Deletes a message from the database 
+     *
+     * @param \snac\data\Message $message   Message to delete (with ID)
+     * @return boolean True if successful, false otherwise
+     */
+    public function deleteMessage(&$message) {
+        $this->logger->addDebug("Deleting message1", $message->toArray());
+        if ($message == null || $message->getID() == null) {
+            return false;
+        }
+
+        $this->logger->addDebug("Deleting message2", $message->toArray());
+
+        return $this->sql->deleteMessageByID($message->getID());
+    }
+
+    /**
+     * Get Message by ID
+     *
+     * Reads a message from the database by ID
+     *
+     * @param  int $id ID of the message to read
+     * @return \snac\data\Message     Message (or false)
+     */
+    public function getMessageByID($id) {
+        $data = $this->sql->selectMessageByID($id);
+        if (empty($data)) {
+            return false;
+        }
+
+        $message = $this->populateMessage($data);
+        if (!$message->isRead()) {
+            $this->sql->markMessageReadByID($id);
+        }
+
+        return $message;
+    }
+
+    /**
+     * Write Message
+     *
+     * Writes a message into the system.  This is effectively sending a message.
+     *
+     * @param  \snac\data\Message $message Message to write
+     * @return boolean          True if sent successfully, false otherwise
+     */
+    public function writeMessage($message) {
+        $fromUser = null;
+        if ($message->getFromUser() !== null)
+            $fromUser = $message->getFromUser()->getUserID();
+        return $this->sql->insertMessage($message->getToUser()->getUserID(),
+            $fromUser, $message->getFromString(),
+            $message->getSubject(), $message->getBody(), $message->getAttachmentContent(),
+            $message->getattachmentFilename());
+    }
+
+    /**
+     * List Messages to the given user
+     *
+     * @param  \snac\data\User  $user        User in the To field
+     * @param  boolean $subjectOnly Whether or not to only return the subjects
+     * @param  boolean $unreadOnly    Whether or not to only return those that have been read
+     * @return \snac\data\Message[]               List of messages
+     */
+    public function listMessagesToUser($user, $subjectOnly=true, $unreadOnly=false) {
+        $messageData = $this->sql->selectMessagesForUserID($user->getUserID(), true, $unreadOnly);
+        $messages = array();
+        foreach ($messageData as $message) {
+            array_push($messages, $this->populateMessage($message, !$subjectOnly));
+        }
+        return $messages;
+    }
+
+    /**
+     * Populate a Message Data Object
+     *
+     * Given a data array, it fills in a message object.
+     *
+     * @param  string[]  $data               Data array from SQL call
+     * @param  boolean $includeBodyContent Whether or not to include the body content
+     * @return \snac\data\Message                      Message object
+     */
+    public function populateMessage($data, $includeBodyContent=true) {
+        if ($data == null)
+            return null;
+
+        $message = new \snac\data\Message();
+        $message->setID($data["id"]);
+        $message->setRead($this->db->pgToBool($data["read"]));
+        $message->setToUser($this->readUser(new \snac\data\User(array("userid"=>$data["to_user"]))));
+        if ($data["from_user"] != null)
+            $message->setFromUser($this->readUser(new \snac\data\User(array("userid"=>$data["from_user"]))));
+        else
+            $message->setFromString($data["from_string"]);
+        $message->setSubject($data["subject"]);
+        $message->setTimestamp($data["sent_date"]);
+
+        if ($includeBodyContent) {
+            $message->setBody($data["body"]);
+            $message->setAttachmentContent($data["attachment_content"]);
+            $message->setAttachmentFilename($data["attachment_filename"]);
+        }
+
+        return $message;
+    }
+
 }

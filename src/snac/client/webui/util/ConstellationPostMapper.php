@@ -232,8 +232,9 @@ class ConstellationPostMapper {
             $scmObject->setSubCitation($scm["subCitation"]);
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
-
-            $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
+            
+            if (isset($scm["descriptiveRule"]))
+                $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
 
             $scmObject->setLanguage($this->parseSubLanguage($scm, "scm_". $short, $j . "_". $i));
 
@@ -287,6 +288,9 @@ class ConstellationPostMapper {
     private function parseSubLanguage($object, $short, $i) {
 
         // If there is no language to parse, then just return null and don't do anything
+        if (!isset($object["language"]))
+            return null;
+        
         if ($object["language"]["id"] == "" &&
                 $object["language"]["version"] == "" &&
                 (!isset($object["languagelanguage"]) ||
@@ -508,6 +512,7 @@ class ConstellationPostMapper {
                             $this->reconcileObject($contributor, $otherContrib);
                         }
                     }
+                    // TODO Add rule objects here
                     foreach ($nameEntry->getComponents() as $component) {
                         foreach ($other->getComponents() as $otherComponent) {
                             $this->reconcileObject($component, $otherComponent);
@@ -1036,7 +1041,12 @@ class ConstellationPostMapper {
             $nameEntry->setOperation($this->getOperation($data));
 
             $nameEntry->setOriginal($data["original"]);
-            $nameEntry->setPreferenceScore($data["preferenceScore"]);
+
+            $preferred = 0;
+            if (isset($data["preferenceScore"]) && $data["preferenceScore"] == "checked")
+                $preferred = 99;
+
+            $nameEntry->setPreferenceScore($preferred);
 
             $nameEntry->setLanguage($this->parseSubLanguage($data, "nameEntry", $k));
 
@@ -1065,6 +1075,33 @@ class ConstellationPostMapper {
                     $contributor->setRule($this->parseTerm($cData["rule"]));
 
                     $this->addToMapping("nameEntry_contributor_".$l, $k, $cData, $contributor);
+
+                    $nameEntry->addContributor($contributor);
+                }
+            }
+            
+            // right now, update rules if updating name entry TODO
+            // TODO: use rule not contributor going forward! need to update
+            if (isset($data["rule"])) {
+                foreach ($data["rule"] as $l => $cData) {
+                    if ($cData["id"] == "" && $cData["operation"] != "insert")
+                        continue;
+                    $this->logger->addDebug("Parsing through name rume", $cData);
+                    $contributor = new \snac\data\Contributor();
+                    $contributor->setID($cData["id"]);
+                    $contributor->setVersion($cData["version"]);
+                    if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
+                        $contributor->setOperation($this->getOperation($cData));
+                    else {
+                        $cData["operation"] = $this->getOperation($data);
+                        $contributor->setOperation($this->getOperation($data));
+                    }
+                    if (isset($cData["name"]))
+                        $contributor->setName($cData["name"]);
+                    $contributor->setType($this->parseTerm($cData["type"]));
+                    $contributor->setRule($this->parseTerm($cData["rule"]));
+
+                    $this->addToMapping("nameEntry_rule_".$l, $k, $cData, $contributor);
 
                     $nameEntry->addContributor($contributor);
                 }

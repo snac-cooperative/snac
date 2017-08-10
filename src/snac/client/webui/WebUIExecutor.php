@@ -381,6 +381,7 @@ class WebUIExecutor {
                     $constellation,
                     array(
                         "preview"=> (isset($input["preview"])) ? true : false,
+                        "maybeSameCount"=> (isset($serverResponse["maybesame_count"])) ? $serverResponse["maybesame_count"] : 0,
                         "message" => $message,
                         "holdings" => $holdings,
                         "editingUser" => $editingUser)
@@ -447,10 +448,35 @@ class WebUIExecutor {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
+            
+            $this->logger->addDebug("Getting Holding institution information from the resource relations");
+            $c = new \snac\data\Constellation($constellation);
+            $holdings = array();
+            foreach ($c->getResourceRelations() as $resourceRel) {
+                if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
+                    $repo = $resourceRel->getResource()->getRepository();
+                    $holdings[$repo->getID()] = array(
+                        "name" => $repo->getPreferredNameEntry()->getOriginal()
+                    );
+                    foreach ($repo->getPlaces() as $place) {
+                        if ($place->getGeoTerm() != null) {
+                            $holdings[$repo->getID()]["latitude"] = $place->getGeoTerm()->getLatitude();
+                            $holdings[$repo->getID()]["longitude"] = $place->getGeoTerm()->getLongitude();
+                        }
+                    }
+                }
+            }
+            // Sort the holding institutions alphabetically
+            usort($holdings, function($a, $b) {
+                return $a["name"] <=> $b["name"];
+            });
+            
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation,
                 array("preview"=> (isset($input["preview"])) ? true : false,
+                    "maybeSameCount"=> (isset($serverResponse["maybesame_count"])) ? $serverResponse["maybesame_count"] : 0,
+                    "holdings" => $holdings,
                     "editingUser" => $editingUser)
             ));
         } else {
@@ -946,6 +972,144 @@ class WebUIExecutor {
     }
 
     /**
+     * Display Message Center
+     *
+     * Loads the display with the message center (message list) template.  It also asks
+     * the server for the list of unread messages for the current user.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayMessageListPage(&$display) {
+        $ask = array("command"=>"user_messages");
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+            return $this->drawErrorPage($serverResponse, $display);
+
+        $display->setData($serverResponse);
+        $display->setTemplate("message_list");
+    }
+
+    /**
+     * Read Message
+     *
+     * Asks the server to read the message with given ID.  The user must have permission
+     * to read the message or the server will return an error.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function readMessage(&$input) {
+        $ask = array("command"=>"read_message",
+                    "messageid"=>$input["messageid"]);
+        $serverResponse = $this->connect->query($ask);
+
+        return $serverResponse;
+    }
+
+    /**
+     * Delete Message
+     * 
+     * Asks the server to delete the message given as input by ID.  The user must have
+     * permission to delete the message or the server will return an error.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function deleteMessage(&$input) {
+        $ask = array("command"=>"delete_message",
+                    "messageid"=>$input["messageid"]);
+        $serverResponse = $this->connect->query($ask);
+
+        return $serverResponse;
+    }
+
+    /**
+     * Send a Feedback Message
+     *
+     * Sends the feedback given in the input to the server's feedback mechanism.  If no
+     * user information is given, it will send the user's IP address for verification.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client
+     */
+    public function sendFeedbackMessage(&$input) {
+        $response = array();
+        if (isset($input["subject"]) && isset($input["body"])) {
+            // split out the users to send to
+            $message = new \snac\data\Message();
+            $message->setSubject($input["subject"]);
+            $message->setBody($input["body"]);
+            if (isset($this->user) && $this->user !== null) {
+                $message->setFromUser($this->user);
+            } else {
+                // set this message from the IP address:
+                $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+            }
+
+            $ask = array("command"=>"send_feedback",
+                        "message"=>$message->toArray());
+            $serverResponse = $this->connect->query($ask);
+
+            if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                $response["result"] = "error";
+            }
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "error";
+        }
+        return $response;
+    }
+
+
+    /**
+     * Send Message
+     *
+     * Asks the server to send the message given in the input.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function sendMessage(&$input) {
+        $response = array();
+        if (isset($input["to_user"]) && isset($input["subject"]) && isset($input["body"])) {
+            // split out the users to send to
+            $toUsers = explode(",", $input["to_user"]);
+            $message = new \snac\data\Message();
+            $message->setSubject($input["subject"]);
+            $message->setBody($input["body"]);
+            $message->setFromUser($this->user);
+
+            $errors = array();
+
+            foreach ($toUsers as $toUserID) {
+                $toUser = new \snac\data\User();
+                $toUser->setUserID(trim($toUserID));
+                $message->setToUser($toUser);
+
+                $ask = array("command"=>"send_message",
+                            "message"=>$message->toArray());
+                $serverResponse = $this->connect->query($ask);
+
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                    array_push($errors, trim($toUserName));
+                }
+            }
+
+            if (!empty($errors)) {
+                $response["message"] = "Could not send to: " . implode(", ", $errors) . ".";
+            }
+
+            if (count($errors) < count($toUsers)) {
+                $response["result"] = "success";
+            }
+        } else {
+            $response["result"] = "error";
+        }
+
+        return $response;
+    }
+
+    /**
      * Handle Administrative tasks
      *
      * Fills the display object with the requested admin page for the given user.
@@ -1028,7 +1192,7 @@ class WebUIExecutor {
                 return $this->saveProfile($input, $user);
                 break;
             case "users":
-                $ask = array("command"=>"admin_users"
+                $ask = array("command"=>"list_users"
                 );
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
@@ -1038,7 +1202,7 @@ class WebUIExecutor {
                 $display->setTemplate("admin_users");
                 break;
             case "user_list":
-                $ask = array("command"=>"admin_users",
+                $ask = array("command"=>"list_users",
                     "filter" => "active"
                 );
                 return $this->connect->query($ask);
@@ -1783,6 +1947,15 @@ class WebUIExecutor {
                      isset($serverResponse["constellation"])) {
                 $request["command"] = "review_constellation";
                 $request["constellation"] = $serverResponse["constellation"];
+
+                // Add reviewer if we have it
+                if (isset($input["reviewer"]) && $input["reviewer"] != "") {
+                    $reviewer = new \snac\data\User();
+                    $reviewer->setUserID($input["reviewer"]);
+                    $request["reviewer"] = $reviewer->toArray();
+                    $this->logger->addDebug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
+                }
+
                 $serverResponse = $this->connect->query($request);
                 $response["server_debug"]["review"] = $serverResponse;
                 if (isset($serverResponse["result"]))
@@ -1963,6 +2136,44 @@ class WebUIExecutor {
     }
 
     /**
+     * Checkout Constellation
+     *
+     * Requests the server to check out the given constellation to the user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function checkoutConstellation(&$input) {
+        $constellation = null;
+        if (isset($input["constellationid"]) && isset($input["version"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+            $constellation->setVersion($input["version"]);
+        } else if (isset($input["id"]) && isset($input["version"])) {
+            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+            // Get the constellation object
+            $constellation = $mapper->serializeToConstellation($input);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
+        }
+
+        $this->logger->addDebug("checking out constellation", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "checkout_constellation"
+        );
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = $serverResponse;
+        return $response;
+    }
+
+    /**
      * Publish Constellation
      *
      * Requests the server to publish the given constellation.
@@ -2031,12 +2242,22 @@ class WebUIExecutor {
             return array( "result" => "failure", "error" => "No constellation or version number");
         }
 
+
+
         $this->logger->addDebug("sending constellation for review", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
                 "command" => "review_constellation"
         );
+        
+        // Add reviewer if we have it
+        if (isset($input["reviewer"]) && $input["reviewer"] != "") {
+            $reviewer = new \snac\data\User();
+            $reviewer->setUserID($input["reviewer"]);
+            $request["reviewer"] = $reviewer->toArray();
+            $this->logger->addDebug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
+        }
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
@@ -2246,10 +2467,7 @@ class WebUIExecutor {
                         $response["results"] = array ();
                         foreach ($constellation->getSources() as $source) {
                             array_push($response["results"],
-                                    array (
-                                            "id" => $source->getID(),
-                                            "text" => $source->getDisplayName()
-                                    ));
+                                    $source->toArray());
                         }
                         $this->logger->addDebug("created the following response list of sources", $response);
                         return $response;
@@ -2335,6 +2553,54 @@ class WebUIExecutor {
         }
 
         return array ();
+    }
+
+    /**
+     * Perform User Search
+     *
+     * Asks the Server to search the current users of the system for the given search terms.  Returns
+     * the list of results as a JSON-ready web ui response.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function performUserSearch(&$input) {
+        $this->logger->addDebug("Searching users");
+
+        $request = array ();
+        $request["command"] = "search_users";
+        // This is a strict query for a controlled vocabulary term
+        $queryString = "";
+        if (isset($input["q"]))
+            $queryString = $input["q"];
+        $request["query_string"] = $queryString;
+        if (isset($input["count"]))
+            $request["count"] = $input["count"];
+        if (isset($input["role"]))
+            $request["role"] = $input["role"];
+
+        // Send the query to the server
+        $serverResponse = $this->connect->query($request);
+
+        if (!isset($serverResponse["results"]))
+            return $serverResponse;
+
+        if (isset($input["format"]) && $input["format"] == "term") {
+            // keep the results as normal Term elements
+        } else {
+            $results = $serverResponse["results"];
+            $serverResponse["results"] = array();
+
+            foreach ($results as $k => $v) {
+                $serverResponse["results"][$k]["id"] = $v["userid"];
+                $serverResponse["results"][$k]["value"] = $v["fullName"] ." (".$v["userName"].")";
+                $serverResponse["results"][$k]["text"] = $serverResponse["results"][$k]["value"];
+            }
+        }
+
+        $this->logger->addDebug("Sending response back to client", $serverResponse);
+            // Send the response back to the web client
+        return $serverResponse;
     }
 
     /**

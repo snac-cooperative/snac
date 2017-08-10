@@ -73,9 +73,10 @@ $(document).ready(function() {
 
     <div class="row">
         <div class="col-md-12">
+            {% from 'widgets.html' import displayBiographicalExcerpt %}
             {% if data.constellation.biogHists.0.text %}
             <div class="well well-lg">
-                <p>{{data.constellation.biogHists.0.text | striptags | slice(0,800)}}...</p>
+                {{ displayBiographicalExcerpt(data.constellation) }}
             </div>
             {% endif %}
 
