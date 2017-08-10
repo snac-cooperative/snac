@@ -11,7 +11,7 @@
 
 <style type="text/css">
 div#alchemy_box { height: 800px; }
-div#graph_description { margin: 18px 0px 0px 24px; }
+div#graph_controls { margin: 18px 0px 0px 24px; }
 </style>
 
 <!-- JQuery -->
@@ -51,30 +51,29 @@ $('.selectpicker').selectpicker();
 
 {% from 'page_navigation.html' import topNavigation %}
 {{ topNavigation(X, user, permissions, control) }}
-
-
-      <!-- Constellation Data -->
-      <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
-      <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
-      <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
-
+    
     <div class="container snac" role="main">
     
     <h1>{{data.nameEntries.0.original}}</h1>
-
-    <!-- Constellation Data -->
-    <input id="constellationid" name="constellationid" type="hidden" value="{{ data.constellation.id }}"/>
-    <input id="version" name="version" type="hidden" value="{{ data.constellation.version }}"/>
 
     <div id="alchemy_box">
     <div id="alchemy" class="alchemy"></div>
     </div>
     
-    <div id="graph_description">
-    <input type="checkbox" onchange="toggle_captions(this)" id="toggle_captions" name="toggle_captions" title="Captions"> <label for="toggle_captions">Captions</label>
-    &nbsp; &nbsp; <input type="checkbox" checked onchange="toggle_force(this)" id="toggle_force" name="toggle_force" title="Force"> <label for="toggle_force">Force</label>
+    <form id="graph_form" name="graph_form" action="?" method="GET">
+    <div id="graph_controls">
+    <input type="hidden" id="constellationid" name="constellationid" value="{{ data.id }}">
+    <input type="checkbox" id="captions" name="captions" onchange="toggle_captions(this)"> <label for="captions">Captions</label>
+    &nbsp; &nbsp; 
+    <input type="radio" id="degree_1" name="degree" value="1"> <label for="degree_1">1</label>
+    <input type="radio" checked id="degree_2" name="degree" value="2"> <label for="degree_2">2</label>
+    <input type="radio" id="degree_3" name="degree" value="3"> <label for="degree_3">3 Degrees</label>
+    &nbsp; &nbsp; <input type="range" id="delta" name="delta" min="0" max="20" step="1" value="10" style="width:300px;display:inline-block;vertical-align:middle;"> <label for="delta">Delta</label>
+    &nbsp; &nbsp; <input type="button" id="graph_button" name="graph_button" value="Re-Graph" onClick="load_data()">
+    &nbsp; &nbsp; <input type="checkbox" checked id="force" name="force" onchange="toggle_force(this)"> <label for="force">Force</label>
     </div>
-    
+    </form>
+        
 	<script type="text/javascript">
     <!--
 	
@@ -84,16 +83,11 @@ $('.selectpicker').selectpicker();
         the_url += '?command=view&constellationid=' + dbid;
         window.open(the_url, '_blank');
     }
-	
-	function preview(caption)
-    {
-        document.getElementById("graph_description").innerHTML = caption ;
-    }
-	
+		
 	function toggle_force(e)
     {
         if(!e.checked) { alchemy.force.stop(); alchemy.conf.forceLocked = true; }
-        if(e.checked) { alchemy.force.start(); alchemy.conf.forceLocked = false; }
+        if(e.checked) { alchemy.conf.forceLocked = false; alchemy.force.start(); }
     }
 	
 	function toggle_captions(e)
@@ -101,28 +95,52 @@ $('.selectpicker').selectpicker();
         if(e.checked) { d3.selectAll(".alchemy text").style("display", "block"); alchemy.conf.nodeCaptionsOnByDefault = true; }
         if(!e.checked) { d3.selectAll(".alchemy text").style("display", "none"); alchemy.conf.nodeCaptionsOnByDefault = false; }
     }
-    
-	var some_data = {% autoescape false %} {{data.alchemy_data}} {% endautoescape %} ;
+	
+	function load_data() {
+	
+		$("#graph_button").prop("disabled", "true").val("Loading...");
+		
+		$.get("?command=neo4j_data", $("#graph_form").serialize(), function (data) {
+			$("#alchemy").html("");
+			alchemy = null;
+			alchemy = new Alchemy();
           
-    var config = {
-    dataSource: some_data,
-	forceLocked: false,
-    directedEdges: true,
-    nodeCaptionsOnByDefault: false,
-    nodeTypes: { "dgr": ["x0", "x1", "x2"] },
-    nodeStyle: {
-        "all": { color: "#FFFFFF", borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" } },
-        "x0": { color: "#00CCCC", radius: 13, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#00CCCC" }, highlighted: { color: "#00FFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
-        "x1": { color: "#66CC66", radius: 8, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#66CC66" }, highlighted: { color: "#CCFFFCC", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
-        "x2": { color: "#CCCC00", radius: 5, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CCCC00" }, highlighted: { color: "#FFFF00", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  }
-    },
-    edgeStyle: { "all": { width: 2 } },
-    nodeClick: function(n) { lookup(n.getProperties().dbid); },
-    initialScale: 1.0, 
-    initialTranslate: [0,0]
-    };
-    
-    alchemy.begin(config);
+			var config = {
+			dataSource: data,
+			forceLocked: false,
+			directedEdges: true,
+			nodeCaptionsOnByDefault: $("#captions").prop("checked") ? true : false,
+			nodeTypes: { "dgr": ["x0", "x1", "x2", "x3", "x4"] },
+			nodeStyle: {
+				"all": { color: "#FFFFFF", borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" } },
+				"x0": { color: "#00CCCC", radius: 19, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#00CCCC" }, highlighted: { color: "#00FFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+				"x1": { color: "#66CC66", radius: 11, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#66CC66" }, highlighted: { color: "#66FF66", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+				"x2": { color: "#CCCC00", radius: 6, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CCCC00" }, highlighted: { color: "#FFFF00", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+				"x3": { color: "#CC66CC", radius: 3, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CC00CC" }, highlighted: { color: "#FF66FF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+				"x4": { color: "#CCCCCC", radius: 1, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  }
+			},
+			edgeStyle: { "all": { width: 2 } },
+			nodeClick: function(n) { lookup(n.getProperties().dbid); },
+			initialScale: 1.0, 
+			initialTranslate: [0,0]
+			};
+			
+			alchemy.begin(config);
+			
+			$("#force").prop("checked", "true");
+			
+			$("#graph_button").prop("disabled", false).val("Re-Graph");
+		});
+		
+		return false;
+	}
+	
+    $(document).ready(function() {
+		load_data();
+	});
+	
+	
+
           
     //-->
     </script>

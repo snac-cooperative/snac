@@ -554,7 +554,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $this->logger->addDebug("Response page created, sending back to user");
         } else {
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
+            array_push($this->responseHeaders, "Content-Type: application/json");
         }
         return;
     }

@@ -93,9 +93,20 @@ class WebUIExecutor {
      * Neo4j Test
      */
     public function getNeo4JData(&$input) {
-        $neo4j = new \snac\client\webui\util\Neo4JUtil();
-        $data = $neo4j->performQuery(null);
-        return $data;
+	
+		$serverResponse = $this->getConstellation($input, $display);
+        if (isset($serverResponse["constellation"])) {
+            $constellation = $serverResponse["constellation"];
+			$neo4j = new \snac\client\webui\util\Neo4JUtil();
+			$deg = 2; if( (isset($input["degree"])) && ( ($input["degree"] == 1) || ($input["degree"] == 2) || ($input["degree"] == 3) || ($input["degree"] == 4) ) ) { $deg = $input["degree"]; }
+			$dlt = 10; if( (isset($input["delta"])) && ($input["delta"] >= 0) && ($input["delta"] <= 20) ) { $dlt = $input["delta"]; }
+        	$alchemy_data = $neo4j->getAlchemyData($constellation["id"], $deg, $dlt);
+        	return json_decode($alchemy_data, true);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+	
     }
 	
 	/**
@@ -104,19 +115,14 @@ class WebUIExecutor {
 	public function displayNeo4JGraphPage(&$input, &$display) {
         $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
-            
             $display->setTemplate("neo4j_graph_page");
-            
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
             $this->logger->addDebug("Setting constellation data into the page template");
-            //$display->setData($constellation);
-			$neo4j = new \snac\client\webui\util\Neo4JUtil();
-        	$alchemy_data = $neo4j->getAlchemyData($constellation["id"]);
-			$display->setData(array_merge($constellation, array("alchemy_data" => $alchemy_data)));
+			$display->setData($constellation);
         } else {
             $this->logger->addDebug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
