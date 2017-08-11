@@ -79,7 +79,7 @@ $('.selectpicker').selectpicker();
 	
     function lookup(dbid)
     {
-        var the_url = 'http://snac-dev.iath.virginia.edu/~dr3f/snac/www/';
+        var the_url = '';
         the_url += '?command=view&constellationid=' + dbid;
         window.open(the_url, '_blank');
     }
@@ -100,36 +100,41 @@ $('.selectpicker').selectpicker();
 	
 		$("#graph_button").prop("disabled", "true").val("Loading...");
 		
-		$.get("?command=neo4j_data", $("#graph_form").serialize(), function (data) {
+		$.get("?command=visualize&subcommand=connection_data", $("#graph_form").serialize(), function (data) {
 			$("#alchemy").html("");
 			alchemy = null;
 			alchemy = new Alchemy();
+
+            if (typeof data == 'string') {
+                $("#alchemy").html(data);
+            } else {
           
-			var config = {
-			dataSource: data,
-			forceLocked: false,
-			directedEdges: true,
-			nodeCaptionsOnByDefault: $("#captions").prop("checked") ? true : false,
-			nodeTypes: { "dgr": ["x0", "x1", "x2", "x3", "x4"] },
-			nodeStyle: {
-				"all": { color: "#FFFFFF", borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" } },
-				"x0": { color: "#00CCCC", radius: 19, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#00CCCC" }, highlighted: { color: "#00FFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
-				"x1": { color: "#66CC66", radius: 11, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#66CC66" }, highlighted: { color: "#66FF66", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
-				"x2": { color: "#CCCC00", radius: 6, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CCCC00" }, highlighted: { color: "#FFFF00", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
-				"x3": { color: "#CC66CC", radius: 3, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CC00CC" }, highlighted: { color: "#FF66FF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
-				"x4": { color: "#CCCCCC", radius: 1, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  }
-			},
-			edgeStyle: { "all": { width: 2 } },
-			nodeClick: function(n) { lookup(n.getProperties().dbid); },
-			initialScale: 1.0, 
-			initialTranslate: [0,0]
-			};
-			
-			alchemy.begin(config);
-			
-			$("#force").prop("checked", "true");
-			
-			$("#graph_button").prop("disabled", false).val("Re-Graph");
+                var config = {
+                dataSource: data,
+                forceLocked: false,
+                directedEdges: true,
+                nodeCaptionsOnByDefault: $("#captions").prop("checked") ? true : false,
+                nodeTypes: { "dgr": ["x0", "x1", "x2", "x3", "x4"] },
+                nodeStyle: {
+                    "all": { color: "#FFFFFF", borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" } },
+                    "x0": { color: "#00CCCC", radius: 19, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#00CCCC" }, highlighted: { color: "#00FFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+                    "x1": { color: "#66CC66", radius: 11, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#66CC66" }, highlighted: { color: "#66FF66", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+                    "x2": { color: "#CCCC00", radius: 6, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CCCC00" }, highlighted: { color: "#FFFF00", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+                    "x3": { color: "#CC66CC", radius: 3, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CC00CC" }, highlighted: { color: "#FF66FF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+                    "x4": { color: "#CCCCCC", radius: 1, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  }
+                },
+                edgeStyle: { "all": { width: 2 } },
+                nodeClick: function(n) { lookup(n.getProperties().dbid); },
+                initialScale: 1.0, 
+                initialTranslate: [0,0]
+                };
+                
+                alchemy.begin(config);
+                
+                $("#force").prop("checked", "true");
+                
+                $("#graph_button").prop("disabled", false).val("Re-Graph");
+            }
 		});
 		
 		return false;
@@ -139,9 +144,6 @@ $('.selectpicker').selectpicker();
 		load_data();
 	});
 	
-	
-
-          
     //-->
     </script>
 

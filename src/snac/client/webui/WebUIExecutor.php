@@ -90,46 +90,72 @@ class WebUIExecutor {
 
 
 	/**
-     * Neo4j Test
+     * Get Connection Graph Data
+     *
+     * Gets the data that drives the IC-IC connection graph.  This method
+     * uses a direct connection to Neo4J to read the graph information. It takes
+     * two parameters as input:
+     *  - degree: the degrees of separation from the query node
+     *  - delta:  the level of importance for connected nodes, 0 = bring back all
+     *            nodes of any importance, 20 = bring back only important nodes
+     *            (proportional to the number of resource relations per node)
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function getNeo4JData(&$input) {
+    public function getConnectionGraphData(&$input, &$constellation) {
 	
-		$serverResponse = $this->getConstellation($input, $display);
-        if (isset($serverResponse["constellation"])) {
-            $constellation = $serverResponse["constellation"];
-			$neo4j = new \snac\client\webui\util\Neo4JUtil();
-			$deg = 2; if( (isset($input["degree"])) && ( ($input["degree"] == 1) || ($input["degree"] == 2) || ($input["degree"] == 3) || ($input["degree"] == 4) ) ) { $deg = $input["degree"]; }
-			$dlt = 10; if( (isset($input["delta"])) && ($input["delta"] >= 0) && ($input["delta"] <= 20) ) { $dlt = $input["delta"]; }
-        	$alchemy_data = $neo4j->getAlchemyData($constellation["id"], $deg, $dlt);
-        	return json_decode($alchemy_data, true);
-        } else {
-            $this->logger->addDebug("Error page being drawn");
-            $this->drawErrorPage($serverResponse, $display);
+        $neo4j = new \snac\client\webui\util\Neo4JUtil();
+        $deg = 2; 
+        if ((isset($input["degree"])) && 
+            (($input["degree"] == 1) || ($input["degree"] == 2) || ($input["degree"] == 3) || ($input["degree"] == 4))) { 
+            $deg = $input["degree"]; 
         }
+        $dlt = 10; 
+        if ((isset($input["delta"])) && 
+            ($input["delta"] >= 0) && ($input["delta"] <= 20)) { 
+            $dlt = $input["delta"]; 
+        }
+        
+        $alchemy_data = $neo4j->getAlchemyData($constellation["id"], $deg, $dlt);
+        
+        return json_decode($alchemy_data, true);
 	
     }
-	
-	/**
-     * Neo4j Graph Display
-     */
-	public function displayNeo4JGraphPage(&$input, &$display) {
-        $serverResponse = $this->getConstellation($input, $display);
-        if (isset($serverResponse["constellation"])) {
-            $display->setTemplate("neo4j_graph_page");
+
+    public function handleVisualization(&$input, &$display) {
+        if (isset($input["subcommand"])) {
+            $serverResponse = $this->getConstellation($input, $display);
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
-            $this->logger->addDebug("Setting constellation data into the page template");
-			$display->setData($constellation);
-        } else {
-            $this->logger->addDebug("Error page being drawn");
-            $this->drawErrorPage($serverResponse, $display);
+            if (isset($serverResponse["constellation"])) {
+                switch ($input["subcommand"]) {
+                    case "connection_data":
+                        return $this->getConnectionGraphData($input, $constellation);
+                        break;
+                    case "connection_graph":
+                        $display->setTemplate("neo4j_graph_page");
+                        $display->setData($constellation);
+                        return;
+                    case "radial_graph":
+                        $display->setTemplate("radial_graph_page");
+                        $display->setData($constellation);
+                        return;
+                }
+            } else {
+                // No constellation error
+                $this->logger->addDebug("Error page being drawn");
+                $this->drawErrorPage($serverResponse, $display);
+            }
         }
+        // No subcommand error
+        $this->logger->addDebug("Error page being drawn");
+        $this->drawErrorPage("Subcommand required", $display);
     }
-
-
+	
     /**
      * Display Edit Page
      *

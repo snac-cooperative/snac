@@ -114,8 +114,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "maybesame",
                 "diff",
                 "explore",
-                "neo4j_data",
-				"neo4j_graph",
+                "visualize",
                 "history",
                 "api_help",
                 "feedback"
@@ -440,13 +439,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->sendFeedbackMessage($this->input);
                 break;
 
-            // Neo4J visualization commands
-            case "neo4j_data":
-                $response = $executor->getNeo4JData($this->input);
-                break;
-				
-			case "neo4j_graph":
-                $executor->displayNeo4JGraphPage($this->input, $display);
+            // visualization commands
+			case "visualize":
+                $executor->handleVisualization($this->input, $display);
                 break;
             
             // Administrator command (the sub method handles admin commands)
