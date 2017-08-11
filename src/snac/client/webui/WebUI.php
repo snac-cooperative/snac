@@ -441,7 +441,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // visualization commands
 			case "visualize":
-                $executor->handleVisualization($this->input, $display);
+                $response = $executor->handleVisualization($this->input, $display);
                 break;
             
             // Administrator command (the sub method handles admin commands)
