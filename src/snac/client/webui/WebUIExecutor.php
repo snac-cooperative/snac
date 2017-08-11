@@ -123,6 +123,16 @@ class WebUIExecutor {
 	
     }
 
+    /**
+     * Handle Visualization Commands
+     *
+     * Acts on the subcommand argument passed in the input, and returns either the desired
+     * visualization view or the data required by a visualization.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
     public function handleVisualization(&$input, &$display) {
         if (isset($input["subcommand"])) {
             $serverResponse = $this->getConstellation($input, $display);

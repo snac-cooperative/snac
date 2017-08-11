@@ -132,6 +132,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "relations",
             "explore",
             "api_help",
+            "visualize",
             "history"
         );
 

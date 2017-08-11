@@ -62,7 +62,7 @@ function init(){
             console.log(node);
             // snac: load in the graph for the new center node
             $.ajax({
-                url: "http://snac-dev.iath.virginia.edu/~dr3f/snac/www/?command=visualize&subcommand=connection_data&constellationid="+node.data.dbid,
+                url: "?command=visualize&subcommand=connection_data&constellationid="+node.data.dbid,
                 success: function(json){
                     var nodes = json.nodes;
                     var i = 0;
@@ -177,8 +177,7 @@ function init(){
 
     // snac; load in the graph for the original center node
     $.ajax({
-        //url: "http://socialarchive.iath.virginia.edu/rex2/snac/vertices/167517/snac/theJit",
-        url: "http://snac-dev.iath.virginia.edu/~dr3f/snac/www/?command=visualize&subcommand=connection_data&constellationid="+nodeId,
+        url: "?command=visualize&subcommand=connection_data&constellationid="+nodeId,
         success: function(json){
             console.log(json);
             //rgraph.loadJSON(json);
