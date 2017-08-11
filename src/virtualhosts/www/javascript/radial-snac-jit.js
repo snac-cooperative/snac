@@ -65,6 +65,18 @@ function init(){
                 url: "http://snac-dev.iath.virginia.edu/~dr3f/snac/www/?command=visualize&subcommand=connection_data&constellationid="+node.data.dbid,
                 success: function(json){
                     var nodes = json.nodes;
+                    var i = 0;
+                    nodes.forEach(function(node, k) {
+                        if (node.dgr == "x0") {
+                            i = k;
+                        }
+                    });
+
+                    if (i > 0) {
+                        var tmp = nodes[i];
+                        nodes[i] = nodes[0];
+                        nodes[0] = tmp;
+                    }
 
                     nodes.forEach(function(node, k) {
                         node.name = node.caption;
@@ -171,6 +183,18 @@ function init(){
             console.log(json);
             //rgraph.loadJSON(json);
             nodes = json.nodes;
+            var i = 0;
+            nodes.forEach(function(node, k) {
+                if (node.dgr == "x0") {
+                    i = k;
+                }
+            });
+
+            if (i > 0) {
+                var tmp = nodes[i];
+                nodes[i] = nodes[0];
+                nodes[0] = tmp;
+            }
 
             nodes.forEach(function(node, k) {
                 node.name = node.caption;
