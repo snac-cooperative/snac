@@ -450,10 +450,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                           <h5>Visualizations</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
                               <a class="list-group-item list-group-item-visualize"
-                                 href="?command=neo4j_graph&constellationid={{data.id}}&version={{data.version}}">
+                                 href="?command=visualize&subcommand=connection_graph&constellationid={{data.id}}&version={{data.version}}">
                                   <i class="fa fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
                               <a class="list-group-item list-group-item-visualize"
-                                 href="?command=radial_graph&constellationid={{data.id}}&version={{data.version}}">
+                                 href="?command=visualize&subcommand=radial_graph&constellationid={{data.id}}&version={{data.version}}">
                                   <i class="fa fa-bullseye" aria-hidden="true"></i> Radial Graph</a>
                           </div>
                            <h5>Export As</h5>
