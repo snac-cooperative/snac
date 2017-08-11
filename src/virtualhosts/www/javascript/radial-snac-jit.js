@@ -27,8 +27,6 @@ function log(a) {console.log&&console.log(a);}
 
 function init(){
     
-    // snac: look up node id
-    var nodeId = 12311871;
     
     //init RGraph
     var rgraph = new $jit.RGraph({
@@ -64,7 +62,7 @@ function init(){
             console.log(node);
             // snac: load in the graph for the new center node
             $.ajax({
-                url: "http://snac-dev.iath.virginia.edu/~dr3f/snac/www/?command=neo4j_data&constellationid="+node.data.dbid,
+                url: "http://snac-dev.iath.virginia.edu/~dr3f/snac/www/?command=visualize&subcommand=connection_data&constellationid="+node.data.dbid,
                 success: function(json){
                     var nodes = json.nodes;
 
@@ -168,7 +166,7 @@ function init(){
     // snac; load in the graph for the original center node
     $.ajax({
         //url: "http://socialarchive.iath.virginia.edu/rex2/snac/vertices/167517/snac/theJit",
-        url: "http://snac-dev.iath.virginia.edu/~dr3f/snac/www/?command=neo4j_data&constellationid="+nodeId,
+        url: "http://snac-dev.iath.virginia.edu/~dr3f/snac/www/?command=visualize&subcommand=connection_data&constellationid="+nodeId,
         success: function(json){
             console.log(json);
             //rgraph.loadJSON(json);
