@@ -60,6 +60,12 @@ $(document).ready(function() {
 <div class="container snac" role="main">
 <form id="new_user_form">
     <h1>Rest API Commands</h1>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <p>The following commands may be given as JSON <code>PUT</code> requests to the SNAC RestFUL API.  Most read-only API commands may be called without login, however anything that causes changes in the data require a <code>user</code> object which includes a temporary API key.  For examples using the RestFUL API in PHP and Java, view the <a href="https://github.com/snac-cooperative/Rest-API-Examples">SNAC RestAPI Examples Repository</a> on GitHub.
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-12">
@@ -86,8 +92,12 @@ $(document).ready(function() {
                                             <td style="width: 80%">
                                                 {% for param in info.parameters %}
                                                     {% for k,v in param %}
+                                                    {% if k == "optional" %}
+                                                    <p style="margin-left: 15px"><em>optional</em></p>
+                                                    {% else %}
                                                     <p><code>{{k}}</code></p>
                                                     <p style="margin-left: 15px">{{v}}</p>
+                                                    {% endif %}
                                                     {% endfor %}
                                                 {% endfor %}
                                             </td>
