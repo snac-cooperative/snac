@@ -413,14 +413,23 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             </div>
                             <div class="panel-body">
                                 <p>You may perform any of the following actions on this constellation.</p>
-                                <!--
-                                <div class="list-group">
-                                    <a href="#" class="list-group-item list-group-item-success" id="preview"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>
-                                </div>
-                                -->
                                 <div class="list-group">
                                     <a class="list-group-item list-group-item-review"
                                         href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Review Constellation</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.email and data.status == 'editable' %}
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">User Actions</h3>
+                            </div>
+                            <div class="panel-body">
+                                <p>You may perform any of the following actions on this constellation.</p>
+                                <div class="list-group">
+                                    <a class="list-group-item list-group-item-info"
+                                        href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
                                 </div>
                             </div>
                         </div>

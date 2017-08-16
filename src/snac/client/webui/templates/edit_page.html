@@ -327,7 +327,17 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                     {% if data.reviewNote %}
                     <div class="panel panel-review">
-                        <div class="panel-heading"><h3 class="panel-title">User Note</h3></div>
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                {% if data.reviewNote.status == 'needs review' %}
+                                Editor's Note
+                                {% elseif data.reviewNote.status == 'change locks' %}
+                                Reviewer's Note
+                                {% else %}
+                                User Note
+                                {% endif %}
+                            </h3>
+                        </div>
                         <div class="panel-body">
                             <p>{{data.reviewNote.note}}</p>
                             <p class="small text-right">{{data.reviewNote.fullName}} ({{data.reviewNote.userName}})</p>
@@ -348,8 +358,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="list-group">
                                 <a href="#" class="list-group-item list-group-item-info" id="save_and_continue"><span class="glyphicon glyphicon-floppy-disk"></span> Save &amp; Continue <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Save the current state of the constellation and continue working." data-toggle="popover" data-placement="top"></span></a>
                                 <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard"><span class="glyphicon glyphicon-floppy-saved"></span> Save &amp; Dashboard <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and return to the dashboard.  It will not be published, but will remain in your "In Progress Edits" list.' data-toggle="popover" data-placement="top"></span></a>
+                                {% if not data.reviewNote or data.reviewNote.status == 'change locks' %}
                                 <a href="#" class="list-group-item list-group-item-review" data-toggle="modal" data-target="#sendReviewPane"><span class="glyphicon glyphicon-send"></span> Save &amp; Send for Review <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and send it to the reviewers.  It will be removed from your "In Progress Edits" list.'  data-toggle="popover" data-placement="top"></span></a>
-                                {% if data.reviewNote.userName and permissions.ChangeLocks %}
+                                {% endif %}
+                                {% if data.reviewNote.userName and permissions.ChangeLocks and data.reviewNote.status == 'needs review' %}
                                 <a href="#" class="list-group-item list-group-item-review" id="save_and_send_back"><span class="fa fa-fw fa-paper-plane fa-flip-horizontal"></span> Save &amp; Send to Editor <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and send it back to the previous editor.'  data-toggle="popover" data-placement="top"></span></a>
                                 {% endif %}
                                 {% if permissions.Publish %}

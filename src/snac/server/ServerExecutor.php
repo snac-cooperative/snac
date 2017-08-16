@@ -1307,8 +1307,11 @@ class ServerExecutor {
                 $toUser = new \snac\data\User($input["to_user"]);
 
                 $logNote = "Constellation reassigned by " . $this->user->getUserName();
-                if (isset($input["message"]) && $input["message"] != "")
+                $personalMessage = false;
+                if (isset($input["message"]) && $input["message"] != "") {
+                    $personalMessage = true;
                     $logNote = $input["message"];
+                }
 
                 // Get the full User object
                 $toUser = $this->uStore->readUser($toUser);
@@ -1326,10 +1329,11 @@ class ServerExecutor {
 
                 // If the admin user has the current version AND permission to change locks
                 if ($current->getVersion() == $constellation->getVersion() && $this->hasPermission("Change Locks")) {
-                    $result = $this->cStore->writeConstellationStatus($toUser, $constellation->getID(), "change locks",
+                    $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "change locks",
                             $logNote);
                     $result = $this->cStore->writeConstellationStatus($toUser, $constellation->getID(), "locked editing",
                             "Constellation reassigned by " . $this->user->getUserName());
+                    
 
 
                     if (isset($result) && $result !== false) {
@@ -1338,6 +1342,34 @@ class ServerExecutor {
                         $response["constellation"] = $constellation->toArray();
                         $response["result"] = "success";
 
+                        if ($toUser != null) {
+                            // Send a message and email to the user asked to review:
+                            $newest = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_MICRO_SUMMARY);
+                            $message = new \snac\data\Message();
+                            $message->setToUser($toUser);
+                            $message->setFromUser($this->user);
+                            $message->setSubject("Constellation Sent to You");
+                            $msgBody = "<p>A constellation was reassigned to you for editing.</p>";
+                            if ($personalMessage) {
+                                $msgBody .= "<p>".$logNote."</p>";
+                            }
+                            $name = "Unknown";
+                            $this->logger->addDebug("Sending message for reviewer", $newest->toArray());
+                            $prefName = $newest->getPreferredNameEntry();
+                            if ($prefName != null)
+                                $name = $prefName->getOriginal();
+                            $msgBody .= "<div class=\"list-group list-group-constellationlist\"><a href=\""
+                                .\snac\Config::$WEBUI_URL."?command=details&amp;constellationid=".
+                                $newest->getID()."&amp;version=".$newest->getVersion()."&amp;preview=1\"".
+                                "class=\"constellation constellation-review list-group-item list-group-item-success\">$name</a></div>";
+                            $message->setBody($msgBody);
+                            
+                            // Send the message
+                            $this->uStore->writeMessage($message);
+
+                            // Email the message, if needed
+                            $this->mailer->sendUserMessage($message);
+                        }
 
                     } else {
 
@@ -1491,12 +1523,14 @@ class ServerExecutor {
                         }
                     }
 
-                    $message = "User sending Constellation for review";
+                    $logNote = "User sending Constellation for review";
+                    $personalMessage = false;
                     if (isset($input["message"]) && $input["message"] != null && $input["message"] != "") {
-                        $message = $input["message"];
+                        $logNote = $input["message"];
+                        $personalMessage = true;
                     }
                     $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "needs review",
-                            $message, $toUser);
+                            $logNote, $toUser);
 
 
                     if (isset($result) && $result !== false) {
@@ -1508,6 +1542,9 @@ class ServerExecutor {
                             $message->setFromUser($this->user);
                             $message->setSubject("Constellation for review");
                             $msgBody = "<p>Please review my constellation.</p>";
+                            if ($personalMessage) {
+                                $msgBody .= "<p>".$logNote."</p>";
+                            }
                             $name = "Unknown";
                             $this->logger->addDebug("Sending message for reviewer", $newest->toArray());
                             $prefName = $newest->getPreferredNameEntry();
