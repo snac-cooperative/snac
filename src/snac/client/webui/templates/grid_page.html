@@ -148,10 +148,13 @@ body {
 <script>
 $(document).ready(function() {
 
-    $("<img/>")
+    // Remove any images that don't load.  Since they come from
+    // Wikidata, we cannot be sure on page render if they still
+    // exist on the remote server.
+    $("img")
         .on('error', function() { 
             var id = $(this).attr('id');
-            $("thumbnail_" + id).remove();
+            $("#thumbnail_" + id).remove();
             console.log("error loading image"); 
         })
         .attr("src", $(this).attr("src"));
