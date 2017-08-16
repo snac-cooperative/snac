@@ -821,6 +821,18 @@ class DBUtil
         return $result;
     }
 
+    /**
+     * Read the Last Review Status
+     *
+     * Gets the last version_history information for the given Constellation ID that
+     * is in a review/change state: "needs review" or "change locks."  It then returns
+     * that to the caller.  If the optional version parameter is set, it returns the
+     * latest review status before that version.
+     *
+     * @param int $mainID The Constellation ID to get review status for
+     * @param int $version optional The latest version of the history to check
+     * @return string[] The latest review/change status of the Constellation
+     */
     public function readLastReviewStatusForConstellation($mainID, $version=null) {
         $history = $this->listVersionHistory($mainID, $version, false);
 
