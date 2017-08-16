@@ -101,6 +101,7 @@ class WebUIExecutor {
      *            (proportional to the number of resource relations per node)
      *
      * @param string[] $input Post/Get inputs from the webui
+     * @param string[][] $constellation Constellation array object from the server
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
     public function getConnectionGraphData(&$input, &$constellation) {
@@ -119,7 +120,7 @@ class WebUIExecutor {
         
         $alchemy_data = $neo4j->getAlchemyData($constellation["id"], $deg, $dlt);
         
-        return json_decode($alchemy_data, true);
+        return $alchemy_data;
 	
     }
 
