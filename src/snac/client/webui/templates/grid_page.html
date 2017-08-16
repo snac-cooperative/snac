@@ -145,7 +145,22 @@ body {
          }
 
 </style>
+<script>
+$(document).ready(function() {
 
+    // Remove any images that don't load.  Since they come from
+    // Wikidata, we cannot be sure on page render if they still
+    // exist on the remote server.
+    $("img")
+        .on('error', function() { 
+            var id = $(this).attr('id');
+            $("#thumbnail_" + id).remove();
+            console.log("error loading image"); 
+        })
+        .attr("src", $(this).attr("src"));
+
+});
+</script>
 
 </head>
 <body role="document">
@@ -184,11 +199,11 @@ body {
             <div class="azgrid" style="position: relative; height: 100%">
                 <div class="row list-comments">
                     {% for constellation in data.constellation %}
-                    <div class="thumbnail">
+                    <div class="thumbnail" id="thumbnail_img_{{loop.index}}">
                         <div style="float: none;" class="wikipedia_thumbnail">
                             <a href="?command=view&constellationid={{constellation.id}}">
                                 <img src="{{constellation.images.0.url}}?width=300"
-                                alt="[thumbnail]"></img>
+                                     alt="[thumbnail]" id="img_{{loop.index}}"></img>
                             </a>
                             <div>
                                 <p class="wikipedia-caption">
