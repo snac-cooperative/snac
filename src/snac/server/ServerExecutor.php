@@ -2874,7 +2874,10 @@ class ServerExecutor {
         // Use the first entry in the list
         $constellation = $constellations[0];
 
-        if (\snac\Config::$USE_NEO4J) {
+        // TODO: We need to fully implement Neo4J so that we can ask these questions of that system
+        // For now, we'll hack it out.
+        //if (\snac\Config::$USE_NEO4J) {
+        if (false) {
             // If using Neo4J, then ask Neo4J.  It will be a faster response time.
             $return = array("in" => array(), "out" => array());
 
