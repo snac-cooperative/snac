@@ -114,6 +114,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "maybesame",
                 "diff",
                 "explore",
+                "visualize",
                 "history",
                 "api_help",
                 "contact",
@@ -132,6 +133,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "relations",
             "explore",
             "api_help",
+            "visualize",
             "history"
         );
 
@@ -439,6 +441,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->sendFeedbackMessage($this->input);
                 break;
 
+            // visualization commands
+			case "visualize":
+                $response = $executor->handleVisualization($this->input, $display);
+                break;
+            
             // Administrator command (the sub method handles admin commands)
             case "administrator":
                 $response = $executor->handleAdministrator($this->input, $display, $user);
@@ -588,7 +595,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $this->logger->addDebug("Response page created, sending back to user");
         } else {
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
+            array_push($this->responseHeaders, "Content-Type: application/json");
         }
         return;
     }
