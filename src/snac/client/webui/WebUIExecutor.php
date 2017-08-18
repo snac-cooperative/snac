@@ -889,10 +889,17 @@ class WebUIExecutor {
      *
      * Fills the display object with the explore grid.
      *
+     * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displayGridPage(&$display) {
+    public function displayGridPage(&$input, &$display) {
         $display->setTemplate("grid_page");
+
+        $otherInfo = array();
+
+        if (isset($input["redirected"])) {
+            $otherInfo["message"] = "redirected";
+        }
 
         $randomQuery = $this->connect->query(array(
                 "command"=>"random_constellations",
@@ -903,7 +910,7 @@ class WebUIExecutor {
             $randomConstellations = $randomQuery["constellation"];
         }
 
-        $display->setData($randomQuery);
+        $display->setData(array_merge($randomQuery, $otherInfo));
     }
 
 

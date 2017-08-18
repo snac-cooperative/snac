@@ -411,7 +411,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     return;
                 }
             case "explore":
-                $executor->displayGridPage($display);
+                $executor->displayGridPage($this->input, $display);
                 break;
 
             // User and messaging commands
@@ -605,7 +605,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // The WebUI is displaying the landing page only
                 // $executor->displayLandingPage($display);
                 // The grid page is the "new" landing page
-                $executor->displayGridPage($display);
+                $executor->displayGridPage($this->input, $display);
                 break;
         }
 

@@ -168,6 +168,17 @@ $(document).ready(function() {
 <div class="container snac" role="main">
     <h1>Social Networks and Archival Context</h1>
 
+    {% if data.message %}
+            <div class="alert alert-info alert-dismissable" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {% if data.message == 'redirected' %}
+                    Welcome to SNAC.  You have been redirected to the new SNAC web interface, please update your bookmarks.  If you are looking for the About section that used to reside on socialarchive.iath.virginia.edu, please click the "About" link above.
+                {% else %}
+                    {{data.message}}
+                {% endif %}
+            </div>
+    {% endif %}
+
 		<form class="form-horizontal" id="search_form" method="GET" action="?">
 			<div class="well well-lg text-center search-box">
                     <input type="hidden" id="count" name="count" value="10">
