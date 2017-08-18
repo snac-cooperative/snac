@@ -488,6 +488,36 @@ button.list-group-item-download.active:focus {
     border-color: #7a3583;
 }
 
+.list-group-item-visualize {
+    color: #3C7668;
+    background-color: #D8F0E8;
+}
+a.list-group-item-visualize,
+button.list-group-item-visualize {
+    color: #3C7668;
+}
+a.list-group-item-visualize .list-group-item-heading,
+button.list-group-item-visualize .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-visualize:hover,
+button.list-group-item-visualize:hover,
+a.list-group-item-visualize:focus,
+button.list-group-item-visualize:focus {
+    color: #3C7668;
+    background-color: #CDEBDB;
+}
+a.list-group-item-visualize.active,
+button.list-group-item-visualize.active,
+a.list-group-item-visualize.active:hover,
+button.list-group-item-visualize.active:hover,
+a.list-group-item-visualize.active:focus,
+button.list-group-item-visualize.active:focus {
+    color: #fff;
+    background-color: #3C7668;
+    border-color: #3C7668;
+}
+
 .list-group-item-history {
     color: #2A6D88;
     background-color: #E0E9F3;
@@ -621,8 +651,8 @@ button.list-group-item-merge.active:focus {
     border: none;
 }
 
-/* Fix the width of font-awesome icons so their text aligns nicely beside them 
-.fa {
+/* Fix the width of font-awesome icons so their text aligns nicely beside them */
+/*.fa {
     width: 1.2em;
 }*/
 

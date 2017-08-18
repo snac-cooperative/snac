@@ -114,8 +114,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "maybesame",
                 "diff",
                 "explore",
+                "visualize",
                 "history",
                 "static",
+                "api_help",
+                "contact",
                 "feedback"
         );
 
@@ -131,6 +134,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "relations",
             "explore",
             "static",
+            "api_help",
+            "visualize",
             "history"
         );
 
@@ -438,6 +443,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->sendFeedbackMessage($this->input);
                 break;
 
+            // visualization commands
+			case "visualize":
+                $response = $executor->handleVisualization($this->input, $display);
+                break;
+            
             // Administrator command (the sub method handles admin commands)
             case "administrator":
                 $response = $executor->handleAdministrator($this->input, $display, $user);
@@ -485,6 +495,21 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // if sent for review by constellationid parameter alone, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully sent for review");
+                    return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
+                }
+                break;
+
+            case "save_send":
+                $response = $executor->saveAndSendConstellation($this->input);
+                break;
+
+            case "send":
+                $response = $executor->sendConstellation($this->input);
+                // if sent for review by constellationid parameter alone, then send them to the dashboard.
+                if (!isset($response["error"]) && !isset($this->input["entityType"])) {
+                    header("Location: index.php?command=dashboard&message=Constellation successfully sent to editor");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
@@ -556,6 +581,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->performUserSearch($this->input);
                 break;
 
+            case "contact":
+                $executor->displayContactPage($display);
+                break;
+
             // Error command
             case "error":
                 $error = array("error" => array(
@@ -588,7 +617,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $this->logger->addDebug("Response page created, sending back to user");
         } else {
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
+            array_push($this->responseHeaders, "Content-Type: application/json");
         }
         return;
     }

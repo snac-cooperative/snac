@@ -51,6 +51,8 @@
 <!-- SNAC Javascript -->
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="javascript/feedback.js{{control.noCache}}"></script>
 
 <meta name="viewport" content="initial-scale = 1.0" />
 <style>
@@ -603,19 +605,31 @@
                            <h3 class="panel-title">Constellation Options</h3>
                        </div>
                        <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
-                          <h5>Visualizations</h5>
+                          <h5>Information</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
-                                <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
+                                <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap">
+                                    <i class="fa fa-fw fa-globe" aria-hidden="true"></i> Collection Locations</a>
                                 <a class="list-group-item list-group-item-warning"
-                                   href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
+                                   href="?command=details&constellationid={{data.id}}&version={{data.version}}">
+                                    <i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View</a>
                                 {% if data.maybeSameCount > 0 %}
                                 <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
                                        class="list-group-item list-group-item-merge" id="merge">
-                                       <span class="glyphicon glyphicon-random"></span> View Maybe Same
-                                       <span class="badge">{{ data.maybeSameCount }}</span></a>
+                                    <i class="fa fa-fw fa-random" aria-hidden="true"></i> View Maybe Same
+                                    <span class="badge">{{ data.maybeSameCount }}</span></a>
                                 {% endif %}
                                    <a class="list-group-item list-group-item-history"
-                                      href="?command=history&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-time"></span> Constellation History</a>
+                                      href="?command=history&constellationid={{data.id}}&version={{data.version}}">
+                                       <i class="fa fa-history" aria-hidden="true"></i> Constellation History</a>
+                          </div>
+                          <h5>Visualizations</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a class="list-group-item list-group-item-visualize"
+                                 href="?command=visualize&subcommand=connection_graph&constellationid={{data.id}}&version={{data.version}}">
+                                  <i class="fa fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
+                              <a class="list-group-item list-group-item-visualize"
+                                 href="?command=visualize&subcommand=radial_graph&constellationid={{data.id}}&version={{data.version}}">
+                                  <i class="fa fa-bullseye" aria-hidden="true"></i> Radial Graph</a>
                           </div>
                           <h5>Export As</h5>
                           <div class="list-group" style="margin-bottom: 0px;">

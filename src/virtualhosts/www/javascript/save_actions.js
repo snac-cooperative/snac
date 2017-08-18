@@ -541,6 +541,132 @@ $(document).ready(function() {
         }
     }
 
+    function save_and_send_editor(){
+        // If EntityType and NameEntry do not have values, then don't let the user save or publish
+        var noNameEntryText = true;
+        $("input[id^='nameEntry_original_']").each(function() {
+            if ($(this).val() != "")
+                noNameEntryText = false;
+        });
+        if ($('#entityType').val() == "" || noNameEntryText) {
+            $('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
+            setTimeout(function(){
+                $('#error-message').slideDown();
+            }, 500);
+            setTimeout(function(){
+                $('#error-message').slideUp();
+            }, 10000);
+            return;
+        }
+
+        // If nothing has changed, alert the user and publish
+        if (somethingHasBeenEdited == false) {
+            $('#notification-message').html("<p>No new changes to save.  Sending Constellation to editor... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            // Publish by AJAX call
+            $.post("?command=send", $("#constellation_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // Edit succeeded, so save mode off
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    $('#success-message').html("<p>Constellation sent for review. Going to dashboard.</p>");
+                    setTimeout(function(){
+                        $('#success-message').slideDown();
+                    }, 500);
+                    setTimeout(function(){
+
+                        // Go to dashboard
+                        window.location.href = "?command=dashboard";
+
+                    }, 1000);
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        } else {
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Saving and sending Constellation to editor... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            // Save any XML editor contents back to their text areas before saving
+            $("textarea[id*='_text_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+            $("textarea[id*='_source_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+
+            // Go through all the panels and update any dates
+            $("div[id*='_panel_']").each(function() {
+                var cont = $(this);
+                // Don't look at any of the ZZ hidden panels
+                if (cont.attr('id').indexOf("ZZ") == -1) {
+                    var split = cont.attr('id').split("_");
+
+                    // Split reveals a normal panel:
+                    if (split.length == 3) {
+                        var short = split[0];
+                        var id = split[2];
+
+                        updateDate(short, id);
+                    }
+                }
+            });
+
+
+            // Send the data back by AJAX call
+            $.post("?command=save_send", $("#constellation_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // Edit succeeded, so save mode off
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+
+                    $('#success-message').html("<p>Constellation saved and sent to editor. Going to dashboard.</p>");
+                    setTimeout(function(){
+                        $('#success-message').slideDown();
+                    }, 500);
+                    setTimeout(function(){
+
+                        // Go to dashboard
+                        window.location.href = "?command=dashboard";
+
+                    }, 1000);
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        }
+    }
+    
+    // Save and Send Back to Editor button
+    if($('#save_and_send_back').exists()) {
+        $('#save_and_send_back').click(function() {
+            save_and_send_editor();
+        });
+    }
+
+
     // Save and Send for Review button
     if($('#save_and_review_touser').exists()) {
         $('#save_and_review_touser').click(function() {

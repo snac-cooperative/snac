@@ -220,6 +220,7 @@ class DBUtil
                                 'needs review' => 1,
                                 'rejected' => 1,
                                 'locked editing' => 1,
+                                'change locks' => 1,
                                 'bulk ingest' => 1,
                                 'deleted' =>1,
                                 'currently editing' => 1,
@@ -818,6 +819,30 @@ class DBUtil
                 return $b['version'] <=> $a['version'];
             });
         return $result;
+    }
+
+    /**
+     * Read the Last Review Status
+     *
+     * Gets the last version_history information for the given Constellation ID that
+     * is in a review/change state: "needs review" or "change locks."  It then returns
+     * that to the caller.  If the optional version parameter is set, it returns the
+     * latest review status before that version.
+     *
+     * @param int $mainID The Constellation ID to get review status for
+     * @param int $version optional The latest version of the history to check
+     * @return string[] The latest review/change status of the Constellation
+     */
+    public function readLastReviewStatusForConstellation($mainID, $version=null) {
+        $history = $this->listVersionHistory($mainID, $version, false);
+
+        foreach ($history as $event) {
+            if ($event['status'] == 'published' || $event['status'] == 'deleted' || $event['status'] == 'tombstoned')
+                return null;
+            else if ($event["status"] == 'needs review' || $event["status"] == 'change locks')
+                return $event;
+        }
+        return null;
     }
 
 
