@@ -49,7 +49,7 @@ $('.selectpicker').selectpicker();
 </head>
 <body role="document">
 
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
     
     <div class="container snac" role="main">
@@ -147,5 +147,6 @@ $('.selectpicker').selectpicker();
     </script>
 
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

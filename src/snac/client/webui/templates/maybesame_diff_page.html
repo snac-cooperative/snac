@@ -251,7 +251,7 @@ $(document).ready(function() {
 
 
 {% import 'edit_components.html' as components %}
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 {% set i = 0 %}
@@ -2470,5 +2470,6 @@ $(document).ready(function() {
             </div>
         </div>
     </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Error</title>
+<title>Error - Social Networks and Archival Contexts</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -32,7 +32,7 @@ $('.selectpicker').selectpicker();
 </head>
 
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -63,5 +63,6 @@ $('.selectpicker').selectpicker();
         </div>
 
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

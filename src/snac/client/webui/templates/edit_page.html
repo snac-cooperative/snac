@@ -81,7 +81,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 {% import 'date_entry.html' as dates %}
 
 
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -705,5 +705,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 </div>
 
     </div>
+    {{ footer(X, user, permissions, control) }}
     </body>
     </html>

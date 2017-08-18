@@ -78,7 +78,7 @@ $(document).ready(function() {
 {% import 'date_entry.html' as dates %}
 
 
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -283,5 +283,6 @@ $(document).ready(function() {
             </div>
         </div>
     </div>
+    {{ footer(X, user, permissions, control) }}
     </body>
     </html>
