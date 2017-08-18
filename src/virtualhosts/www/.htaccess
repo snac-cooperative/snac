@@ -16,7 +16,6 @@ ErrorDocument 414 /snac_server/www/index.php?command=error&type=414
 ErrorDocument 415 /snac_server/www/index.php?command=error&type=415
 ErrorDocument 416 /snac_server/www/index.php?command=error&type=416
 ErrorDocument 417 /snac_server/www/index.php?command=error&type=417
-ErrorDocument 421 /snac_server/www/index.php?command=error&type=421
 ErrorDocument 422 /snac_server/www/index.php?command=error&type=422
 ErrorDocument 423 /snac_server/www/index.php?command=error&type=423
 ErrorDocument 424 /snac_server/www/index.php?command=error&type=424
