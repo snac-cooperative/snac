@@ -727,7 +727,7 @@
                     <ul>
                     <!-- {% for place in data.places %} -->
                         {% if place.confirmed and place.geoplace.id %}
-                            <li>{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
+                            <li>{{place.geoplace.name}}, {{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
                         {% elseif place.original and place.original != "" %}
                             <li>{{place.original}} <em>(as recorded)</em></li>
                         {% endif %}
