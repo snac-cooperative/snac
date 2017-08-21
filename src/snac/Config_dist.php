@@ -270,5 +270,9 @@ class Config {
         "from_name" => "SNAC Web"
     );
 
+    /**
+     * @var string Static content directory
+     */
+    public static $STATIC_FILE_DIR = "/full/path/to/snac/src/virtualhosts/www/static/";
 
 }

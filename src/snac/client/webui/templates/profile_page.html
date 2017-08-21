@@ -24,6 +24,8 @@ $('.selectpicker').selectpicker();
 
 <!-- SNAC Scripts -->
 <script src="javascript/profile.js{{control.noCache}}"></script>
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="javascript/feedback.js{{control.noCache}}"></script>
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -32,7 +34,7 @@ $('.selectpicker').selectpicker();
 
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -175,5 +177,6 @@ $('.selectpicker').selectpicker();
     </div>
 </form>
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

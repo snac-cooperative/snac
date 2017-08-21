@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Contact Us - Social Networks and Archival Contexts</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script src='https://www.google.com/recaptcha/api.js'></script>
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>
+tinymce.init({
+    selector:'textarea', 
+    min_height: 250,
+    menubar: false,
+    statusbar: false,
+    plugins: [
+        'advlist autolink lists link image charmap print preview anchor',
+        'searchreplace visualblocks code fullscreen',
+        'insertdatetime contextmenu paste code'
+    ],
+    toolbar: 'undo redo | bold italic | bullist numlist outdent indent | link',
+});
+</script>
+
+
+<!-- SNAC Scripts -->
+<script src="javascript/profile.js{{control.noCache}}"></script>
+<script src="javascript/contact.js{{control.noCache}}"></script>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+<form id="profile_form">
+    <h1>Contact Us</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <p>We value your comments and suggestions.  Please use this form to send a message to the SNAC team.  If you are reporting a technical problem with the system, please use the feedback option at the bottom-right of the page you encountered the error, if possible, which will provide us with more technical details of your issue.</p>
+        </div>
+        <div class="col-md-8">
+
+            <div class="alert alert-01" id="comment_status_message" style="display: none">
+            </div><!-- end alert -->
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Your Name</label>
+                    <div class="col-xs-9">
+                        <input class="form-control" type="text" id="name" name="name"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Your Email</label>
+                    <div class="col-xs-9">
+                        <input class="form-control" type="text" id="email" name="email"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Message</label>
+                    <div class="col-xs-9">
+                        <textarea id="message" class="form-control" style="height: 200px;" placeholder="Compose your message here..."></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-3"></label>
+                    <div class="col-xs-9">
+                        <div class="g-recaptcha" data-sitekey="6LdjGCwUAAAAAJSU24QBnENdvbcX6oHJbjTzO1jN"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-3"></label>
+                    <div class="col-xs-9">
+                        <button type="button" class="btn btn-primary" id="send_comment"><i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+                        Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+</div>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>

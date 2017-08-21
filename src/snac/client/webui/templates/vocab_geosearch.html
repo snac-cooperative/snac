@@ -136,7 +136,7 @@ $(document).ready(function() {
 </style>
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -205,5 +205,6 @@ $(document).ready(function() {
         </div>
     </div>
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

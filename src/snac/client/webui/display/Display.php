@@ -173,6 +173,7 @@ class Display {
         // Put some PHP variables into the control section
         $this->data["control"]["currentURL"] = $this->cleanString("http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
         $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
+        $this->data["control"]["snacURL"] = \snac\Config::$WEBUI_URL;
 
         if (isset(\snac\Config::$INTERFACE_VERSION)) {
             if (\snac\Config::$INTERFACE_VERSION === "development")
@@ -189,7 +190,7 @@ class Display {
         // If the system is in DEBUG mode, then the display will disallow
         // caching of javascript.
         if (\snac\Config::$DEBUG_MODE == true) {
-            $this->data["control"]["noCache"] = "?_=".`git rev-parse HEAD`;
+            $this->data["control"]["noCache"] = trim("?_=".`git rev-parse HEAD`);
         }
 
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
@@ -204,5 +205,29 @@ class Display {
         $template = create_function('$data', file_get_contents($this->templateFileName()));
         $template($this->data);
         return "<html><body><h1>Testing</h1></body></html>";
+    }
+
+    public function setStaticDisplay($filename) {
+        if (is_file(\snac\Config::$STATIC_FILE_DIR ."/". $filename)) {
+            $dom = new \DOMDocument;
+            $dom->preserveWhiteSpace = false;
+            $dom->formatOutput = true;
+            $dom->loadHTMLFile(\snac\Config::$STATIC_FILE_DIR ."/". $filename, LIBXML_NOERROR);
+            $title = $dom->getElementsByTagName('title')->item(0)->textContent;
+            $body = $dom->getElementsByTagName('body')->item(0);
+
+            $newBody = new \DOMDocument;
+            foreach ($body->childNodes as $child) {
+                $newBody->appendChild($newBody->importNode($child, true));
+            }
+            $bodyHTML = $newBody->saveHTML();
+            $this->setTemplate("static_page");
+            $this->setData(array(
+                "body" => $bodyHTML,
+                "title" => $title
+            ));
+            return true;
+        }
+        return false;
     }
 }

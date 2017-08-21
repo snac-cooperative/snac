@@ -25,9 +25,14 @@ $('.selectpicker').selectpicker();
 
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="javascript/feedback.js{{control.noCache}}"></script>
+
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -51,5 +56,6 @@ $('.selectpicker').selectpicker();
         </div>
 
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>
