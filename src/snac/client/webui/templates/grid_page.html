@@ -169,10 +169,10 @@ $(document).ready(function() {
     <h1>Social Networks and Archival Context</h1>
 
     {% if data.message %}
-            <div class="alert alert-info alert-dismissable" role="alert">
+            <div class="alert alert-warning alert-dismissable" role="alert">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 {% if data.message == 'redirected' %}
-                    Welcome to SNAC.  You have been redirected to the new SNAC web interface, please update your bookmarks.  If you are looking for the About section that used to reside on socialarchive.iath.virginia.edu, please click the "About" link above.
+                    Welcome to SNAC.  You have been redirected to the new SNAC web interface; please update your bookmarks.  If you are looking for the documents previously available via socialarchive.iath.virginia.edu, please click the "About" link above.
                 {% else %}
                     {{data.message}}
                 {% endif %}
