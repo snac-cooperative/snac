@@ -2389,10 +2389,19 @@ class ServerExecutor {
      *
      * @param int $cId1 One Constellation ID
      * @param int $cId2 Another Constellation ID
+     * @param int $cV1 First Constellation Version or null
+     * @param int $cV2 Second Constellation Version or null
      * @return \snac\data\Assertion|boolean True if mergeable, false if unmergeable for editing reasons, or an
      *                                      Assertion if they are unmergeable because of a user-assertion
      */
-    function isMergeable($cId1, $cId2) {
+    function isMergeable($cId1, $cId2, $cV1 = null, $cV2 = null) {
+
+        if ($cId1 === $cId2)
+            return null;
+
+        if ($cV1 != null || $cV2 != null)
+            return null;
+
         $status1 = $this->cStore->readConstellationStatus($cId1);
         $status2 = $this->cStore->readConstellationStatus($cId2);
 
@@ -2448,7 +2457,17 @@ class ServerExecutor {
             try {
                 $cId1 = $input["constellationid1"];
                 $cId2 = $input["constellationid2"];
-                $mergeable = $this->isMergeable($cId1, $cId2);
+                $cV1 = null;
+                if (isset($input["version1"]))
+                    $cV1 = $input["version1"];
+
+                $cId2 = $input["constellationid2"];
+                $cV2 = null;
+                if (isset($input["version2"]))
+                    $cV2 = $input["version2"];
+                
+                $mergeable = $this->isMergeable($cId1, $cId2, $cV1, $cV2);
+                
                 // Right now, only published constellations can be merged, so that we can keep a "clean" history
                 if ($mergeable === true) {
                     $response["mergeable"] = true;
