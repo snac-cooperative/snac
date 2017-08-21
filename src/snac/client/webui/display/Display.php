@@ -207,6 +207,16 @@ class Display {
         return "<html><body><h1>Testing</h1></body></html>";
     }
 
+    /**
+     * Set an html file in static display
+     *
+     * Sets the given filename into a display template.  This method reads the
+     * content of the HTML file, then inputs the <title> into the title of the
+     * template and dumps the entire <body> content into the body of the template.
+     *
+     * @param string $filename The filename of the file to parse and display
+     * @return boolean True if successful, false otherwise
+     */
     public function setStaticDisplay($filename) {
         if (is_file(\snac\Config::$STATIC_FILE_DIR ."/". $filename)) {
             $dom = new \DOMDocument;
