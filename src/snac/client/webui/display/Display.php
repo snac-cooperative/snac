@@ -190,7 +190,7 @@ class Display {
         // If the system is in DEBUG mode, then the display will disallow
         // caching of javascript.
         if (\snac\Config::$DEBUG_MODE == true) {
-            $this->data["control"]["noCache"] = "?_=".`git rev-parse HEAD`;
+            $this->data["control"]["noCache"] = trim("?_=".`git rev-parse HEAD`);
         }
 
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
