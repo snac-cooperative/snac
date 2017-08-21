@@ -52,6 +52,8 @@
 <script src="javascript/name_heading_punctuator.js{{control.noCache}}"></script>
 <script src="javascript/edit_scripts.js{{control.noCache}}"></script>
 <script src="javascript/relation_search.js{{control.noCache}}"></script>
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="javascript/feedback.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -76,7 +78,7 @@ $(document).ready(function() {
 {% import 'date_entry.html' as dates %}
 
 
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -281,5 +283,6 @@ $(document).ready(function() {
             </div>
         </div>
     </div>
+    {{ footer(X, user, permissions, control) }}
     </body>
     </html>

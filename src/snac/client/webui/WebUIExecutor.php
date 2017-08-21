@@ -89,7 +89,84 @@ class WebUIExecutor {
     }
 
 
+	/**
+     * Get Connection Graph Data
+     *
+     * Gets the data that drives the IC-IC connection graph.  This method
+     * uses a direct connection to Neo4J to read the graph information. It takes
+     * two parameters as input:
+     *  - degree: the degrees of separation from the query node
+     *  - delta:  the level of importance for connected nodes, 0 = bring back all
+     *            nodes of any importance, 20 = bring back only important nodes
+     *            (proportional to the number of resource relations per node)
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param string[][] $constellation Constellation array object from the server
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function getConnectionGraphData(&$input, &$constellation) {
+	
+        $neo4j = new \snac\client\webui\util\Neo4JUtil();
+        $deg = 2; 
+        if ((isset($input["degree"])) && 
+            (($input["degree"] == 1) || ($input["degree"] == 2) || ($input["degree"] == 3) || ($input["degree"] == 4))) { 
+            $deg = $input["degree"]; 
+        }
+        $dlt = 10; 
+        if ((isset($input["delta"])) && 
+            ($input["delta"] >= 0) && ($input["delta"] <= 20)) { 
+            $dlt = $input["delta"]; 
+        }
+        
+        $alchemy_data = $neo4j->getAlchemyData($constellation["id"], $deg, $dlt);
+        
+        return $alchemy_data;
+	
+    }
 
+    /**
+     * Handle Visualization Commands
+     *
+     * Acts on the subcommand argument passed in the input, and returns either the desired
+     * visualization view or the data required by a visualization.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function handleVisualization(&$input, &$display) {
+        if (isset($input["subcommand"])) {
+            $serverResponse = $this->getConstellation($input, $display);
+            $constellation = $serverResponse["constellation"];
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            }
+            if (isset($serverResponse["constellation"])) {
+                switch ($input["subcommand"]) {
+                    case "connection_data":
+                        return $this->getConnectionGraphData($input, $constellation);
+                        break;
+                    case "connection_graph":
+                        $display->setTemplate("neo4j_graph_page");
+                        $display->setData($constellation);
+                        return;
+                    case "radial_graph":
+                        $display->setTemplate("radial_graph_page");
+                        $display->setData($constellation);
+                        return;
+                }
+            } else {
+                // No constellation error
+                $this->logger->addDebug("Error page being drawn");
+                $this->drawErrorPage($serverResponse, $display);
+            }
+        }
+        // No subcommand error
+        $this->logger->addDebug("Error page being drawn");
+        $this->drawErrorPage("Subcommand required", $display);
+    }
+	
     /**
      * Display Edit Page
      *
@@ -123,8 +200,13 @@ class WebUIExecutor {
                 if (isset($serverResponse))
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
+            
+                
             $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData($constellation);
+            $display->setData(array_merge(
+                $constellation,
+                array("reviewNote" => isset($serverResponse["review_note"]) ? $serverResponse["review_note"] : null)
+            ));
         } else {
                 $this->logger->addDebug("Error page being drawn");
                 $this->drawErrorPage($serverResponse, $display);
@@ -855,6 +937,23 @@ class WebUIExecutor {
     }
 
     /**
+     * Display Static Page
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayStaticPage(&$input, &$display) {
+        if (!isset($input["page"]) || !$display->setStaticDisplay($input["page"])) {
+            $error = array("error" => array(
+                "type" => "Not Found",
+                "message" => "The resource you were looking for does not exist."
+            ));
+            $this->drawErrorPage($error, $display);
+            return false;
+        }
+        return true;
+    }
+    /**
      * Display Preview Page
      *
      * Fills the display for a view page for the constellation object passed as input.  This is useful for the
@@ -892,10 +991,17 @@ class WebUIExecutor {
      *
      * Fills the display object with the explore grid.
      *
+     * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displayGridPage(&$display) {
+    public function displayGridPage(&$input, &$display) {
         $display->setTemplate("grid_page");
+
+        $otherInfo = array();
+
+        if (isset($input["redirected"])) {
+            $otherInfo["message"] = "redirected";
+        }
 
         $randomQuery = $this->connect->query(array(
                 "command"=>"random_constellations",
@@ -906,7 +1012,7 @@ class WebUIExecutor {
             $randomConstellations = $randomQuery["constellation"];
         }
 
-        $display->setData($randomQuery);
+        $display->setData(array_merge($randomQuery, $otherInfo));
     }
 
 
@@ -1096,26 +1202,54 @@ class WebUIExecutor {
      */
     public function sendFeedbackMessage(&$input) {
         $response = array();
-        if (isset($input["subject"]) && isset($input["body"])) {
-            // split out the users to send to
-            $message = new \snac\data\Message();
-            $message->setSubject($input["subject"]);
-            $message->setBody($input["body"]);
-            if (isset($this->user) && $this->user !== null) {
-                $message->setFromUser($this->user);
+        if (isset($input["subject"]) && isset($input["body"]) && isset($input["token"])) {
+
+            // confirm the token first
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+                "secret" => "6LdjGCwUAAAAAMRzQh-sVk9DF7ST9oVBGLDIogHv",
+                "response" => $input["token"]
+            ));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $verifyResponse = curl_exec($ch);
+            curl_close($ch);
+            $verified = array ("success" => false);
+
+            if ($verifyResponse != null) {
+                $verified = json_decode($verifyResponse, true);
+            }
+
+            if (isset($verified["success"]) && $verified["success"] === true) {
+                // split out the users to send to
+                $message = new \snac\data\Message();
+                $message->setSubject($input["subject"]);
+                $message->setBody($input["body"]);
+                if (isset($this->user) && $this->user !== null) {
+                    $message->setFromUser($this->user);
+                } else {
+                    // set this message from the IP address:
+                    $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+                }
+
+                if (isset($input["screenshot"])) {
+                    $message->setAttachmentContent($input["screenshot"]);
+                    $message->setAttachmentFilename("screenshot.png"); 
+                }
+
+                $ask = array("command"=>"send_feedback",
+                            "message"=>$message->toArray());
+                $serverResponse = $this->connect->query($ask);
+
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                    $response["result"] = "error";
+                }
+                $response["result"] = "success";
             } else {
-                // set this message from the IP address:
-                $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
-            }
-
-            $ask = array("command"=>"send_feedback",
-                        "message"=>$message->toArray());
-            $serverResponse = $this->connect->query($ask);
-
-            if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
                 $response["result"] = "error";
+                $this->logger->addWarning("Failed feedback attempt", array_merge($input, $verified));
             }
-            $response["result"] = "success";
         } else {
             $response["result"] = "error";
         }
@@ -1538,6 +1672,15 @@ class WebUIExecutor {
             "commands" => $commands
         ]);
     }
+    
+    /**
+     * Display Contact Us Page
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayContactPage(&$display) {
+        $display->setTemplate("contact_page");
+    }
 
     /**
      * Display Profile Page
@@ -1955,6 +2098,89 @@ class WebUIExecutor {
 
 
     /**
+     * Save and Send Constellation to Editor
+     *
+     * Maps the constellation given on input to a Constellation object, passes that to the server with an
+     * update_constellation call.  If successful, it then maps any updates (new ids or version numbers) to the
+     * Constellation object and web components from input, and returns the web ui's response (the list of
+     * updates that must be made to the web ui GUI).
+     *
+     * After saving, it also calls to the server to have the constellation sent to an editor, if the write was successful.
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveAndSendConstellation(&$input) {
+
+        $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+        // Get the constellation object
+        $constellation = $mapper->serializeToConstellation($input);
+
+        $this->logger->addDebug("writing constellation", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "update_constellation"
+        );
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        if (isset($input['savemessage'])) {
+            $request["message"] = $input["savemessage"];
+        }
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["update"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        if (! is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+
+            if (isset($serverResponse["constellation"])) {
+                $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+            }
+
+            if (isset($serverResponse["result"]) && $serverResponse["result"] == "success" &&
+                     isset($serverResponse["constellation"])) {
+                $request["command"] = "reassign_constellation";
+                $request["constellation"] = $serverResponse["constellation"];
+
+                // Add editor if we have it
+                if (isset($input["editor"]) && $input["editor"] != "") {
+                    $editor = new \snac\data\User();
+                    $editor->setUserName($input["editor"]);
+                    $request["to_user"] = $editor->toArray();
+                    $this->logger->addDebug("Sending Constellation to ".$input["editor"], $editor->toArray());
+                    
+                    $serverResponse = $this->connect->query($request);
+                    $response["server_debug"]["send"] = $serverResponse;
+                    if (isset($serverResponse["result"]))
+                        $response["result"] = $serverResponse["result"];
+                    if (isset($serverResponse["error"]))
+                        $response["error"] = $serverResponse["error"];
+                } else {
+                    $serverResponse = array( "result" => "failure", "error" => "No editor to send constellation");
+                    $response["server_debug"]["send"] = $serverResponse;
+                    if (isset($serverResponse["result"]))
+                        $response["result"] = $serverResponse["result"];
+                    if (isset($serverResponse["error"]))
+                        $response["error"] = $serverResponse["error"];
+                }
+
+            }
+        }
+
+        return $response;
+    }
+    /**
      * Save and Send Constellation For Review
      *
      * Maps the constellation given on input to a Constellation object, passes that to the server with an
@@ -2282,6 +2508,68 @@ class WebUIExecutor {
 
 
     /**
+     * Send Constellation to User
+     *
+     * Requests the server to send the given constellation to a specific user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function sendConstellation(&$input) {
+        $constellation = null;
+        if (isset($input["constellationid"]) && isset($input["version"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+            $constellation->setVersion($input["version"]);
+        } else if (isset($input["id"]) && isset($input["version"])) {
+            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+            // Get the constellation object
+            $constellation = $mapper->serializeToConstellation($input);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
+        }
+
+
+
+        $this->logger->addDebug("sending constellation", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "reassign_constellation"
+        );
+        
+        // Add reviewer if we have it
+        if (isset($input["editor"]) && $input["editor"] != "") {
+            $editor = new \snac\data\User();
+            $editor->setUserName($input["editor"]);
+            $request["to_user"] = $editor->toArray();
+            $this->logger->addDebug("Sending Constellation to ".$input["editor"], $editor->toArray());
+        } else {
+            return array( "result" => "failure", "error" => "No editor to send constellation");
+        }
+
+        // Add a message if we have it
+        if (isset($input['savemessage'])) {
+            $request["message"] = $input["savemessage"];
+        }
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["send"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        return $response;
+    }
+
+    /**
      * Send Constellation for Review
      *
      * Requests the server to send the given constellation for review.
@@ -2319,6 +2607,11 @@ class WebUIExecutor {
             $reviewer->setUserID($input["reviewer"]);
             $request["reviewer"] = $reviewer->toArray();
             $this->logger->addDebug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
+        }
+
+        // Add a message if we have it
+        if (isset($input['savemessage'])) {
+            $request["message"] = $input["savemessage"];
         }
 
         // Send the query to the server

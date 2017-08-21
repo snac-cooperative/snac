@@ -42,6 +42,8 @@ $('.selectpicker').selectpicker();
 <script src="javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/relation_search.js{{control.noCache}}"></script>
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="javascript/feedback.js{{control.noCache}}"></script>
 
 
 <script>
@@ -60,7 +62,7 @@ $(document).ready(function() {
 </script>
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -158,5 +160,6 @@ $(document).ready(function() {
         </div>
     </div>
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

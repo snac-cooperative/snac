@@ -40,11 +40,6 @@ $('.selectpicker').selectpicker();
 <script src="javascript/relation_search.js{{control.noCache}}"></script>
 
 <style>
-body {
-    padding-top: 70px;
-    padding-bottom: 30px;
-}
-
 .theme-dropdown .dropdown-menu {
     position: static;
     display: block;
@@ -61,7 +56,7 @@ body {
 </style>
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -186,5 +181,6 @@ body {
         </div>
     </div>
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

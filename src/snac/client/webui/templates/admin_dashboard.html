@@ -36,7 +36,7 @@ $('.selectpicker').selectpicker();
 
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -142,6 +142,7 @@ $('.selectpicker').selectpicker();
         </div>
     </div>
 </div>
+{{ footer(X, user, permissions, control) }}
 
 <div class="modal fade" id="constellation-settings" tabindex="-1"
 	role="dialog" aria-labelledby="constellation-settings">

@@ -92,13 +92,14 @@ function notSameAssert(icid1, icid2, id) {
 }
 
 </script>
-
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="javascript/feedback.js{{control.noCache}}"></script>
 </head>
 
 <body role="document">
 
 {% from 'widgets.html' import displayRelationship %}
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -197,5 +198,6 @@ function notSameAssert(icid1, icid2, id) {
         <input type="hidden" name="assert" id="assert" value="">
         <input type="hidden" name="statement" id="statement" value="">
     </form>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

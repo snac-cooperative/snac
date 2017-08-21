@@ -35,6 +35,8 @@ $('.selectpicker').selectpicker();
 <script src="javascript/search.js{{control.noCache}}"></script>
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/merge_scripts.js{{control.noCache}}"></script>
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="javascript/feedback.js{{control.noCache}}"></script>
 
 <style>
     .tab-pane {
@@ -249,7 +251,7 @@ $(document).ready(function() {
 
 
 {% import 'edit_components.html' as components %}
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 {% set i = 0 %}
@@ -2472,5 +2474,6 @@ $(document).ready(function() {
             </div>
         </div>
     </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>
