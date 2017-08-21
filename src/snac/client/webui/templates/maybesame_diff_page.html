@@ -319,6 +319,10 @@ $(document).ready(function() {
                     <div class="btn-group" role="group" aria-label="Merge Actions">
                         <a href="?command=diff_merge&constellationid1={{data.constellation1.id}}&constellationid2={{data.constellation2.id}}" class="btn btn-info" title="Switch this compare view into merging mode."><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</a>
                     </div>
+                    {% elseif user.email and permissions.Merge and data.assertion %}
+                    <div class="btn-group" role="group" aria-label="Merge Actions">
+                        <span href="#" class="btn btn-info disabled" title="Notification" data-html="true" data-content="<p>These Constellations have been asserted to be different by <strong>{{data.assertion.user.fullName}}</strong> with the reason:</p> {{data.assertion.text}}" data-toggle="popover" data-placement="top"><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</span>
+                    </div>
                     {% elseif user.email and permissions.Merge %}
                     <div class="btn-group" role="group" aria-label="Merge Actions">
                         <span href="#" class="btn btn-info disabled" title="Notification" data-content="One or both Constellations are currently locked, so merging is not available at this time." data-toggle="popover" data-placement="top"><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</span>

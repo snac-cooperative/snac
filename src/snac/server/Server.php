@@ -325,6 +325,29 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 $this->response = $executor->autoMergeConstellations($this->input);
                 break;
+            
+            case "constellation_assert":
+                if (!$executor->hasPermission("Publish")) {
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to make Constellation assertions.");
+                }
+                $this->response = $executor->makeAssertion($this->input);
+                break;
+            
+            case "constellation_add_maybesame":
+                if (!$executor->hasPermission("Publish")) {
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to add maybe-same links.");
+                }
+                $this->response = $executor->addMaybeSameConstellation($this->input);
+                break;
+
+            case "constellation_remove_maybesame":
+                if (!$executor->hasPermission("Publish")) {
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to remove maybe-same links.");
+                }
+                $this->response = $executor->removeMaybeSameConstellation($this->input);
+                break;
+
+
 
             case "read":
                 $this->response = $executor->readConstellation($this->input);

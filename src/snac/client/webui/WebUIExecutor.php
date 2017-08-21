@@ -526,6 +526,95 @@ class WebUIExecutor {
             $this->drawErrorPage($serverResponse, $display);
         }
     }
+    
+    /**
+     * Add Not-same Assertion 
+     *
+     * Add a not-same assertion between the Constellations given by the parameters.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function processNotSameAssertion(&$input) {
+        if (isset($input["assertcount"]) && is_numeric($input["assertcount"]) && $input["assertcount"] > 1) {
+            $count = $input["assertcount"];
+            $icids = array();
+            for ($i = 1; $i <= $count; $i++) {
+                if (!isset($input["constellationid" .$i])) {
+                    $this->logger->addDebug("Error page being drawn");
+                    $this->drawErrorPage(["error" => "Could not Make Assertion"], $display);
+                }
+                array_push($icids, $input["constellationid" . $i]);
+            }
+
+            // Ask the server to do the merge
+            $query = [
+                "constellationids" => $icids
+            ];
+
+            if (isset($input["assert"]) && $input["assert"] == "true") {
+                $query["command"] = "constellation_assert";
+                $query["type"] = "not_same";
+                
+                if (!isset($input["statement"]) || $input["statement"] == "") {
+                   return array("response" => "failure", "error" => "Need statement with assertion"); 
+                }
+                $query["assertion"] = $input["statement"];
+
+            } else {
+                $query["command"] = "constellation_remove_maybesame";
+            }
+
+            $this->logger->addDebug("Asking server to make the assertion");
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+            
+            return $serverResponse;
+
+        }   
+
+    }
+
+    /**
+     * Add Maybe-same Assertion 
+     *
+     * Add a maybe-same assertion between the Constellations given by the parameters.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function addMaybeSameAssertion(&$input) {
+        if (isset($input["maybesamecount"]) && is_numeric($input["maybesamecount"]) && $input["maybesamecount"] > 1) {
+            $count = $input["maybesamecount"];
+            $icids = array();
+            for ($i = 1; $i <= $count; $i++) {
+                if (!isset($input["constellationid" .$i])) {
+                    $this->logger->addDebug("Error page being drawn");
+                    $this->drawErrorPage(["error" => "Could not Make Assertion"], $display);
+                }
+                array_push($icids, $input["constellationid" . $i]);
+            }
+
+            // Ask the server to do the merge
+            $query = [
+                "constellationids" => $icids
+            ];
+
+            $query["command"] = "constellation_add_maybesame";
+            
+            if (isset($input["statement"])) {
+                $query["assertion"] = $input["statement"];
+            }
+
+            $this->logger->addDebug("Asking server to make the maybe-same assertion");
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+            
+            return $serverResponse;
+        }
+        return "An error occurred";   
+
+    }
 
     /**
      * Display MaybeSame List Page
@@ -743,6 +832,7 @@ class WebUIExecutor {
             }
         }
     }
+
     /**
      * Cancel a merge
      *
@@ -823,13 +913,25 @@ class WebUIExecutor {
                     "mergeable" => $mergeable,
                     "merging" => $merging
                 );
+                if (isset($serverResponse["assertion"]))
+                    $displayData["assertion"] = $serverResponse["assertion"];
+
                 if (\snac\Config::$DEBUG_MODE == true) {
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
                 }
                 $display->setData($displayData);
             } else {
                 // We were able to do the diff, the user wanted to merge, but the server told us we couldn't merge
-                $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> "Could not open both Constellations for editing to perform a merge."]], $display);
+                if (isset($serverResponse["assertion"])) {
+                    // We have a reason why
+                    $assert = new \snac\data\Assertion($serverResponse["assertion"]);
+                    $message = "<p>Constellations were asserted to be different by <strong>" .
+                        $assert->getUser()->getFullName() . "</strong>.  They gave the following reasoning for this assertion:</p>" .
+                        $assert->getText();
+                    $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> $message]], $display);
+                } else {
+                    $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> "Could not open both Constellations for editing to perform a merge."]], $display);
+                }
             }
         } else {
             $this->logger->addDebug("Error page being drawn - no intersection");

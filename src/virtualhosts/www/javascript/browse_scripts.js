@@ -78,6 +78,15 @@ function enableButtons() {
     $("#searchbutton").prop('disabled', false);
 }
 
+function clearSelected() {
+    $("#shoppingCartButton").popover('destroy');
+    toCompare = new Array();
+    $(".compare-checkbox").each(function() {
+        $(this).attr('checked', false);
+    });
+    showCompareOption();
+}
+
 function showCompareOption() {
     $(".compare-checkbox").each(function() {
         var checkbox = this;
@@ -180,6 +189,78 @@ function showCompareOption() {
         $("#autoMergeButton").prop("disabled", true);
         $('#autoMergeButton').off("click");
     }
+    
+    // Add maybe-same functionality
+    if (toCompare.length > 1 && $("#addMaybeSameButton").exists()) {
+        $("#addMaybeSameButton").prop("disabled", false);
+        $('#addMaybeSameButton').off("click");
+        $('#addMaybeSameButton').click(function() {
+            // do auto merge
+            if (toCompare.length >= 2) {
+
+                bootbox.confirm({
+                    title: "Add Maybe Same Assertions",
+                    message: function() {
+                        var message = "<p>This action denotes all <strong>"+toCompare.length+"</strong> of the following selected Constellations as potentially being the same.</p>";
+                        message += "<ul class='list-group'>";
+                        toCompare.forEach(function(obj) {
+                            message += "<li class='list-group-item'>"+obj.name+"</li>";
+                        });
+                        message += "</ul>";
+                        message += "<p><strong>This operation cannot be quickly undone.  Are you sure you want to continue?</strong></p>";
+                        return message;
+                    },
+                    buttons: {
+                        cancel: {
+                            label: '<i class="fa fa-times"></i> Cancel'
+                        },
+                        confirm: {
+                            label: '<i class="fa fa-check"></i> Confirm'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            var i = 1;
+                            var form = $("#merge_form");
+                            form.html("");
+                            form.append("<input type='hidden' value='"+toCompare.length+"' name='maybesamecount'/>");
+                            toCompare.forEach(function(obj) {
+                                form.append("<input type='hidden' value='"+obj.icid+"' name='constellationid"+i+"'/>");
+                                i++;
+                            });
+
+                            $.post("?command=add_maybesame", $("#merge_form").serialize(), function(data) {
+                                if (data.result == "success") {
+                                    clearSelected();
+                                    $("#merge_form").html("");
+                                    
+                                    $('#success-message').html("<p>Sucessfully added Maybe-Same relationships.</p>");
+                                    setTimeout(function(){
+                                        $('#success-message').slideDown();
+                                    }, 500);
+                                    setTimeout(function(){
+                                        $('#success-message').slideUp();
+                                    }, 7000);
+                                } else {
+                                    $('#error-message').html("<p>An error occurred.</p>");
+                                    setTimeout(function(){
+                                        $('#error-message').slideDown();
+                                    }, 500);
+                                    setTimeout(function(){
+                                        $('#error-message').slideUp();
+                                    }, 7000);
+                                }
+                            });
+                        }
+                    }
+                });
+
+            }
+        });
+    } else {
+        $("#addMaybeSameButton").prop("disabled", true);
+        $('#addMaybeSameButton').off("click");
+    }
 }
 
 $(document).ready(function() {
@@ -239,14 +320,7 @@ $(document).ready(function() {
                 });
                 
                 $("#shoppingCartButton").popover('show');
-                $("#shoppingCartEmpty").click(function() {
-                    $("#shoppingCartButton").popover('destroy');
-                    toCompare = new Array();
-                    $(".compare-checkbox").each(function() {
-                        $(this).attr('checked', false);
-                    });
-                    showCompareOption();
-                });
+                $("#shoppingCartEmpty").click(clearSelected); 
             }
         });
 

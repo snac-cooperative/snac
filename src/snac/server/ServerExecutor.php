@@ -1289,6 +1289,124 @@ class ServerExecutor {
     }
 
     /**
+     * Make Assertion about Constellations 
+     *
+     * Processes and adds assertions about the given constellelation IDs (in input).  Requires a type of assertion,
+     * and currently supports "not_same" relations.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
+    public function makeAssertion(&$input) {
+        $response = array();
+        if (!isset($input["assertion"]) || !isset($input["type"])) {
+            throw new \snac\exceptions\SNACInputException("Must specify an assertion to make");
+        }
+
+        $response["result"] = "failure";
+        
+        if (isset($input["constellationids"]) && is_array($input["constellationids"]) && count($input["constellationids"]) > 1) {
+            switch($input["type"]) {
+                case "not_same":
+                    // Just in case, make sure there are no maybe-same links for these constellations
+                    $this->removeMaybeSameConstellation($input);
+                    $success = true;
+                    for($i = 0; $i < count($input["constellationids"]) - 1; $i++) {
+                        for($j = $i+1; $j < count($input["constellationids"]); $j++) {
+                            $constellation1 = new \snac\data\Constellation();
+                            $constellation1->setID($input["constellationids"][$i]);
+                            $constellation2 = new \snac\data\Constellation();
+                            $constellation2->setID($input["constellationids"][$j]);
+                            $success = $success && $this->cStore->addNotSameAssertion($constellation1, $constellation2, $this->user, $input["assertion"]);
+                        }
+                    }
+                    if ($success)
+                        $response["result"] = "success";
+                    else
+                        $response["error"] = "Could not make assertions for all Constellation pairs";
+                    break;
+            }
+        }
+
+        $response["debug"] = $input;
+        return $response;
+    }
+
+    /**
+     * Add Maybe-Same Relationship 
+     *
+     * Adds maybe-same relationships between the given constellations in the input.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
+    public function addMaybeSameConstellation(&$input) {
+        $response = array();
+        $assertion = "User-denoted maybe-same";
+        if (isset($input["assertion"]) && $input["assertion"] != "") {
+            $assertion = $input["assertion"];
+        }
+
+        $response["result"] = "failure";
+        if (isset($input["constellationids"]) && is_array($input["constellationids"]) && count($input["constellationids"]) > 1) {
+            $success = true;
+            for($i = 0; $i < count($input["constellationids"]) - 1; $i++) {
+                for($j = $i+1; $j < count($input["constellationids"]); $j++) {
+                    $constellation1 = new \snac\data\Constellation();
+                    $constellation1->setID($input["constellationids"][$i]);
+                    $constellation2 = new \snac\data\Constellation();
+                    $constellation2->setID($input["constellationids"][$j]);
+                    $success = $success && $this->cStore->addMaybeSameLink($constellation1, $constellation2, $this->user, $assertion);
+                }
+            }
+            if ($success)
+                $response["result"] = "success";
+            else
+                $response["error"] = "One or more add maybe same link operations did not succeed";
+        }
+
+        $response["debug"] = $input;
+        return $response;
+    }
+
+    /**
+     * Remove Maybe-Same Relationship 
+     *
+     * Removes the maybe-same relationships between the given constellations in the input.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
+    public function removeMaybeSameConstellation(&$input) {
+        $response = array();
+        $response["result"] = "failure";
+        if (isset($input["constellationids"]) && is_array($input["constellationids"]) && count($input["constellationids"]) > 1) {
+            $success = true;
+            foreach ($input["constellationids"] as $i=>$icid1) {
+                foreach ($input["constellationids"] as $j=>$icid2) {
+                    if ($icid1 != $icid2) {
+                        $constellation1 = new \snac\data\Constellation();
+                        $constellation1->setID($icid1);
+                        $constellation2 = new \snac\data\Constellation();
+                        $constellation2->setID($icid2);
+                        $success = $success && $this->cStore->removeMaybeSameLink($constellation1, $constellation2);
+                    }
+                }
+            }
+            if ($success)
+                $response["result"] = "success";
+            else
+                $response["error"] = "One or more remove maybe same link operations did not succeed";
+        }
+
+        $response["debug"] = $input;
+        return $response;
+    }
+
+    /**
      * Reassign Constellation
      *
      * Reassigns the given constellation to a different user, setting it to be "locked editing" to that user, assuming the
@@ -2262,6 +2380,47 @@ class ServerExecutor {
     }
 
     /**
+     * Check Mergability
+     *
+     * Checks if two Constellations, given by their ICIDs are mergeable.  If they are, this will
+     * return boolean true.  If they are not, then this will return the Assertion object that
+     * determines why they are non-mergeable or false if they are not mergeable because one or
+     * both is currently checked out to another user.
+     *
+     * @param int $cId1 One Constellation ID
+     * @param int $cId2 Another Constellation ID
+     * @return \snac\data\Assertion|boolean True if mergeable, false if unmergeable for editing reasons, or an
+     *                                      Assertion if they are unmergeable because of a user-assertion
+     */
+    function isMergeable($cId1, $cId2) {
+        $status1 = $this->cStore->readConstellationStatus($cId1);
+        $status2 = $this->cStore->readConstellationStatus($cId2);
+
+        // If both are published, then check assertions
+        if ($status1 == "published" && $status2 == "published") {
+            $c1 = new \snac\data\Constellation();
+            $c1->setID($cId1);
+            $c2 = new \snac\data\Constellation();
+            $c2->setID($cId2);
+            $assert = new \snac\data\Assertion();
+            $assert->addConstellation($c1);
+            $assert->addConstellation($c2);
+            $assert->setType("not_same");
+
+            $result = $this->cStore->readAssertion($assert, $this->uStore);
+
+            if ($result === false) {
+                return true;
+            } else {
+                return $result;
+            }
+
+        }
+
+        return null;
+    }
+
+    /**
      * Compute Constellation Diff
      *
      * Given two Constellation IDs in the input, this method reads the current version of both constellations
@@ -2287,23 +2446,11 @@ class ServerExecutor {
         if (isset($input["constellationid1"]) && isset($input["constellationid1"])) {
             // If two constellations were given
             try {
-                // Read the constellation statuses
-                $this->logger->addDebug("Reading constellation statuses from the database");
-
                 $cId1 = $input["constellationid1"];
-                $cV1 = null;
-                if (isset($input["version1"]))
-                    $cV1 = $input["version1"];
-                $status1 = $this->cStore->readConstellationStatus($cId1, $cV1);
-
                 $cId2 = $input["constellationid2"];
-                $cV2 = null;
-                if (isset($input["version2"]))
-                    $cV2 = $input["version2"];
-                $status2 = $this->cStore->readConstellationStatus($cId2, $cV2);
-
+                $mergeable = $this->isMergeable($cId1, $cId2);
                 // Right now, only published constellations can be merged, so that we can keep a "clean" history
-                if ($status1 == "published" && $status2 == "published" && $cV1 == null && $cV2 == null) {
+                if ($mergeable === true) {
                     $response["mergeable"] = true;
 
                     // If they asked to start the merge, then check these constellations out to that user as
@@ -2335,6 +2482,9 @@ class ServerExecutor {
                     }
                 } else {
                     $response["mergeable"] = false;
+                    if ($mergeable !== null) {
+                        $response["assertion"] = $mergeable->toArray();
+                    }
                 }
                 $this->logger->addDebug("Reading Constellations from the database");
                 $constellation1 = $this->cStore->readConstellation($cId1, $cV1, \snac\server\database\DBUtil::$FULL_CONSTELLATION);

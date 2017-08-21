@@ -1413,6 +1413,81 @@ class SQL
     }
 
     /**
+     * Add Not-Same Assertion 
+     *
+     * Add a not-same assertion between icid1 and icid2, made by the given user and 
+     * having the given assertion statement.
+     *
+     * @param int $icid1 The first ICID
+     * @param int $icid2 The second ICID
+     * @param int $userid The ID of the asserting user
+     * @param string $assertion The assertion to include with the link
+     * @return boolean True if successful
+     */
+    public function addNotSameAssertion($icid1, $icid2, $userid, $assertion) {
+        $result = $this->sdb->query("insert into not_same 
+                (ic_id1, ic_id2, user_id, assertion) 
+                values ($1, $2, $3, $4) returning *;",
+            array($icid1, $icid2, $userid, $assertion));
+        return true;
+    }
+
+    /**
+     * Read Assertion
+     *
+     * Reads out the assertion data from the database for the given type between
+     * these two Constellation IDs.  If none exists, it will return null.
+     *
+     * @param string $type The type of the assertion (i.e. "not_same")
+     * @param int $icid1 One IC ID
+     * @param int $icid2 Another IC ID
+     * @return string[]|null The array of data or null if no assertion exists
+     */
+    public function readAssertion($type, $icid1, $icid2) {
+        if ($type == "not_same") {
+            $result = $this->sdb->query("select * from not_same where
+                (ic_id1 = $1 and ic_id2 = $2) or (ic_id2 = $1 and ic_id1 = $2);",
+                array($icid1, $icid2));
+            $all = array();
+
+            while($row = $this->sdb->fetchrow($result)) {
+                array_push($all, $row);
+            }
+
+            if (count($all) != 1) {
+                return null;
+            }
+
+            $return = $all[0];
+            $return["type"] = $type;
+            return $return;
+        }
+        return null;
+    }
+
+    /**
+     * Add Maybe-Same Link 
+     *
+     * Add a maybe-same link between icid1 and icid2, made by the given user and 
+     * having the given assertion statement.
+     *
+     * @param int $icid1 The first ICID
+     * @param int $icid2 The second ICID
+     * @param int $userid The ID of the asserting user
+     * @param string $assertion The assertion to include with the link
+     * @return boolean True if successful
+     */
+    public function addMaybeSameLink($icid1, $icid2, $userid, $assertion) {
+        $result = $this->sdb->query("insert into maybe_same 
+                (ic_id1, ic_id2, user_id, note) 
+                values ($1, $2, $3, $4) returning *;",
+            array($icid1, $icid2, $userid, $assertion));
+        return true;
+    }
+
+
+
+    /**
      * Update MaybeSame Links
      *
      * Updates the maybe same table to point any maybesame references from icid to currentICID.

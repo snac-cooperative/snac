@@ -3575,6 +3575,98 @@ class DBUtil
     }
 
     /**
+     * Add Not-Same Assertion
+     *
+     * Adds a not-same assertion between the two constellations given as parameters.  Assumes that the not_same table is
+     * bi-directional and only inserts one direction in the table.
+     *
+     * @param \snac\data\Constellation $constellation1 The first constellation
+     * @param \snac\data\Constellation $constellation2 The second constellation
+     * @param \snac\data\User $user The user making the not-same assertion
+     * @param string $assertion The note/reason to include for the assertion
+     * @return boolean true on success, false otherwise
+     */
+    public function addNotSameAssertion(&$constellation1, &$constellation2, &$user, $assertion) {
+        if ($constellation1 === null || $constellation2 === null || $user == null || $assertion == null)
+            return false;
+
+        if ($constellation1->getID() === null || $constellation2->getID() === null)
+            return false;
+
+        $this->sql->addNotSameAssertion($constellation1->getID(), $constellation2->getID(),
+                                        $user->getUserID(), $assertion);
+        
+        return true;
+    }
+
+
+    /**
+     * Read Assertion
+     *
+     * Reads an assertion out of the database.  Given a bare-bones assertion with the two Constellations and a
+     * type, it will read the full assertion out of the database.  If no assertion of that type exists between
+     * the two Constellations, then it will return false.
+     *
+     * If given a handle to the DBUser object, it will also pull back the full User information to include
+     * in the assertion for the user that made the assertion.
+     *
+     * @param \snac\data\Assertion $assertion The bare-bones assertion object to look up
+     * @param \snac\server\database\DBUser $uStore optional A handle to the DBUser object to get User information
+     * @return \snac\data\Assertion|boolean The complete assertion or false if none exists
+     */
+    function readAssertion(&$assertion, $uStore=null) {
+        if ($assertion === null || $assertion->getType() === null || count($assertion->getConstellations()) != 2) {
+            return false;
+        }
+        list($c1, $c2) = $assertion->getConstellations();
+        $assertData = $this->sql->readAssertion($assertion->getType(), $c1->getID(), $c2->getID()); 
+
+        if ($assertData == null) {
+            return false;
+        }
+        
+        $fullAssert = new \snac\data\Assertion();
+        $fullAssert->setID($assertData["id"]);
+        $fullAssert->setType($assertData["type"]);
+        $fullAssert->setText($assertData["assertion"]);
+        $fullAssert->setTimestamp($assertData["timestamp"]);
+        $user = new \snac\data\User();
+        $user->setUserID($assertData["user_id"]);
+        if ($uStore !== null) {
+            $user = $uStore->readUser($user);
+        }
+        $fullAssert->setUser($user);
+        $fullAssert->addConstellation($this->readConstellation($assertData["ic_id1"], null, DBUtil::$READ_MICRO_SUMMARY));
+        $fullAssert->addConstellation($this->readConstellation($assertData["ic_id2"], null, DBUtil::$READ_MICRO_SUMMARY));
+        return $fullAssert;    
+    }
+
+    /**
+     * Add MaybeSame Link
+     *
+     * Adds a maybe_same link between the two constellations given as parameters.  Assumes that the maybesame table is
+     * bi-directional and only inserts one direction in the table.
+     *
+     * @param \snac\data\Constellation $constellation1 The first constellation
+     * @param \snac\data\Constellation $constellation2 The second constellation
+     * @param \snac\data\User $user The user making the maybe-same assertion
+     * @param string $assertion optional A note to include for the assertion
+     * @return boolean true on success, false otherwise
+     */
+    public function addMaybeSameLink(&$constellation1, &$constellation2, &$user, $assertion = "") {
+        if ($constellation1 === null || $constellation2 === null || $user == null)
+            return false;
+
+        if ($constellation1->getID() === null || $constellation2->getID() === null)
+            return false;
+
+        $this->sql->addMaybeSameLink($constellation1->getID(), $constellation2->getID(),
+                                        $user->getUserID(), $assertion);
+        
+        return true;
+    }
+
+    /**
      * Remove MaybeSame Link
      *
      * Removes maybe_same links between the two constellations given as parameters.
