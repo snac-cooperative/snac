@@ -275,4 +275,8 @@ class Config {
      */
     public static $STATIC_FILE_DIR = "/full/path/to/snac/src/virtualhosts/www/static/";
 
+    /**
+     * @var string Username to send feedback messages
+     */
+    public static $FEEDBACK_USERNAME = "";
 }

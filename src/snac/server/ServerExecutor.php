@@ -904,7 +904,7 @@ class ServerExecutor {
             throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent from a user if they are not logged in.");
         }
         $tmpUser = new \snac\data\User();
-        $tmpUser->setUserName("jh2jf@virginia.edu");
+        $tmpUser->setUserName(\snac\Config::$FEEDBACK_USERNAME);
         $toUser = $this->uStore->readUser($tmpUser);
         if ($toUser === false) {
             throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
