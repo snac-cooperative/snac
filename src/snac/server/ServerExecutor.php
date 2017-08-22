@@ -2303,13 +2303,6 @@ class ServerExecutor {
                 // Leaving a catch block for logging purposes
                 throw $e;
             }
-        } else if (isset($this->input["testid"])) {
-            if ($this->input["testid"] == 1) {
-                // Create new parser for this file and parse it
-                $parser = new \snac\util\EACCPFParser();
-                $id = $parser->parseFile("http://shannonvm.village.virginia.edu/~jh2jf/test_record.xml");
-                $response["constellation"] = $id->toArray();
-            }
         }
         return $response;
     }
