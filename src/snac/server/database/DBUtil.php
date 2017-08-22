@@ -3660,6 +3660,21 @@ class DBUtil
         if ($constellation1->getID() === null || $constellation2->getID() === null)
             return false;
 
+        // If asserted to be not the same, then don't allow
+        $assert = new \snac\data\Assertion();
+        $assert->addConstellation($constellation1);
+        $assert->addConstellation($constellation2);
+        $assert->setType("not_same");
+        $result = $this->readAssertion($assert);
+        if ($result !== false)
+            return false;
+
+        // If already in the list of maybe sames, then silently allow (but don't duplicate)
+        $current = $this->sql->listMaybeSameIDsFor($constellation1->getID());
+        if (in_array($constellation2->getID(), $current)) {
+            return true;
+        }
+
         $this->sql->addMaybeSameLink($constellation1->getID(), $constellation2->getID(),
                                         $user->getUserID(), $assertion);
         
