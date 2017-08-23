@@ -259,7 +259,7 @@
                                         {% endif %}
                                         {% endfor %}
                               <a data-toggle="collapse" data-parent="#relations" href="#relatedCollections">
-                                 <i style="font-size: 80%;" class="glyphicon glyphicon-new-window"></i> Archival Collections
+                                 <i style="font-size: 90%;" class="fa fa-fw fa-external-link"></i> Archival Collections
                                  <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>
@@ -385,7 +385,7 @@
                         <div class="panel-heading">
                            <h4>
                               <a data-toggle="collapse" data-parent="#relations" href="#relatedWorks">
-                                 <i style="font-size: 80%;" class="glyphicon glyphicon-new-window"></i> Related Resources
+                                 <i style="font-size: 90%;" class="fa fa-fw fa-external-link"></i> Related Resources
                                  <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>
@@ -445,7 +445,7 @@
                             {% endif %}
                             {% endfor %}
                               <a data-toggle="collapse" data-parent="#relations" href="#linkedData">
-                                 <i style="font-size: 80%;" class="glyphicon glyphicon-new-window"></i> Related External Links
+                                 <i style="font-size: 90%;" class="fa fa-fw fa-external-link"></i> Related External Links
                                  <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>
@@ -831,12 +831,12 @@
                <div class="others">
                    {% if data.preview %}
                    <div class="alert alert-success" style="margin-top: 15px;">
-                       <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+                       <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><i class='fa fa-eye'></i> Preview</h3>
                        <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
                    </div>
                    {% elseif data.comparison %}
                    <div class="alert alert-info" style="margin-top: 15px;">
-                       <h3 class="text-center" style="margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Comparison</h3>
+                       <h3 class="text-center" style="margin-top:0px;"><i class='fa fa-eye'></i> Comparison</h3>
                        <p>This is only a preview comparison of Constellations.  It will only exist until this window is closed.</p>
                        <ul>
                            <li class="updated">Added or updated</li>
@@ -877,8 +877,8 @@
                           </div>
                           <h5>Export As</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
-                              <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
-                                  <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
+                              <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file" aria-hidden="true"></i></span> Constellation JSON</a>
+                                  <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
                           </div>
                       </div>
                   </div>
@@ -904,7 +904,7 @@
                                 {% else %}
                                     <a class="list-group-item list-group-item-danger disabled"
                                        href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
-                                        <span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation
+                                        <i class="fa fa-fw fa-ban"></i> Edit Constellation
                                     </a>
                                     {% if data.editingUser %}
                                         <div class="list-group-item">
@@ -923,7 +923,7 @@
                           {% if false %}
                           <h5>Debug Actions</h3>
                           <div class="list-group" style="margin-bottom: 0px;">
-                              <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+                              <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><i class="fa fa-fw fa-align-left"></i> View Full Server Response</a>
 
                           </div>
                           {% endif %}
