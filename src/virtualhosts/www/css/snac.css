@@ -693,6 +693,10 @@ button.list-group-item-merge.active:focus {
     ul.nav li a {
         padding: 15px 10px;
     }
+
+    .navbar-hideable {
+        display: none !important;
+    }
 }
 
 @media (min-width: 992px) {
