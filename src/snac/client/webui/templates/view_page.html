@@ -110,6 +110,12 @@
       <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
       <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
       <input id="page_type" name="page_type" type="hidden" value="view_page"/>
+    {% for sameas in data.otherRecordIDs %}
+        {% if sameas.type.term == 'sameAs' and 'wikipedia' in sameas.uri %}
+            <input id="has_wiki_link" type="hidden" value="true"/>
+        {% endif %}
+    {% endfor %}
+
 
       <div class="main_content">
           {% if data.message %}
