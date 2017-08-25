@@ -1965,6 +1965,8 @@ class ServerExecutor {
             $flags = 0;
             if (isset($input["type"]) && $input["type"] == "summary")
                 $flags = \snac\server\database\DBUtil::$READ_ALL_BUT_RELATIONS_AND_META;
+            else if (isset($input["type"]) && $input["type"] == "summary_meta")
+                $flags = \snac\server\database\DBUtil::$READ_ALL_BUT_RELATIONS;
             $constellations = $this->readConstellationFromDatabase($input, false, $flags);
             if ($constellations === null) {
                 throw new \snac\exceptions\SNACInputException("Constellation does not exist");

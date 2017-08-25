@@ -275,8 +275,9 @@ class WebUIExecutor {
         if (isset($input["arkid"]))
             $query["arkid"] = $input["arkid"];
         $query["command"] = "read";
-        if ($summary)
-            $query["type"] = "summary";
+        if ($summary !== false) {
+            $query["type"] = $summary;
+        }
 
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
@@ -379,7 +380,7 @@ class WebUIExecutor {
         if (isset($input["part"]) && $input["part"] == "relations")
             $serverResponse = $this->getConstellation($input, $display, false);
         else
-            $serverResponse = $this->getConstellation($input, $display, true);
+            $serverResponse = $this->getConstellation($input, $display, "summary");
         if (isset($serverResponse["constellation"])) {
             if (isset($serverResponse["constellation"]["dataType"])) {
                 // We have only ONE constellation, so display
@@ -487,13 +488,23 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayDetailedViewPage(&$input, &$display) {
-        $serverResponse = $this->getConstellation($input, $display);
+        $serverResponse = array();
+        
+        if (isset($input["part"]) && ($input["part"] == "constellationRelations" || 
+            $input["part"] == "resourceRelations"))
+            $serverResponse = $this->getConstellation($input, $display, false);
+        else
+            $serverResponse = $this->getConstellation($input, $display, "summary_meta");
+        
         if (isset($serverResponse["constellation"])) {
             $editingUser = null;
             if (isset($serverResponse["editing_user"]))
                 $editingUser = $serverResponse["editing_user"];
 
-            $display->setTemplate("detailed_view_page");
+            if (isset($input["part"]))
+                $display->setTemplate("detailed_view_tabs/".$input["part"]);
+            else
+                $display->setTemplate("detailed_view_page");
 
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {

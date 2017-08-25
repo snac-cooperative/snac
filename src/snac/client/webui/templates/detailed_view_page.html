@@ -46,8 +46,7 @@
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Javascript -->
-<script src="javascript/save_actions.js{{control.noCache}}"></script>
-<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/detailed_view_scripts.js{{control.noCache}}"></script>
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/relation_search.js{{control.noCache}}"></script>
 <script src="javascript/html2canvas.js{{control.noCache}}"></script>
@@ -132,118 +131,72 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="genders">
                         <h2>Genders</h2>
 
-
-
-
-                        {% set i = 0 %}
-                        {% for gender in data.genders %}
-                            {{ components.displayGender(X, false, true, gender, i) }}
-                            {% set i = i + 1 %}
-                        {% endfor %}
-
-                        <span id='next_gender_i' style='display:none;'>{{i}}</span>
-
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="dates">
                         <h2>Exist Dates</h2>
 
-
-                        {% set i = 0 %}
-                        {% for exist in data.dates %}
-                            {{ components.displayExist(X, false, true, exist, i) }}
-                            {% set i = i + 1 %}
-                        {% endfor %}
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="biogHists" style='height: auto'>
                         <h2>Biographical History</h2>
 
-                            {% set i = 0 %}
-                            {% for biogHist in data.biogHists %}
-                                {{ components.displayBiogHist(X, false, true, biogHist, i) }}
-                                {% set i = i + 1 %}
-                            {% endfor %}
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="sameAs">
                         <h2>External CPF Relations (Same As)</h2>
 
-
-
-                        {% set i = 0 %}
-                        {% for other in data.otherRecordIDs %}
-                            {{ components.displaySameAs(X, false, true, other, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_sameAs_i' style='display:none;'>{{i}}</span>
-
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="entityID">
                         <h2>Other Entity IDs (Same As)</h2>
 
-
-
-                        {% set i = 0 %}
-                        {% for other in data.entityIDs %}
-                            {{ components.displayEntityID(X, false, true, other, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_entityID_i' style='display:none;'>{{i}}</span>
-
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="sources">
                         <h2>Sources</h2>
 
-                        {% set i = 0 %}
-                        {% for source in data.sources %}
-                            {{ components.displaySource(X, false, true, source, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_source_i' style='display:none;'>{{i}}</span>
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="resourceRelations">
                         <h2>Resource Relations</h2>
 
-
-
-                        {% set i = 0 %}
-                        {% for relation in data.resourceRelations %}
-                            {{ components.displayResourceRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="constellationRelations">
                         <h2>Internal CPF Relations</h2>
 
-
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li class="active"><a href="#directRelations" role="tab" data-toggle="tab">Direct</a></li>
-                            <li><a href="#impliedRelations" role="tab" data-toggle="tab" id="impliedRelationsTab">Implied</a></li>
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane active" id="directRelations">
-                                {% set i = 0 %}
-                                {% for relation in data.relations %}
-                                {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original, false) }}
-                                {% set i = i + 1 %}
-                                {% endfor %}
-                                <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
-                            </div>
-                            <div class="tab-pane" id="impliedRelations">
-                            </div>
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
                         </div>
                     </div>
 
@@ -251,155 +204,108 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="languagesUsed">
                         <h2>Languages Used</h2>
 
-
-                        {% set i = 0 %}
-                        {% for language in data.languagesUsed %}
-                            {{ components.displayLanguageUsed(X, false, true, language, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_language_i' style='display:none;'>{{i}}</span>
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="subjects">
                         <h2>Subjects</h2>
 
-
-                        {% set i = 0 %}
-                        {% for subject in data.subjects %}
-                            {{ components.displaySubject(X, false, true, subject, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_subject_i' style='display:none;'>{{i}}</span>
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
                         </div>
-
-                        <div class="tab-pane" id="nationalities">
-                            <h2>Nationalities</h2>
-
-
-                            {% set i = 0 %}
-                            {% for nationality in data.nationalities %}
-                                {{ components.displayNationality(X, false, true, nationality, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_nationality_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-                        <div class="tab-pane" id="functions">
-                            <h2>Functions</h2>
-
-                            {% set i = 0 %}
-                            {% for function in data.functions %}
-                                {{ components.displayFunction(X, false, true, function, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_function_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="occupations">
-                            <h2>Occupations</h2>
-
-
-                            {% set i = 0 %}
-                            {% for occupation in data.occupations %}
-                                {{ components.displayOccupation(X, false, true, occupation, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_occupation_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="legalStatuses">
-                            <h2>Legal Statuses</h2>
-
-
-                            {% set i = 0 %}
-                            {% for legalStatus in data.legalStatuses %}
-                                {{ components.displayLegalStatus(X, false, true, legalStatus, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_legalStatus_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="places">
-                            <h2>Places</h2>
-
-
-                            {% set i = 0 %}
-                            {% for place in data.places %}
-                                {{ components.displayPlace(X, false, true, place, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_place_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="conventionDeclarations">
-                            <h2>Convention Declarations</h2>
-
-
-                            {% set i = 0 %}
-                            {% for conventionDeclaration in data.conventionDeclarations %}
-                                {{ components.displayConventionDeclaration(X, false, true, conventionDeclaration, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_conventionDeclaration_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-                        <div class="tab-pane" id="generalContexts">
-                            <h2>General Contexts</h2>
-
-
-                            {% set i = 0 %}
-                            {% for generalContext in data.generalContexts %}
-                                {{ components.displayGeneralContext(X, false, true, generalContext, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_generalContext_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-                        <div class="tab-pane" id="structureOrGenealogies">
-                            <h2>Structure or Genealogies</h2>
-
-
-                            {% set i = 0 %}
-                            {% for structureOrGenealogy in data.structureOrGenealogies %}
-                                {{ components.displayStructureOrGenealogy(X, false, true, structureOrGenealogy, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_structureOrGenealogy_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-                        <div class="tab-pane" id="mandates">
-                            <h2>Mandates</h2>
-
-                            {% set i = 0 %}
-                            {% for mandate in data.mandates %}
-                                {{ components.displayMandate(X, false, true, mandate, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_mandate_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-
-
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <!-- Right Column -->
 
-                    <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
-                        <p>Saving Constellation...</p>
-                    </div><!-- end alert -->
-                    <div class="alert alert-01 alert-success" id="success-message" style="display: none">
-                        <p>Successfully saved!</p>
-                    </div><!-- end alert -->
-                    <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
-                        <p>An error occured while saving</p>
-                    </div><!-- end alert -->
+                    <div class="tab-pane" id="nationalities">
+                        <h2>Nationalities</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="functions">
+                        <h2>Functions</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="occupations">
+                        <h2>Occupations</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="legalStatuses">
+                        <h2>Legal Statuses</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="places">
+                        <h2>Places</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="conventionDeclarations">
+                        <h2>Convention Declarations</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="generalContexts">
+                        <h2>General Contexts</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="structureOrGenealogies">
+                        <h2>Structure or Genealogies</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="mandates">
+                        <h2>Mandates</h2>
+
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+            <div class="col-md-4">
+                    <!-- Right Column -->
 
                     {% if data.preview %}
                     <div class="alert alert-success">
