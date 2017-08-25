@@ -103,8 +103,12 @@ function displayHoldingsMap() {
 
         $(".holdings_location_name").each(function(i) {
             var id = $(this).attr('id').replace("holdings_location_name_", "");
-            var marker = L.marker([$("#holdings_location_lat_"+id).val(), $("#holdings_location_lon_"+id).val()]).addTo(holdingsMapView).bindPopup($(this).val());
-            bounds.extend(marker.getLatLng());
+            var latitude = $("#holdings_location_lat_"+id).val();
+            var longitude = $("#holdings_location_lon_"+id).val();
+            if (latitude != '' && longitude != '') {
+                var marker = L.marker([latitude, longitude]).addTo(holdingsMapView).bindPopup($(this).val());
+                bounds.extend(marker.getLatLng());
+            }
         });
         holdingsMapView.fitBounds(bounds);
     }, 400);
@@ -178,75 +182,6 @@ if ($('#relatedPeopleImpliedLoad').exists()){
     $('#relatedOrganizationsImpliedLoad').click(loadFunction);
 }
 
-// Check that we're on the detailed view page to add these:
-if ($('#impliedRelationsTab').exists()){
-    function updatePictureTitle(shortName, i, newValue) {
-        $('#'+shortName+'_relationPictureTitle_'+i).text(newValue);
-    }
-
-    function updatePictureIcon(shortName, i, entityType) {
-        var html = "";
-        if (entityType == 'person')
-            html = '<i class="fa fa-user" aria-hidden="true"></i><br/>';
-        else if (entityType == 'corporateBody')
-            html = '<i class="fa fa-building" aria-hidden="true"></i><br/>';
-        else if (entityType == 'family')
-            html = '<i class="fa fa-users" aria-hidden="true"></i><br/>';
-        $('#'+shortName+'_relationPictureIcon_'+i).html(html);
-    }
-
-    function updatePictureArrow(shortName, i, newValue) {
-        $('#'+shortName+'_relationPictureArrow_'+i).text(newValue);
-    }
-
-    
-    var loadFunction = function() {
-        // don't load a second time
-        if (impliedRelationsLoaded)
-            return;
-        impliedRelationsLoaded = true;
-
-        var loadingHTML = "<div class=\"text-center\">" +
-                        "<p><i class=\"fa fa-spinner fa-pulse fa-3x fa-fw\"></i></p>" +
-                        "<p>Loading ...</p>" +
-                        "</div>";
-        // Replace the HTML with the loading symbol
-        $('#impliedRelations').html(loadingHTML);
-
-        $.get("?command=relations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
-            var finalHtml = "";
-            if (data.in) {
-                $('#impliedRelations').html("");
-                var i = 0;
-                for (var key in data.in) {
-                    var text = $('#constellationRelation_template').clone();
-                    var html = text.html().replace(/ZZ/g, "implied_"+i);
-                    $('#impliedRelations').append(html);
-                    $("#impliedRelations #constellationRelation_contentText_implied_"+i).text(data.in[key].constellation.nameEntries[0].original);
-                    $("#impliedRelations #constellationRelation_targetArkIDText_implied_"+i).text(data.in[key].constellation.ark);
-                    $("#impliedRelations #constellationRelation_typeText_implied_"+i).text(data.in[key].relation.type.term);
-                    $("#impliedRelations #constellationRelation_noteText_implied_"+i).text(data.in[key].relation.note);
-                    updatePictureIcon('constellationRelation', "implied_"+i, data.in[key].constellation.entityType.term);
-                    updatePictureTitle('constellationRelation', "implied_"+i, data.in[key].constellation.nameEntries[0].original);
-                    updatePictureArrow('constellationRelation', "implied_"+i, data.in[key].relation.type.term);
-                    /*
-                    finalHtml += "<div class=\"person\">" +
-                        "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
-                        data.in[key].constellation.nameEntries[0].original + "</a> " +
-                        " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
-                        "<div></div>" +
-                    "</div>";
-                    */
-                    i++;
-                }
-            }
-            //$('#impliedRelations').html(finalHtml);
-        });
-        return;
-
-    };
-    $('#impliedRelationsTab').click(loadFunction);
-}
 
 
 

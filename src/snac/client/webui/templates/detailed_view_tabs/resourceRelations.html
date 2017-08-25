@@ -1,0 +1,45 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>Resource Relations</h2>
+
+{% set i = 0 %}
+{% for relation in data.resourceRelations %}
+    {{ components.displayResourceRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
+    {% set i = i + 1 %}
+{% endfor %}
+
+<div class="modal fade" id="collection_locations" tabindex="-1" role="dialog"
+       aria-hidden="true">
+     <div class="modal-dialog">
+        <div class="modal-content">
+           <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-labelledby="colLocLabel"
+                      aria-hidden="true">×</button>
+              <h4 class="modal-title" id="colLocLabel">Collection Locations</h4>
+           </div>
+           <div class="modal-body">
+              {% if data.holdings|length > 0 %}
+              <div class="geoplace-map" id="holdingsMap">
+              </div>
+              <div id="holdingsList">
+                  {% for location in data.holdings %}
+                    <div>
+                        {{location.name}}
+                        <input class="holdings_location_name" id="holdings_location_name_{{loop.index}}" value="{{location.name}}" type="hidden">
+                        <input class="holdings_location_lat" id="holdings_location_lat_{{loop.index}}" value="{{location.latitude}}" type="hidden">
+                        <input class="holdings_location_lon" id="holdings_location_lon_{{loop.index}}" value="{{location.longitude}}" type="hidden">
+                    </div>
+                  {% endfor %}
+              </div>
+              {% else %}
+              <div class="alert alert-info">no collection locations known</div>
+              {% endif %}
+           </div>
+           <div class="modal-footer">
+              <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+           </div>
+        </div>
+     </div>
+  </div>
