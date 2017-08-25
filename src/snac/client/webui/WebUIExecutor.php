@@ -136,7 +136,7 @@ class WebUIExecutor {
      */
     public function handleVisualization(&$input, &$display) {
         if (isset($input["subcommand"])) {
-            $serverResponse = $this->getConstellation($input, $display);
+            $serverResponse = $this->getConstellation($input, $display, "summary");
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
