@@ -46,8 +46,7 @@
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Javascript -->
-<script src="javascript/save_actions.js{{control.noCache}}"></script>
-<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/detailed_view_scripts.js{{control.noCache}}"></script>
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/relation_search.js{{control.noCache}}"></script>
 <script src="javascript/html2canvas.js{{control.noCache}}"></script>
@@ -132,9 +131,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="genders">
                         <h2>Genders</h2>
 
-
-
-
                         {% set i = 0 %}
                         {% for gender in data.genders %}
                             {{ components.displayGender(X, false, true, gender, i) }}
@@ -202,51 +198,29 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="sources">
                         <h2>Sources</h2>
 
-                        {% set i = 0 %}
-                        {% for source in data.sources %}
-                            {{ components.displaySource(X, false, true, source, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_source_i' style='display:none;'>{{i}}</span>
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="resourceRelations">
                         <h2>Resource Relations</h2>
 
-
-
-                        {% set i = 0 %}
-                        {% for relation in data.resourceRelations %}
-                            {{ components.displayResourceRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>
-
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="constellationRelations">
                         <h2>Internal CPF Relations</h2>
 
-
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li class="active"><a href="#directRelations" role="tab" data-toggle="tab">Direct</a></li>
-                            <li><a href="#impliedRelations" role="tab" data-toggle="tab" id="impliedRelationsTab">Implied</a></li>
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane active" id="directRelations">
-                                {% set i = 0 %}
-                                {% for relation in data.relations %}
-                                {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original, false) }}
-                                {% set i = i + 1 %}
-                                {% endfor %}
-                                <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
-                            </div>
-                            <div class="tab-pane" id="impliedRelations">
-                            </div>
+                        <div class="loading-box text-center">
+                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                            <p>Loading ...</p>
                         </div>
                     </div>
-
 
                     <div class="tab-pane" id="languagesUsed">
                         <h2>Languages Used</h2>
@@ -386,20 +360,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 
 
-                    </div>
                 </div>
-                <div class="col-md-4">
+            </div>
+            <div class="col-md-4">
                     <!-- Right Column -->
-
-                    <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
-                        <p>Saving Constellation...</p>
-                    </div><!-- end alert -->
-                    <div class="alert alert-01 alert-success" id="success-message" style="display: none">
-                        <p>Successfully saved!</p>
-                    </div><!-- end alert -->
-                    <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
-                        <p>An error occured while saving</p>
-                    </div><!-- end alert -->
 
                     {% if data.preview %}
                     <div class="alert alert-success">
@@ -445,6 +409,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                           <div class="list-group" style="margin-bottom: 0px;">
                                 <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap">
                                     <i class="fa fa-fw fa-globe" aria-hidden="true"></i> Collection Locations</a>
+                                <p class="list-group-item" style="font-size: 80%" id="collection_locations_help"><em>Open the Resource Relations tab to enable Collection Locations map view.</em></p>
                                 <a class="list-group-item list-group-item-warning"
                                     href="?command=view&constellationid={{data.id}}&version={{data.version}}">
                                     <i class="fa fa-fw fa-eye" aria-hidden="true"></i> HRT View</a>
@@ -548,7 +513,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         </div>
                     </div>
 
-                    {% if debug %}
+                    {% if false %}
                     <div class="panel panel-danger">
                         <div class="panel-heading">
                             <h3 class="panel-title">Debugging</h3>
@@ -622,66 +587,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     </div>
 </div>
 
-                  <div class="modal fade" id="collection_locations" tabindex="-1" role="dialog"
-                       aria-hidden="true">
-                     <div class="modal-dialog">
-                        <div class="modal-content">
-                           <div class="modal-header">
-                              <button type="button" class="close" data-dismiss="modal" aria-labelledby="colLocLabel"
-                                      aria-hidden="true">×</button>
-                              <h4 class="modal-title" id="colLocLabel">Collection Locations</h4>
-                           </div>
-                           <div class="modal-body">
-                              {% if data.holdings|length > 0 %}
-                                  <div class="geoplace-map" id="holdingsMap">
-                                  </div>
-                                  <script>
-                                    var holdingsMapView = null;
-                                    var bounds = new L.LatLngBounds();
-                                    function displayHoldingsMap() {
-                                        if (holdingsMapView != null) {
-                                            return;
-                                        }
-                                        // Add a slight delay to the map viewing so that the modal window has time to load
-                                        setTimeout(function() {
-                                            holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
-                                            L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                                maxZoom: 19,
-                                                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                                            }).addTo(holdingsMapView);
-                                            var bounds = new L.LatLngBounds();
-                                            {% for location in data.holdings %}
-                                            {% if location.latitude and location.longitude %}
-                                            var marker = L.marker([{{location.latitude}}, {{location.longitude}}]).addTo(holdingsMapView).bindPopup("{{location.name}}");
-                                            bounds.extend(marker.getLatLng());
-                                            {% endif %}
-                                            {% endfor %}
-                                            holdingsMapView.fitBounds(bounds);
-                                            }, 400);
-                                    }
-                                    $(document).ready(function() {
-                                        if ($('#displayHoldingsMap').exists()){
-                                            $('#displayHoldingsMap').removeClass('disabled');
-                                            $('#displayHoldingsMap').click(displayHoldingsMap);
-                                        }
-                                    });
-                                  </script>
-                                  {% for location in data.holdings %}
-                                    <div>{{location.name}}</div>
-                                  {% endfor %}
-                              {% else %}
-                                <div class="alert alert-info">no collection locations known</div>
-                              {% endif %}
-                           </div>
-                           <div class="modal-footer">
-                              <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-    </div>
-    <div id="constellationRelation_template" style="display:none">
-    {{ components.displayConstellationRelation(X, false, false, null, 'ZZ', data.entityType.term, data.nameEntries.0.original, true) }}
     </div>
     </body>
     </html>
