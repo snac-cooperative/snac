@@ -87,9 +87,9 @@ $(document).ready(function() {
                 if ($('#displayHoldingsMap').exists() && $('#holdingsMap').exists()){
                     $('#displayHoldingsMap').removeClass('disabled');
                     $('#displayHoldingsMap').click(displayHoldingsMap);
-                    // remove the help information
-                    $('#collection_locations_help').remove();
                 }
+                // Remove the help
+                $("#collection_locations_help").remove();
 
             });
         });
