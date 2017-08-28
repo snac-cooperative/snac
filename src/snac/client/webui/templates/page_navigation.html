@@ -12,6 +12,10 @@
             ga('send', 'pageview');
         </script>
     {% endif %}
+        
+    <script>
+        var snacUrl = "{{control.snacURL}}";
+    </script>
 
     {% if control.interfaceVersion == "development" %}
     <nav class="navbar navbar-inverse navbar-fixed-top navbar-development-version">
@@ -32,25 +36,25 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-                <li><a href="{{control.snacURL}}?command=search"><i class="fa fa-search" aria-hidden="true"></i> Search</a></li>
+                <li><a href="{{control.snacURL}}/search"><i class="fa fa-search" aria-hidden="true"></i> Search</a></li>
                 <!-- {% if user.userName %} -->
-                <li><a href="{{control.snacURL}}?command=browse"><i class="fa fa-book" aria-hidden="true"></i> Browse</a></li>
-                <li><a href="{{control.snacURL}}?command=dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
-                <li class="navbar-hideable"><a href="{{control.snacURL}}?command=messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messages</a></li>
+                <li><a href="{{control.snacURL}}/browse"><i class="fa fa-book" aria-hidden="true"></i> Browse</a></li>
+                <li><a href="{{control.snacURL}}/dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
+                <li class="navbar-hideable"><a href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messages</a></li>
                 <!-- {% endif %} -->
             </ul>
             <div class="navbar-right">
                 <ul class="nav navbar-nav">
-                    <li><a href="{{control.snacURL}}static/about/about.html"><i class="fa fa-info-circle" aria-hidden="true"></i> About</a></li>
+                    <li><a href="{{control.snacURL}}/static/about/about.html"><i class="fa fa-info-circle" aria-hidden="true"></i> About</a></li>
                     <!-- {% if user.userName %} -->
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-question-circle"></i> Help <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{control.snacURL}}?command=api_help">Rest API Commands</a></li>
+                        <li><a href="{{control.snacURL}}/api_help">Rest API Commands</a></li>
                         <li role="separator" class="divider"></li>
-                        <li><a href="{{control.snacURL}}?command=contact">Contact Us</a></li>
+                        <li><a href="{{control.snacURL}}/contact">Contact Us</a></li>
                     </ul>
                     </li>
                     <!-- {% endif %} -->
@@ -61,21 +65,21 @@
                         <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.fullName }} <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{control.snacURL}}?command=dashboard"><i class="fa fa-fw fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
-                        <li><a href="{{control.snacURL}}?command=messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
+                        <li><a href="{{control.snacURL}}/dashboard"><i class="fa fa-fw fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
+                        <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         {% if permissions.ViewAdminDashboard %}
-                        <li><a href="{{control.snacURL}}?command=administrator"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Administration</a></li>
-                        <li><a href="{{control.snacURL}}?command=vocab_administrator"><i class="fa fa-fw fa-list-alt" aria-hidden="true"></i> Vocabulary</a></li>
+                        <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Administration</a></li>
+                        <li><a href="{{control.snacURL}}/vocab_administrator"><i class="fa fa-fw fa-list-alt" aria-hidden="true"></i> Vocabulary</a></li>
                         {% endif %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
-                        <li><a href="{{control.snacURL}}?command=profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
-                        <li><a href="{{control.snacURL}}?command=api_key"><i class="fa fa-fw fa-key" aria-hidden="true"></i> Rest API Key</a></li>
-                        <li><a href="{{control.snacURL}}?command=logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                        <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
+                        <li><a href="{{control.snacURL}}/api_key"><i class="fa fa-fw fa-key" aria-hidden="true"></i> Rest API Key</a></li>
+                        <li><a href="{{control.snacURL}}/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
                     </ul>
                     </li>
             <!-- {% else %} -->
-                <li><a href="{{control.snacURL}}?command=login&r={{control.currentURL | url_encode}}"><i class="fa fa-sign-in"></i> Login</a></li>
+                <li><a href="{{control.snacURL}}/login?r={{control.currentURL | url_encode}}"><i class="fa fa-sign-in"></i> Login</a></li>
             <!-- {% endif %}  -->
                 </ul>
             </div>
@@ -101,17 +105,17 @@
             <div class="row">
                 <div class="col-md-4 footer-content">
                     <p class="text-center">
-                    <img src="{{control.snacURL}}images/paper_dolls_art2.png"/><br/>
+                    <img src="{{control.snacURL}}/images/paper_dolls_art2.png"/><br/>
                     Social Networks and Archival Contexts
                     </p>
                     <p class="text-center" style="margin-top: 5px;">
                         <a href="https://twitter.com/snaccooperative" title="Visit us on Twitter">
                             <i class="fa fa-2x fa-twitter-square" style="vertical-align: middle" aria-hidden="true"></i></a>
-                        <a href="{{control.snacURL}}?command=contact" title="Contact us"><span class="fa-stack fa-sm">
+                        <a href="{{control.snacURL}}/contact" title="Contact us"><span class="fa-stack fa-sm">
                                   <i class="fa fa-square fa-stack-2x"></i>
                                     <i class="fa fa-envelope fa-stack-1x" style="color: #000"></i>
                             </span></a>
-                        <a href="{{control.snacURL}}static/terms.html" title="Terms and Information"><span class="fa-stack fa-sm">
+                        <a href="{{control.snacURL}}/static/terms.html" title="Terms and Information"><span class="fa-stack fa-sm">
                                   <i class="fa fa-square fa-stack-2x"></i>
                                     <i class="fa fa-life-ring fa-stack-1x" style="color: #000"></i>
                             </span></a>

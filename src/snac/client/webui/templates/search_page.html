@@ -123,7 +123,7 @@
                 Showing up to {{data.count * data.pagination}} of the total results.
                 {% endif %}
                 </p>
-                <form class="form-horizontal" id="compare_form" method="POST" action="?command=diff">
+                <form class="form-horizontal" id="compare_form" method="POST" action="{{control.snacURL}}/diff">
                     <div id="compareBox" class="collapse">
                     <div class="well well-sm">
                         <input type="hidden" name="constellationid1" id="compare1">
@@ -134,7 +134,7 @@
                     </div>
                 </form>
                 {% for result in data.results %}
-                    <h4><a href="?command=view&constellationid={{result.id}}">{{result.nameEntries.0.original}}</a></h4>
+                    <h4><a href="{{control.snacURL}}/view/{{result.id}}">{{result.nameEntries.0.original}}</a></h4>
                     <p class="identity-info">
                         <span>{{result.ark}}</span>
                         <span>({{result.entityType.term}})</span>
@@ -152,15 +152,15 @@
                 {% if data.pagination > 1 %}
                     <nav class="text-center"><ul class='pagination'>
                         {% if data.page != 0 %}
-                        <li><a href='?command=search&count={{data.count}}&start={{(data.page - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Previous'><span aria-hidden='true'>&lt;</span></a></li>
+                        <li><a href='{{control.snacURL}}/search?count={{data.count}}&start={{(data.page - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Previous'><span aria-hidden='true'>&lt;</span></a></li>
                         {% endif %}
 
                         {% for i in 1..data.pagination %}
-                        <li {{i-1 == data.page ? 'class="active"' }}><a href="?command=search&count={{data.count}}&start={{(i - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}">{{i}}</a></li>
+                        <li {{i-1 == data.page ? 'class="active"' }}><a href="{{control.snacURL}}/search?count={{data.count}}&start={{(i - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}">{{i}}</a></li>
                         {% endfor %}
 
                         {% if data.page != data.pagination - 1 %}
-                        <li><a href='?command=search&count={{data.count}}&start={{(data.page + 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Next'><span aria-hidden='true'>&gt;</span></a></li>
+                        <li><a href='{{control.snacURL}}/search?count={{data.count}}&start={{(data.page + 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Next'><span aria-hidden='true'>&gt;</span></a></li>
                         {% endif %}
                     </ul></nav>
                 {% endif %}

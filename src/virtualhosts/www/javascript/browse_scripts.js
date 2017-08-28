@@ -22,7 +22,7 @@ var datatable;
 
 function queryBrowse(position, term, entityType, icid) {
 
-    $.post("?command=browse_data&position="+position+"&term="+term+"&entity_type="+entityType+"&ic_id="+icid, null, function (data) {
+    $.post(snacUrl+"/browse_data?position="+position+"&term="+term+"&entity_type="+entityType+"&ic_id="+icid, null, function (data) {
         var results = [];
         datatable.clear();
         first = "";
@@ -36,7 +36,7 @@ function queryBrowse(position, term, entityType, icid) {
             lastID = data.results[data.results.length -1].ic_id;
             for (var key in data.results) {
                 result = data.results[key];
-                var link = "<a target=\"_blank\" href=\"?command=view&constellationid="+result.ic_id+"\">"+result.name_entry+"</a>";
+                var link = "<a target=\"_blank\" href=\""+snacUrl+"/view/"+result.ic_id+"\">"+result.name_entry+"</a>";
                 var checkbox = "<input class=\"compare-checkbox\" type=\"checkbox\" value=\""+result.ic_id+"\"";
                 var checked = false;
                 toCompare.forEach(function(obj){

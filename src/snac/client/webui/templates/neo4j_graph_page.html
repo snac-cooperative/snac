@@ -4,10 +4,10 @@
 <title>{{data.nameEntries.0.original}} - Connection Graph - Social Networks and Archival Context</title>
 
 <!-- Alchemy Javascript and Styles -->
-<link rel="stylesheet" type="text/css" href="lib/alchemy/0.4.2/styles/vendor.css">
-<link rel="stylesheet" type="text/css" href="lib/alchemy/0.4.2/alchemy.css">
-<script type="text/javascript" src="lib/alchemy/0.4.2/scripts/vendor.js"></script>
-<script type="text/javascript" src="lib/alchemy/0.4.2/alchemy.js"></script>
+<link rel="stylesheet" type="text/css" href="{{control.snacURL}}/javascript/alchemy/0.4.2/styles/vendor.css">
+<link rel="stylesheet" type="text/css" href="{{control.snacURL}}/javascript/alchemy/0.4.2/alchemy.css">
+<script type="text/javascript" src="{{control.snacURL}}/javascript/alchemy/0.4.2/scripts/vendor.js"></script>
+<script type="text/javascript" src="{{control.snacURL}}/javascript/alchemy/0.4.2/alchemy.js"></script>
 
 <style type="text/css">
 div#alchemy_box { height: 800px; }
@@ -36,15 +36,16 @@ $('.selectpicker').selectpicker();
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
-<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+
 
 </head>
 <body role="document">
@@ -79,7 +80,7 @@ $('.selectpicker').selectpicker();
 	
     function lookup(dbid)
     {
-        var the_url = '?command=view&constellationid=' + dbid;
+        var the_url = '{{control.snacURL}}/view/' + dbid;
         window.open(the_url, '_blank');
     }
 		
@@ -99,7 +100,7 @@ $('.selectpicker').selectpicker();
 	
 		$("#graph_button").prop("disabled", "true").val("Loading...");
 		
-		$.get("?command=visualize&subcommand=connection_data", $("#graph_form").serialize(), function (data) {
+		$.get("{{control.snacURL}}/visualize/connection_data", $("#graph_form").serialize(), function (data) {
 			$("#alchemy").html("");
 			alchemy = null;
 			alchemy = new Alchemy();
