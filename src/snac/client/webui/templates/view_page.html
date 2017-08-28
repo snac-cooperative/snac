@@ -285,21 +285,21 @@
                                 {% endif %}
                                    <a class="list-group-item list-group-item-history"
                                       href="?command=history&constellationid={{data.id}}&version={{data.version}}">
-                                       <i class="fa fa-history" aria-hidden="true"></i> Constellation History</a>
+                                       <i class="fa fa-fw fa-history" aria-hidden="true"></i> Constellation History</a>
                           </div>
                           <h5>Visualizations</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
                               <a class="list-group-item list-group-item-visualize"
                                  href="?command=visualize&subcommand=connection_graph&constellationid={{data.id}}&version={{data.version}}">
-                                  <i class="fa fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
+                                  <i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
                               <a class="list-group-item list-group-item-visualize"
                                  href="?command=visualize&subcommand=radial_graph&constellationid={{data.id}}&version={{data.version}}">
-                                  <i class="fa fa-bullseye" aria-hidden="true"></i> Radial Graph</a>
+                                  <i class="fa fa-fw fa-bullseye" aria-hidden="true"></i> Radial Graph</a>
                           </div>
                           <h5>Export As</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
-                              <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file" aria-hidden="true"></i></span> Constellation JSON</a>
-                                  <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
+                              <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> Constellation JSON</a>
+                                  <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
                           </div>
                       </div>
                   </div>
