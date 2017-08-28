@@ -15,6 +15,10 @@ jQuery.fn.exists = function(){return this.length>0;}
 var geoMapView = null;
 var impliedRelationsLoaded = false;
 
+var holdingsMapView = null;
+var bounds = new L.LatLngBounds();
+
+
 // Reservations for Edit
 var reservedForEdit = false;
 
@@ -64,8 +68,58 @@ function openGeoPlaceViewer(id) {
     return false;
 }
 
+
 $(document).ready(function() {
-// Check that we're on the view page to add these:
+
+    if ($('#page_type').exists()) {
+        if ($('#page_type').val() == 'view_page') {
+            // load the relations, then call the normal startup
+            $.get("?command=view&part=relations&constellationid="+$("#constellationid").val()+"&version="+$("#version").val(), null, function (data) {
+                $("#relations_pane").html(data);
+                startupScript();
+            });
+        } else {
+            // call the normal startup scripts
+            startupScript();
+        }
+    } else {
+        // call the normal startup scripts
+        startupScript();
+    }
+});
+
+function displayHoldingsMap() {
+    if (holdingsMapView != null) {
+        return;
+    }
+    // Add a slight delay to the map viewing so that the modal window has time to load
+    setTimeout(function() {
+        holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
+        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(holdingsMapView);
+        var bounds = new L.LatLngBounds();
+
+        $(".holdings_location_name").each(function(i) {
+            var id = $(this).attr('id').replace("holdings_location_name_", "");
+            var marker = L.marker([$("#holdings_location_lat_"+id).val(), $("#holdings_location_lon_"+id).val()]).addTo(holdingsMapView).bindPopup($(this).val());
+            bounds.extend(marker.getLatLng());
+        });
+        holdingsMapView.fitBounds(bounds);
+    }, 400);
+}
+        
+function startupScript() {
+
+    // If there is a display holdings map button and a holdings map on the page, then activate it
+    if ($('#displayHoldingsMap').exists() && $('#holdingsMap').exists()){
+        $('#displayHoldingsMap').removeClass('disabled');
+        $('#displayHoldingsMap').click(displayHoldingsMap);
+    }
+
+    
+ // Check that we're on the view page to add these:
 if ($('#relatedPeopleImpliedLoad').exists()){
     var loadFunction = function() {
         // don't load a second time
@@ -239,4 +293,4 @@ $(function () {
     container: 'body'
     })
 })
-});
+}

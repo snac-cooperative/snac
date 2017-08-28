@@ -30,7 +30,7 @@ var wikipediaLicenses = [
 
 $(document).ready(function() {
     // Check that we're on the view page
-    if ($('#wikipediaImage').exists() && $('#hasWikipediaLink').exists()){
+    if ($('#wikipediaImage').exists() && $('#has_wiki_link').exists()){
         var shortArk = $('#ark').val().replace("http://n2t.net/ark:/99166/", "");
         var query = "SELECT ?_image WHERE {" +
             "?q wdt:P3430 \""+ shortArk +"\"." +

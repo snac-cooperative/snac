@@ -266,7 +266,7 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      * @return string[] The response from the server. It is a json_decode'ed response from curl.
      */
-    protected function getConstellation(&$input, &$display) {
+    protected function getConstellation(&$input, &$display, $summary=false) {
         $query = array();
         if (isset($input["constellationid"]))
             $query["constellationid"] = $input["constellationid"];
@@ -275,6 +275,8 @@ class WebUIExecutor {
         if (isset($input["arkid"]))
             $query["arkid"] = $input["arkid"];
         $query["command"] = "read";
+        if ($summary)
+            $query["type"] = "summary";
 
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
@@ -374,44 +376,52 @@ class WebUIExecutor {
      */
     public function displayViewPage(&$input, &$display) {
         $message = null;
-        $serverResponse = $this->getConstellation($input, $display);
+        if (isset($input["part"]) && $input["part"] == "relations")
+            $serverResponse = $this->getConstellation($input, $display, false);
+        else
+            $serverResponse = $this->getConstellation($input, $display, true);
         if (isset($serverResponse["constellation"])) {
             if (isset($serverResponse["constellation"]["dataType"])) {
                 // We have only ONE constellation, so display
-
-                $display->setTemplate("view_page");
                 $constellation = $serverResponse["constellation"];
                 $editingUser = null;
-                if (isset($serverResponse["editing_user"]))
-                    $editingUser = $serverResponse["editing_user"];
-
-                if (\snac\Config::$DEBUG_MODE == true) {
-                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
-                }
-
-                $this->logger->addDebug("Getting Holding institution information from the resource relations");
-                $c = new \snac\data\Constellation($constellation);
                 $holdings = array();
-                foreach ($c->getResourceRelations() as $resourceRel) {
-                    if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
-                        $repo = $resourceRel->getResource()->getRepository();
-                        $holdings[$repo->getID()] = array(
-                            "name" => $repo->getPreferredNameEntry()->getOriginal()
-                        );
-                        foreach ($repo->getPlaces() as $place) {
-                            if ($place->getGeoTerm() != null) {
-                                $holdings[$repo->getID()]["latitude"] = $place->getGeoTerm()->getLatitude();
-                                $holdings[$repo->getID()]["longitude"] = $place->getGeoTerm()->getLongitude();
+                
+                if (isset($input["part"]) && $input["part"] == "relations") {
+                    $display->setTemplate("view_page_relations");
+                    $this->logger->addDebug("Getting Holding institution information from the resource relations");
+                    $c = new \snac\data\Constellation($constellation);
+                    foreach ($c->getResourceRelations() as $resourceRel) {
+                        if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
+                            $repo = $resourceRel->getResource()->getRepository();
+                            $holdings[$repo->getID()] = array(
+                                "name" => $repo->getPreferredNameEntry()->getOriginal()
+                            );
+                            foreach ($repo->getPlaces() as $place) {
+                                if ($place->getGeoTerm() != null) {
+                                    $holdings[$repo->getID()]["latitude"] = $place->getGeoTerm()->getLatitude();
+                                    $holdings[$repo->getID()]["longitude"] = $place->getGeoTerm()->getLongitude();
+                                }
                             }
                         }
                     }
-                }
-                // Sort the holding institutions alphabetically
-                usort($holdings, function($a, $b) {
-                    return $a["name"] <=> $b["name"];
-                });
+                    // Sort the holding institutions alphabetically
+                    usort($holdings, function($a, $b) {
+                        return $a["name"] <=> $b["name"];
+                    });
 
+                } else {
+                    $display->setTemplate("view_page");
+                    if (isset($serverResponse["editing_user"]))
+                        $editingUser = $serverResponse["editing_user"];
+
+                    if (\snac\Config::$DEBUG_MODE == true) {
+                        $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                        $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                    }
+
+                }
+               
                 // Check for a redirect
                 if ($serverResponse["result"] == "success-notice") {
                     $message = $serverResponse["message"];

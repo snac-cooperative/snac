@@ -75,6 +75,11 @@ class DBUtil
     public static $READ_ALL_BUT_RELATIONS = 415; // 31 + 128 + 256 (up to relations + scm + place)
 
     /**
+     * @var int Flag to read the entire constellation except relations
+     */
+    public static $READ_ALL_BUT_RELATIONS_AND_META = 287; // 31 + 256 (up to relations + place)
+
+    /**
      * @var int Flag to read the nrd, name entries and biog hist only
      */
     public static $READ_FULL_SUMMARY = 15;
@@ -967,6 +972,15 @@ class DBUtil
             $this->logger->addDebug("The user wants place information");
             $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
         }
+        
+        // If the user wants metadata, then include sources and convention declarations
+        if (($flags & (DBUtil::$READ_SCM_METADATA)) != 0) {
+            $this->logger->addDebug("The user wants metadata information");
+            $this->logger->addDebug("  Source");
+            $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
+            $this->logger->addDebug("  CD");
+            $this->populateConventionDeclaration($vhInfo, $cObj);
+        }
 
         if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0) {
             $this->logger->addDebug("The user wants data except relations");
@@ -974,10 +988,6 @@ class DBUtil
             $this->populateMeta($vhInfo, $cObj, $tableName);
             $this->logger->addDebug("  Dates");
             $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
-            $this->logger->addDebug("  Source");
-            $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
-            $this->logger->addDebug("  CD");
-            $this->populateConventionDeclaration($vhInfo, $cObj);
             $this->logger->addDebug("  Function");
             $this->populateFunction($vhInfo, $cObj);
             $this->logger->addDebug("  Gender");
@@ -1003,6 +1013,7 @@ class DBUtil
             $this->logger->addDebug("  Subject");
             $this->populateSubject($vhInfo, $cObj);
         }
+        
 
         if (($flags & DBUtil::$READ_RELATIONS) != 0) {
             $this->logger->addDebug("The user wants relations");
