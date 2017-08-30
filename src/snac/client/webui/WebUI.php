@@ -329,7 +329,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $_SESSION = array();
 
                 // Go to the homepage
-                header('Location: index.php');
+                header('Location: ' . \snac\Config::$WEBUI_URL);
                 return;
 
             // Editing, Preview, View, and Other Commands
