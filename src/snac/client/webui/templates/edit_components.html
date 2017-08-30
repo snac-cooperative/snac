@@ -188,10 +188,10 @@
                             {% set j = j + 1 %}
                         {% endfor %}
                         <span id='nameEntry_rule_next_j_{{i}}' style='display:none;'>{{j}}</span>
-                        
+
                         <div class="form-group" id="nameEntry_rule_add_div_{{i}}">
                             <div class="col-xs-12 text-center">
-                                <button class="btn btn-success snac-hidden" id="nameEntry_rule_add_{{i}}" 
+                                <button class="btn btn-success snac-hidden" id="nameEntry_rule_add_{{i}}"
                                     onClick="return newNameEntryRule({{i}});" disabled>
                                     <span class="glyphicon glyphicon-plus-sign"></span> Add Rule
                                 </button>
@@ -682,7 +682,7 @@
                             <p class="form-control-static" id="resource_repoText_{{i}}">{{ resource.repoIcId }}</p>
                         </div>
                         <div class="col-xs-8">
-                            <a href="?command=search" target="_blank">Open a SNAC Search Window</a>
+                            <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
                         </div>
                     </div>
                 </div>
@@ -926,7 +926,7 @@
                             <p class="form-control-static"><span style="font-weight: bold" id="constellationRelation_contentText_{{i}}">{{ relation.content }}</span><br>
                             <span id="constellationRelation_targetArkIDText_{{i}}">{{relation.targetArkID}}
                             {% if relation.targetConstellation %}
-                                <a class="label label-info" target="_blank" href="?command=view&constellationid={{relation.targetConstellation}}">View</a>
+                                <a class="label label-info" target="_blank" href="{{control.snacURL}}/view/{{relation.targetConstellation}}">View</a>
                             {% endif %}
                             </span>
                             </p>

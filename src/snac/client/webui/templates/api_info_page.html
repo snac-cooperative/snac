@@ -26,7 +26,7 @@
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
-<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 
 <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
@@ -34,11 +34,11 @@
 
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC includes -->
-<script src="javascript/html2canvas.js{{control.noCache}}"></script>
-<script src="javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 </head>
 
@@ -51,14 +51,14 @@
 <div class="container snac" role="main">
 
 		<h1>API Connection Information</h1>
-       
-        <p>The SNAC RestAPI is available at the following URL.</p> 
+
+        <p>The SNAC RestAPI is available at the following URL.</p>
 
         <div class="well well-lg text-center">
             <p><strong>{{data.restURL}}</strong></p>
         </div>
 
-        <p>Rest API commands are documented <a href="?command=api_help">here</a>.  To perform any actions requiring a log-in, i.e. anything that affects change to the system, include the following <code>"user"</code> object in the body of the request JSON.  This connection information is only valid for the current session.</p>
+        <p>Rest API commands are documented <a href="{{control.snacURL}}/api_help">here</a>.  To perform any actions requiring a log-in, i.e. anything that affects change to the system, include the following <code>"user"</code> object in the body of the request JSON.  This connection information is only valid for the current session.</p>
 
 
         <pre class="well well-lg">{{data.user}}</pre>
@@ -67,4 +67,3 @@
 {{ footer(X, user, permissions, control) }}
 </body>
 </html>
-

@@ -42,7 +42,7 @@ function displayErrorMessage(err, data) {
             +"<button type=\"button\" class=\"btn btn-warning\" aria-label=\"Close\" onClick=\"$('#error-message').slideUp()\">"+
             "Stay Here"
             +"</button> "
-            +"<a href=\"?command=dashboard\" type=\"button\" class=\"btn btn-danger\">"+
+            +"<a href=\""+snacUrl+"/dashboard\" type=\"button\" class=\"btn btn-danger\">"+
             "Go to Dashboard"
             +"</a>"
             +"</p>");
@@ -257,7 +257,7 @@ function textToCheckbox(shortName, idStr) {
             }
 
             cont.html(html);
-            $("#"+shortName+"_"+name+"_"+idStr).bootstrapToggle(); 
+            $("#"+shortName+"_"+name+"_"+idStr).bootstrapToggle();
         }
     });
 
@@ -275,7 +275,7 @@ function checkboxToText(shortName, idStr) {
             var regex = new RegExp("\_"+idStr+"$", "g");
             var name = divStr.replace(regex, "");
             var value = $("#"+shortName+"_"+name+"_"+idStr).val();
-            var checked = $("#"+shortName+"_"+name+"_"+idStr).prop('checked'); 
+            var checked = $("#"+shortName+"_"+name+"_"+idStr).prop('checked');
             var placeholderOn = "";
             if ($("#"+shortName+"_"+name+"_placeholderOn_"+idStr).exists()) {
                 placeholderOn = $("#"+shortName+"_"+name+"_placeholderOn_"+idStr).val();
@@ -301,7 +301,7 @@ function checkboxToText(shortName, idStr) {
             } else {
                 if (placeholderOff != "")
                    html += placeholderOff;
-            } 
+            }
             html += "</p>";
             if (placeholderOn != "") {
                 html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOn_"+idStr+"\" " +
@@ -637,7 +637,7 @@ function subMakeEditable(short, i) {
     $("#"+short+"_datapart_" + i + " a.label").each(function() {
         $(this).removeClass("snac-hidden");
     });
-    
+
     // Enable checkboxes
     $("#"+short+"_datapart_" + i + " input[type='checkbox']").each(function() {
         var obj = $(this);
@@ -1620,7 +1620,7 @@ function loadGeoPlaceResultCache() {
         var obj = $(this);
         // Query for term by ajax
         if (obj.val() != null && obj.val() != "") {
-            $.get("?command=vocabulary&type=geoPlace&subcommand=read&id="+obj.val(), null, function (data) {
+            $.get(snacUrl+"/vocabulary/read?type=geoPlace&id="+obj.val(), null, function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.term) {
                     if (!geoPlaceLoadResults)
@@ -1757,7 +1757,7 @@ $(document).ready(function() {
             if (genderOpen)
                 return;
 
-            $.get("?command=edit_part&part=genders&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=genders", null, function (data) {
                 genderOpen = true;
                 $('#genders').html(data);
 
@@ -1795,7 +1795,7 @@ $(document).ready(function() {
             if (existOpen)
                 return;
 
-            $.get("?command=edit_part&part=dates&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=dates", null, function (data) {
                 existOpen = true;
                 $('#dates').html(data);
 
@@ -1845,7 +1845,7 @@ $(document).ready(function() {
             if (sameAsOpen)
                 return;
 
-            $.get("?command=edit_part&part=sameAs&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=sameAs", null, function (data) {
                 sameAsOpen = true;
                 $('#sameAs').html(data);
 
@@ -1883,7 +1883,7 @@ $(document).ready(function() {
             if (entityIDOpen)
                 return;
 
-            $.get("?command=edit_part&part=entityID&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=entityID", null, function (data) {
                 entityIDOpen = true;
                 $('#entityID').html(data);
 
@@ -1920,7 +1920,7 @@ $(document).ready(function() {
             if (sourceOpen)
                 return;
 
-            $.get("?command=edit_part&part=sources&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=sources", null, function (data) {
                 sourceOpen = true;
                 $('#sources').html(data);
 
@@ -1957,7 +1957,7 @@ $(document).ready(function() {
             if (resourceRelationOpen)
                 return;
 
-            $.get("?command=edit_part&part=resourceRelations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=resourceRelations", null, function (data) {
                 resourceRelationOpen = true;
                 $('#resourceRelations').html(data);
 
@@ -2048,7 +2048,7 @@ $(document).ready(function() {
                 if ($('#btn_create_resource').exists()){
                     $('#btn_create_resource').click(function(){
                         if ($("#resource_create_form").valid()) {
-                            $.post("?command=save_resource", $("#resource_create_form").serialize(), function (data) {
+                            $.post(snacUrl+"/save_resource", $("#resource_create_form").serialize(), function (data) {
                                 somethingHasBeenEdited = true;
                                 var text = $('#resourceRelation_template').clone();
                                 var html = text.html().replace(/ZZ/g, resourceRelationid);
@@ -2101,7 +2101,7 @@ $(document).ready(function() {
             if (constellationRelationOpen)
                 return;
 
-            $.get("?command=edit_part&part=constellationRelations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=constellationRelations", null, function (data) {
                 constellationRelationOpen = true;
                 $('#constellationRelations').html(data);
 
@@ -2158,7 +2158,7 @@ $(document).ready(function() {
             if (languageOpen)
                 return;
 
-            $.get("?command=edit_part&part=languagesUsed&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=languagesUsed", null, function (data) {
                 languageOpen = true;
                 $('#languagesUsed').html(data);
 
@@ -2195,7 +2195,7 @@ $(document).ready(function() {
             if (subjectOpen)
                 return;
 
-            $.get("?command=edit_part&part=subjects&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=subjects", null, function (data) {
                 subjectOpen = true;
                 $('#subjects').html(data);
 
@@ -2232,7 +2232,7 @@ $(document).ready(function() {
             if (nationalityOpen)
                 return;
 
-            $.get("?command=edit_part&part=nationalities&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=nationalities", null, function (data) {
                 nationalityOpen = true;
                 $('#nationalities').html(data);
 
@@ -2269,7 +2269,7 @@ $(document).ready(function() {
             if (functionOpen)
                 return;
 
-            $.get("?command=edit_part&part=functions&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=functions", null, function (data) {
                 functionOpen = true;
                 $('#functions').html(data);
 
@@ -2306,7 +2306,7 @@ $(document).ready(function() {
             if (occupationOpen)
                 return;
 
-            $.get("?command=edit_part&part=occupations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=occupations", null, function (data) {
                 occupationOpen = true;
                 $('#occupations').html(data);
 
@@ -2343,7 +2343,7 @@ $(document).ready(function() {
             if (legalStatusOpen)
                 return;
 
-            $.get("?command=edit_part&part=legalStatuses&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=legalStatuses", null, function (data) {
                 legalStatusOpen = true;
                 $('#legalStatuses').html(data);
 
@@ -2380,7 +2380,7 @@ $(document).ready(function() {
             if (placeOpen)
                 return;
 
-            $.get("?command=edit_part&part=places&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=places", null, function (data) {
                 placeOpen = true;
                 $('#places').html(data);
 
@@ -2420,7 +2420,7 @@ $(document).ready(function() {
             if (conventionDeclarationOpen)
                 return;
 
-            $.get("?command=edit_part&part=conventionDeclarations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=conventionDeclarations", null, function (data) {
                 conventionDeclarationOpen = true;
                 $('#conventionDeclarations').html(data);
 
@@ -2457,7 +2457,7 @@ $(document).ready(function() {
             if (generalContextOpen)
                 return;
 
-            $.get("?command=edit_part&part=generalContexts&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=generalContexts", null, function (data) {
                 generalContextOpen = true;
                 $('#generalContexts').html(data);
 
@@ -2494,7 +2494,7 @@ $(document).ready(function() {
             if (structureOrGenealogyOpen)
                 return;
 
-            $.get("?command=edit_part&part=structureOrGenealogies&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=structureOrGenealogies", null, function (data) {
                 structureOrGenealogyOpen = true;
                 $('#structureOrGenealogies').html(data);
 
@@ -2531,7 +2531,7 @@ $(document).ready(function() {
             if (mandateOpen)
                 return;
 
-            $.get("?command=edit_part&part=mandates&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=mandates", null, function (data) {
                 mandateOpen = true;
                 $('#mandates').html(data);
 
@@ -2568,7 +2568,7 @@ $(document).ready(function() {
             if (biogHistOpen)
                 return;
 
-            $.get("?command=edit_part&part=biogHists&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=biogHists", null, function (data) {
                 biogHistOpen = true;
                 $('#biogHists').html(data);
 

@@ -378,10 +378,10 @@ class ServerExecutor {
     }
 
     /**
-     * Search the Users 
+     * Search the Users
      *
      * Searches the current users of the system based on the query from the input.  Returns a list
-     * of those matching users. 
+     * of those matching users.
      *
      * @param string[] $input The input from the client
      * @return string[] The response to send to the client
@@ -1289,7 +1289,7 @@ class ServerExecutor {
     }
 
     /**
-     * Make Assertion about Constellations 
+     * Make Assertion about Constellations
      *
      * Processes and adds assertions about the given constellelation IDs (in input).  Requires a type of assertion,
      * and currently supports "not_same" relations.
@@ -1305,7 +1305,7 @@ class ServerExecutor {
         }
 
         $response["result"] = "failure";
-        
+
         if (isset($input["constellationids"]) && is_array($input["constellationids"]) && count($input["constellationids"]) > 1) {
             switch($input["type"]) {
                 case "not_same":
@@ -1334,7 +1334,7 @@ class ServerExecutor {
     }
 
     /**
-     * Add Maybe-Same Relationship 
+     * Add Maybe-Same Relationship
      *
      * Adds maybe-same relationships between the given constellations in the input.
      *
@@ -1372,7 +1372,7 @@ class ServerExecutor {
     }
 
     /**
-     * Remove Maybe-Same Relationship 
+     * Remove Maybe-Same Relationship
      *
      * Removes the maybe-same relationships between the given constellations in the input.
      *
@@ -1451,7 +1451,7 @@ class ServerExecutor {
                             $logNote);
                     $result = $this->cStore->writeConstellationStatus($toUser, $constellation->getID(), "locked editing",
                             "Constellation reassigned by " . $this->user->getUserName());
-                    
+
 
 
                     if (isset($result) && $result !== false) {
@@ -1477,11 +1477,11 @@ class ServerExecutor {
                             if ($prefName != null)
                                 $name = $prefName->getOriginal();
                             $msgBody .= "<div class=\"list-group list-group-constellationlist\"><a href=\""
-                                .\snac\Config::$WEBUI_URL."?command=details&amp;constellationid=".
-                                $newest->getID()."&amp;version=".$newest->getVersion()."&amp;preview=1\"".
+                                .\snac\Config::$WEBUI_URL.'/details/'.
+                                $newest->getID()."/".$newest->getVersion()."?preview=1\"".
                                 "class=\"constellation constellation-review list-group-item list-group-item-success\">$name</a></div>";
                             $message->setBody($msgBody);
-                            
+
                             // Send the message
                             $this->uStore->writeMessage($message);
 
@@ -1669,11 +1669,11 @@ class ServerExecutor {
                             if ($prefName != null)
                                 $name = $prefName->getOriginal();
                             $msgBody .= "<div class=\"list-group list-group-constellationlist\"><a href=\""
-                                .\snac\Config::$WEBUI_URL."?command=details&amp;constellationid=".
-                                $newest->getID()."&amp;version=".$newest->getVersion()."&amp;preview=1\"".
+                                .\snac\Config::$WEBUI_URL."/details/".
+                                $newest->getID()."/".$newest->getVersion()."?preview=1\"".
                                 "class=\"constellation constellation-review list-group-item list-group-item-success\">$name</a></div>";
                             $message->setBody($msgBody);
-                            
+
                             // Send the message
                             $this->uStore->writeMessage($message);
 
@@ -1878,7 +1878,7 @@ class ServerExecutor {
                 // and then only publish if the user has permission (it was locked to them, etc).
 
                 $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
-                
+
                 $info = $this->cStore->readConstellationUserStatus($constellation->getID());
                 if ($info === null) {
                     throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status");
@@ -1887,7 +1887,7 @@ class ServerExecutor {
                 $currentUserID = $info["userid"];
                 $currentNote = $info["note"];
 
-                
+
                 $inList = false;
                 if ($currentUserID == $this->user->getUserID() &&
                     ($currentStatus == 'currently editing' || $currentStatus == 'locked editing')) {
@@ -2198,7 +2198,7 @@ class ServerExecutor {
                     throw new \snac\exceptions\SNACConcurrentEditException("Constellation currently opened in another window");
                 }
 
-                // If the current status is published 
+                // If the current status is published
                 // OR the constellation needs review and the user has permission to review (TODO)
                 // then the user is allowed to edit.  If the user is already editing, then don't allow the reserve.
                 if ( $status == "published" || ($status == "needs review" && $this->hasPermission("Change Locks"))) {
@@ -2295,7 +2295,7 @@ class ServerExecutor {
 
                     // read the constellation into response
                     $constellation = $this->cStore->readConstellation($cId);
-                    
+
                     $this->logger->addDebug("Finished reading constellation from the database");
                     $response["constellation"] = $constellation->toArray();
                     $this->logger->addDebug("Serialized constellation for output to client");
@@ -2463,9 +2463,9 @@ class ServerExecutor {
                 $cV2 = null;
                 if (isset($input["version2"]))
                     $cV2 = $input["version2"];
-                
+
                 $mergeable = $this->isMergeable($cId1, $cId2, $cV1, $cV2);
-                
+
                 // Right now, only published constellations can be merged, so that we can keep a "clean" history
                 if ($mergeable === true) {
                     $response["mergeable"] = true;
@@ -2818,14 +2818,14 @@ class ServerExecutor {
                 }
 
                 // Only able to merge if the status is published OR locked editing to this user
-                if (($info[$cId]["status"] == "published") || 
+                if (($info[$cId]["status"] == "published") ||
                         ($info[$cId]["status"] == "locked editing" && $this->user->getUserID() == $info[$cId]["userid"])) {
                     $success = $this->cStore->writeConstellationStatus($this->user, $cId, "currently editing");
                     if ($success) {
                         $info[$cId] = $this->cStore->readConstellationUserStatus($cId);
                     }
                 }
-                
+
                 if ($info[$cId]["status"] != "currently editing" || $this->user->getUserID() !== $info[$cId]["userid"]) {
                     // Try to check out the constellation.  If it doesn't work, then we will cancel it
                     // TODOX

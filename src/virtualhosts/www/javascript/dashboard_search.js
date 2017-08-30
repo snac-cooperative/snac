@@ -28,7 +28,7 @@ function searchAndUpdate() {
     if ($("#searchbox").val() == "" || $("#searchbox").val().length < 2) {
         $("#search-results-box").html("");
     } else {
-        $.post("?command=quicksearch", $("#search_form").serialize(), function (data) {
+        $.post(snacUrl+"/quicksearch", $("#search_form").serialize(), function (data) {
             //var previewWindow = window.open("", "Preview");
             //previewWindow.document.write(data);
 
@@ -36,7 +36,7 @@ function searchAndUpdate() {
             html += "<h4 class='text-left'>Quick Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
             if (data.results.length > 0) {
                 for (var key in data.results) {
-                    html += "<a href='?command=view&constellationid="+data.results[key].id+"' class='list-group-item'>"+data.results[key].nameEntries[0].original+"</a>";
+                    html += "<a href='"+snacUrl+"/view/"+data.results[key].id+"' class='list-group-item'>"+data.results[key].nameEntries[0].original+"</a>";
                 }
             }
             html += "</div>";

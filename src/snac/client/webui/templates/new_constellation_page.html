@@ -41,19 +41,19 @@
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
-<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Javascript -->
-<script src="javascript/save_actions.js{{control.noCache}}"></script>
-<script src="javascript/select_loaders.js{{control.noCache}}"></script>
-<script src="javascript/scripts.js{{control.noCache}}"></script>
-<script src="javascript/name_heading_punctuator.js{{control.noCache}}"></script>
-<script src="javascript/edit_scripts.js{{control.noCache}}"></script>
-<script src="javascript/relation_search.js{{control.noCache}}"></script>
-<script src="javascript/html2canvas.js{{control.noCache}}"></script>
-<script src="javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/name_heading_punctuator.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/edit_scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -69,7 +69,7 @@ $(document).ready(function() {
 </script>
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 </head>
 <body role="document">
@@ -84,7 +84,7 @@ $(document).ready(function() {
 
 <div class="container snac" role="main">
 
-    <form class="form-horizontal" id="constellation_form" action="?command=new_edit" method="post">
+    <form class="form-horizontal" id="constellation_form" action="{{control.snacURL}}/new_edit" method="post">
         <h1>New Constellation</h1>
 
         <!-- Constellation Data -->

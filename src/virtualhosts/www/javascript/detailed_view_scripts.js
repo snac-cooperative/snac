@@ -60,7 +60,7 @@ $(document).ready(function() {
             if (sourceOpen)
                 return;
 
-            $.get("?command=details&part=sources&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=sources", null, function (data) {
                 sourceOpen = true;
                 $('#sources').html(data);
 
@@ -77,7 +77,7 @@ $(document).ready(function() {
             if (resourceRelationOpen)
                 return;
 
-            $.get("?command=details&part=resourceRelations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=resourceRelations", null, function (data) {
                 resourceRelationOpen = true;
                 $('#resourceRelations').html(data);
 
@@ -104,7 +104,7 @@ $(document).ready(function() {
             if (constellationRelationOpen)
                 return;
 
-            $.get("?command=details&part=constellationRelations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=constellationRelations", null, function (data) {
                 constellationRelationOpen = true;
                 $('#constellationRelations').html(data);
 
@@ -142,7 +142,7 @@ function enableImpliedRelations() {
             $('#'+shortName+'_relationPictureArrow_'+i).text(newValue);
         }
 
-        
+
         var loadFunction = function() {
             // don't load a second time
             if (impliedRelationsLoaded)
@@ -156,7 +156,7 @@ function enableImpliedRelations() {
             // Replace the HTML with the loading symbol
             $('#impliedRelations').html(loadingHTML);
 
-            $.get("?command=relations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/relations/"+$('#constellationid').val()+"/"+$('#version').val(), null, function (data) {
                 var finalHtml = "";
                 if (data.in) {
                     $('#impliedRelations').html("");
@@ -172,14 +172,6 @@ function enableImpliedRelations() {
                         updatePictureIcon('constellationRelation', "implied_"+i, data.in[key].constellation.entityType.term);
                         updatePictureTitle('constellationRelation', "implied_"+i, data.in[key].constellation.nameEntries[0].original);
                         updatePictureArrow('constellationRelation', "implied_"+i, data.in[key].relation.type.term);
-                        /*
-                        finalHtml += "<div class=\"person\">" +
-                            "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
-                            data.in[key].constellation.nameEntries[0].original + "</a> " +
-                            " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
-                            "<div></div>" +
-                        "</div>";
-                        */
                         i++;
                     }
                 }
@@ -191,4 +183,3 @@ function enableImpliedRelations() {
         $('#impliedRelationsTab').click(loadFunction);
     }
 }
-

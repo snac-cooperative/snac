@@ -25,7 +25,7 @@ $('.selectpicker').selectpicker();
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
-<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -34,16 +34,16 @@ $('.selectpicker').selectpicker();
 <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/admin.js{{control.noCache}}"></script>
-<script src="javascript/save_actions.js{{control.noCache}}"></script>
-<script src="javascript/select_loaders.js{{control.noCache}}"></script>
-<script src="javascript/scripts.js{{control.noCache}}"></script>
-<script src="javascript/relation_search.js{{control.noCache}}"></script>
-<script src="javascript/html2canvas.js{{control.noCache}}"></script>
-<script src="javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/admin.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 
 <script>
@@ -147,15 +147,15 @@ $(document).ready(function() {
                                 </div>
                             {% else %}
                                 <p class="btn-group">
-                                    <a class='btn btn-sm btn-success' href="?command=details&constellationid={{data.constellation.id}}&version={{history.version}}"><span class="glyphicon glyphicon-tasks"></span> Details</a>
-                                    <a class='btn btn-sm btn-primary' href="?command=view&constellationid={{data.constellation.id}}&version={{history.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT</a>
+                                    <a class='btn btn-sm btn-success' href="{{control.snacURL}}/details/{{data.constellation.id}}/{{history.version}}"><span class="glyphicon glyphicon-tasks"></span> Details</a>
+                                    <a class='btn btn-sm btn-primary' href="{{control.snacURL}}/view/{{data.constellation.id}}/{{history.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT</a>
                                     {% if not loop.last %}
-                                        <a title="See changes in this version" class='btn btn-sm btn-info' href="?command=history_diff&constellationid={{data.constellation.id}}&version1={{data.history[loop.index0 + 1].version}}&version2={{history.version}}"><span class="fa fa-fw fa-retweet"></span> Changes</a>
+                                        <a title="See changes in this version" class='btn btn-sm btn-info' href="{{control.snacURL}}/history_diff/{{data.constellation.id}}?version1={{data.history[loop.index0 + 1].version}}&version2={{history.version}}"><span class="fa fa-fw fa-retweet"></span> Changes</a>
                                     {% else %}
                                         <a class='btn btn-sm btn-info disabled' href="#" disabled="true"><span class="fa fa-fw fa-retweet"></span> Changes</a>
                                     {% endif %}
                                     {% if data.constellation.version != history.version %}
-                                        <a title="Compare to Current Version" class='btn btn-sm btn-warning' href="?command=history_diff&constellationid={{data.constellation.id}}&version1={{history.version}}&version2={{data.constellation.version}}"><span class="fa fa-fw fa-history"></span> Compare</a>
+                                        <a title="Compare to Current Version" class='btn btn-sm btn-warning' href="{{control.snacURL}}/history_diff/{{data.constellation.id}}?version1={{history.version}}&version2={{data.constellation.version}}"><span class="fa fa-fw fa-history"></span> Compare</a>
                                     {% else %}
                                         <a class='btn btn-sm btn-warning disabled' href="#" disabled="true"><span class="fa fa-fw fa-history"></span> Compare</a>
                                     {% endif %}

@@ -262,7 +262,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (isset($this->input["r"])) {
                     $_SESSION['redirect_postlogin'] = $this->input["r"];
                 }
-                
+
                 // if the user wants to log in, then send them to the login server
                 $authUrl = $provider->getAuthorizationUrl();
                 header('Location: ' . $authUrl);
@@ -283,7 +283,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Set the user details in the session
                 $_SESSION['user_details'] = serialize($ownerDetails);
 
-                $redirect = "index.php?command=dashboard";
+                $redirect = \snac\Config::$WEBUI_URL . "/dashboard";
                 if (isset($_SESSION['redirect_postlogin'])) {
                     $tmp = $_SESSION['redirect_postlogin'];
                     if (strstr($tmp, 'command') !== false && strstr($tmp, 'logout') === false)
@@ -400,7 +400,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 } else {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);
                 }
-                break;  
+                break;
             case "merge_cancel":
                 if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->cancelMerge($this->input, $display);
@@ -463,7 +463,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 			case "visualize":
                 $response = $executor->handleVisualization($this->input, $display);
                 break;
-            
+
             // Administrator command (the sub method handles admin commands)
             case "administrator":
                 $response = $executor->handleAdministrator($this->input, $display, $user);
@@ -495,7 +495,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->unlockConstellation($this->input);
                 // if unlocked by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully unlocked");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully unlocked");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
@@ -510,7 +510,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->sendForReviewConstellation($this->input);
                 // if sent for review by constellationid parameter alone, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully sent for review");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully sent for review");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
@@ -525,7 +525,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->sendConstellation($this->input);
                 // if sent for review by constellationid parameter alone, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully sent to editor");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully sent to editor");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
@@ -540,7 +540,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->publishConstellation($this->input);
                 // if published by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully published");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully published");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
@@ -559,7 +559,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->deleteConstellation($this->input);
                 // if deleted by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully deleted");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully deleted");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);

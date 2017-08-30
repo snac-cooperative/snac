@@ -177,7 +177,7 @@ function showCompareOption() {
                                 i++;
                             });
 
-                            form.attr('action', '?command=auto_merge').attr('method', 'post').attr('target', '_self');
+                            form.attr('action', snacUrl+'/auto_merge').attr('method', 'post').attr('target', '_self');
                             form.submit();
                         }
                     }
@@ -189,7 +189,7 @@ function showCompareOption() {
         $("#autoMergeButton").prop("disabled", true);
         $('#autoMergeButton').off("click");
     }
-    
+
     // Add maybe-same functionality
     if (toCompare.length > 1 && $("#addMaybeSameButton").exists()) {
         $("#addMaybeSameButton").prop("disabled", false);
@@ -229,11 +229,11 @@ function showCompareOption() {
                                 i++;
                             });
 
-                            $.post("?command=add_maybesame", $("#merge_form").serialize(), function(data) {
+                            $.post(snacUrl+"/add_maybesame", $("#merge_form").serialize(), function(data) {
                                 if (data.result == "success") {
                                     clearSelected();
                                     $("#merge_form").html("");
-                                    
+
                                     $('#success-message').html("<p>Sucessfully added Maybe-Same relationships.</p>");
                                     setTimeout(function(){
                                         $('#success-message').slideDown();
@@ -307,10 +307,10 @@ $(document).ready(function() {
                     html += "<li class='list-group-item'>"+obj.name+"</li>";
                 });
                 html += "</ul>";
-               
+
                 html += "<p class='text-center'><button id='shoppingCartEmpty' class='btn btn-default'>";
-                html += "<i class='fa fa-trash' aria-hidden='true'></i> Clear All Selections</button></p>"; 
-                
+                html += "<i class='fa fa-trash' aria-hidden='true'></i> Clear All Selections</button></p>";
+
                 $("#shoppingCartButton").popover({
                     placement: "bottom",
                     title: "Selected Constellations",
@@ -318,13 +318,12 @@ $(document).ready(function() {
                     html: true,
                     content: html
                 });
-                
+
                 $("#shoppingCartButton").popover('show');
-                $("#shoppingCartEmpty").click(clearSelected); 
+                $("#shoppingCartEmpty").click(clearSelected);
             }
         });
 
         enableCompareboxes();
 
 });
-

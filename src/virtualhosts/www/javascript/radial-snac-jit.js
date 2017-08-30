@@ -1,6 +1,6 @@
 var labelType, useGradients, nativeTextSupport, animate;
 
-// this is a modified version of an example file that came with Nicolas Garcia 
+// this is a modified version of an example file that came with Nicolas Garcia
 // Belmonte's JavaScript InfoVis Toolkit http://thejit.org/downloads/Jit-2.0.0b.zip
 // http://thejit.org/static/v20/Jit/Examples/RGraph/example1.js
 // http://thejit.org/static/v20/Jit/Examples/RGraph/example1.html
@@ -13,7 +13,7 @@ var labelType, useGradients, nativeTextSupport, animate;
       iStuff = ua.match(/iPhone/i) || ua.match(/iPad/i),
       typeOfCanvas = typeof HTMLCanvasElement,
       nativeCanvasSupport = (typeOfCanvas == 'object' || typeOfCanvas == 'function'),
-      textSupport = nativeCanvasSupport 
+      textSupport = nativeCanvasSupport
         && (typeof document.createElement('canvas').getContext('2d').fillText == 'function');
   //I'm setting this based on the fact that ExCanvas provides text support for IE
   //and that as of today iPhone/iPad current text support is lame
@@ -26,8 +26,8 @@ var labelType, useGradients, nativeTextSupport, animate;
 function log(a) {console.log&&console.log(a);}
 
 function init(){
-    
-    
+
+
     //init RGraph
     var rgraph = new $jit.RGraph({
         //Where to append the visualization
@@ -44,25 +44,25 @@ function init(){
         Navigation: {
           enable: true,
           panning: true,
-          zooming: 20 
+          zooming: 20
         },
         //Set Node and Edge styles.
         Node: {
             color: '#ddeeff', type: 'none'
         },
-        
+
         Edge: {
           color: '#C17878',
           lineWidth:0.25
         },
 
-        
+
         onBeforeCompute: function(node){
             var t = new Date();
             console.log(node);
             // snac: load in the graph for the new center node
             $.ajax({
-                url: "?command=visualize&subcommand=connection_data&degree=1&constellationid="+node.data.dbid,
+                url: snacUrl+"/visualize/connection_data/"+node.data.dbid+"?degree=1",
                 success: function(json){
                     var nodes = json.nodes;
                     var i = 0;
@@ -100,8 +100,8 @@ function init(){
                     rgraph.op.sum(nodes, {type: 'nothing', id: node.id });
                     rgraph.graph.computeLevels(node.id);
                     // snac: this trims nodes that are far away from where we
-                    // are now centered 
-                    node.eachLevel(5,6, function(deep) { 
+                    // are now centered
+                    node.eachLevel(5,6, function(deep) {
                         // snac: this setTimeout should give control back to
                         // the browser after each node delete the idea is
                         // to try to prevent UI lockups and "unresponsive
@@ -109,15 +109,15 @@ function init(){
                         setTimeout(function() {
                             rgraph.graph.removeNode(deep.id);
                             rgraph.labels.clearLabels();
-                        }, 0); 
+                        }, 0);
                     });
                     rgraph.refresh(true);
                     rgraph.compute('end');
- 
+
                 }
             });
         },
-        
+
         //Add the name of the node in the correponding label
         //and a click handler to move the graph.
         //This method is called once, on label creation.
@@ -159,11 +159,11 @@ function init(){
             if (node._depth <= 1) {
                 style.fontSize = "0.8em";
                 style.color = "#ccc";
-            
+
             } else if(node._depth == 2){
                 style.fontSize = "0.8em";
                 style.color = "#ccc";
-            
+
             } else {
                 style.fontSize = "0.7em";
                 style.color = "#ccc";
@@ -177,7 +177,7 @@ function init(){
 
     // snac; load in the graph for the original center node
     $.ajax({
-        url: "?command=visualize&subcommand=connection_data&degree=1&constellationid="+nodeId,
+        url: snacUrl+"/visualize/connection_data/"+nodeId+"?degree=1",
         success: function(json){
             console.log(json);
             //rgraph.loadJSON(json);
@@ -208,7 +208,7 @@ function init(){
 
                 node.adjacencies = new Array();
                 console.log(node);
-                
+
                 json.edges.forEach(function(edge) {
                     if (edge.source.toString() == node.id) {
                         console.log(edge);

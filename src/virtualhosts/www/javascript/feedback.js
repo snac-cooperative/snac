@@ -2,7 +2,7 @@
  * Feedback Message Sender
  *
  * Adds a Feedback button and modal to the page DOM.  On click, it takes a javascript screenshot and
- * allows the user to send feedback along with the screenshot. 
+ * allows the user to send feedback along with the screenshot.
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
@@ -110,7 +110,7 @@ function sendFeedback() {
         "token" : $("#g-recaptcha-response").val()
     };
 
-    $.post("?command=feedback", feedbackBody, function (data) {
+    $.post(snacUrl+"/feedback", feedbackBody, function (data) {
         if (data.result == "success") {
             // show success alert
             $("#feedback_status_message").addClass("alert-success").html("<p>Feedback sent successfully.</p>");
@@ -153,4 +153,3 @@ $(document).ready(function() {
             return false;
         });
 });
-

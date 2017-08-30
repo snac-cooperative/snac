@@ -94,7 +94,7 @@ $(document).ready(function() {
             });
 
             // Send the data back by AJAX call
-            $.post("?command=save", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/save", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then alert the
                 // user and make appropriate updates.
                 if (data.result == "success") {
@@ -207,7 +207,7 @@ $(document).ready(function() {
 		        $('#notification-message').slideDown();
 
 		        // Publish by AJAX call
-		        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
+		        $.post(snacUrl+"/unlock", $("#constellation_form").serialize(), function (data) {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
@@ -222,7 +222,7 @@ $(document).ready(function() {
 		                setTimeout(function(){
 
 		                    // Go to dashboard
-		                    window.location.href = "?command=dashboard";
+		                    window.location.href = snacUrl+"/dashboard";
 
 		                }, 1000);
 
@@ -272,7 +272,7 @@ $(document).ready(function() {
                 });
 
 	            // Send the data back by AJAX call
-	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
+	            $.post(snacUrl+"/save_unlock", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // No longer in editing, save succeeded
@@ -288,7 +288,7 @@ $(document).ready(function() {
                         setTimeout(function(){
 
                             // Go to dashboard
-                            window.location.href = "?command=dashboard";
+                            window.location.href = snacUrl+"/dashboard";
 
                         }, 1000);
 	                } else {
@@ -328,7 +328,7 @@ $(document).ready(function() {
 		        $('#notification-message').slideDown();
 
 		        // Publish by AJAX call
-		        $.post("?command=publish", $("#constellation_form").serialize(), function (data) {
+		        $.post(snacUrl+"/publish", $("#constellation_form").serialize(), function (data) {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
@@ -343,7 +343,7 @@ $(document).ready(function() {
 		                setTimeout(function(){
 
 		                    // Go to dashboard
-		                    window.location.href = "?command=dashboard";
+		                    window.location.href = snacUrl+"/dashboard";
 
 		                }, 1000);
 
@@ -394,7 +394,7 @@ $(document).ready(function() {
 
 
 	            // Send the data back by AJAX call
-	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
+	            $.post(snacUrl+"/save_publish", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // Edit succeeded, so save mode off
@@ -410,7 +410,7 @@ $(document).ready(function() {
 		                setTimeout(function(){
 
 		                    // Go to dashboard
-		                    window.location.href = "?command=dashboard";
+		                    window.location.href = snacUrl+"/dashboard";
 
 		                }, 1000);
 	                } else {
@@ -447,7 +447,7 @@ $(document).ready(function() {
             $('#notification-message').slideDown();
 
             // Publish by AJAX call
-            $.post("?command=review", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/review", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
@@ -462,7 +462,7 @@ $(document).ready(function() {
                     setTimeout(function(){
 
                         // Go to dashboard
-                        window.location.href = "?command=dashboard";
+                        window.location.href = snacUrl+"/dashboard";
 
                     }, 1000);
 
@@ -513,7 +513,7 @@ $(document).ready(function() {
 
 
             // Send the data back by AJAX call
-            $.post("?command=save_review", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/save_review", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
@@ -529,7 +529,7 @@ $(document).ready(function() {
                     setTimeout(function(){
 
                         // Go to dashboard
-                        window.location.href = "?command=dashboard";
+                        window.location.href = snacUrl+"/dashboard";
 
                     }, 1000);
                 } else {
@@ -565,7 +565,7 @@ $(document).ready(function() {
             $('#notification-message').slideDown();
 
             // Publish by AJAX call
-            $.post("?command=send", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/send", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
@@ -580,7 +580,7 @@ $(document).ready(function() {
                     setTimeout(function(){
 
                         // Go to dashboard
-                        window.location.href = "?command=dashboard";
+                        window.location.href = snacUrl+"/dashboard";
 
                     }, 1000);
 
@@ -631,7 +631,7 @@ $(document).ready(function() {
 
 
             // Send the data back by AJAX call
-            $.post("?command=save_send", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/save_send", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
@@ -647,7 +647,7 @@ $(document).ready(function() {
                     setTimeout(function(){
 
                         // Go to dashboard
-                        window.location.href = "?command=dashboard";
+                        window.location.href = snacUrl+"/dashboard";
 
                     }, 1000);
                 } else {
@@ -658,7 +658,7 @@ $(document).ready(function() {
             });
         }
     }
-    
+
     // Save and Send Back to Editor button
     if($('#save_and_send_back').exists()) {
         $('#save_and_send_back').click(function() {
@@ -706,14 +706,14 @@ $(document).ready(function() {
         	});
         	if ($('#constellationid').val() == "" || $('#entityType').val() == "" || noNameEntryText) {
         		// Go to dashboard
-                window.location.href = "?command=dashboard";
+                window.location.href = snacUrl+"/dashboard";
         		return;
         	}
 
 
 
         	// Unlock
-	        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
+	        $.post(snacUrl+"/unlock", $("#constellation_form").serialize(), function (data) {
 	            // Check the return value from the ajax. If success, then go to dashboard
 	            if (data.result == "success") {
 	                somethingHasBeenEdited = false;
@@ -724,7 +724,7 @@ $(document).ready(function() {
 	                setTimeout(function(){
 
 	                    // Go to dashboard
-	                    window.location.href = "?command=dashboard";
+	                    window.location.href = snacUrl+"/dashboard";
 
 	                }, 1000);
 
@@ -750,7 +750,7 @@ $(document).ready(function() {
             }, 3000);
 
             // Send the data back by AJAX call
-            $.post("?command=preview", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/preview", $("#constellation_form").serialize(), function (data) {
                 var previewWindow = window.open("", "Preview");
                 previewWindow.document.write(data);
             });
@@ -824,7 +824,7 @@ $(document).ready(function() {
             });
 
             // Send the data back by AJAX call
-            $.post("?command=new_reconcile", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/new_reconcile", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
@@ -847,8 +847,8 @@ $(document).ready(function() {
                             html += "<div class='col-xs-8'><h4 class='list-group-item-heading'>"+data.results[key].nameEntries[0].original+"</h4>";
                             html += "<p class='list-group-item-text'>"+data.results[key].ark+"</p></div>";
                             html += "<div class='col-xs-4 list-group'>";
-                            html += "<a class='list-group-item list-group-item-success' target='_blank' href='?command=view&preview&constellationid="+data.results[key].id+"'><span  class='fa fa-eye' aria-hidden='true'></span> View</a></a>";
-                            html += "<a class='list-group-item list-group-item-info' href='?command=edit&constellationid="+data.results[key].id+"'><span  class='fa fa-pencil-square-o' aria-hidden='true'></span> Edit</a></div>";
+                            html += "<a class='list-group-item list-group-item-success' target='_blank' href='"+snacUrl+"/view/"+data.results[key].id+"?preview'><span  class='fa fa-eye' aria-hidden='true'></span> View</a></a>";
+                            html += "<a class='list-group-item list-group-item-info' href='"+snacUrl+"/edit/"+data.results[key].id+"'><span  class='fa fa-pencil-square-o' aria-hidden='true'></span> Edit</a></div>";
                             html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntries[0].original.replace("'", "&#39;")+"'/>";
                             var arkID = "";
                             if (data.results[key].ark != null)

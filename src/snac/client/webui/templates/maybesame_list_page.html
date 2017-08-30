@@ -28,7 +28,7 @@ $('.selectpicker').selectpicker();
 <script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
 <script>
 tinymce.init({
-    selector:'textarea', 
+    selector:'textarea',
     min_height: 250,
     menubar: false,
     statusbar: false,
@@ -41,10 +41,10 @@ tinymce.init({
 });</script>
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC includes -->
-<script src="javascript/search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/search.js{{control.noCache}}"></script>
 
 <script>
 
@@ -54,11 +54,11 @@ function copyInfo(icid1, icid2, id) {
 }
 
 function removeConsideration(icid1, icid2, id) {
-   
-    copyInfo(icid1, icid2, id); 
+
+    copyInfo(icid1, icid2, id);
     $("#assert").val("false");
     // Send the request by ajax
-    $.post("?command=assert_notsame", $("#submitForm").serialize(), function (data) {
+    $.post("{{control.snacURL}}/assert_notsame", $("#submitForm").serialize(), function (data) {
         // Check the return value from the ajax. If success, then go to dashboard
         console.log(data);
         if (data.result == "success") {
@@ -77,7 +77,7 @@ function notSameAssert(icid1, icid2, id) {
     copyInfo(icid1, icid2, id);
     $("#assert").val("true");
     // Send the request by ajax
-    $.post("?command=assert_notsame", $("#submitForm").serialize(), function (data) {
+    $.post("{{control.snacURL}}/assert_notsame", $("#submitForm").serialize(), function (data) {
         // Check the return value from the ajax. If success, then go to dashboard
         console.log(data);
         if (data.result == "success") {
@@ -92,8 +92,8 @@ function notSameAssert(icid1, icid2, id) {
 }
 
 </script>
-<script src="javascript/html2canvas.js{{control.noCache}}"></script>
-<script src="javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 </head>
 
 <body role="document">
@@ -132,7 +132,7 @@ function notSameAssert(icid1, icid2, id) {
                 <p class="missing">No biographical history available for this identity.</p>
             {% endif %}
 
-            <p><a href="?command=view&constellationid={{data.constellation.id}}" class="btn btn-primary">View Constellation</a></p>
+            <p><a href="{{control.snacURL}}/view/{{data.constellation.id}}" class="btn btn-primary">View Constellation</a></p>
     	</div>
 
         <div class="row">
@@ -142,7 +142,7 @@ function notSameAssert(icid1, icid2, id) {
                     </p>
                     {% for maybeSame in data.maybeSameList %}
                         <div id="result{{loop.index}}">
-                        <h4><a href="?command=view&constellationid={{maybeSame.constellation.id}}">{{maybeSame.constellation.nameEntries.0.original}}</a></h4>
+                        <h4><a href="{{control.snacURL}}/view/{{maybeSame.constellation.id}}">{{maybeSame.constellation.nameEntries.0.original}}</a></h4>
                         <p class="identity-info">
                             <span>{{maybeSame.constellation.ark}}</span>
                             <span>({{maybeSame.constellation.entityType.term}})</span>
@@ -153,9 +153,9 @@ function notSameAssert(icid1, icid2, id) {
                             <p class="missing">No biographical history available for this identity.</p>
                         {% endif %}
                         <p class="final" style="margin-top: 5px;">
-                            <a href="?command=diff&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
+                            <a href="{{control.snacURL}}/diff?constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
                             {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
-                            <a href="?command=diff_merge&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
+                            <a href="{{control.snacURL}}/diff_merge?constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
                             {% endif %}
                             {% if user.email and permissions.Publish %}
                             <a href="#" class="btn-sm btn-warning" data-toggle="modal" data-target="#notSameModal{{loop.index}}">Mark Not Same</a>

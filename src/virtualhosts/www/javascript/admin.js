@@ -39,7 +39,7 @@ function removeGroupFromUser(id) {
 }
 
 function unlockConstellation(id, version) {
-    $.get("?command=administrator&subcommand=unlock_constellation&constellationid="+id+"&version="+version, null, function(data) {
+    $.get(snacUrl+"/administrator/unlock_constellation/"+id+"/"+version, null, function(data) {
         if (data.result == "success") {
             $('#status-message').html("<p>Successfully Unlocked Constellation.</p>");
             $('#status-message').slideDown();
@@ -66,7 +66,7 @@ function doReassignConstellation() {
         return false;
 
     // We have an ID to reassign this constellation
-    $.get("?command=administrator&subcommand=reassign_constellation&constellationid="+id+"&version="+version+"&userid="+toUserID, null, function(data) {
+    $.get(snacUrl+"/administrator/reassign_constellation/"+id+"/"+version+"?userid="+toUserID, null, function(data) {
         if (data.result == "success") {
             $('#status-message').html("<p>Successfully Reassigned Constellation.</p>");
             $('#status-message').slideDown();
@@ -87,7 +87,7 @@ function reassignConstellation(id, version) {
     $("#usersPaneContent").html("<p class='text-center'>Loading...</p>");
     $("#usersPane").modal();
 
-    $.post("?command=administrator&subcommand=user_list", null, function (data) {
+    $.post(snacUrl+"/administrator/user_list", null, function (data) {
         if (data.users.length > 0) {
             var html = "";
             var heading = '<input type="hidden" id="reassignedConstellationID" value="'+id+'">'
@@ -146,7 +146,7 @@ $(document).ready(function() {
 
 
             // Send the data back by AJAX call
-            $.post("?command=administrator&subcommand=edit_user_post", $("#new_user_form").serialize(), function (data) {
+            $.post(snacUrl+"/administrator/edit_user_post", $("#new_user_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
@@ -163,7 +163,7 @@ $(document).ready(function() {
 	                setTimeout(function(){
 
 	                    // Go to dashboard
-	                    window.location.href = "?command=administrator&subcommand=users";
+	                    window.location.href = snacUrl+"/administrator/users";
 
 	                }, 1500);
 
@@ -187,7 +187,7 @@ $(document).ready(function() {
             $("input[id^='groupid_']").each(function() {
                 groups.push($(this).val());
             });
-            $.post("?command=administrator&subcommand=group_list", null, function (data) {
+            $.post(snacUrl+"/administrator/group_list", null, function (data) {
                 if (data.groups.length > 0) {
                     var html = "";
                     var heading = '<table class="table">'
@@ -272,7 +272,7 @@ $(document).ready(function() {
 
 
             // Send the data back by AJAX call
-            $.post("?command=administrator&subcommand=edit_group_post", $("#new_group_form").serialize(), function (data) {
+            $.post(snacUrl+"/administrator/edit_group_post", $("#new_group_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
@@ -289,7 +289,7 @@ $(document).ready(function() {
 	                setTimeout(function(){
 
 	                    // Go to dashboard
-	                    window.location.href = "?command=administrator&subcommand=groups";
+	                    window.location.href = snacUrl+"/administrator/groups";
 
 	                }, 1500);
 
@@ -336,7 +336,7 @@ $(document).ready(function() {
             $("input[id^='userid_']").each(function() {
                 users.push($(this).val());
             });
-            $.post("?command=administrator&subcommand=user_list", null, function (data) {
+            $.post(snacUrl+"/administrator/user_list", null, function (data) {
                 if (data.users.length > 0) {
                     var html = "";
                     var heading = '<table class="table">'
@@ -415,7 +415,7 @@ $(document).ready(function() {
             setTimeout(function(){
 
                 // Go to dashboard
-                window.location.href = "?command=administrator";
+                window.location.href = snacUrl+"/administrator";
 
             }, 1500);
 

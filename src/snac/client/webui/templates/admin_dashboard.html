@@ -24,15 +24,15 @@ $('.selectpicker').selectpicker();
 </script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/admin.js{{control.noCache}}"></script>
-<script src="javascript/save_actions.js{{control.noCache}}"></script>
-<script src="javascript/select_loaders.js{{control.noCache}}"></script>
-<script src="javascript/scripts.js{{control.noCache}}"></script>
-<script src="javascript/dashboard.js{{control.noCache}}"></script>
-<script src="javascript/search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/admin.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/search.js{{control.noCache}}"></script>
 
 </head>
 <body role="document">
@@ -86,11 +86,11 @@ $('.selectpicker').selectpicker();
                     <p>Use the following links to administer user accounts.</p>
                     <div class="list-group">
                         {% if permissions.AddUsers %}
-                        <a href="?command=administrator&subcommand=add_user" class="list-group-item"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> New User</a>
+                        <a href="{{control.snacURL}}/administrator/add_user" class="list-group-item"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> New User</a>
                         {% endif %}
 
                         {% if permissions.ModifyUsers or permissions.AssignRoles %}
-                        <a href="?command=administrator&subcommand=users" class="list-group-item"><i class="fa fa-user fa-fw" aria-hidden="true"></i> User Accounts</a>
+                        <a href="{{control.snacURL}}/administrator/users" class="list-group-item"><i class="fa fa-user fa-fw" aria-hidden="true"></i> User Accounts</a>
                         {% endif %}
                     </div>
                 </div>
@@ -104,8 +104,8 @@ $('.selectpicker').selectpicker();
                 <div class="panel-body">
                     <p>Use the following links to administer group accounts.</p>
                     <div class="list-group">
-                        <a href="?command=administrator&subcommand=add_group" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Group</a>
-                        <a href="?command=administrator&subcommand=groups" class="list-group-item"><i class="fa fa-users fa-fw" aria-hidden="true"></i> Manage Groups</a>
+                        <a href="{{control.snacURL}}/administrator/add_group" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Group</a>
+                        <a href="{{control.snacURL}}/administrator/groups" class="list-group-item"><i class="fa fa-users fa-fw" aria-hidden="true"></i> Manage Groups</a>
                     </div>
                 </div>
             </div>
@@ -117,7 +117,7 @@ $('.selectpicker').selectpicker();
                 <div class="panel-body">
                     <p>Use the following links to administer roles and permissions.</p>
                     <div class="list-group">
-                        <a href="?command=administrator&subcommand=roles" class="list-group-item"><i class="fa fa-shield fa-fw" aria-hidden="true"></i> Manage Roles</a>
+                        <a href="{{control.snacURL}}/administrator/roles" class="list-group-item"><i class="fa fa-shield fa-fw" aria-hidden="true"></i> Manage Roles</a>
                     </div>
                 </div>
             </div>
@@ -131,11 +131,11 @@ $('.selectpicker').selectpicker();
                 <div class="panel-body">
                     <p>Reports generated weekly</p>
                     <div class="list-group">
-                        <a href="?command=administrator&subcommand=report_general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
+                        <a href="{{control.snacURL}}/administrator/report_general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
                     </div>
                     <p>Reports generated monthly</p>
                     <div class="list-group">
-                        <a href="?command=administrator&subcommand=report_holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
+                        <a href="{{control.snacURL}}/administrator/report_holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
                     </div>
                 </div>
             </div>

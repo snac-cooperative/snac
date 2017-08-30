@@ -14,7 +14,7 @@ var messageList = null;
 var tinymceInstance = null;
 
 tinymce.init({
-    selector:'#body', 
+    selector:'#body',
     min_height: 250,
     menubar: false,
     statusbar: false,
@@ -33,7 +33,7 @@ tinymce.init({
 });
 
 function showMessage(messageID) {
-    $.get("?command=message_read&messageid="+messageID, null, function (data) {
+    $.get(snacUrl+"/message_read?messageid="+messageID, null, function (data) {
         if (data.result == "success") {
             var messageDate = new Date(data.message.timestamp);
             data.message.timestamp = messageDate.toLocaleString();
@@ -72,7 +72,7 @@ function showMessage(messageID) {
 }
 
 function sendMessage() {
-    $.post("?command=message_send", $("#new_message_form").serialize(), function (data) {
+    $.post(snacUrl+"/message_send", $("#new_message_form").serialize(), function (data) {
         if (data.result == "success") {
             // show success alert
             $("#send_status_message").addClass("alert-success").html("<p>Message sent successfully.</p>");
@@ -126,7 +126,7 @@ function replyMessage() {
             currentMessage.fromUser.fullName + " (" + currentMessage.fromUser.userName+")</option>");
     recipient_select_replace();
     //$("#to_user").val(currentMessage.fromUser.userID);
-    
+
     // Open the new message modal window
     $("#new_message_pane").modal("show");
 }
@@ -146,7 +146,7 @@ function forwardMessage() {
                                 + " wrote:<br>\n<br>\n" + currentMessage.body);
     tinymceInstance.load();
     recipient_select_replace();
-    
+
     // Open the new message modal window
     $("#new_message_pane").modal("show");
 }
@@ -178,7 +178,7 @@ function deleteMessage() {
         },
         callback: function (result) {
             if (result) {
-                $.post("?command=message_delete", { messageid: messageID }, function (data) {
+                $.post(snacUrl+"/message_delete", { messageid: messageID }, function (data) {
                     if (data.result == "success") {
                         $("#reply_message").attr("disabled", true).addClass("disabled");
                         $("#forward_message").attr("disabled", true).addClass("disabled");
@@ -204,7 +204,7 @@ function recipient_select_replace() {
     recipientSelector = $("#to_user").select2({
         ajax: {
             url: function() {
-                var query = "?command=user_search";
+                var query = snacUrl+"/user_search";
                     return query;
             },
             dataType: 'json',
@@ -251,7 +251,6 @@ $(document).ready(function() {
     $("#reply_message").click(replyMessage);
     $("#forward_message").click(forwardMessage);
     $("#delete_message").click(deleteMessage);
-    recipient_select_replace(); 
+    recipient_select_replace();
 
 });
-

@@ -29,7 +29,7 @@ $(document).ready(function() {
 
 
             // Send the data back by AJAX call
-            $.post("?command=vocab_administrator&subcommand=add_term_post", $("#new_term_form").serialize(), function (data) {
+            $.post(snacUrl+"/vocab_administrator/add_term_post", $("#new_term_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
@@ -45,8 +45,8 @@ $(document).ready(function() {
 	                }, 500);
 	                setTimeout(function(){
 
-	                    // Go to dashboard
-	                    window.location.href = "?command=vocab_administrator&subcommand=search";
+	                    // Go to search
+	                    window.location.href = snacUrl+"/vocab_administrator/search";
 
 	                }, 1500);
 
@@ -70,7 +70,7 @@ $(document).ready(function() {
 
 
             // Send the data back by AJAX call
-            $.post("?command=vocab_administrator&subcommand=add_geoterm_post", $("#new_term_form").serialize(), function (data) {
+            $.post(snacUrl+"/vocab_administrator/add_geoterm_post", $("#new_term_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
@@ -86,8 +86,8 @@ $(document).ready(function() {
                     }, 500);
                     setTimeout(function(){
 
-                        // Go to dashboard
-                        window.location.href = "?command=vocab_administrator&subcommand=geosearch";
+                        // Go to search
+                        window.location.href = snacUrl+"/vocab_administrator/geosearch";
 
                     }, 1500);
 
@@ -120,7 +120,7 @@ $(document).ready(function() {
             setTimeout(function(){
 
                 // Go to dashboard
-                window.location.href = "?command=vocab_administrator";
+                window.location.href = snacUrl+"/vocab_administrator";
 
             }, 1500);
 

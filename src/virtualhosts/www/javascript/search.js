@@ -62,7 +62,7 @@ $(document).ready(function() {
     $('#searchbox').autocomplete({
         minLength: 4,
         source: function(request, callback) {
-            $.post("?command=quicksearch", $("#search_form").serialize(), function (data) {
+            $.post(snacUrl+"/quicksearch", $("#search_form").serialize(), function (data) {
                 var results = [];
                 if (data.results.length > 0) {
                     for (var key in data.results) {

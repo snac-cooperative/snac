@@ -13,7 +13,7 @@
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
-<link rel="stylesheet" href="css/bootstrap.vertical-tabs.min.css">
+<link rel="stylesheet" href="{{control.snacURL}}/css/bootstrap.vertical-tabs.min.css">
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Latest compiled and minified JavaScript -->
@@ -29,14 +29,14 @@ $('.selectpicker').selectpicker();
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC includes -->
-<script src="javascript/search.js{{control.noCache}}"></script>
-<script src="javascript/scripts.js{{control.noCache}}"></script>
-<script src="javascript/merge_scripts.js{{control.noCache}}"></script>
-<script src="javascript/html2canvas.js{{control.noCache}}"></script>
-<script src="javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/merge_scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 <style>
     .tab-pane {
@@ -317,7 +317,7 @@ $(document).ready(function() {
                     </div>
                     {% elseif data.mergeable and user.email and permissions.Merge %}
                     <div class="btn-group" role="group" aria-label="Merge Actions">
-                        <a href="?command=diff_merge&constellationid1={{data.constellation1.id}}&constellationid2={{data.constellation2.id}}" class="btn btn-info" title="Switch this compare view into merging mode."><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</a>
+                        <a href="{{control.snacURL}}/diff_merge?constellationid1={{data.constellation1.id}}&constellationid2={{data.constellation2.id}}" class="btn btn-info" title="Switch this compare view into merging mode."><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</a>
                     </div>
                     {% elseif user.email and permissions.Merge and data.assertion %}
                     <div class="btn-group" role="group" aria-label="Merge Actions">

@@ -28,7 +28,7 @@ $(document).ready(function() {
             form.append(copy);
         });
 
-        form.attr('action', '?command=preview').attr('method', 'post').attr('target', '_blank');
+        form.attr('action', snacUrl+'/preview').attr('method', 'post').attr('target', '_blank');
         form.submit();
 
         return false;
@@ -58,7 +58,7 @@ $(document).ready(function() {
                         form.append(copy);
                     });
 
-                    $.post("?command=merge_cancel", $("#merged_identity").serialize(), function (data) {
+                    $.post(snacUrl+"/merge_cancel", $("#merged_identity").serialize(), function (data) {
                         // Check the return value from the ajax. If success, then alert the
                         // user and make appropriate updates.
                         if (data.result == "success") {
@@ -98,7 +98,7 @@ $(document).ready(function() {
                         form.append(copy);
                     });
 
-                    form.attr('action', '?command=preview&view=hrt').attr('method', 'post').attr('target', '_blank');
+                    form.attr('action', snacUrl+'/preview?view=hrt').attr('method', 'post').attr('target', '_blank');
                     form.submit();
                 }
             }
@@ -138,7 +138,7 @@ $(document).ready(function() {
                     var copy = $("#constellation_data").html();
                     form.append(copy);
 
-                    form.attr('action', '?command=merge').attr('method', 'post').attr('target', '_self');
+                    form.attr('action', snacUrl+'/merge').attr('method', 'post').attr('target', '_self');
                     form.submit();
                 }
             }
@@ -173,7 +173,7 @@ $(document).ready(function() {
                     var copy = $("#constellation_data").html();
                     form.append(copy);
 
-                    form.attr('action', '?command=auto_merge').attr('method', 'post').attr('target', '_self');
+                    form.attr('action', snacUrl+'/auto_merge').attr('method', 'post').attr('target', '_self');
                     form.submit();
                 }
             }

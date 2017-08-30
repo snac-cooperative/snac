@@ -16,34 +16,34 @@ function updateSettingsBox(id, version, nameEntry) {
     var html = "";
 
     // Edit
-    html += "<a href='?command=edit&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-info'>";
+    html += "<a href='"+snacUrl+"/edit/"+id+"/"+version+"' class='list-group-item list-group-item-info'>";
     html += "   <span class='glyphicon glyphicon-pencil'></span> Edit this Constellation";
     html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Open this constellation in editing mode, continuing where you left off." data-toggle="popover" data-placement="right"></span>';
     html += "</a>";
 
     // Preview
-    html += "<a href='?command=view&constellationid="+id+"&version="+version+"&preview=1' class='list-group-item list-group-item-success'>";
+    html += "<a href='"+snacUrl+"/view/"+id+"/"+version+"?preview=1' class='list-group-item list-group-item-success'>";
     html += "   <span class='glyphicon glyphicon-eye-open'></span> Preview this Constellation";
     html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Preview the current state of this constellation in the view mode." data-toggle="popover" data-placement="right"></span>';
     html += "</a>";
 
     // Send for Review
-    html += "<a href='?command=review&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-review'>";
+    html += "<a href='"+snacUrl+"/review/"+id+"/"+version+"' class='list-group-item list-group-item-review'>";
     html += "   <span class='glyphicon glyphicon-send'></span> Send this Constellation for Review";
     html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Send your saved changes to a reviewer." data-toggle="popover" data-placement="right"></span>';
     html += "</a>";
 
     // Publish
     if (permissions.Publish) {
-        html += "<a href='?command=publish&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-warning'>";
+        html += "<a href='"+snacUrl+"/publish/"+id+"/"+version+"' class='list-group-item list-group-item-warning'>";
         html += "   <span class='glyphicon glyphicon-upload'></span> Publish this Constellation";
         html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Publish your saved changes, making them publicly available." data-toggle="popover" data-placement="right"></span>';
         html += "</a>";
     }
-    
+
     // Delete
     if (permissions.Delete) {
-        html += "<a href='?command=delete&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-danger'";
+        html += "<a href='"+snacUrl+"/delete/"+id+"/"+version+"' class='list-group-item list-group-item-danger'";
         html += "       onClick=\"return window.confirm('Are your sure you want to delete "+nameEntry+"?');\">";
         html += "   <span class='glyphicon glyphicon-trash'></span> Delete this Constellation";
         html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Delete this constellation from SNAC." data-toggle="popover" data-placement="right"></span>';

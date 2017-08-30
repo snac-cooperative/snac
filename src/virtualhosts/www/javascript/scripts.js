@@ -32,7 +32,7 @@ function openGeoPlaceViewer(id) {
     $("#geoPlaceInfo").html("<p class='text-center'>Loading...</p>");
     $("#geoPlaceInfoPane").modal();
 
-    $.get("?command=vocabulary&subcommand=read&type=geoPlace&id="+id, null, function (data) {
+    $.get(snacUrl+"/vocabulary/read?type=geoPlace&id="+id, null, function (data) {
         if (data.result && data.result == "success" && data.term) {
             // Remove the old map
             if (geoMapView != null) {
@@ -74,7 +74,8 @@ $(document).ready(function() {
     if ($('#page_type').exists()) {
         if ($('#page_type').val() == 'view_page') {
             // load the relations, then call the normal startup
-            $.get("?command=view&part=relations&constellationid="+$("#constellationid").val()+"&version="+$("#version").val(), null, function (data) {
+            var url = snacUrl+"/view/"+$("#constellationid").val()+"/"+$("#version").val()+"?part=relations";
+            $.get(url, null, function (data) {
                 $("#relations_pane").html(data);
                 startupScript();
             });
@@ -113,7 +114,7 @@ function displayHoldingsMap() {
         holdingsMapView.fitBounds(bounds);
     }, 400);
 }
-        
+
 function startupScript() {
 
     // If there is a display holdings map button and a holdings map on the page, then activate it
@@ -122,7 +123,7 @@ function startupScript() {
         $('#displayHoldingsMap').click(displayHoldingsMap);
     }
 
-    
+
  // Check that we're on the view page to add these:
 if ($('#relatedPeopleImpliedLoad').exists()){
     var loadFunction = function() {
@@ -140,7 +141,7 @@ if ($('#relatedPeopleImpliedLoad').exists()){
         $('#relatedFamiliesImplied').html(loadingHTML);
         $('#relatedOrganizationsImplied').html(loadingHTML);
 
-        $.get("?command=relations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+        $.get(snacUrl+"/relations/"+$('#constellationid').val()+"/"+$('#version').val(), null, function (data) {
             var peopleHTML = "";
             var familiesHTML = "";
             var organizationsHTML = "";
@@ -148,21 +149,21 @@ if ($('#relatedPeopleImpliedLoad').exists()){
                 for (var key in data.in) {
                     if (data.in[key].constellation.entityType.term == "person") {
                             peopleHTML += "<div class=\"person\">" +
-                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                "<a href=\""+snacUrl+"/view/" + data.in[key].constellation.id + "\">" +
                                 data.in[key].constellation.nameEntries[0].original + "</a> " +
                                 " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
                                 "<div></div>" +
                             "</div>";
                     } else if (data.in[key].constellation.entityType.term == "corporateBody") {
                             organizationsHTML += "<div class=\"corporateBody\">" +
-                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                "<a href=\""+snacUrl+"/view/" + data.in[key].constellation.id + "\">" +
                                 data.in[key].constellation.nameEntries[0].original + "</a> " +
                                 " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
                                 "<div></div>" +
                             "</div>";
                     } else if (data.in[key].constellation.entityType.term == "family") {
                             familiesHTML += "<div class=\"family\">" +
-                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                "<a href=\""+snacUrl+"/view/" + data.in[key].constellation.id + "\">" +
                                 data.in[key].constellation.nameEntries[0].original + "</a> " +
                                 " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
                                 "<div></div>" +
@@ -189,7 +190,7 @@ if ($('#reserveForEdit').exists()){
     var reserveEditFunction = function() {
         $("#reserveForEdit").addClass("disabled");
         if (!reservedForEdit) {
-            $.get("?command=checkout&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            $.get(snacUrl+"/checkout/"+$('#constellationid').val()+"/"+$('#version').val(), null, function (data) {
                 if (data.result == 'success') {
                     bootbox.alert({
                         title: "Reserved",

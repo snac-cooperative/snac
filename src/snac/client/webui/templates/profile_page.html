@@ -23,14 +23,14 @@ $('.selectpicker').selectpicker();
 </script>
 
 <!-- SNAC Scripts -->
-<script src="javascript/profile.js{{control.noCache}}"></script>
-<script src="javascript/html2canvas.js{{control.noCache}}"></script>
-<script src="javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/profile.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 </head>
 <body role="document">
@@ -87,7 +87,7 @@ $('.selectpicker').selectpicker();
                             {% if data.user.affiliation.ark %}
                                 <br>
                                 <span><em>{{data.user.affiliation.ark}} </em>
-                                <a class="label label-info" target="_blank" href="?command=view&constellationid={{data.user.affiliation.id}}">View</a>
+                                <a class="label label-info" target="_blank" href="{{control.snacURL}}/view/{{data.user.affiliation.id}}">View</a>
                                 </span>
                             {% endif %}
                         </p>

@@ -57,13 +57,13 @@ $(document).ready(function() {
 
         });
     };
-    
+
     // Save and Continue button
     if($('#update').exists()) {
         $('#update').click(function(){
-            
+
             // Send the data back by AJAX call
-            $.post("?command=update_profile", $("#profile_form").serialize(), function (data) {
+            $.post(snacUrl+"/update_profile", $("#profile_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then alert the
                 // user and make appropriate updates.
                 if (data.result == "success") {
@@ -74,4 +74,3 @@ $(document).ready(function() {
         });
     };
 });
-

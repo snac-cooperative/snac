@@ -30,7 +30,7 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
                 selectItem.select2({
                     ajax: {
                         url: function() {
-                            var query = "?command=vocabulary&type="+type+"&id=";
+                            var query = snacUrl + "/vocabulary?type="+type+"&id=";
                                 query += $("#constellationid").val()+"&version="+$("#version").val();
                                 query += "&entity_type="+$("#entityType").val();
                                 return query;
@@ -67,7 +67,7 @@ function geovocab_select_replace(selectItem, idMatch) {
             selectItem.select2({
                 ajax: {
                     url: function() {
-                        var query = "?command=vocabulary&type=geo_place&format=term";
+                        var query = snacUrl+"/vocabulary?type=geo_place&format=term";
                             query += "&entity_type="+$("#entityType").val();
                             return query;
                     },
@@ -121,7 +121,7 @@ function scm_source_select_replace(selectItem, idMatch) {
                 selectItem.select2({
                     ajax: {
                         url: function() {
-                            var query = "?command=vocabulary&type=ic_sources&id=";
+                            var query = snacUrl+"/vocabulary?type=ic_sources&id=";
                                 query += $("#constellationid").val()+"&version="+$("#version").val();
                                 query += "&entity_type="+$("#entityType").val();
                                 return query;
@@ -195,7 +195,7 @@ function affiliation_select_replace(selectItem) {
                 selectItem.select2({
                     ajax: {
                         url: function() {
-                            var query = "?command=vocabulary&type=affiliation";
+                            var query = snacUrl+"/vocabulary?type=affiliation";
                                 return query;
                         },
                         dataType: 'json',
@@ -225,7 +225,7 @@ function reviewer_select_replace(selectItem) {
                 selectItem.select2({
                     ajax: {
                         url: function() {
-                            var query = "?command=user_search&role=Reviewer";
+                            var query = snacUrl+"/user_search?role=Reviewer";
                                 return query;
                         },
                         dataType: 'json',

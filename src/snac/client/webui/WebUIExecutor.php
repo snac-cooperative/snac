@@ -105,23 +105,23 @@ class WebUIExecutor {
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
     public function getConnectionGraphData(&$input, &$constellation) {
-	
+
         $neo4j = new \snac\client\webui\util\Neo4JUtil();
-        $deg = 2; 
-        if ((isset($input["degree"])) && 
-            (($input["degree"] == 1) || ($input["degree"] == 2) || ($input["degree"] == 3) || ($input["degree"] == 4))) { 
-            $deg = $input["degree"]; 
+        $deg = 2;
+        if ((isset($input["degree"])) &&
+            (($input["degree"] == 1) || ($input["degree"] == 2) || ($input["degree"] == 3) || ($input["degree"] == 4))) {
+            $deg = $input["degree"];
         }
-        $dlt = 10; 
-        if ((isset($input["delta"])) && 
-            ($input["delta"] >= 0) && ($input["delta"] <= 20)) { 
-            $dlt = $input["delta"]; 
+        $dlt = 10;
+        if ((isset($input["delta"])) &&
+            ($input["delta"] >= 0) && ($input["delta"] <= 20)) {
+            $dlt = $input["delta"];
         }
-        
+
         $alchemy_data = $neo4j->getAlchemyData($constellation["id"], $deg, $dlt);
-        
+
         return $alchemy_data;
-	
+
     }
 
     /**
@@ -166,7 +166,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Error page being drawn");
         $this->drawErrorPage("Subcommand required", $display);
     }
-	
+
     /**
      * Display Edit Page
      *
@@ -200,8 +200,8 @@ class WebUIExecutor {
                 if (isset($serverResponse))
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
-            
-                
+
+
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation,
@@ -387,7 +387,7 @@ class WebUIExecutor {
                 $constellation = $serverResponse["constellation"];
                 $editingUser = null;
                 $holdings = array();
-                
+
                 if (isset($input["part"]) && $input["part"] == "relations") {
                     $display->setTemplate("view_page_relations");
                     $this->logger->addDebug("Getting Holding institution information from the resource relations");
@@ -422,7 +422,7 @@ class WebUIExecutor {
                     }
 
                 }
-               
+
                 // Check for a redirect
                 if ($serverResponse["result"] == "success-notice") {
                     $message = $serverResponse["message"];
@@ -489,13 +489,13 @@ class WebUIExecutor {
      */
     public function displayDetailedViewPage(&$input, &$display) {
         $serverResponse = array();
-        
-        if (isset($input["part"]) && ($input["part"] == "constellationRelations" || 
+
+        if (isset($input["part"]) && ($input["part"] == "constellationRelations" ||
             $input["part"] == "resourceRelations"))
             $serverResponse = $this->getConstellation($input, $display, false);
         else
             $serverResponse = $this->getConstellation($input, $display, "summary_meta");
-        
+
         if (isset($serverResponse["constellation"])) {
             $editingUser = null;
             if (isset($serverResponse["editing_user"]))
@@ -511,7 +511,7 @@ class WebUIExecutor {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
-            
+
             $this->logger->addDebug("Getting Holding institution information from the resource relations");
             $c = new \snac\data\Constellation($constellation);
             $holdings = array();
@@ -533,7 +533,7 @@ class WebUIExecutor {
             usort($holdings, function($a, $b) {
                 return $a["name"] <=> $b["name"];
             });
-            
+
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation,
@@ -547,9 +547,9 @@ class WebUIExecutor {
             $this->drawErrorPage($serverResponse, $display);
         }
     }
-    
+
     /**
-     * Add Not-same Assertion 
+     * Add Not-same Assertion
      *
      * Add a not-same assertion between the Constellations given by the parameters.
      *
@@ -576,9 +576,9 @@ class WebUIExecutor {
             if (isset($input["assert"]) && $input["assert"] == "true") {
                 $query["command"] = "constellation_assert";
                 $query["type"] = "not_same";
-                
+
                 if (!isset($input["statement"]) || $input["statement"] == "") {
-                   return array("response" => "failure", "error" => "Need statement with assertion"); 
+                   return array("response" => "failure", "error" => "Need statement with assertion");
                 }
                 $query["assertion"] = $input["statement"];
 
@@ -589,15 +589,15 @@ class WebUIExecutor {
             $this->logger->addDebug("Asking server to make the assertion");
             $serverResponse = $this->connect->query($query);
             $this->logger->addDebug("Received server response", array($serverResponse));
-            
+
             return $serverResponse;
 
-        }   
+        }
 
     }
 
     /**
-     * Add Maybe-same Assertion 
+     * Add Maybe-same Assertion
      *
      * Add a maybe-same assertion between the Constellations given by the parameters.
      *
@@ -622,7 +622,7 @@ class WebUIExecutor {
             ];
 
             $query["command"] = "constellation_add_maybesame";
-            
+
             if (isset($input["statement"])) {
                 $query["assertion"] = $input["statement"];
             }
@@ -630,10 +630,10 @@ class WebUIExecutor {
             $this->logger->addDebug("Asking server to make the maybe-same assertion");
             $serverResponse = $this->connect->query($query);
             $this->logger->addDebug("Received server response", array($serverResponse));
-            
+
             return $serverResponse;
         }
-        return "An error occurred";   
+        return "An error occurred";
 
     }
 
@@ -673,7 +673,7 @@ class WebUIExecutor {
             $this->drawErrorPage($serverResponse, $display);
         }
     }
-    
+
     /**
      * Display Constellation History Compare Page
      *
@@ -697,7 +697,7 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($query);
 
         if (isset($serverResponse["intersection"])) {
-            $display->setTemplate("view_page");
+            $display->setTemplate("view_page_full");
             $constellation = $serverResponse["intersection"];
 
             $this->logger->addDebug("Setting constellation data into the page template");
@@ -830,7 +830,7 @@ class WebUIExecutor {
                 "command" => "constellation_auto_merge",
                 "constellationids" => $icids
             ];
-            
+
             $this->logger->addDebug("Asking server to do the auto merge");
             $serverResponse = $this->connect->query($query);
             $this->logger->addDebug("Received server response", array($serverResponse));
@@ -1227,7 +1227,7 @@ class WebUIExecutor {
      * to read the message or the server will return an error.
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @return string The response to the client 
+     * @return string The response to the client
      */
     public function readMessage(&$input) {
         $ask = array("command"=>"read_message",
@@ -1239,12 +1239,12 @@ class WebUIExecutor {
 
     /**
      * Delete Message
-     * 
+     *
      * Asks the server to delete the message given as input by ID.  The user must have
      * permission to delete the message or the server will return an error.
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @return string The response to the client 
+     * @return string The response to the client
      */
     public function deleteMessage(&$input) {
         $ask = array("command"=>"delete_message",
@@ -1298,7 +1298,7 @@ class WebUIExecutor {
 
                 if (isset($input["screenshot"])) {
                     $message->setAttachmentContent($input["screenshot"]);
-                    $message->setAttachmentFilename("screenshot.png"); 
+                    $message->setAttachmentFilename("screenshot.png");
                 }
 
                 $ask = array("command"=>"send_feedback",
@@ -1326,7 +1326,7 @@ class WebUIExecutor {
      * Asks the server to send the message given in the input.
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @return string The response to the client 
+     * @return string The response to the client
      */
     public function sendMessage(&$input) {
         $response = array();
@@ -1735,7 +1735,7 @@ class WebUIExecutor {
             "commands" => $commands
         ]);
     }
-    
+
     /**
      * Display Contact Us Page
      *
@@ -2222,7 +2222,7 @@ class WebUIExecutor {
                     $editor->setUserName($input["editor"]);
                     $request["to_user"] = $editor->toArray();
                     $this->logger->addDebug("Sending Constellation to ".$input["editor"], $editor->toArray());
-                    
+
                     $serverResponse = $this->connect->query($request);
                     $response["server_debug"]["send"] = $serverResponse;
                     if (isset($serverResponse["result"]))
@@ -2601,7 +2601,7 @@ class WebUIExecutor {
         $request = array (
                 "command" => "reassign_constellation"
         );
-        
+
         // Add reviewer if we have it
         if (isset($input["editor"]) && $input["editor"] != "") {
             $editor = new \snac\data\User();
@@ -2663,7 +2663,7 @@ class WebUIExecutor {
         $request = array (
                 "command" => "review_constellation"
         );
-        
+
         // Add reviewer if we have it
         if (isset($input["reviewer"]) && $input["reviewer"] != "") {
             $reviewer = new \snac\data\User();

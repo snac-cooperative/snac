@@ -37,7 +37,7 @@
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
-<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -46,18 +46,18 @@
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Javascript -->
-<script src="javascript/detailed_view_scripts.js{{control.noCache}}"></script>
-<script src="javascript/scripts.js{{control.noCache}}"></script>
-<script src="javascript/relation_search.js{{control.noCache}}"></script>
-<script src="javascript/html2canvas.js{{control.noCache}}"></script>
-<script src="javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/detailed_view_scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 </script>
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <meta name="viewport" content="initial-scale = 1.0" />
 </head>
@@ -379,7 +379,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 <p>You may perform any of the following actions on this constellation.</p>
                                 <div class="list-group">
                                     <a class="list-group-item list-group-item-review"
-                                        href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Review Constellation</a>
+                                        href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Review Constellation</a>
                                 </div>
                             </div>
                         </div>
@@ -393,7 +393,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 <p>You may perform any of the following actions on this constellation.</p>
                                 <div class="list-group">
                                     <a class="list-group-item list-group-item-info"
-                                        href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                        href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
                                 </div>
                             </div>
                         </div>
@@ -410,31 +410,31 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap">
                                     <i class="fa fa-fw fa-globe" aria-hidden="true"></i> Collection Locations<span class="pull-right fa fa-fw fa-question-circle" title="Help" data-content='This option is currently disabled. To enable the Collection Locations Map, open the Resource Relations tab.' data-toggle="popover" data-placement="top" id="collection_locations_help"></span></a>
                                 <a class="list-group-item list-group-item-warning"
-                                    href="?command=view&constellationid={{data.id}}&version={{data.version}}">
+                                    href="{{control.snacURL}}/view/{{data.id}}/{{data.version}}">
                                     <i class="fa fa-fw fa-eye" aria-hidden="true"></i> HRT View</a>
                                 {% if data.maybeSameCount > 0 %}
-                                <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
+                                <a href="{{control.snacURL}}/maybesame/{{data.id}}/{{data.version}}"
                                        class="list-group-item list-group-item-merge" id="merge">
                                     <i class="fa fa-fw fa-random" aria-hidden="true"></i> View Maybe Same
                                     <span class="badge">{{ data.maybeSameCount }}</span></a>
                                 {% endif %}
                                    <a class="list-group-item list-group-item-history"
-                                      href="?command=history&constellationid={{data.id}}&version={{data.version}}">
+                                      href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
                                        <i class="fa fa-fw fa-history" aria-hidden="true"></i> Constellation History</a>
                           </div>
                           <h5>Visualizations</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
                               <a class="list-group-item list-group-item-visualize"
-                                 href="?command=visualize&subcommand=connection_graph&constellationid={{data.id}}&version={{data.version}}">
+                                 href="{{control.snacURL}}/visualize/connection_graph/{{data.id}}/{{data.version}}">
                                   <i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
                               <a class="list-group-item list-group-item-visualize"
-                                 href="?command=visualize&subcommand=radial_graph&constellationid={{data.id}}&version={{data.version}}">
+                                 href="{{control.snacURL}}/visualize/radial_graph/{{data.id}}/{{data.version}}">
                                   <i class="fa fa-fw fa-bullseye" aria-hidden="true"></i> Radial Graph</a>
                           </div>
                            <h5>Export As</h5>
                            <div class="list-group" style="margin-bottom: 0px;">
-                               <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
-                               <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
+                               <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
+                               <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
                            </div>
                        </div>
                    </div>
@@ -451,7 +451,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                           <div class="list-group" style="margin-bottom: 0px;">
                                 {% if data.status == 'editable' %}
                                 <a class="list-group-item list-group-item-info"
-                                   href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                   href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
                                 <a class="list-group-item list-group-item-danger" id="reserveForEdit"
                                    href="#"><i class="fa fa-fw fa-bookmark" aria-hidden="true"></i>
                                    <span id="reserveForEditText">Reserve for Editing</span></a>

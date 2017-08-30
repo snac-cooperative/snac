@@ -7,7 +7,7 @@
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- SNAC HRT Template code -->
-<link href="css/hrt/hrt.css"
+<link href="{{control.snacURL}}/css/hrt/hrt.css"
             media="all"
             rel="stylesheet"
             type="text/css"></link>
@@ -46,13 +46,13 @@
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/scripts.js{{control.noCache}}"></script>
-<script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
-<script src="javascript/html2canvas.js{{control.noCache}}"></script>
-<script src="javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/wikipedia_image.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 <meta name="viewport" content="initial-scale = 1.0" />
 <style>
@@ -110,6 +110,16 @@
       <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
       <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
       <input id="page_type" name="page_type" type="hidden" value="view_page"/>
+      {% if data.old %}
+      <input id="constellationid1" name="constellationid1" type="hidden" value="{{ data.old.id }}"/>
+      <input id="version1" name="version1" type="hidden" value="{{ data.old.version }}"/>
+      <input id="ark1" name="ark1" type="hidden" value="{{ data.old.ark }}"/>
+      {% endif %}
+      {% if data.new %}
+      <input id="constellationid2" name="constellationid2" type="hidden" value="{{ data.new.id }}"/>
+      <input id="version2" name="version2" type="hidden" value="{{ data.new.version }}"/>
+      <input id="ark2" name="ark2" type="hidden" value="{{ data.new.ark }}"/>
+      {% endif %}
     {% for sameas in data.otherRecordIDs %}
         {% if sameas.type.term == 'sameAs' and 'wikipedia' in sameas.uri %}
             <input id="has_wiki_link" type="hidden" value="true"/>

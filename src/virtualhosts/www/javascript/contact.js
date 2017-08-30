@@ -20,7 +20,7 @@ function sendContactForm() {
         "token" : $("#g-recaptcha-response").val()
     };
 
-    $.post("?command=feedback", feedbackBody, function (data) {
+    $.post(snacUrl+"/feedback", feedbackBody, function (data) {
         if (data.result == "success") {
             // show success alert
             $("#comment_status_message").addClass("alert-success").html("<p>Message sent successfully.</p>");
@@ -48,4 +48,3 @@ $(document).ready(function() {
     });
 
 });
-
