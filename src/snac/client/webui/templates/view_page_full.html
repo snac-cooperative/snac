@@ -616,9 +616,11 @@
                                      <li class="active">
                                         <a href="#relatedPeopleDirect" data-toggle="tab">Direct</a>
                                      </li>
+                                     {% if not data.new and not data.old %}
                                      <li>
                                         <a href="#relatedPeopleImplied" data-toggle="tab">Implied</a>
                                      </li>
+                                     {% endif %}
                                   </ul>
                                   <div class="tab-content">
                                      <div class="tab-pane active list" id="relatedPeopleDirect">
@@ -698,9 +700,11 @@
                                      <li class="active">
                                         <a href="#relatedFamiliesDirect" data-toggle="tab">Direct</a>
                                      </li>
+                                     {% if not data.new and not data.old %}
                                      <li>
                                         <a href="#relatedFamiliesImplied" data-toggle="tab">Implied</a>
                                      </li>
+                                     {% endif %}
                                   </ul>
                                   <div class="tab-content">
                                      <div class="tab-pane active list" id="relatedFamiliesDirect">
@@ -782,9 +786,11 @@
                                      <li class="active">
                                         <a href="#relatedOrganizationsDirect" data-toggle="tab">Direct</a>
                                      </li>
+                                     {% if not data.new and not data.old %}
                                      <li>
                                         <a href="#relatedOrganizationsImplied" data-toggle="tab">Implied</a>
                                      </li>
+                                     {% endif %}
                                   </ul>
                                   <div class="tab-content">
                                      <div class="tab-pane active list" id="relatedOrganizationsDirect">
