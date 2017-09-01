@@ -256,8 +256,10 @@ class ServerExecutor {
                 }
 
             } else if ($this->user !== false && $this->user->getToken() != null) {
+                // Remove all old sessions for this user
+                $this->uStore->clearAllSessions($this->user);
+                
                 // Try to add the session (check google first)
-
                 if (isset($this->user->getToken()["authority"]) &&
                     $this->user->getToken()["authority"] == "snac") {
                     // This was a fake but legit token from SNAC
