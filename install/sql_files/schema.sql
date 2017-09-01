@@ -103,6 +103,7 @@ drop table if exists resource_language;
 drop table if exists resource_origination_name;
 drop table if exists constellation_lookup;
 drop table if exists messages;
+drop table if exists not_same;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -1110,7 +1111,6 @@ create index general_context_idx2 on general_context (ic_id, version);
 create index legal_status_idx2 on legal_status (ic_id, version);
 create index language_idx3 on language (fk_id, fk_table, version);
 
-drop table if exists not_same;
 create table not_same (
     id               int primary key default nextval('id_seq'),
     ic_id1           int,  -- fk to version_history for one constellation
