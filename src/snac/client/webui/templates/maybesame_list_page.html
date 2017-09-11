@@ -127,7 +127,8 @@ function notSameAssert(icid1, icid2, id) {
             </h2>
 
             {% if data.constellation.biogHists.0.text %}
-                <p>{{ data.constellation.biogHists.0.text| striptags | slice(0,1000) }}...</p>
+                {% from 'widgets.html' import displayBiographicalExcerpt %}
+                {{ displayBiographicalExcerpt(data.constellation) }}
             {% else %}
                 <p class="missing">No biographical history available for this identity.</p>
             {% endif %}
