@@ -2142,7 +2142,16 @@ class ServerExecutor {
                         $input["constellationid"] . " does not have a published version.");
             }
 
+        } else if (isset($input["sameas"])) {
+            // get icids for the given ark id
+            $icids = $this->cStore->getCurrentIDsForOtherID($input["sameas"]);
+            if (empty($icids)) {
+                // This means that the Constellation doesn't have a published version!
+                throw new \snac\exceptions\SNACInputException("Constellation with sameas ID " .
+                        $input["sameas"] . " does not have a published version.");
+            }
         }
+
 
 
         $this->logger->addDebug("Reading constellation(s) from the database, flags=$readFlags");

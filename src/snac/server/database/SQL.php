@@ -1286,6 +1286,35 @@ class SQL
         }
         return $all;
     }
+    
+    /**
+     * select Current IC_IDs by otherID
+     *
+     * Returns the current IC ic_id (main_id in Tom's code) for the given OtherRecordID.  If the constellation pointed
+     * to by the OtherID was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     * If the ic was split, it will return a list of ic_ids relating to the split.
+     *
+     * @param string $otherID The other record id (sameas) of a constellation
+     * @return integer[] The constellation IDs aka mainIDs akd ic_ids aka version_history.ids.
+     */
+    public function selectCurrentMainIDsForOtherID($otherID)
+    {
+        $result = $this->sdb->query(
+            'select distinct l.current_ic_id
+            from (
+                select ic_id, id, max(version) as version from (
+                    select distinct ic_id, id, version from otherid where uri = $1
+                ) iq group by id, ic_id
+            ) o, otherid oid, constellation_lookup l
+            where o.id = oid.id and o.version = oid.version and not oid.is_deleted and
+            o.ic_id = l.ic_id',
+            array($otherID));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['current_ic_id']);
+        }
+        return $all;
+    }
 
     /**
      * select Current IC_IDs by IC_ID
