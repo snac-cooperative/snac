@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+    <ShortName>SNAC Alpha Search</ShortName>
+    <Description>Search for identities in SNAC Alpha</Description>
+    <Tags>snac</Tags>
+    <Contact>snaccooperative@gmail.com</Contact>
+    <Url type="text/html" 
+        template="http://hott.iath.virginia.edu/snac_server/www/search?count=10&amp;start=0&amp;entity_type=&amp;term={searchTerms}"/>
+    <LongName>SNAC Identity Search</LongName>
+    <Image height="64" width="64" type="image/png">http://hott.iath.virginia.edu/snac_server/www/icons/websearch.png</Image>
+    <Image height="16" width="16" type="image/x-icon">http://hott.iath.virginia.edu/snac_server/www/icons/websearch.ico</Image>
+    <Query role="example" searchTerms="washington" />
+    <Developer>SNAC Development Team</Developer>
+    <Attribution>
+        Social Networks and Archival Contexts
+    </Attribution>
+    <SyndicationRight>open</SyndicationRight>
+    <AdultContent>false</AdultContent>
+    <Language>en-us</Language>
+    <OutputEncoding>UTF-8</OutputEncoding>
+    <InputEncoding>UTF-8</InputEncoding>
+    <moz:SearchForm>http://hott.iath.virginia.edu/snac_server/www/search</moz:SearchForm>
+</OpenSearchDescription>
