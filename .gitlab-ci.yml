@@ -49,8 +49,8 @@ generate_docs:
 
 deployment:
   script:
-    - ssh snac-server "cd /lv2/snac && git fetch origin && git merge"
-    - ssh snac-web "cd /lv2/snac && git fetch origin && git merge"
+    - ssh snac-server "cd /lv2/snac && composer update && git fetch origin && git merge"
+    - ssh snac-web "cd /lv2/snac && composer update && git fetch origin && git merge"
   stage: deploy
   only:
     - master
