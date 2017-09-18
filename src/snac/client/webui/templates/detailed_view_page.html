@@ -75,8 +75,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
     <form class="form-horizontal" id="constellation_form">
     <h1>{{data.nameEntries.0.original}}</h1>
-
-        <!-- Constellation Data -->
+    {% if not data.preview %}
+    <ol class="breadcrumb">
+        <li><a href="{{control.snacURL}}/view/{{data.id}}">{{data.nameEntries.0.original}}</a></li>
+        <li>Detailed View</li>
+    </ol>
+    {% endif %}
+    
+    <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
         <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
         <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>

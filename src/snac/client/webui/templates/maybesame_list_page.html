@@ -108,6 +108,10 @@ function notSameAssert(icid1, icid2, id) {
 
 
         <h1>Possible Matching Constellations</h1>
+        <ol class="breadcrumb">
+            <li><a href="{{control.snacURL}}/view/{{data.constellation.id}}">{{data.constellation.nameEntries.0.original}}</a></li>
+            <li>Maybe Same</li>
+        </ol>
 
         <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.constellation.id }}"/>
