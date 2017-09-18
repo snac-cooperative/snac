@@ -54,6 +54,10 @@
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+
+// This preview page needs to turn off the auto-loading of panes
+
+
 </script>
 
 <!-- SNAC Stylesheet -->
@@ -80,7 +84,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
         <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
         <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>
-        <input id="page_type" name="page_type" type="hidden" value="detailed_view"/>
+        <input id="page_type" name="page_type" type="hidden" value="detailed_preview"/>
 
 
         <div class="row">
@@ -198,29 +202,31 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                     <div class="tab-pane" id="sources">
                         <h2>Sources</h2>
-
-                        <div class="loading-box text-center">
-                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
-                            <p>Loading ...</p>
-                        </div>
+                        {% set i = 0 %}
+                        {% for source in data.sources %}
+                            {{ components.displaySource(X, false, true, source, i) }}
+                            {% set i = i + 1 %}
+                        {% endfor %}
                     </div>
 
                     <div class="tab-pane" id="resourceRelations">
                         <h2>Resource Relations</h2>
+                        {% set i = 0 %}
+                        {% for relation in data.resourceRelations %}
+                            {{ components.displayResourceRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
+                            {% set i = i + 1 %}
+                        {% endfor %}
 
-                        <div class="loading-box text-center">
-                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
-                            <p>Loading ...</p>
-                        </div>
                     </div>
 
                     <div class="tab-pane" id="constellationRelations">
                         <h2>Internal CPF Relations</h2>
+                        {% set i = 0 %}
+                        {% for relation in data.relations %}
+                            {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original, false) }}
+                            {% set i = i + 1 %}
+                        {% endfor %}
 
-                        <div class="loading-box text-center">
-                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
-                            <p>Loading ...</p>
-                        </div>
                     </div>
 
                     <div class="tab-pane" id="languagesUsed">
