@@ -480,6 +480,33 @@ class WebUIExecutor {
 
 
     /**
+     * Display Sources Page
+     *
+     * Loads the sources page for a given constellation input into the display.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySourcesPage(&$input, &$display) {
+        //$serverResponse = $this->getConstellation($input, $display, false);
+        $serverResponse = $this->getConstellation($input, $display, "summary_meta");
+
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("source_page");
+
+            $constellation = new \snac\data\Constellation($serverResponse["constellation"]);
+
+            $this->logger->addDebug("Setting constellation data into the page template");
+            $display->setData(array_merge(
+                $constellation->toArray()
+            ));
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+
+    /**
      * Display Detailed View Page
      *
      * Loads the detailed view page for a given constellation input into the display.

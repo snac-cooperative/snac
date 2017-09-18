@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{data.nameEntries.0.original}} - Sources - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+<script>
+$.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+</script>
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<meta name="viewport" content="initial-scale = 1.0" />
+</head>
+<body role="document">
+{% import 'widgets.html' as widgets %}
+
+{% from 'page_navigation.html' import topNavigation, footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+
+    <h1>{{data.nameEntries.0.original}}</h1>
+    <ol class="breadcrumb">
+        <li><a href="{{control.snacURL}}/view/{{data.id}}">{{data.nameEntries.0.original}}</a></li>
+        <li>Sources</li>
+    </ol>
+
+    {% for source in data.sources %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 class="panel-title">{{source.displayName}}</h3></div>
+                <div class="row panel-body">
+                    <div class="col-md-6">
+                        <p>URI: <a href="{{source.uri}}">{{source.uri}}</a></p>
+                        <p>Source Text:
+                        </p>
+                            {% if source.text %}
+                            <pre>{{source.text}}</pre>
+                            {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h4 class="panel-title">Found Data</h4></div>
+                            <div class="panel-body">
+                                {% if source.foundData %}
+                                    {{source.foundData|raw}}
+                                {% else %}
+                                    <p>No found data listed for this source</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+
+    {% for source in data.sources %}
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3 class="panel-title">{{source.displayName}}</h3></div>
+        <div class="panel-body">
+            <p><a href="{{source.uri}}">{{source.uri}}</a></p>
+            {% if source.text %}
+                <pre>{{source.text}}</pre>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% endfor %}
+    
+
+</div>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>

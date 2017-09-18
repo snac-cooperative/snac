@@ -1582,6 +1582,19 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Collect SCM Citations by Source
+     *
+     * This method parses through each section of the constellation, looking for SCMs
+     * and attaching them to the Source they cite.  This allows for the caller to ask
+     * for the list of sources (and associated SCMs) for this constellation.
+     *
+     * @return \snac\data\Source[] A list of Source objects with their SCMs filled out
+     */
+    public function collectAllSCMCitations() {
+        
+    }
+
+    /**
      * Update All SCM Citations
      *
      * This method goes through each section of the constellation, looking for SCMs and
