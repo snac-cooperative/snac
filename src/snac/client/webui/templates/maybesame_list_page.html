@@ -189,6 +189,9 @@ function notSameAssert(icid1, icid2, id) {
             </div>
         </div>
         {% endif %}
+        {% if data.maybeSameList and data.notSameList %}
+        <hr/>
+        {% endif %}
         {% if data.notSameList %}
         <div class="row">
             <div class="col-md-12 search-results">
