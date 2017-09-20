@@ -107,7 +107,7 @@ function notSameAssert(icid1, icid2, id) {
     <div class="container snac" role="main">
 
 
-        <h1>Possible Matching Constellations</h1>
+        <h1>Constellation Similarity Assertions</h1>
 
         <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.constellation.id }}"/>
@@ -135,61 +135,84 @@ function notSameAssert(icid1, icid2, id) {
             <p><a href="{{control.snacURL}}/view/{{data.constellation.id}}" class="btn btn-primary">View Constellation</a></p>
     	</div>
 
+        {% if data.maybeSameList %}
         <div class="row">
             <div class="col-md-12 search-results">
-                {% if data.maybeSameList %}
-                    <p class="search-info">There are {{data.maybeSameList|length}} possible matching Constellations.
+                <h3>Maybe-Same Assertions</h3>
+                <p class="search-info">There are {{data.maybeSameList|length}} possible matching Constellations.
+                </p>
+                {% for maybeSame in data.maybeSameList %}
+                    <div id="result{{loop.index}}">
+                    <h4><a href="{{control.snacURL}}/view/{{maybeSame.constellation.id}}">{{maybeSame.constellation.nameEntries.0.original}}</a></h4>
+                    <p class="identity-info">
+                        <span>{{maybeSame.constellation.ark}}</span>
+                        <span>({{maybeSame.constellation.entityType.term}})</span>
                     </p>
-                    {% for maybeSame in data.maybeSameList %}
-                        <div id="result{{loop.index}}">
-                        <h4><a href="{{control.snacURL}}/view/{{maybeSame.constellation.id}}">{{maybeSame.constellation.nameEntries.0.original}}</a></h4>
-                        <p class="identity-info">
-                            <span>{{maybeSame.constellation.ark}}</span>
-                            <span>({{maybeSame.constellation.entityType.term}})</span>
-                        </p>
-                        {% if maybeSame.constellation.biogHists.0.text %}
-                            <p>{{maybeSame.constellation.biogHists.0.text | striptags | slice(0, 500)}}...</p>
-                        {% else %}
-                            <p class="missing">No biographical history available for this identity.</p>
+                    {% if maybeSame.constellation.biogHists.0.text %}
+                        <p>{{maybeSame.constellation.biogHists.0.text | striptags | slice(0, 500)}}...</p>
+                    {% else %}
+                        <p class="missing">No biographical history available for this identity.</p>
+                    {% endif %}
+                    <p class="final" style="margin-top: 5px;">
+                        <a href="{{control.snacURL}}/diff?constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
+                        {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
+                        <a href="{{control.snacURL}}/diff_merge?constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
                         {% endif %}
-                        <p class="final" style="margin-top: 5px;">
-                            <a href="{{control.snacURL}}/diff?constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
-                            {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
-                            <a href="{{control.snacURL}}/diff_merge?constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
-                            {% endif %}
-                            {% if user.email and permissions.Publish %}
-                            <a href="#" class="btn-sm btn-warning" data-toggle="modal" data-target="#notSameModal{{loop.index}}">Mark Not Same</a>
-                            {% endif %}
-                        </p>
-                        </div>
                         {% if user.email and permissions.Publish %}
-                        <div class="modal fade" id="notSameModal{{loop.index}}" tabindex="-1" role="dialog" aria-labelledby="notSameModalTitle{{loop.index}}">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header primary">
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                        <h4 class="modal-title" id="notSameModalTitle{{loop.index}}">Mark Not Same</h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        {{ displayRelationship(data.constellation, maybeSame.constellation, 'not same as') }}
-                                        <p style="margin-bottom: 20px;">To make an official assertion that these two Constellations should never be merged, include evidence in the text field below and choose "Make Assertion."  Evidence is required for the official assertion.  If you do not have strong enough evidence, but still think they should not be merged, instead use the "Remove from Consideration" button below.</p>
-                                        <textarea id="notSameModalReason{{loop.index}}"></textarea>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-success" onClick="removeConsideration({{data.constellation.id}}, {{maybeSame.constellation.id}}, {{loop.index}});">Remove from Consideration</button>
-                                        <button type="button" class="btn btn-primary" onClick="notSameAssert({{data.constellation.id}}, {{maybeSame.constellation.id}}, {{loop.index}});">Make Assertion</button>
-                                    </div>
+                        <a href="#" class="btn-sm btn-warning" data-toggle="modal" data-target="#notSameModal{{loop.index}}">Mark Not Same</a>
+                        {% endif %}
+                    </p>
+                    </div>
+                    {% if user.email and permissions.Publish %}
+                    <div class="modal fade" id="notSameModal{{loop.index}}" tabindex="-1" role="dialog" aria-labelledby="notSameModalTitle{{loop.index}}">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header primary">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="notSameModalTitle{{loop.index}}">Mark Not Same</h4>
+                                </div>
+                                <div class="modal-body">
+                                    {{ displayRelationship(data.constellation, maybeSame.constellation, 'not same as') }}
+                                    <p style="margin-bottom: 20px;">To make an official assertion that these two Constellations should never be merged, include evidence in the text field below and choose "Make Assertion."  Evidence is required for the official assertion.  If you do not have strong enough evidence, but still think they should not be merged, instead use the "Remove from Consideration" button below.</p>
+                                    <textarea id="notSameModalReason{{loop.index}}"></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-success" onClick="removeConsideration({{data.constellation.id}}, {{maybeSame.constellation.id}}, {{loop.index}});">Remove from Consideration</button>
+                                    <button type="button" class="btn btn-primary" onClick="notSameAssert({{data.constellation.id}}, {{maybeSame.constellation.id}}, {{loop.index}});">Make Assertion</button>
                                 </div>
                             </div>
                         </div>
-                        {% endif %}
-                    {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
 
-                {% else %}
-                    <p>No Constellations are listed as possible matches at this time.</p>
-                {% endif %}
             </div>
         </div>
+        {% endif %}
+        {% if data.notSameList %}
+        <div class="row">
+            <div class="col-md-12 search-results">
+                <h3>Not-Same Assertions</h3>
+                <p class="search-info">There are {{data.notSameList|length}} not-same Constellations.
+                </p>
+                {% for assertion in data.notSameList %}
+                    <div id="result{{loop.index}}">
+                    <h4><a href="{{control.snacURL}}/view/{{assertion.constellations.0.id}}">{{assertion.constellations.0.nameEntries.0.original}}</a></h4>
+                    <p class="identity-info">
+                        <span>{{assertion.constellations.0.ark}}</span>
+                        <span>({{assertion.constellations.0.entityType.term}})</span>
+                    </p>
+                    {% if assertion.constellations.0.biogHists.0.text %}
+                        <p class="final">{{assertion.constellations.0.biogHists.0.text | striptags | slice(0, 500)}}...</p>
+                    {% else %}
+                        <p class="final missing">No biographical history available for this identity.</p>
+                    {% endif %}
+                    </div>
+                {% endfor %}
+
+            </div>
+        </div>
+        {% endif %}
     </div>
     <form id="submitForm">
         <input type="hidden" name="constellationid1" id="constellationid1" value="{{data.constellation.id}}">

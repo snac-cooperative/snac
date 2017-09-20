@@ -1336,6 +1336,50 @@ class ServerExecutor {
     }
 
     /**
+     * List Assertions about Constellations
+     *
+     * Lists assertions about the given constellelation IDs (in input).
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
+    public function listAssertions(&$input) {
+        $this->logger->addDebug("Listing Assertions For Constellation");
+        $response = array();
+
+        if (isset($input["constellationid"])) {
+            // Editing the given constellation id by reading the database
+
+            try {
+                // Read the constellation
+                $this->logger->addDebug("Reading constellation status & summary from the database");
+
+                $cId = $input["constellationid"];
+                $status = $this->cStore->readConstellationStatus($cId);
+
+                // read the constellation into response
+                $constellation = $this->cStore->readConstellation($cId, null, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+                $this->logger->addDebug("Finished reading constellation from the database");
+                $response["constellation"] = $constellation->toArray();
+
+                $assertions = $this->cStore->listAssertions($constellation,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY, $this->uStore);
+
+                $response["assertions"] = array();
+                foreach ($assertions as $key => $assert) {
+                    $response["assertions"][$key] = $assert->toArray();
+                }
+
+            } catch (\Exception $e) {
+                // Leaving a catch block for logging purposes
+                throw $e;
+            }
+        }
+        return $response;
+
+    }
+
+    /**
      * Add Maybe-Same Relationship
      *
      * Adds maybe-same relationships between the given constellations in the input.

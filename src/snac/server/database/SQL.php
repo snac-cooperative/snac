@@ -1433,6 +1433,35 @@ class SQL
     }
 
     /**
+     * List Assertions for Constellation
+     *
+     * Reads out the assertions from the database for the given Constellation.
+     * If none exist, it will return null.
+     *
+     * @param int $icid Constellation ID to look up
+     * @return string[]|null The array of data or null if no assertion exists
+     */
+    public function listAssertions($icid) {
+        if ($icid == null)
+            return null;
+
+        $result = $this->sdb->query("select * from not_same where
+            ic_id1 = $1 or ic_id2 = $1;",
+                array($icid));
+        $all = array();
+
+        while($row = $this->sdb->fetchrow($result)) {
+            array_push($all, array_merge($row, array("type"=>"not_same")));
+        }
+
+        if (count($all) < 1) {
+            return null;
+        }
+
+        return $all;
+    }
+
+    /**
      * Read Assertion
      *
      * Reads out the assertion data from the database for the given type between

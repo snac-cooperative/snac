@@ -655,6 +655,15 @@ class WebUIExecutor {
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
+        
+        $query = array(
+            "command" => "constellation_list_assertions",
+            "constellationid" => $input["constellationid"]
+        );
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse2 = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("maybesame_list_page");
             $displayData = array(
@@ -663,6 +672,9 @@ class WebUIExecutor {
             );
             if (isset($serverResponse["maybe_same"])) {
                 $displayData["maybeSameList"] = $serverResponse["maybe_same"];
+            }
+            if (isset($serverResponse2["assertions"])) {
+                $displayData["notSameList"] = $serverResponse2["assertions"];
             }
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
