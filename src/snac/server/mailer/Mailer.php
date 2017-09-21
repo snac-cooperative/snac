@@ -103,6 +103,7 @@ class Mailer {
         if(!$this->mailer->send()) {
             $this->logger->addDebug('Message could not be sent: ' . $this->mailer->ErrorInfo);
         } 
+        $this->resetMailer();
     }
 
     /**
@@ -137,7 +138,26 @@ class Mailer {
 
         if(!$this->mailer->send()) {
             $this->logger->addDebug('Message could not be sent: ' . $this->mailer->ErrorInfo);
-        } 
+        }
+        
+        $this->resetMailer();
+    }
+
+    /**
+     * Reset the mailer
+     *
+     * Resets the mailer after sending an email.  This way, the mailer doesn't
+     * keep adding addresses.  After a call to this method, the body contents,
+     * subject, attachments, and "To" addresses will be cleared and the mailer
+     * will be ready to send another email from the system.
+     */
+    private function resetMailer() {
+        $this->mailer->clearAddresses();
+        $this->mailer->clearAttachments();
+        $this->mailer->clearCustomHeaders();
+        $this->mailer->Subject = "";
+        $this->mailer->Body = "";
+        $this->mailer->AltBody = "";
     }
 }
 

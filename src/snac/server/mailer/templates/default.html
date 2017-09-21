@@ -104,6 +104,12 @@ body {
         <!--{% endif %}-->
         <div class="body">
             {{ body|raw }}
+            <!--{% if attachmentContent and attachmentFilename == "screenshot.png" %}-->
+            <br><br>
+            <p style="text-align: center">
+                <img style="max-width: 90%; max-height: 1000px;" src="{{attachmentContent}}" alt="User-provided screenshot">
+            </p>
+            <!--{% endif %}-->
         </div>
     </div>
 </body>
