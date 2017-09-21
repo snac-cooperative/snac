@@ -40,6 +40,18 @@ var feedbackPaneHTML = "<div class=\"modal fade\" id=\"feedback_pane\" tabindex=
 	+ "                            </div>"
 	+ "                        </div>"
 	+ "                        <div class=\"form-group\">"
+	+ "                            <label class=\"control-label col-xs-3\">Name</label>"
+	+ "                            <div class=\"col-xs-9\">"
+	+ "                                <input type=\"text\" placeholder=\"Your Name\" class=\"form-control\" id=\"feedback_name\"></p>"
+	+ "                            </div>"
+	+ "                        </div>"
+	+ "                        <div class=\"form-group\">"
+	+ "                            <label class=\"control-label col-xs-3\">Email</label>"
+	+ "                            <div class=\"col-xs-9\">"
+	+ "                                <input type=\"text\" placeholder=\"Your Email\" class=\"form-control\" id=\"feedback_email\"></p>"
+	+ "                            </div>"
+	+ "                        </div>"
+	+ "                        <div class=\"form-group\">"
 	+ "                            <label class=\"control-label col-xs-3\">URL</label>"
 	+ "                            <div class=\"col-xs-9\">"
 	+ "                                <p class=\"form-control-static\">"+ window.location.href + "</p>"
@@ -105,7 +117,8 @@ function sendFeedback() {
         "body" : "<p>" + $("#feedback_body").val() + "</p>" +
                     "<p><strong>Page:</strong> " + $(document).find("title").text() + "<br>" +
                     "<strong>URL:</strong> " + $("#feedback_page_url").val() + "<br>" +
-                    "<strong>Referer</strong>:" + $("#feedback_page_referrer").val() + "</p>",
+                    "<strong>Referer</strong>:" + $("#feedback_page_referrer").val() + "</p>" +
+                    "<p><strong>Contact Information:</strong> " + $("#feedback_name").val() + " (" + $("#feedback_email").val() + ")</p>",
         "screenshot" : $("#feedback_screenshot").val(),
         "token" : $("#g-recaptcha-response").val()
     };
