@@ -490,8 +490,8 @@ class WebUIExecutor {
     public function displayDetailedViewPage(&$input, &$display) {
         $serverResponse = array();
 
-        if (isset($input["part"]) && ($input["part"] == "constellationRelations" ||
-            $input["part"] == "resourceRelations"))
+        if ((isset($input["part"]) && ($input["part"] == "constellationRelations" ||
+            $input["part"] == "resourceRelations")) || isset($input["preview"]))
             $serverResponse = $this->getConstellation($input, $display, false);
         else
             $serverResponse = $this->getConstellation($input, $display, "summary_meta");
@@ -503,6 +503,8 @@ class WebUIExecutor {
 
             if (isset($input["part"]))
                 $display->setTemplate("detailed_view_tabs/".$input["part"]);
+            else if (isset($input["preview"]))
+                $display->setTemplate("detailed_preview_page");
             else
                 $display->setTemplate("detailed_view_page");
 
@@ -655,6 +657,15 @@ class WebUIExecutor {
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
+        
+        $query = array(
+            "command" => "constellation_list_assertions",
+            "constellationid" => $input["constellationid"]
+        );
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse2 = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("maybesame_list_page");
             $displayData = array(
@@ -663,6 +674,9 @@ class WebUIExecutor {
             );
             if (isset($serverResponse["maybe_same"])) {
                 $displayData["maybeSameList"] = $serverResponse["maybe_same"];
+            }
+            if (isset($serverResponse2["assertions"])) {
+                $displayData["notSameList"] = $serverResponse2["assertions"];
             }
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
@@ -1036,7 +1050,7 @@ class WebUIExecutor {
         $constellation = $mapper->serializeToConstellation($input);
 
         if ($constellation != null) {
-            $display->setTemplate("detailed_view_page");
+            $display->setTemplate("detailed_preview_page");
             if (isset($input["view"]) && $input["view"] == "hrt") {
                 $display->setTemplate("view_page");
             }

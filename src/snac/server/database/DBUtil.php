@@ -3622,6 +3622,63 @@ class DBUtil
         return true;
     }
 
+    /**
+     * List Assertions for Constellation
+     *
+     * Reads a list of assertions out of the database.  Given one Constellation, it will read all assertions
+     * associated with that Constellation and return them.
+     *
+     * If given a handle to the DBUser object, it will also pull back the full User information to include
+     * in the assertion for the user that made the assertion.
+     *
+     * @param \snac\data\Constellation $constellation The bare-bones assertion object to look up
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
+     * @param \snac\server\database\DBUser $uStore optional A handle to the DBUser object to get User information
+     * @return \snac\data\Assertion|boolean The complete assertion or false if none exists
+     */
+    function listAssertions(&$constellation, $flags=0, $uStore=null) {
+        if ($constellation === null) {
+            return false;
+        }
+        
+        $assertData = $this->sql->listAssertions($constellation->getID()); 
+
+        if ($assertData == null) {
+            return false;
+        }
+
+        $userCache = array();
+        $assertReturn = array();
+
+        foreach ($assertData as $assertion) {
+            $fullAssert = new \snac\data\Assertion();
+            $fullAssert->setID($assertion["id"]);
+            $fullAssert->setType($assertion["type"]);
+            $fullAssert->setText($assertion["assertion"]);
+            $fullAssert->setTimestamp($assertion["timestamp"]);
+            $user = new \snac\data\User();
+            $user->setUserID($assertion["user_id"]);
+            if ($uStore !== null) {
+                if (!isset($userCache[$assertion["user_id"]])) {
+                    $user = $uStore->readUser($user);
+                    $userCache[$assertion["user_id"]] = $user;
+                } else {
+                    $user = $userCache[$assertion["user_id"]];
+                }
+            }
+            $fullAssert->setUser($user);
+            // fix up this: should only need to get the second one from the assertion
+            //$fullAssert->addConstellation($constellation);
+            if ($assertion["ic_id1"] != $constellation->getID())
+                $fullAssert->addConstellation($this->readConstellation($assertion["ic_id1"], null, $flags));
+            if ($assertion["ic_id2"] != $constellation->getID())
+                $fullAssert->addConstellation($this->readConstellation($assertion["ic_id2"], null, $flags));
+            array_push($assertReturn, $fullAssert);
+        }
+        
+        return $assertReturn;    
+    }
+
 
     /**
      * Read Assertion
