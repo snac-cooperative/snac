@@ -1286,6 +1286,35 @@ class SQL
         }
         return $all;
     }
+    
+    /**
+     * select Current IC_IDs by otherID
+     *
+     * Returns the current IC ic_id (main_id in Tom's code) for the given OtherRecordID.  If the constellation pointed
+     * to by the OtherID was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     * If the ic was split, it will return a list of ic_ids relating to the split.
+     *
+     * @param string $otherID The other record id (sameas) of a constellation
+     * @return integer[] The constellation IDs aka mainIDs akd ic_ids aka version_history.ids.
+     */
+    public function selectCurrentMainIDsForOtherID($otherID)
+    {
+        $result = $this->sdb->query(
+            'select distinct l.current_ic_id
+            from (
+                select ic_id, id, max(version) as version from (
+                    select distinct ic_id, id, version from otherid where uri = $1
+                ) iq group by id, ic_id
+            ) o, otherid oid, constellation_lookup l
+            where o.id = oid.id and o.version = oid.version and not oid.is_deleted and
+            o.ic_id = l.ic_id',
+            array($otherID));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['current_ic_id']);
+        }
+        return $all;
+    }
 
     /**
      * select Current IC_IDs by IC_ID
@@ -1430,6 +1459,35 @@ class SQL
                 values ($1, $2, $3, $4) returning *;",
             array($icid1, $icid2, $userid, $assertion));
         return true;
+    }
+
+    /**
+     * List Assertions for Constellation
+     *
+     * Reads out the assertions from the database for the given Constellation.
+     * If none exist, it will return null.
+     *
+     * @param int $icid Constellation ID to look up
+     * @return string[]|null The array of data or null if no assertion exists
+     */
+    public function listAssertions($icid) {
+        if ($icid == null)
+            return null;
+
+        $result = $this->sdb->query("select * from not_same where
+            ic_id1 = $1 or ic_id2 = $1;",
+                array($icid));
+        $all = array();
+
+        while($row = $this->sdb->fetchrow($result)) {
+            array_push($all, array_merge($row, array("type"=>"not_same")));
+        }
+
+        if (count($all) < 1) {
+            return null;
+        }
+
+        return $all;
     }
 
     /**

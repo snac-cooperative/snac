@@ -688,7 +688,14 @@ button.list-group-item-merge.active:focus {
   color:#333;
 }
 
+/* Phones */
+@media (max-width: 767px) {
+    .footer {
+        text-align: center;
+    }
+}
 
+/* Tablets */
 @media (max-width: 991px) and (min-width: 768px) {
     ul.nav li a {
         padding: 15px 10px;
@@ -697,8 +704,13 @@ button.list-group-item-merge.active:focus {
     .navbar-hideable {
         display: none !important;
     }
+
+    .footer {
+        text-align: center;
+    }
 }
 
+/* Computers */
 @media (min-width: 992px) {
     .affix {
         position: fixed;
