@@ -514,6 +514,18 @@ class DBUtil
         return $this->sql->selectCurrentMainIDsForArk($arkID);
     }
 
+    /**
+     * Get Current ICIDs for OtherID
+     *
+     * Returns the list of ICIDs for the given OtherRecordID.  Most of the time, this will be 
+     * only one ICID, however some will return multiple ICIDs.  
+     *      
+     * @param string $otherID The other id to look up
+     * @return int[] An array of ICIDs deemed current for this other id
+     */
+    public function getCurrentIDsForOtherID($otherID) {
+        return $this->sql->selectCurrentMainIDsForOtherID($otherID);
+    }
 
     /**
      * Get Current ICIDs for ICID

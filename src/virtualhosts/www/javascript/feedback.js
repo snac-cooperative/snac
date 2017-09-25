@@ -36,7 +36,19 @@ var feedbackPaneHTML = "<div class=\"modal fade\" id=\"feedback_pane\" tabindex=
 	+ "                    <div class=\"form-horizontal\">"
 	+ "                        <div class=\"form-group\">"
 	+ "                            <div class=\"col-xs-12\">"
-	+ "                                <textarea id=\"feedback_body\" class=\"form-control\" placeholder=\"Compose your feedback here...\"></textarea>"
+	+ "                                <textarea id=\"feedback_body\" class=\"form-control\" placeholder=\"Compose your feedback here... (required)\"></textarea>"
+	+ "                            </div>"
+	+ "                        </div>"
+	+ "                        <div class=\"form-group\">"
+	+ "                            <label class=\"control-label col-xs-3\">Name</label>"
+	+ "                            <div class=\"col-xs-9\">"
+	+ "                                <input type=\"text\" placeholder=\"Your Name (required)\" class=\"form-control\" id=\"feedback_name\"></p>"
+	+ "                            </div>"
+	+ "                        </div>"
+	+ "                        <div class=\"form-group\">"
+	+ "                            <label class=\"control-label col-xs-3\">Email</label>"
+	+ "                            <div class=\"col-xs-9\">"
+	+ "                                <input type=\"text\" placeholder=\"Your Email (required)\" class=\"form-control\" id=\"feedback_email\"></p>"
 	+ "                            </div>"
 	+ "                        </div>"
 	+ "                        <div class=\"form-group\">"
@@ -100,12 +112,34 @@ function feedbackTakeScreenshot() {
 }
 
 function sendFeedback() {
+    // Check for required information
+    if ($("#feedback_body").val() == "" || $("#feedback_name").val() == "" || $("#feedback_email").val() == "") {
+        $("#feedback_status_message").removeClass("alert-success").removeClass("alert-warning").addClass("alert-danger").html("<p>Please include all information.  Name, Email, and Message are required.</p>");
+        $('#feedback_status_message').slideDown();
+
+        // After 2 seconds, we'll start doing things:
+        setTimeout(function() {
+            // close the alert
+            $('#feedback_status_message').slideUp();
+            $('#feedback_status_message').removeClass("alert-danger").html("");
+        }, 2000);
+        
+        return false;
+    }
+
+
+    // hide the button
+    $("#send_feedback").off("click").prop("disabled", true).addClass("disabled");
+    $("#send_feedback").html("<i class=\"fa fa-spinner fa-pulse fa-fw\"></i> Sending...");
+
+
     var feedbackBody = {
         "subject" : "SNAC Feedback",
         "body" : "<p>" + $("#feedback_body").val() + "</p>" +
                     "<p><strong>Page:</strong> " + $(document).find("title").text() + "<br>" +
                     "<strong>URL:</strong> " + $("#feedback_page_url").val() + "<br>" +
-                    "<strong>Referer</strong>:" + $("#feedback_page_referrer").val() + "</p>",
+                    "<strong>Referer</strong>:" + $("#feedback_page_referrer").val() + "</p>" +
+                    "<p><strong>Contact Information:</strong> " + $("#feedback_name").val() + " (" + $("#feedback_email").val() + ")</p>",
         "screenshot" : $("#feedback_screenshot").val(),
         "token" : $("#g-recaptcha-response").val()
     };
@@ -113,7 +147,8 @@ function sendFeedback() {
     $.post(snacUrl+"/feedback", feedbackBody, function (data) {
         if (data.result == "success") {
             // show success alert
-            $("#feedback_status_message").addClass("alert-success").html("<p>Feedback sent successfully.</p>");
+            $("#send_feedback").html("<i class=\"fa fa-paper-plane-o\" aria-hidden=\"true\"></i> Send");
+            $("#feedback_status_message").removeClass("alert-warning").removeClass("alert-danger").addClass("alert-success").html("<p>Feedback sent successfully.</p>");
             $('#feedback_status_message').slideDown();
 
             // After 2 seconds, we'll start doing things:
@@ -128,7 +163,9 @@ function sendFeedback() {
 
         } else {
             // show an error alert
-            $("#feedback_status_message").addClass("alert-warning").html("<p>Error: "+data.message+"</p>");
+            $("#send_feedback").html("<i class=\"fa fa-paper-plane-o\" aria-hidden=\"true\"></i> Send");
+            $("#send_feedback").click(sendFeedback).prop("disabled", false).removeClass("disabled");
+            $("#feedback_status_message").removeClass("alert-success").removeClass("alert-danger").addClass("alert-warning").html("<p>Error: "+data.message+"</p>");
             $('#feedback_status_message').slideDown();
 
             // close the alert after 10 seconds
@@ -152,4 +189,5 @@ $(document).ready(function() {
             });
             return false;
         });
+
 });

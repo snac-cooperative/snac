@@ -891,7 +891,7 @@ class ServerExecutor {
         if (!isset($input["message"])) {
             throw new \snac\exceptions\SNACInputException("No feedback message given to send");
         }
-        $response = array();
+        $response = array("result" => "failure");
 
         $message = new \snac\data\Message($input["message"]);
         $this->logger->addDebug("Message received", $message->toArray());
@@ -905,19 +905,31 @@ class ServerExecutor {
         } else if ($message->getFromUser() !== null && $this->user === null) {
             throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent from a user if they are not logged in.");
         }
-        $tmpUser = new \snac\data\User();
-        $tmpUser->setUserName(\snac\Config::$FEEDBACK_USERNAME);
-        $toUser = $this->uStore->readUser($tmpUser);
-        if ($toUser === false) {
-            throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
+
+        if (isset(\snac\Config::$FEEDBACK_RECIPIENTS) && is_array(\snac\Config::$FEEDBACK_RECIPIENTS)) {
+            foreach (\snac\Config::$FEEDBACK_RECIPIENTS as $recipient) {
+                $tmpUser = new \snac\data\User();
+                $tmpUser->setUserName($recipient);
+                $tmpUser->setEmail($recipient);
+                $tmpUser->setFullName($recipient);
+                if (!\snac\Config::$FEEDBACK_EMAIL_ONLY) {
+                    $toUser = $this->uStore->readUser($tmpUser);
+                    if ($toUser === false) {
+                        throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
+                    }
+                    $message->setToUser($toUser);
+                    
+                    // Send the message through the system
+                    $this->uStore->writeMessage($message);
+                } else {
+                    $message->setToUser($tmpUser);
+                }
+
+                // Send the message via email
+                $this->mailer->sendUserMessage($message);
+            }
+            $response["result"] = "success";
         }
-        $message->setToUser($toUser);
-
-        // Send the message
-        $this->uStore->writeMessage($message);
-        $this->mailer->sendUserMessage($message);
-
-        $response["result"] = "success";
         return $response;
     }
 
@@ -2186,7 +2198,16 @@ class ServerExecutor {
                         $input["constellationid"] . " does not have a published version.");
             }
 
+        } else if (isset($input["sameas"])) {
+            // get icids for the given ark id
+            $icids = $this->cStore->getCurrentIDsForOtherID($input["sameas"]);
+            if (empty($icids)) {
+                // This means that the Constellation doesn't have a published version!
+                throw new \snac\exceptions\SNACInputException("Constellation with sameas ID " .
+                        $input["sameas"] . " does not have a published version.");
+            }
         }
+
 
 
         $this->logger->addDebug("Reading constellation(s) from the database, flags=$readFlags");
