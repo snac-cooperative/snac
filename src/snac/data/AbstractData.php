@@ -476,6 +476,21 @@ abstract class AbstractData implements \Serializable {
         }
     }
 
+    public function collateSCMCitationsBySource(&$sources) {
+        if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
+            foreach ($this->snacControlMetadata as &$scm) {
+                $newSCM = new \snac\data\SNACControlMetadata($scm->toArray());
+                $newSCM->setObject($this);
+
+                if ($scm->getCitation() !== null) {
+                    $sources[$scm->getCitation()->getID()]->addSNACControlMetadata($newSCM);
+                } else {
+                    $sources[0]->addSNACControlMetadata($newSCM);
+                }
+            }
+        }
+    }
+
     /**
      * Cleanse all sub-elements
      *

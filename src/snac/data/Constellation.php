@@ -1590,8 +1590,76 @@ class Constellation extends AbstractData {
      *
      * @return \snac\data\Source[] A list of Source objects with their SCMs filled out
      */
-    public function collectAllSCMCitations() {
-        
+    public function collateAllSCMCitationsBySource() {
+        $sources = array();
+        // Do a deep copy of the sources
+        foreach ($this->sources as $source) {
+            $sources[$source->getID()] = new \snac\data\Source($source->toArray());
+        }
+        $sources[0] = new \snac\data\Source();
+        $sources[0]->setDisplayName("Unknown Source");
+
+        parent::collateSCMCitationsBySource($sources);
+
+        foreach ($this->mandates as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->structureOrGenealogies as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->generalContexts as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->biogHists as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->conventionDeclarations as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->nationalities as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->otherRecordIDs as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->entityIDs as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->languagesUsed as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->legalStatuses as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->sources as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->genders as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->nameEntries as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->occupations as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->relations as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->resourceRelations as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->functions as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->places as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+        foreach ($this->subjects as &$element)
+            $element->collateSCMCitationsBySource($sources);
+
+
+        return $sources; 
     }
 
     /**

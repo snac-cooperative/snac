@@ -61,6 +61,7 @@ class SNACControlMetadata extends AbstractData {
      */
     private $note;
 
+    private $object;
 
     /**
      * Constructor
@@ -100,6 +101,7 @@ class SNACControlMetadata extends AbstractData {
             "sourceData" => $this->sourceData,
             "descriptiveRule" => $this->descriptiveRule == null ? null : $this->descriptiveRule->toArray($shorten),
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
+            "object" => $this->object == null ? null : $this->object->toArray($shorten),
             "note" => $this->note
         );
         $return = array_merge($return, parent::toArray($shorten));
@@ -215,6 +217,14 @@ class SNACControlMetadata extends AbstractData {
      */
     public function getNote() {
         return $this->note;
+    }
+
+    public function getObject() {
+        return $this->object;
+    }
+
+    public function setObject($object) {
+        $this->object = $object;
     }
     
     /**

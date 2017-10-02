@@ -496,6 +496,8 @@ class WebUIExecutor {
 
             $constellation = new \snac\data\Constellation($serverResponse["constellation"]);
 
+            $constellation->setAllSources($constellation->collateAllSCMCitationsBySource());
+            
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation->toArray()
