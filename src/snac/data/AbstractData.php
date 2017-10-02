@@ -480,6 +480,9 @@ abstract class AbstractData implements \Serializable {
         if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
             foreach ($this->snacControlMetadata as &$scm) {
                 $newSCM = new \snac\data\SNACControlMetadata($scm->toArray());
+
+                //TODO might be useful to have a toString() that would convert this data object into
+                // a display-like short string to display here rather than the full object.
                 $newSCM->setObject($this);
 
                 if ($scm->getCitation() !== null) {
