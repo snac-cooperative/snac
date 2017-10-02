@@ -56,6 +56,10 @@ $('.selectpicker').selectpicker();
     <div class="container snac" role="main">
     
     <h1>{{data.nameEntries.0.original}}</h1>
+    <ol class="breadcrumb">
+        <li><a href="{{control.snacURL}}/view/{{data.id}}">{{data.nameEntries.0.original}}</a></li>
+        <li>Connection Graph</li>
+    </ol>
 
     <div id="alchemy_box">
     <div id="alchemy" class="alchemy"></div>

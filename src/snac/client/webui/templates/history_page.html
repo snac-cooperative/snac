@@ -69,6 +69,11 @@ $(document).ready(function() {
 <div class="container snac" role="main">
     <h1>{{data.constellation.nameEntries.0.original}}</h1>
 
+    <ol class="breadcrumb">
+        <li><a href="{{control.snacURL}}/view/{{data.constellation.id}}">{{data.constellation.nameEntries.0.original}}</a></li>
+        <li>Version History</li>
+    </ol>
+
     <!-- Constellation Data -->
     <input id="constellationid" name="constellationid" type="hidden" value="{{ data.constellation.id }}"/>
     <input id="version" name="version" type="hidden" value="{{ data.constellation.version }}"/>
@@ -82,7 +87,6 @@ $(document).ready(function() {
             </div>
             {% endif %}
 
-            <h2>Version History</h2>
 
             <table class="table">
                 <thead>

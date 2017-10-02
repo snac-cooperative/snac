@@ -301,6 +301,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->listMaybeSameConstellations($this->input);
                 break;
 
+            case "constellation_list_assertions":
+                $this->response = $executor->listAssertions($this->input);
+                break;
+
             case "constellation_diff":
                 $this->response = $executor->diffConstellations($this->input);
                 break;

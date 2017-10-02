@@ -52,69 +52,71 @@ function turnOnTooltipsForTab(part='') {
  */
 $(document).ready(function() {
 
-	var sourceid = 1;
-    var sourceOpen = false;
-	if ($('#sourcestab').exists()){
-		$('#sourcestab').click(function(){
-            // Don't open a second time
-            if (sourceOpen)
-                return;
+    if ($("#page_type").exists() && $("#page_type").val() == "detailed_view") {
 
-            $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=sources", null, function (data) {
-                sourceOpen = true;
-                $('#sources').html(data);
+        var sourceid = 1;
+        var sourceOpen = false;
+        if ($('#sourcestab').exists()){
+            $('#sourcestab').click(function(){
+                // Don't open a second time
+                if (sourceOpen)
+                    return;
 
-                turnOnTooltipsForTab("sources");
+                $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=sources", null, function (data) {
+                    sourceOpen = true;
+                    $('#sources').html(data);
+
+                    turnOnTooltipsForTab("sources");
+                });
             });
-        });
-    }
+        }
 
-	var resourceRelationid = 1;
-    var resourceRelationOpen = false;
-	if ($('#resourceRelationstab').exists()){
-		$('#resourceRelationstab').click(function(){
-            // Don't open a second time
-            if (resourceRelationOpen)
-                return;
+        var resourceRelationid = 1;
+        var resourceRelationOpen = false;
+        if ($('#resourceRelationstab').exists()){
+            $('#resourceRelationstab').click(function(){
+                // Don't open a second time
+                if (resourceRelationOpen)
+                    return;
 
-            $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=resourceRelations", null, function (data) {
-                resourceRelationOpen = true;
-                $('#resourceRelations').html(data);
+                $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=resourceRelations", null, function (data) {
+                    resourceRelationOpen = true;
+                    $('#resourceRelations').html(data);
 
-                turnOnTooltipsForTab("resourceRelations");
+                    turnOnTooltipsForTab("resourceRelations");
 
-                // If there is a display holdings map button and a holdings map on the page, then activate it
-                if ($('#displayHoldingsMap').exists() && $('#holdingsMap').exists()){
-                    $('#displayHoldingsMap').removeClass('disabled');
-                    $('#displayHoldingsMap').click(displayHoldingsMap);
-                }
-                // Remove the help
-                $("#collection_locations_help").remove();
+                    // If there is a display holdings map button and a holdings map on the page, then activate it
+                    if ($('#displayHoldingsMap').exists() && $('#holdingsMap').exists()){
+                        $('#displayHoldingsMap').removeClass('disabled');
+                        $('#displayHoldingsMap').click(displayHoldingsMap);
+                    }
+                    // Remove the help
+                    $("#collection_locations_help").remove();
 
+                });
             });
-        });
-    }
+        }
 
 
-	var constellationRelationid = 1;
-    var constellationRelationOpen = false;
-	if ($('#constellationRelationstab').exists()){
-		$('#constellationRelationstab').click(function(){
-            // Don't open a second time
-            if (constellationRelationOpen)
-                return;
+        var constellationRelationid = 1;
+        var constellationRelationOpen = false;
+        if ($('#constellationRelationstab').exists()){
+            $('#constellationRelationstab').click(function(){
+                // Don't open a second time
+                if (constellationRelationOpen)
+                    return;
 
-            $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=constellationRelations", null, function (data) {
-                constellationRelationOpen = true;
-                $('#constellationRelations').html(data);
+                $.get(snacUrl+"/details/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=constellationRelations", null, function (data) {
+                    constellationRelationOpen = true;
+                    $('#constellationRelations').html(data);
 
-                turnOnTooltipsForTab("constellationRelations");
+                    turnOnTooltipsForTab("constellationRelations");
 
-                enableImpliedRelations();
+                    enableImpliedRelations();
+                });
             });
-        });
+        }
     }
-
 
     turnOnTooltipsForTab();
 

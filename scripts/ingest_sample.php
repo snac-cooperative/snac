@@ -68,10 +68,12 @@ if (is_dir($argv[1])) {
 
         $constellation = $e->parseFile($filename);
 
-        list($junk, $parts) = explode("ark:/", $constellation->getArk());
-        $ark = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
+        $rels = count($constellation->getRelations()) + count($constellation->getResourceRelations());
 
-        $rels = trim(shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
+        //list($junk, $parts) = explode("ark:/", $constellation->getArk());
+        //$ark = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
+
+        //$rels = trim(shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
 
         if ($rels < 350) {
             // Write the constellations to the DB

@@ -276,7 +276,12 @@ class Config {
     public static $STATIC_FILE_DIR = "/full/path/to/snac/src/virtualhosts/www/static/";
 
     /**
-     * @var string Username to send feedback messages
+     * @var string[] Usernames (or emails) to send feedback messages
      */
-    public static $FEEDBACK_USERNAME = "";
+    public static $FEEDBACK_RECIPIENTS = [];
+
+    /**
+     * @var boolean Whether or not to treat feedback recipients as email addresses (true) or snac usernames (false)
+     */
+    public static $FEEDBACK_EMAIL_ONLY = false;
 }
