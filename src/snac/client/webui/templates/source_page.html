@@ -78,9 +78,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             </div>
                         </div>
                     </div>
+                    {% if source.snacControlMetadata %}
                     <div class="row">
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h4 class="panel-title">SCM Citations</h4></div>
+                        <div class="col-md-12 panel panel-default">
+                            <h4>SCM Citations</h4>
                             <div class="panel-body">
                                 {% for scm in source.snacControlMetadata %}
                                     <h5 style="font-weight: bold;">{{scm.object.dataType}}</h5>
@@ -98,6 +99,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             </div>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
