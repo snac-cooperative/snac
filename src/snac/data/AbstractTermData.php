@@ -84,6 +84,10 @@ abstract class AbstractTermData extends AbstractData {
         $this->term = $term;
     }
 
+    public function toString() {
+        return $this->dataType . ": " . $this->getTerm()->getTerm();
+    }
+
     /**
      * Required method to convert this term structure to an array
      *
