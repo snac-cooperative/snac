@@ -315,6 +315,28 @@ class SNACDate extends AbstractData {
         return $this->note;
     }
 
+    function toString() {
+        $str = "Date: ";
+        if ($this->fromDate)
+            $str .= $this->fromDate;
+        else
+            $str .= $this->fromDateOriginal;
+
+        if ($this->fromType)
+            $str .= " (".$this->fromType->getTerm().")";
+
+        if ($this->isRange) {
+            $str .= " - ";
+            if ($this->toDate)
+                $str .= $this->toDate;
+            else
+                $str .= $this->toDateOriginal;
+
+        if ($this->toType)
+            $str .= " (".$this->toType->getTerm().")";
+        }
+    }
+
     /**
      * Returns this object's data as an associative array
      *

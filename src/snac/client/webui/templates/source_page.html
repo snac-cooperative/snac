@@ -79,14 +79,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                     {% endif %}
                                 </p>
                             </div>
-                            <!--
-                            <p>URI: <a href="{{source.uri}}">{{source.uri}}</a></p>
-                            <p>Source Text:
-                            </p>
-                                {% if source.text %}
-                                {{source.text|e}}
-                                {% endif %}
-                            -->
                         </div>
                         <div class="col-md-6">
                             <div class="panel panel-default">
@@ -115,7 +107,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                                 Sub-citation: {{scm.subCitation}}<br>
                                                 {% endif %}
                                                 {% if scm.sourceData %}
-                                                Source Data: {{scm.sourceData}}<br>
+                                                Found Data: {{scm.sourceData}}<br>
                                                 {% endif %}
                                                 {% if scm.note %}
                                                 Note: {{scm.note}}
