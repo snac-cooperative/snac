@@ -162,6 +162,10 @@ class NameEntry extends AbstractData {
         return $this->language;
     }
 
+    public function toString() {
+        return "Name Entry: " . $this->original;
+    }
+
     /**
      * Returns this object's data as an associative array.
      *

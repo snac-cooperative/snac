@@ -476,6 +476,10 @@ abstract class AbstractData implements \Serializable {
         }
     }
 
+    public function toString() {
+        return get_class($this);
+    }
+
     public function collateSCMCitationsBySource(&$sources) {
         if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
             foreach ($this->snacControlMetadata as &$scm) {
@@ -483,7 +487,7 @@ abstract class AbstractData implements \Serializable {
 
                 //TODO might be useful to have a toString() that would convert this data object into
                 // a display-like short string to display here rather than the full object.
-                $newSCM->setObject($this);
+                $newSCM->setObject($this->toString());
 
                 if ($scm->getCitation() !== null) {
                     $sources[$scm->getCitation()->getID()]->addSNACControlMetadata($newSCM);

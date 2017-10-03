@@ -363,6 +363,12 @@ class Place extends AbstractData {
         return $this->geoTerm;
     }
 
+    public function toString() {
+        if ($this->geoTerm == null)
+            return "Place: " . $this->original;
+        return "Place: " . $this->geoTerm->getName();
+    }
+
     /**
      * Returns this object's data as an associative array
      *

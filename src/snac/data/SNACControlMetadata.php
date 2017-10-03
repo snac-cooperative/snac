@@ -101,7 +101,7 @@ class SNACControlMetadata extends AbstractData {
             "sourceData" => $this->sourceData,
             "descriptiveRule" => $this->descriptiveRule == null ? null : $this->descriptiveRule->toArray($shorten),
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
-            "object" => $this->object == null ? null : $this->object->toArray($shorten),
+            "object" => $this->object,
             "note" => $this->note
         );
         $return = array_merge($return, parent::toArray($shorten));

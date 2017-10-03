@@ -99,7 +99,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 {% for scm in source.snacControlMetadata %}
                                     <div class="panel panel-default" style="width: 250px; float: left; margin: 10px;">
                                         <div class="panel-body">
-                                            <h5 style="font-weight: bold;">{{scm.object.dataType}}</h5>
+                                            <h5 style="font-weight: bold;">{{scm.object}}</h5>
                                             <p>{% if scm.subCitation %}
                                                 Sub-citation: {{scm.subCitation}}<br>
                                                 {% endif %}
