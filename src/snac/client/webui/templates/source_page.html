@@ -32,7 +32,18 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
-
+<style>
+.panel-source {
+    border-color: #666;
+}
+.panel-source-heading {
+    background-color: #666;
+    color: #fff;
+}
+.panel-source-title {
+    font-size: 20px;
+}
+</style>
 <meta name="viewport" content="initial-scale = 1.0" />
 </head>
 <body role="document">
@@ -53,8 +64,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     {% for key, source in data.sources %}
     <div class="row">
         <div class="col-md-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title">{{source.displayName}}</h3></div>
+            <div class="panel panel-source">
+                <div class="panel-heading panel-source-heading"><h3 class="panel-title panel-source-title">{{source.displayName}}</h3></div>
                 <div class="panel-body">
                     {% if key != 0 %}
                     <div class="row">
