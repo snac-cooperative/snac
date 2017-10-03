@@ -467,6 +467,11 @@ abstract class AbstractData implements \Serializable {
             return;
         }
 
+        if (isset($this->dateList) && $this->dateList !== null) {
+            foreach ($this->dateList as &$date) {
+                $date->updateSCMCitation($oldSource, $newSource);
+            }
+        }
         if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
             foreach ($this->snacControlMetadata as &$scm) {
                 if ($scm->getCitation() !== null && $scm->getCitation()->getID() == $oldSource->getID()) {
@@ -481,6 +486,11 @@ abstract class AbstractData implements \Serializable {
     }
 
     public function collateSCMCitationsBySource(&$sources) {
+        if (isset($this->dateList) && $this->dateList !== null) {
+            foreach ($this->dateList as &$date) {
+                $date->collateSCMCitationsBySource($sources);
+            }
+        }
         if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
             foreach ($this->snacControlMetadata as &$scm) {
                 $newSCM = new \snac\data\SNACControlMetadata($scm->toArray());
