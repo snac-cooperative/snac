@@ -50,20 +50,32 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         <li>Sources</li>
     </ol>
 
-    {% for source in data.sources %}
+    {% for key, source in data.sources %}
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3 class="panel-title">{{source.displayName}}</h3></div>
                 <div class="panel-body">
+                    {% if key != 0 %}
                     <div class="row">
                         <div class="col-md-6">
+                            <div class="form-group well well-sm">
+                                <h5 class="text-center" style="font-weight: bold">Source Information</h5>
+                                <p class="panel panel-body scm-source-panel {{ not source.text ? 'hidden'}}">{{source.text|e}}</p>
+                                <p class="text-center">
+                                    {% if source.uri %}
+                                    <a href="{{source.uri}}" target="_blank">{{source.uri}}</a>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <!--
                             <p>URI: <a href="{{source.uri}}">{{source.uri}}</a></p>
                             <p>Source Text:
                             </p>
                                 {% if source.text %}
-                                <pre>{{source.text}}</pre>
+                                {{source.text|e}}
                                 {% endif %}
+                            -->
                         </div>
                         <div class="col-md-6">
                             <div class="panel panel-default">
@@ -78,12 +90,29 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             </div>
                         </div>
                     </div>
+                    {% endif %}
                     {% if source.snacControlMetadata %}
                     <div class="row">
                         <div class="col-md-12">
                             <h4>SCM Citations</h4>
-                            <div class="panel-body">
+                            <div class="">
                                 {% for scm in source.snacControlMetadata %}
+                                    <div class="panel panel-default" style="width: 250px; float: left; margin: 10px;">
+                                        <div class="panel-body">
+                                            <h5 style="font-weight: bold;">{{scm.object.dataType}}</h5>
+                                            <p>{% if scm.subCitation %}
+                                                Sub-citation: {{scm.subCitation}}<br>
+                                                {% endif %}
+                                                {% if scm.sourceData %}
+                                                Source Data: {{scm.sourceData}}<br>
+                                                {% endif %}
+                                                {% if scm.note %}
+                                                Note: {{scm.note}}
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!--
                                     <h5 style="font-weight: bold;">{{scm.object.dataType}}</h5>
                                     <p>{% if scm.subCitation %}
                                         Sub-citation: {{scm.subCitation}}<br>
@@ -95,6 +124,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                         Note: {{scm.note}}
                                         {% endif %}
                                     </p>
+                                    -->
                                 {% endfor %}
                             </div>
                         </div>
@@ -108,6 +138,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 
 
+    <!--
     {% for source in data.sources %}
     <div class="panel panel-default">
         <div class="panel-heading"><h3 class="panel-title">{{source.displayName}}</h3></div>
@@ -118,9 +149,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             {% endif %}
         </div>
     </div>
-    
     {% endfor %}
-    
+    -->
 
 </div>
 {{ footer(X, user, permissions, control) }}
