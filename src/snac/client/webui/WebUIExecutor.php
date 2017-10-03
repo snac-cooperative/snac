@@ -497,7 +497,7 @@ class WebUIExecutor {
             $constellation = new \snac\data\Constellation($serverResponse["constellation"]);
 
             $sources = $constellation->collateAllSCMCitationsBySource();
-            usort($sources, function($a, $b) {
+            uasort($sources, function($a, $b) {
                 if ($a->getID() == null)
                     return 1;
                 if ($b->getID() == null)
