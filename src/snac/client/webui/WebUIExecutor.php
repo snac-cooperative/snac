@@ -489,7 +489,7 @@ class WebUIExecutor {
      */
     public function displaySourcesPage(&$input, &$display) {
         //$serverResponse = $this->getConstellation($input, $display, false);
-        $serverResponse = $this->getConstellation($input, $display, "summary_meta");
+        $serverResponse = $this->getConstellation($input, $display, false);
 
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("source_page");
