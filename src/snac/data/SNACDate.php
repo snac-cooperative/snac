@@ -335,6 +335,8 @@ class SNACDate extends AbstractData {
         if ($this->toType)
             $str .= " (".$this->toType->getTerm().")";
         }
+
+        return $str;
     }
 
     /**
