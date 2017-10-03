@@ -504,7 +504,7 @@ class WebUIExecutor {
                     return -1;
                 return $a->getDisplayName() <=> $b->getDisplayName();
             });
-            $constellation->setAllSources();
+            $constellation->setAllSources($sources);
             
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData(array_merge(
