@@ -1,11 +1,13 @@
 {
     "dataType": "Constellation",
+    "status": null,
     "ark": "http:\/\/n2t.net\/ark:\/99166\/w6nb3p7q",
     "entityType": {
         "id": "698",
         "term": "corporateBody",
         "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
-        "type": "entity_type"
+        "type": "entity_type",
+        "description": null
     },
     "otherRecordIDs": [
         {
@@ -14,12 +16,15 @@
                 "id": "28225",
                 "term": "sameAs",
                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#sameAs",
-                "type": "record_type"
+                "type": "record_type",
+                "description": null
             },
             "text": "Notice Test Collectivit\u00e9",
             "uri": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/producteur\/consultationProducteur.action?notProdId=FRAN_NP_050744",
             "id": "8280080",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "SameAs",
@@ -27,12 +32,15 @@
                 "id": "28225",
                 "term": "sameAs",
                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#sameAs",
-                "type": "record_type"
+                "type": "record_type",
+                "description": null
             },
             "text": "Notice Test Collectivit\u00e9",
             "uri": "http:\/\/isni.org\/isni\/Unseulidentifiant",
             "id": "8280081",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "entityIDs": [
@@ -41,15 +49,24 @@
             "type": {
                 "id": "701",
                 "term": "unknown",
-                "type": "entityid_type"
+                "uri": null,
+                "type": "entityid_type",
+                "description": null
             },
             "text": "Un seul identifiant",
+            "uri": null,
             "id": "8280082",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "maintenanceStatus": {
-        "term": "revised"
+        "id": null,
+        "term": "revised",
+        "uri": null,
+        "type": null,
+        "description": null
     },
     "maintenanceAgency": "SNAC: Social Networks and Archival Context",
     "maintenanceEvents": [
@@ -57,63 +74,97 @@
             "dataType": "MaintenanceEvent",
             "eventType": {
                 "id": "704",
-                "term": "revised"
+                "term": "revised",
+                "uri": null,
+                "type": null,
+                "description": null
             },
             "eventDateTime": "2015-10-30 21:17:20.901353",
             "standardDateTime": "2015-10-30T21:17:20.901340",
             "agentType": {
                 "id": "687",
-                "term": "machine"
+                "term": "machine",
+                "uri": null,
+                "type": null,
+                "description": null
             },
             "agent": "CPF merge program",
-            "eventDescription": "Merge v2.0"
+            "eventDescription": "Merge v2.0",
+            "id": null,
+            "version": null,
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "MaintenanceEvent",
             "eventType": {
                 "id": "704",
                 "term": "revised",
-                "type": "event_type"
+                "uri": null,
+                "type": "event_type",
+                "description": null
             },
             "eventDateTime": "2016-08-10T04:58:46",
             "standardDateTime": "2016-08-10T04:58:46",
             "agentType": {
                 "id": "687",
                 "term": "machine",
-                "type": "agent_type"
+                "uri": null,
+                "type": "agent_type",
+                "description": null
             },
             "agent": "SNAC EAC-CPF Parser",
-            "eventDescription": "Bulk ingest into SNAC Database"
+            "eventDescription": "Bulk ingest into SNAC Database",
+            "id": null,
+            "version": null,
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "MaintenanceEvent",
             "eventType": {
                 "id": "704",
                 "term": "revised",
-                "type": "event_type"
+                "uri": null,
+                "type": "event_type",
+                "description": null
             },
             "eventDateTime": "2016-08-10T04:58:46",
             "standardDateTime": "2016-08-10T04:58:46",
             "agentType": {
                 "id": "400254",
                 "term": "human",
-                "type": "agent_type"
+                "uri": null,
+                "type": "agent_type",
+                "description": null
             },
-            "agent": "System Service (system@localhost)"
+            "agent": "System Service (system@localhost)",
+            "eventDescription": null,
+            "id": null,
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "sources": [
         {
             "dataType": "Source",
+            "language": null,
             "type": {
                 "id": "28296",
                 "term": "simple",
-                "type": "source_type"
+                "uri": null,
+                "type": "source_type",
+                "description": null
             },
             "displayName": "Source 1: ",
+            "text": null,
             "note": "<descriptiveNote>\n               <p>m\u00eame probl\u00e8mes que dans autres champs de type texte<\/p>\n               <p>Nota : champ ancien identifiant pas accessible<\/p>\n               <p>Une seule langue ? si nom en anglais par ex. ?<\/p>\n            <\/descriptiveNote>",
+            "uri": null,
             "id": "8280063",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "legalStatuses": [
@@ -122,12 +173,18 @@
             "term": {
                 "id": "400206",
                 "term": "\u00e9tablissement public \u00e0 caract\u00e8re scientifique, culturel et professionnel",
-                "type": "legal_status"
+                "uri": null,
+                "type": "legal_status",
+                "description": null
             },
             "id": "8280066",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
+    "conventionDeclarations": [],
+    "languagesUsed": [],
     "nameEntries": [
         {
             "dataType": "NameEntry",
@@ -139,11 +196,16 @@
                     "type": {
                         "id": "7658",
                         "term": "authorizedForm",
-                        "type": "name_type"
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
                     },
+                    "rule": null,
                     "name": "ANF",
                     "id": "8280070",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "components": [
@@ -154,10 +216,14 @@
                     "type": {
                         "id": "400228",
                         "term": "Name",
-                        "type": "name_component"
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
                     },
                     "id": "8280069",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "language": {
@@ -165,25 +231,34 @@
                 "language": {
                     "id": "144",
                     "term": "fre",
+                    "uri": null,
                     "type": "language_code",
                     "description": "French"
                 },
                 "script": {
                     "id": "586",
                     "term": "Latn",
+                    "uri": null,
                     "type": "script_code",
                     "description": "Latin"
                 },
+                "vocabularySource": null,
+                "note": null,
                 "id": "8280071",
-                "version": "1201577"
+                "version": "1201577",
+                "operation": null,
+                "dates": []
             },
             "id": "8280068",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "NameEntry",
             "original": "Collectivit\u00e9 test",
             "preferenceScore": "0",
+            "contributors": [],
             "components": [
                 {
                     "dataType": "NameComponent",
@@ -192,30 +267,45 @@
                     "type": {
                         "id": "400228",
                         "term": "Name",
-                        "type": "name_component"
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
                     },
                     "id": "8280073",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
+            "language": null,
             "id": "8280072",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2003-01-01",
                     "fromDateOriginal": "2003",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280074",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
@@ -223,6 +313,7 @@
             "dataType": "NameEntry",
             "original": "Test Collectivit\u00e9",
             "preferenceScore": "0",
+            "contributors": [],
             "components": [
                 {
                     "dataType": "NameComponent",
@@ -231,47 +322,66 @@
                     "type": {
                         "id": "400228",
                         "term": "Name",
-                        "type": "name_component"
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
                     },
                     "id": "8280076",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
+            "language": null,
             "id": "8280075",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2012-01-01",
                     "fromDateOriginal": "2012",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "toDate": "2014-03-03",
                     "toDateOriginal": "03\/03\/2014",
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280077",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         }
     ],
+    "preferredNameEntry": null,
     "occupations": [
         {
             "dataType": "Occupation",
             "term": {
                 "id": "9482",
                 "term": "archiviste",
-                "type": "occupation"
+                "uri": null,
+                "type": "occupation",
+                "description": null
             },
             "vocabularySource": "d699msirr1g-3naumnfaswc",
+            "note": null,
             "id": "8280078",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "biogHists": [
@@ -282,21 +392,29 @@
                 "language": {
                     "id": "130",
                     "term": "eng",
+                    "uri": null,
                     "type": "language_code",
                     "description": "English"
                 },
                 "script": {
                     "id": "586",
                     "term": "Latn",
+                    "uri": null,
                     "type": "script_code",
                     "description": "Latin"
                 },
+                "vocabularySource": null,
+                "note": null,
                 "id": "8280061",
-                "version": "1201577"
+                "version": "1201577",
+                "operation": null,
+                "dates": []
             },
             "text": "<biogHist>\n            <p xmlns=\"urn:isbn:1-931666-33-4\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">Cet \n     <span style=\"underline\">organisme fictif<\/span> est cr\u00e9\u00e9 pour faire des \n     <span style=\"bold\">tests aux Archives nationales<\/span>. \n    <\/p>\n            <p xmlns=\"urn:isbn:1-931666-33-4\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">Insertion de \n     <span style=\"italic\">caract\u00e8res sp\u00e9ciaux<\/span> : \u00ab blah \u00bb \n    <\/p>\n            <p xmlns=\"urn:isbn:1-931666-33-4\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">Pas possible de mettre un lien hypertexte ici.<\/p>\n            <p xmlns=\"urn:isbn:1-931666-33-4\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">Caract\u00e8res en exposant ?<\/p>\n            <p xmlns=\"urn:isbn:1-931666-33-4\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">Liste<\/p>\n            <list xmlns=\"urn:isbn:1-931666-33-4\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">\n               <item>item 1<\/item>\n               <item>item 2<\/item>\n            <\/list>\n         <citation xmlns=\"urn:isbn:1-931666-33-4\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">Information extraite de la notice des Archives nationals de France (FRAN_NP_050744)<\/citation><\/biogHist>",
             "id": "8280060",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "relations": [
@@ -310,39 +428,54 @@
                 "id": "700",
                 "term": "person",
                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
-                "type": "entity_type"
+                "type": "entity_type",
+                "description": null
             },
             "type": {
                 "id": "28234",
                 "term": "associatedWith",
                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#associatedWith",
-                "type": "relation_type"
+                "type": "relation_type",
+                "description": null
             },
+            "altType": null,
             "cpfRelationType": {
                 "id": "28235",
                 "term": "associative",
-                "type": "relation_type"
+                "uri": null,
+                "type": "relation_type",
+                "description": null
             },
             "content": "Rocard, Michel",
             "note": "<descriptiveNote><p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span><\/p><\/descriptiveNote>",
             "id": "8280101",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2003-01-01",
                     "fromDateOriginal": "2003",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280102",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
@@ -356,33 +489,48 @@
                 "id": "698",
                 "term": "corporateBody",
                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
-                "type": "entity_type"
+                "type": "entity_type",
+                "description": null
             },
+            "type": null,
+            "altType": null,
             "cpfRelationType": {
                 "id": "28264",
                 "term": "hierarchical-parent",
-                "type": "relation_type"
+                "uri": null,
+                "type": "relation_type",
+                "description": null
             },
             "content": "Service interminist\u00e9riel des archives de France",
             "note": "<descriptiveNote>\n               <p>test sur un lien hi\u00e9rarchique<\/p>\n            <p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span><\/p><\/descriptiveNote>",
             "id": "8280099",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2010-01-01",
                     "fromDateOriginal": "2010",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280100",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         }
@@ -396,23 +544,37 @@
                     "id": "696",
                     "term": "ArchivalResource",
                     "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
-                    "type": "document_type"
+                    "type": "document_type",
+                    "description": null
                 },
+                "linkType": null,
+                "entryType": null,
                 "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_027886#d_1",
+                "source": null,
                 "title": "Minist\u00e8re de l'Int\u00e9rieur. Administration d\u00e9partementale. Logement des pr\u00e9fets, sous-pr\u00e9fets, Costumes des fonctionnaires, Compatibilit\u00e9 des fonctions# Logement des pr\u00e9fets et des sous-pr\u00e9fets. #F\/2(I)\/106\/13",
+                "abstract": null,
+                "extent": null,
+                "originationNames": [],
+                "languages": [],
+                "repository": null,
                 "id": "6619786",
-                "version": "6619786"
+                "version": "6619786",
+                "operation": null,
+                "dates": []
             },
             "role": {
                 "id": "692",
                 "term": "creatorOf",
                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#creatorOf",
-                "type": "document_role"
+                "type": "document_role",
+                "description": null
             },
             "content": "Minist\u00e8re de l'Int\u00e9rieur. Administration d\u00e9partementale. Logement des pr\u00e9fets, sous-pr\u00e9fets, Costumes des fonctionnaires, Compatibilit\u00e9 des fonctions# Logement des pr\u00e9fets et des sous-pr\u00e9fets. #F\/2(I)\/106\/13",
             "note": "<descriptiveNote>\n               <p>cr\u00e9ateur<\/p>\n            <\/descriptiveNote>",
             "id": "8280103",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "ResourceRelation",
@@ -422,22 +584,37 @@
                     "id": "696",
                     "term": "ArchivalResource",
                     "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
-                    "type": "document_type"
+                    "type": "document_type",
+                    "description": null
                 },
+                "linkType": null,
+                "entryType": null,
                 "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_041062",
+                "source": null,
                 "title": "Gr\u00e2ces accord\u00e9es",
+                "abstract": null,
+                "extent": null,
+                "originationNames": [],
+                "languages": [],
+                "repository": null,
                 "id": "6619793",
-                "version": "6619793"
+                "version": "6619793",
+                "operation": null,
+                "dates": []
             },
             "role": {
                 "id": "693",
                 "term": "referencedIn",
                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#referencedIn",
-                "type": "document_role"
+                "type": "document_role",
+                "description": null
             },
             "content": "Gr\u00e2ces accord\u00e9es",
+            "note": null,
             "id": "8280105",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "ResourceRelation",
@@ -447,22 +624,37 @@
                     "id": "696",
                     "term": "ArchivalResource",
                     "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
-                    "type": "document_type"
+                    "type": "document_type",
+                    "description": null
                 },
+                "linkType": null,
+                "entryType": null,
                 "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_043100",
+                "source": null,
                 "title": "Minutes et r\u00e9pertoires du notaire Albert Louis MOREL d'ARLEUX, 12 ao\u00fbt 1891 - d\u00e9cembre 1903 (\u00e9tude CI)",
+                "abstract": null,
+                "extent": null,
+                "originationNames": [],
+                "languages": [],
+                "repository": null,
                 "id": "6621730",
-                "version": "6621730"
+                "version": "6621730",
+                "operation": null,
+                "dates": []
             },
             "role": {
                 "id": "693",
                 "term": "referencedIn",
                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#referencedIn",
-                "type": "document_role"
+                "type": "document_role",
+                "description": null
             },
             "content": "Minutes et r\u00e9pertoires du notaire Albert Louis MOREL d'ARLEUX, 12 ao\u00fbt 1891 - d\u00e9cembre 1903 (\u00e9tude CI)",
+            "note": null,
             "id": "8280104",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "functions": [
@@ -471,222 +663,347 @@
             "term": {
                 "id": "2665",
                 "term": "culture",
-                "type": "function"
+                "uri": null,
+                "type": "function",
+                "description": null
             },
+            "type": null,
             "vocabularySource": "d5bhviikk9--y6te63k761ib",
+            "note": null,
             "id": "8280064",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "places": [
         {
             "dataType": "Place",
             "original": "03e arrondissement",
+            "type": null,
             "role": {
                 "id": "706",
                 "term": "Lieu de Paris",
-                "type": "place_role"
+                "uri": null,
+                "type": "place_role",
+                "description": null
             },
+            "address": [],
+            "geoplace": null,
+            "score": 0,
+            "confirmed": false,
             "note": "\n                  \n               ",
             "id": "8280092",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2003-01-01",
                     "fromDateOriginal": "2003",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "toDate": "2012-12-31",
                     "toDateOriginal": "2012",
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280094",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
                     "sourceData": "03e arrondissement",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "object": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": "8280093",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
         {
             "dataType": "Place",
             "original": "Pierrefitte-sur-Seine",
+            "type": null,
             "role": {
                 "id": "707",
                 "term": "Lieu g\u00e9n\u00e9ral",
-                "type": "place_role"
+                "uri": null,
+                "type": "place_role",
+                "description": null
             },
+            "address": [],
+            "geoplace": null,
+            "score": 0,
+            "confirmed": false,
             "note": "\n                  \n               ",
             "id": "8280083",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2012-01-01",
                     "fromDateOriginal": "2012",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280085",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
                     "sourceData": "Pierrefitte-sur-Seine",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "object": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": "8280084",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
         {
             "dataType": "Place",
             "original": "Paris, Archives nationales",
+            "type": null,
             "role": {
                 "id": "706",
                 "term": "Lieu de Paris",
-                "type": "place_role"
+                "uri": null,
+                "type": "place_role",
+                "description": null
             },
+            "address": [],
+            "geoplace": null,
+            "score": 0,
+            "confirmed": false,
             "note": "\n                  \n               ",
             "id": "8280089",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2003-01-01",
                     "fromDateOriginal": "2003",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "toDate": "2012-12-31",
                     "toDateOriginal": "2012",
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280091",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
                     "sourceData": "Paris, Archives nationales",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "object": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": "8280090",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
         {
             "dataType": "Place",
             "original": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
+            "type": null,
             "role": {
                 "id": "707",
                 "term": "Lieu g\u00e9n\u00e9ral",
-                "type": "place_role"
+                "uri": null,
+                "type": "place_role",
+                "description": null
             },
+            "address": [],
+            "geoplace": null,
+            "score": 0,
+            "confirmed": false,
             "note": "\n                  \n               ",
             "id": "8280086",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2012-01-01",
                     "fromDateOriginal": "2012",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280088",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
                     "sourceData": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "object": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": "8280087",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
         {
             "dataType": "Place",
             "original": "Francs-Bourgeois (rue des)",
+            "type": null,
             "role": {
                 "id": "706",
                 "term": "Lieu de Paris",
-                "type": "place_role"
+                "uri": null,
+                "type": "place_role",
+                "description": null
             },
+            "address": [],
+            "geoplace": null,
+            "score": 0,
+            "confirmed": false,
             "note": "\n                  \n               ",
             "id": "8280095",
             "version": "1201577",
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2003-01-01",
                     "fromDateOriginal": "2003",
+                    "fromType": null,
+                    "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "toDate": "2012-12-31",
                     "toDateOriginal": "2012",
+                    "toType": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
                     },
                     "isRange": true,
+                    "note": null,
                     "id": "8280097",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
                     "sourceData": "Francs-Bourgeois (rue des)",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "object": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": "8280096",
-                    "version": "1201577"
+                    "version": "1201577",
+                    "operation": null,
+                    "dates": []
                 }
             ]
         }
     ],
+    "subjects": [],
+    "nationalities": [],
+    "genders": [],
     "generalContexts": [
         {
             "dataType": "GeneralContext",
             "text": "<generalContext>\n            <p>idem<\/p>\n         <\/generalContext>",
             "id": "8280065",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "structureOrGenealogies": [
@@ -694,7 +1011,9 @@
             "dataType": "StructureOrGenealogy",
             "text": "<structureOrGenealogy>\n            <p>idem<\/p>\n         <\/structureOrGenealogy>",
             "id": "8280098",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
     "mandates": [
@@ -702,20 +1021,30 @@
             "dataType": "Mandate",
             "text": "<mandate>\n               <descriptiveNote>\n                  <p>M\u00eames possibilit\u00e9s que pour champ pr\u00e9c\u00e9dent<\/p>\n               <\/descriptiveNote>\n            <\/mandate>",
             "id": "8280067",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ],
+    "images": [],
     "id": "8280059",
     "version": "1201578",
+    "operation": null,
     "dates": [
         {
             "dataType": "SNACDate",
             "fromDate": "2003-01-01",
             "fromDateOriginal": "2003",
+            "fromType": null,
+            "fromBC": false,
             "fromRange": {
                 "notBefore": null,
                 "notAfter": null
             },
+            "toDate": null,
+            "toDateOriginal": null,
+            "toType": null,
+            "toBC": false,
             "toRange": {
                 "notBefore": null,
                 "notAfter": null
@@ -723,7 +1052,9 @@
             "isRange": true,
             "note": "\n               \n            ",
             "id": "8280062",
-            "version": "1201577"
+            "version": "1201577",
+            "operation": null,
+            "dates": []
         }
     ]
 }
