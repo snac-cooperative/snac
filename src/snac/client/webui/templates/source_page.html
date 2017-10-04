@@ -98,9 +98,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="row">
                         <div class="col-md-12">
                             <h4>SCM Citations</h4>
-                            <div style="column-count: 4; display: table;">
+                            <div style="">
                                 {% for scm in source.snacControlMetadata %}
-                                    <div class="panel panel-default" style="width: 250px; float: left; margin: 10px;">
+                                <div class="panel panel-default" style="width: 250px; margin: 10px; display:inline-block; vertical-align:top;">
                                         <div class="panel-body">
                                             <h5 style="font-weight: bold;">{{scm.object}}</h5>
                                             <p>{% if scm.subCitation %}
