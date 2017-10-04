@@ -481,10 +481,28 @@ abstract class AbstractData implements \Serializable {
         }
     }
 
+    /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
     public function toString() {
         return get_class($this);
     }
 
+    /**
+     * Collate SCM by Source
+     *
+     * Collates all SCM of this object by the source and attaches them into the sources
+     * given in the first parameter.  It assumes that the sources array is given with
+     * associative IDs equal to the actual source ID, with array[0] reserved for SCM
+     * without a source attached.
+     *
+     * @param  \snac\data\Source[] $sources Associative array of Source objects (with key = source id)
+     */
     public function collateSCMCitationsBySource(&$sources) {
         if (isset($this->dateList) && $this->dateList !== null) {
             foreach ($this->dateList as &$date) {
@@ -519,7 +537,7 @@ abstract class AbstractData implements \Serializable {
      * Language in names.
      *
      * @param string $operation optional The operation to use (default is INSERT)
-     */ 
+     */
     public function cleanseSubElements($operation=null) {
         $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
         if ($operation !== null) {

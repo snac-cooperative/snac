@@ -33,7 +33,7 @@ abstract class AbstractTextData extends AbstractData{
     protected $dataType;
 
     /**
-     * var string Text of this object 
+     * var string Text of this object
      */
     protected $text;
 
@@ -64,6 +64,14 @@ abstract class AbstractTextData extends AbstractData{
         $this->text = $text;
     }
 
+    /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
     public function toString() {
         return $this->dataType . ": " . $this->getText();
     }
@@ -79,9 +87,9 @@ abstract class AbstractTextData extends AbstractData{
             'dataType' => $this->dataType,
             'text' => $this->getText()
         );
-        
+
         $return = array_merge($return, parent::toArray($shorten));
-       
+
         // Shorten if necessary
         if ($shorten) {
             $return2 = array();
@@ -93,7 +101,7 @@ abstract class AbstractTextData extends AbstractData{
         }
 
 
-        return $return; 
+        return $return;
     }
 
     /**
@@ -106,9 +114,9 @@ abstract class AbstractTextData extends AbstractData{
         if (!isset($data["dataType"]) || $data["dataType"] != $this->dataType)
             return false;
 
-            
+
         parent::fromArray($data);
-        
+
         unset($this->text);
         if (isset($data["text"]))
             $this->text = $data["text"];
@@ -119,24 +127,24 @@ abstract class AbstractTextData extends AbstractData{
     /**
      *
      * {@inheritDoc}
-     * 
+     *
      * @param \snac\data\AbstractTextData $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     * 
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\AbstractTextData))
             return false;
-        
+
         if (!parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getText() != $other->getText())
             return false;
-        
+
         return true;
     }
 

@@ -39,7 +39,7 @@ class SNACControlMetadata extends AbstractData {
 
     /**
      * Source Data
-     * 
+     *
      * We put original strings in here. For example an original place string.
      *
      * @var string source data, the "as recorded" data: exactly what was found in the source
@@ -61,6 +61,9 @@ class SNACControlMetadata extends AbstractData {
      */
     private $note;
 
+    /**
+     * @var string human-readable string representing the object pointed to by this SCM
+     */
     private $object;
 
     /**
@@ -78,15 +81,15 @@ class SNACControlMetadata extends AbstractData {
 
         $this->setMaxDateCount(0);
         parent::__construct($data);
-        
+
         if ($data != null && is_array($data))
             $this->fromArray($data);
-        
+
         // Metadata should never have metadata
         unset ($this->snacControlMetadata);
     }
 
-    
+
     /**
      * Required method to convert this data object to an array
      *
@@ -105,7 +108,7 @@ class SNACControlMetadata extends AbstractData {
             "note" => $this->note
         );
         $return = array_merge($return, parent::toArray($shorten));
-        
+
         // Shorten if necessary
         if ($shorten) {
             $return2 = array();
@@ -141,7 +144,7 @@ class SNACControlMetadata extends AbstractData {
             $this->citation = new Source($data["citation"]);
         else
             $this->citation = null;
-        
+
         if (isset($data["descriptiveRule"]) && $data["descriptiveRule"] != null)
             $this->descriptiveRule = new Term($data["descriptiveRule"]);
         else
@@ -164,7 +167,7 @@ class SNACControlMetadata extends AbstractData {
 
         return true;
     }
-    
+
     /**
      * Get the citation
      *
@@ -176,7 +179,7 @@ class SNACControlMetadata extends AbstractData {
 
     /**
      * Get the subcitation
-     * 
+     *
      * @return string sub citation, the exact location in the source
      */
     public function getSubCitation() {
@@ -219,14 +222,24 @@ class SNACControlMetadata extends AbstractData {
         return $this->note;
     }
 
+    /**
+     * Get the human-readable object string
+     *
+     * @return string The human-readable object string this SCM is attached to
+     */
     public function getObject() {
         return $this->object;
     }
 
+    /**
+     * Set the human-readable object string
+     *
+     * @param string $object The human-readable string of the object to which this SCM is attached
+     */
     public function setObject($object) {
         $this->object = $object;
     }
-    
+
     /**
      * Set the citation
      *
@@ -238,7 +251,7 @@ class SNACControlMetadata extends AbstractData {
 
     /**
      * Set the subcitation
-     * 
+     *
      * @param string $subCitation sub citation, the exact location in the source
      */
     public function setSubCitation($subCitation) {
@@ -288,26 +301,26 @@ class SNACControlMetadata extends AbstractData {
      * @param \snac\data\SNACControlMetadata $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\SNACControlMetadata))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getSubCitation() != $other->getSubCitation())
-            return false;        
+            return false;
         if ($this->getSourceData() != $other->getSourceData())
             return false;
         if ($this->getNote() != $other->getNote())
             return false;
 
         // Citations are special. They are Source objects, but they may not be completely filled in.  In fact, the only thing we may know
-        // about them within an SCM is their ID.  So, for equality, we may only check ID. 
+        // about them within an SCM is their ID.  So, for equality, we may only check ID.
         if (($this->getCitation() !== null && $other->getCitation() === null) ||
             ($this->getCitation() === null && $other->getCitation() !== null) ||
             ($this->getCitation() !== null && $other->getCitation() !== null && $this->getCitation()->getID() !== $other->getCitation()->getID()))
@@ -320,7 +333,7 @@ class SNACControlMetadata extends AbstractData {
         if (($this->getLanguage() != null && ! $this->getLanguage()->equals($other->getLanguage(), $strict)) ||
                  ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;
-        
+
         return true;
     }
 
@@ -332,7 +345,7 @@ class SNACControlMetadata extends AbstractData {
      * will use that operation instead of INSERT.
      *
      * @param string $operation optional The operation to use (default is INSERT)
-     */ 
+     */
     public function cleanseSubElements($operation=null) {
         $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
         if ($operation !== null) {

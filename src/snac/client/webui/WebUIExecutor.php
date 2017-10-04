@@ -264,6 +264,7 @@ class WebUIExecutor {
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param string|boolean $summary The type of constellation summary to request or false if requesting all
      * @return string[] The response from the server. It is a json_decode'ed response from curl.
      */
     protected function getConstellation(&$input, &$display, $summary=false) {
@@ -505,7 +506,7 @@ class WebUIExecutor {
                 return $a->getDisplayName() <=> $b->getDisplayName();
             });
             $constellation->setAllSources($sources);
-            
+
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation->toArray()
@@ -694,7 +695,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
-        
+
         $query = array(
             "command" => "constellation_list_assertions",
             "constellationid" => $input["constellationid"]
@@ -702,7 +703,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse2 = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
-        
+
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("maybesame_list_page");
             $displayData = array(

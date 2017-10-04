@@ -162,6 +162,14 @@ class NameEntry extends AbstractData {
         return $this->language;
     }
 
+    /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
     public function toString() {
         return "Name Entry: " . $this->original;
     }
@@ -332,7 +340,7 @@ class NameEntry extends AbstractData {
 
         return true;
     }
-    
+
     /**
      * Cleanse all sub-elements
      *
@@ -341,7 +349,7 @@ class NameEntry extends AbstractData {
      * will use that operation instead of INSERT.
      *
      * @param string $operation optional The operation to use (default is INSERT)
-     */ 
+     */
     public function cleanseSubElements($operation=null) {
         $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
         if ($operation !== null) {
