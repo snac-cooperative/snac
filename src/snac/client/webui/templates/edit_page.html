@@ -88,10 +88,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 <div class="container snac" role="main">
 
     <form class="form-horizontal" id="constellation_form">
-        {% if data.id %}
-            <h1>Editing: {{data.nameEntries.0.original}}</h1>
+        {% if data.id or data.nameEntries.0.original %}
+            <h1><span id="page_heading">{{data.nameEntries.0.original}}</span> <i class="fa fa-pencil" aria-hidden="true"></i></h1>
         {% else %}
-            <h1>New Constellation</h1>
+            <h1><span id="page_heading">New Constellation</span> <i class="fa fa-pencil" aria-hidden="true"></i></h1>
         {% endif %}
 
         <!-- Constellation Data -->
