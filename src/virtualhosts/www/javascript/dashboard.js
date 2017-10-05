@@ -9,6 +9,36 @@
  *            the Regents of the University of California
  */
 
+var reviewPayload = {
+    id : null,
+    version : null,
+    reviewer : null,
+    reviewmessage : null
+}
+
+function sendForReviewModal(id, version) {
+    // Close the settings modal// Close this modal and open the new modal
+    $("#constellation-settings").modal("hide");
+
+    // Set the ID/Version to send
+    reviewPayload.id = id;
+    reviewPayload.version = version;
+
+    // Set a 500ms timeout to give the hidden search pane time to fully close
+    setTimeout(function() {$("#sendReviewPane").modal("show");}, 500);
+
+    // Play nice and don't let the browser reload
+    return false;
+}
+
+function sendReview() {
+    // Pull the message text
+    reviewPayload.reviewmessage = $("#reviewmessage").val();
+
+    // Send the browser to the review page (which will then redirect them back to the dashboard)
+    window.location.href = snacUrl+"/review/"+reviewPayload.id+"/"+reviewPayload.version+"?reviewer="+reviewPayload.reviewer+"&reviewmessage="+encodeURIComponent(reviewPayload.reviewmessage);
+}
+
 function updateSettingsBox(id, version, nameEntry) {
 
     $("#settings-name").text(nameEntry);
@@ -28,7 +58,7 @@ function updateSettingsBox(id, version, nameEntry) {
     html += "</a>";
 
     // Send for Review
-    html += "<a href='"+snacUrl+"/review/"+id+"/"+version+"' class='list-group-item list-group-item-review'>";
+    html += "<a href='#' onClick='sendForReviewModal("+id+","+version+");' class='list-group-item list-group-item-review'>";
     html += "   <span class='glyphicon glyphicon-send'></span> Send this Constellation for Review";
     html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Send your saved changes to a reviewer." data-toggle="popover" data-placement="right"></span>';
     html += "</a>";
@@ -84,6 +114,15 @@ $(document).ready(function() {
         setTimeout(function(){
             $('#status-message').slideUp();
         }, 7000);
-
     }
+
+    // Turn on the reviewer buttons
+    $("#save_and_review_touser").click(function() {
+        reviewPayload.reviewer = $("#reviewersearchbox").val();
+        sendReview();
+    });
+    $("#save_and_review_general").click(function() {
+        reviewPayload.reviewer = null;
+        sendReview();
+    });
 });

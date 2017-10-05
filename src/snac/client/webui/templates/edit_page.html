@@ -100,6 +100,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>
         <input id="reviewer" name="reviewer" type="hidden" value=""/>
         <input id="editor" name="editor" type="hidden" value="{{data.reviewNote.userName}}"/>
+        <input id="reviewmessage" name="reviewmessage" type="hidden"/>
 
 
         <div class="row">
@@ -563,6 +564,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div style="text-align: center; margin-top: 10px;">
                                 <p>OR</p>
                                 <button type="button" class="btn btn-success" id="save_and_review_general" data-dismiss="modal"><span class="glyphicon glyphicon-send"></span> Send to General Reviewer Pool</button>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <textarea id="sendReviewMessage" class='panel panel-default panel-body' style='width: 100%' placeholder="You may write a message to the reviewer here..."></textarea>
                             </div>
                         </div>
                 </div>
