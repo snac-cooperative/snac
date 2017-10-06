@@ -1177,6 +1177,7 @@ class ServerExecutor {
                 $validation = new \snac\server\validation\ValidationEngine();
                 $hasOperationValidator = new \snac\server\validation\validators\HasOperationValidator();
                 $validation->addValidator($hasOperationValidator);
+                $validation->addValidator(new \snac\server\validation\validators\ResourceValidator());
 
                 $success = $validation->validateConstellation($constellation);
 

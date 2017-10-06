@@ -14,8 +14,9 @@ namespace snac\server\database;
 use \snac\server\validation\ValidationEngine as ValidationEngine;
 use Behat\Behat\Definition\Call\Given;
 use phpDocumentor\Plugin\Scrybe\Converter\Metadata\TableOfContents\BaseEntry;
-use snac\server\validation\validators\IDValidator;
+use \snac\server\validation\validators\IDValidator;
 use \snac\server\validation\validators\HasOperationValidator;
+use \snac\server\validation\validators\ResourceValidator;
 
 
 /**
@@ -3941,6 +3942,7 @@ class DBUtil
         $ve = new ValidationEngine();
         $hasOperationValidator = new HasOperationValidator();
         $ve->addValidator($hasOperationValidator);
+        $ve->addValidator(new ResourceValidator());
         if ($mainID)
         {
             $idValidator = new IDValidator();
