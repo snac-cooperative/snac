@@ -206,10 +206,11 @@ function notSameAssert(icid1, icid2, id) {
                         <span>({{assertion.constellations.0.entityType.term}})</span>
                     </p>
                     {% if assertion.constellations.0.biogHists.0.text %}
-                        <p class="final">{{assertion.constellations.0.biogHists.0.text | striptags | slice(0, 500)}}...</p>
+                        <p class="">{{assertion.constellations.0.biogHists.0.text | striptags | slice(0, 500)}}...</p>
                     {% else %}
-                        <p class="final missing">No biographical history available for this identity.</p>
+                        <p class="missing">No biographical history available for this identity.</p>
                     {% endif %}
+                    <p class="final"><strong>Rationale:</strong> {{assertion.text|striptags}}</p>
                     </div>
                 {% endfor %}
 
