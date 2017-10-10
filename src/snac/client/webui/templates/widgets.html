@@ -226,7 +226,7 @@
 {% endmacro %}
 
 {% macro displayBiographicalExcerpt(constellation) %}
-    <h4>Biographical Excerpt</h4>
+    <!--<h4>Biographical Excerpt</h4>-->
     {% if constellation.biogHists.0.text %}
         {% set bh = constellation.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"}) %}
         {% set pars = bh|split('</p>') %}

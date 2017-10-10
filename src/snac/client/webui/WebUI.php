@@ -106,6 +106,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "search",
                 "view",
                 "details",
+                "sources",
                 "download",
                 "error",
                 "vocabulary",
@@ -128,6 +129,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "search",
             "view",
             "details",
+            "sources",
             "download",
             "error",
             "vocabulary",
@@ -360,6 +362,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
             case "details":
                 $executor->displayDetailedViewPage($this->input, $display);
+                break;
+            case "sources":
+                $executor->displaySourcesPage($this->input, $display);
                 break;
             case "relations":
                 $response = $executor->performRelationsQuery($this->input);

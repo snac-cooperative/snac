@@ -19,7 +19,7 @@ namespace snac\data;
  * SameAs data storage class
  *
  * @author Robbie Hott
- *        
+ *
  */
 class SameAs extends AbstractData {
 
@@ -29,7 +29,7 @@ class SameAs extends AbstractData {
     private $text;
 
     /**
-     * @var string URI of this sameAs or otherRecordID 
+     * @var string URI of this sameAs or otherRecordID
      */
     private $uri;
 
@@ -37,11 +37,11 @@ class SameAs extends AbstractData {
      * @var \snac\data\Term Type of this sameAs or otherRecordID
      */
     private $type;
-    
+
 
     /**
      * Constructor
-     * 
+     *
      * @param string[] $data optional An array of data to pre-fill this object
      */
     public function __construct($data = null) {
@@ -79,6 +79,18 @@ class SameAs extends AbstractData {
     }
 
     /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        return "Same As: " . $this->text;
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -91,7 +103,7 @@ class SameAs extends AbstractData {
             "text" => $this->text,
             "uri" => $this->uri
         );
-            
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -140,7 +152,7 @@ class SameAs extends AbstractData {
 
     /**
      * Set the text/xml of this SameAs
-     * 
+     *
      * @param string $text The full text/xml of this sameAs or otherRecordID
      */
     public function setText($text) {
@@ -173,17 +185,17 @@ class SameAs extends AbstractData {
      * @param \snac\data\SameAs $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\SameAs))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getText() != $other->getText())
             return false;
         if ($this->getURI() != $other->getURI())
@@ -192,7 +204,7 @@ class SameAs extends AbstractData {
         if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
                  ($this->getType() == null && $other->getType() != null))
             return false;
-        
+
         return true;
     }
 }

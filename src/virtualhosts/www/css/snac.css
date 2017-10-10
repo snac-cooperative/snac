@@ -317,11 +317,11 @@ div.snac {
 }
 
 .geoterm-caption {
-    font-size: 11px; 
-    font-style:italic; 
-    color: #777777; 
-    margin-top: 0px; 
-    padding-top: 0px; 
+    font-size: 11px;
+    font-style:italic;
+    color: #777777;
+    margin-top: 0px;
+    padding-top: 0px;
     margin-bottom: 5px;
 }
 
@@ -609,6 +609,35 @@ button.list-group-item-merge.active:focus {
     border-color: #AB307C;
 }
 
+.list-group-item-sources {
+    color: #5158b8;
+    background-color: #e7e3ff;
+}
+a.list-group-item-sources,
+button.list-group-item-sources {
+    color: #5158b8;
+}
+a.list-group-item-sources .list-group-item-heading,
+button.list-group-item-sources .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-sources:hover,
+button.list-group-item-sources:hover,
+a.list-group-item-sources:focus,
+button.list-group-item-sources:focus {
+    color: #5158b8;
+    background-color: #cecae6;
+}
+a.list-group-item-sources.active,
+button.list-group-item-sources.active,
+a.list-group-item-sources.active:hover,
+button.list-group-item-sources.active:hover,
+a.list-group-item-sources.active:focus,
+button.list-group-item-sources.active:focus {
+    color: #fff;
+    background-color: #5158b8;
+    border-color: #5158b8;
+}
 
 
 /* Use the following to define new panel styles */
@@ -688,7 +717,14 @@ button.list-group-item-merge.active:focus {
   color:#333;
 }
 
+/* Phones */
+@media (max-width: 767px) {
+    .footer {
+        text-align: center;
+    }
+}
 
+/* Tablets */
 @media (max-width: 991px) and (min-width: 768px) {
     ul.nav li a {
         padding: 15px 10px;
@@ -697,8 +733,13 @@ button.list-group-item-merge.active:focus {
     .navbar-hideable {
         display: none !important;
     }
+
+    .footer {
+        text-align: center;
+    }
 }
 
+/* Computers */
 @media (min-width: 992px) {
     .affix {
         position: fixed;
@@ -762,7 +803,7 @@ button.list-group-item-merge.active:focus {
     }
    .search-box .search-box-text {
       width: 100%;
-    } 
+    }
 }
     .list-group-super .list-group-item:last-child {
         border-bottom-right-radius: 0px;

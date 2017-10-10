@@ -16,22 +16,22 @@
 namespace snac\data;
 
 /**
- * Place 
- * 
+ * Place
+ *
  * The place data class contains information about places throughout the Constellation structure.  In EAC-CPF terms, these
  * objects are used anywhere a PlaceEntry may be used.  Therefore, they contain the bits of information from the CPF
  * description's Place tags (which may contain repeatable placeEntry tags) and information from placeEntry tags themselves.
  * If there is a known controlled vocabulary (canonical) geographical place associated with this Place, that term should be
- * pulled using a GeoTerm and stored appropriately.  (In SNAC EAC-CPF, this would be a <snac:placeEntry> contained inside a 
+ * pulled using a GeoTerm and stored appropriately.  (In SNAC EAC-CPF, this would be a <snac:placeEntry> contained inside a
  * placeEntry tag that is a GeoNames match).
- * 
+ *
  * When generating EAC-CPF from the Constellation structure, any Places in the top-level Constellation must be created as
  * <place> wrapped <placeEntry> tags.  Everywhere else, these Places must be generated as <placeEntry> tags only.
  *
  *
  * @author Robbie Hott
  * @author Tom Laudeman
- *        
+ *
  */
 class Place extends AbstractData {
 
@@ -40,81 +40,81 @@ class Place extends AbstractData {
      *
      * This is the original string from the CPF <placeEntry> tag. Once a place is linked to a controlled vocab,
      * this string becomes unnecessary, or is filled with the name from the GeoTerm associated with this object.
-     * 
+     *
      * @var string $original
      */
     private $original;
 
     /**
      * Descriptive Note
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * place/descriptiveNote
-     * 
+     *
      * @var string $note Descriptive note
      */
     private $note;
 
     /**
      * Type of the place
-     * 
+     *
      * This is a controlled-vocabulary place type term.
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * place/@localType
-     * 
+     *
      * @var \snac\data\Term $type Type of the place
      */
     private $type;
 
     /**
      * Role of the place
-     * 
+     *
      * This is a controlled-vocabulary place role term.
      * From EAC-CPF tag(s):
-     * 
+     *
      * * place/placeRole
-     * 
+     *
      * @var \snac\data\Term $role Place role
      */
     private $role;
-    
+
     /**
      * Match confidence score
-     * 
+     *
      * This is a machine-generated confidence score that the GeoTerm linked to this
      * place is actually the place referred to by the "original" string.
-     * 
+     *
      * @var float $score machine-generated match confidence score
      */
     private $score;
-    
+
     /**
      * Confirmed Geographical Place
-     * 
+     *
      * This boolean states whether the linked GeoTerm was human-vetted as a match.  If a human made
      * the match, this is true, else it is false.
-     * 
+     *
      * @var boolean $confirmed
      */
     private $confirmed;
-    
+
     /**
      * Geographical Place Term
-     * 
+     *
      * @var \snac\data\GeoTerm $geoTerm The controlled vocabulary term object for the geographical place
-     */ 
+     */
     private $geoTerm;
 
     /**
-     * Address Lines 
-     * 
+     * Address Lines
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * place/address/addressLine
-     * 
+     *
      * @var \snac\data\AddressLine[] $address Address of this place
      */
     private $address;
@@ -127,11 +127,11 @@ class Place extends AbstractData {
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
-     * 
+     *
      */
     public function __construct($data = null) {
         $this->setMaxDateCount(1);
-        
+
         // Set some default values
         $this->confirmed = false;
         $this->score = 0;
@@ -140,13 +140,13 @@ class Place extends AbstractData {
 
         if ($data != null)
             $this->fromArray($data);
-        
+
         parent::__construct($data);
     }
-    
+
     /**
      * Set the original place name
-     * 
+     *
      * @param string $original original place name
      */
     public function setOriginal($original) {
@@ -157,7 +157,7 @@ class Place extends AbstractData {
 
     /**
      * Set the descriptive note
-     * 
+     *
      * @param string $note descriptive note
      */
     public function setNote($note) {
@@ -167,7 +167,7 @@ class Place extends AbstractData {
 
     /**
      * Set the place type
-     * 
+     *
      * @param \snac\data\Term $type Place type
      */
     public function setType($type) {
@@ -177,34 +177,34 @@ class Place extends AbstractData {
 
     /**
      * Set the place role
-     * 
+     *
      * @param \snac\data\Term $role place role
      */
     public function setRole($role) {
 
         $this->role = $role;
     }
-    
+
     /**
      * Set the Match Score
-     * 
+     *
      * Set the machine-generated match confidence score between the GeoTerm
      * and this place.
-     * 
+     *
      * @param float $score Match score
      */
     public function setScore($score) {
         $this->score = $score;
     }
-    
+
     /**
      * Set Confirmed
-     * 
+     *
      * Set the confirmation status of this place by parameter.  This confirmation status
      * is true if a human has confirmed that the GeoTerm is actually this Place.
-     * 
+     *
      * This method will return false if trying to confirm a place that has no GeoTerm.
-     * 
+     *
      * @param boolean $confirmed true if human confirmed, false otherwise
      * @return boolean True if the confirmed flag was set, false otherwise
      */
@@ -214,14 +214,14 @@ class Place extends AbstractData {
         $this->confirmed = $confirmed;
         return true;
     }
-    
+
     /**
      * Confirm this place
-     * 
+     *
      * Confirm that this place is actually the GeoTerm listed, by human inspection.
-     * 
+     *
      * This method will return false if trying to confirm a place that has no GeoTerm.
-     * 
+     *
      * @return boolean True if confirmed flag was set, false otherwise
      */
     public function confirm() {
@@ -230,21 +230,21 @@ class Place extends AbstractData {
         $this->confirmed = true;
         return true;
     }
-    
+
     /**
      * Deconfirm this place
-     * 
+     *
      * Remove confirmation that this place is actually the GeoTerm listed.
      */
     public function deconfirm() {
         $this->confirmed = false;
     }
-    
+
     /**
      * Set the Geographical Term
-     * 
+     *
      * Set the canonical geographical term associated with this place
-     * 
+     *
      * @param \snac\data\GeoTerm $geoTerm The canonical geographical term
      */
     public function setGeoTerm($geoTerm) {
@@ -290,60 +290,60 @@ class Place extends AbstractData {
      * @return string $original original place name
      */
     public function getOriginal() {
-    
+
         return $this->original;
     }
-    
+
     /**
      * Get descriptive note
-     * 
+     *
      * Get the descriptive note
-     * 
+     *
      * @return string descriptive note
      */
     public function getNote() {
         return $this->note;
     }
-    
+
     /**
      * Get Type
-     * 
+     *
      * Get the type of this place
-     * 
+     *
      * @return \snac\data\Term Type term for this place
      */
     public function getType() {
         return $this->type;
     }
-    
+
     /**
      * Get Role
-     * 
+     *
      * Get the role associated with this place
-     * 
+     *
      * @return \snac\data\Term Role term for this place
      */
     public function getRole() {
         return $this->role;
     }
-    
+
     /**
      * Get Confirmation Status
-     * 
+     *
      * Get the confirmation status for this place.  This returns true if the GeoTerm has been
      * human-vetted to match this place, false otherwise.
-     * 
+     *
      * @return boolean true if human-matched GeoTerm, false otherwise
      */
     public function getConfirmed() {
         return $this->confirmed;
     }
-    
+
     /**
      * Get Match Confidence Score
-     * 
+     *
      * Get the machine-generated match score between the associated GeoTerm and this place.
-     * 
+     *
      * @return float match score, or 0 if no GeoTerm present
      */
     public function getScore() {
@@ -351,16 +351,30 @@ class Place extends AbstractData {
             return 0;
         return $this->score;
     }
-    
+
     /**
      * Get the Geographical Term
-     * 
+     *
      * Get the canonical geographic term for this place
-     * 
+     *
      * @return \snac\data\GeoTerm The geographic term, or null if none exists
      */
     public function getGeoTerm() {
         return $this->geoTerm;
+    }
+
+    /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        if ($this->geoTerm == null)
+            return "Place: " . $this->original;
+        return "Place: " . $this->geoTerm->getName();
     }
 
     /**
@@ -381,7 +395,7 @@ class Place extends AbstractData {
             "confirmed" => $this->confirmed,
             "note" => $this->note
         );
-        
+
         foreach ($this->address as $i => $v)
             $return["address"][$i] = $v->toArray($shorten);
 
@@ -463,17 +477,17 @@ class Place extends AbstractData {
      * @param \snac\data\Place $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\Place))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getOriginal() != $other->getOriginal())
             return false;
         if ($this->getScore() != $other->getScore())
@@ -482,7 +496,7 @@ class Place extends AbstractData {
             return false;
         if ($this->getNote() != $other->getNote())
             return false;
-        
+
         if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
                  ($this->getType() == null && $other->getType() != null))
             return false;
@@ -492,10 +506,10 @@ class Place extends AbstractData {
         if (($this->getGeoTerm() != null && ! $this->getGeoTerm()->equals($other->getGeoTerm())) ||
                  ($this->getGeoTerm() == null && $other->getGeoTerm() != null))
             return false;
-        
+
         if (!$this->checkArrayEqual($this->getAddress(), $other->getAddress(), $strict))
             return false;
-        
+
         return true;
     }
 
@@ -507,7 +521,7 @@ class Place extends AbstractData {
      * will use that operation instead of INSERT.
      *
      * @param string $operation optional The operation to use (default is INSERT)
-     */ 
+     */
     public function cleanseSubElements($operation=null) {
         $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
         if ($operation !== null) {

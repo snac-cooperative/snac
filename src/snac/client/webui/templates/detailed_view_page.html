@@ -75,11 +75,18 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
     <form class="form-horizontal" id="constellation_form">
     <h1>{{data.nameEntries.0.original}}</h1>
+    {% if not data.preview %}
+    <ol class="breadcrumb">
+        <li><a href="{{control.snacURL}}/view/{{data.id}}">{{data.nameEntries.0.original}}</a></li>
+        <li>Detailed View</li>
+    </ol>
+    {% endif %}
 
-        <!-- Constellation Data -->
+    <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
         <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
         <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>
+        <input id="page_type" name="page_type" type="hidden" value="detailed_view"/>
 
 
         <div class="row">
@@ -421,6 +428,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                    <a class="list-group-item list-group-item-history"
                                       href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
                                        <i class="fa fa-fw fa-history" aria-hidden="true"></i> Constellation History</a>
+                                   <a class="list-group-item list-group-item-sources"
+                                      href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
+                                       <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source Summary</a>
                           </div>
                           <h5>Visualizations</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
@@ -585,7 +595,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         </div>
     </div>
 </div>
-    
+
 <div id="hidden_field_options" style="display:none">
     <div id="constellationRelation_template" style="display:none">
     {{ components.displayConstellationRelation(X, false, false, null, 'ZZ', data.entityType.term, data.nameEntries.0.original, true) }}

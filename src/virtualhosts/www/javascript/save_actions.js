@@ -441,6 +441,9 @@ $(document).ready(function() {
             return;
         }
 
+        // Copy the review message from the modal into the form body
+        $("#reviewmessage").val($("#sendReviewMessage").val());
+
         // If nothing has changed, alert the user and publish
         if (somethingHasBeenEdited == false) {
             $('#notification-message').html("<p>No new changes to save.  Sending Constellation for review... Please wait.</p>");
@@ -510,7 +513,6 @@ $(document).ready(function() {
                     }
                 }
             });
-
 
             // Send the data back by AJAX call
             $.post(snacUrl+"/save_review", $("#constellation_form").serialize(), function (data) {

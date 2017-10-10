@@ -108,6 +108,10 @@ function notSameAssert(icid1, icid2, id) {
 
 
         <h1>Constellation Similarity Assertions</h1>
+        <ol class="breadcrumb">
+            <li><a href="{{control.snacURL}}/view/{{data.constellation.id}}">{{data.constellation.nameEntries.0.original}}</a></li>
+            <li>Similarity Assertions</li>
+        </ol>
 
         <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.constellation.id }}"/>
@@ -127,7 +131,8 @@ function notSameAssert(icid1, icid2, id) {
             </h2>
 
             {% if data.constellation.biogHists.0.text %}
-                <p>{{ data.constellation.biogHists.0.text| striptags | slice(0,1000) }}...</p>
+                {% from 'widgets.html' import displayBiographicalExcerpt %}
+                {{ displayBiographicalExcerpt(data.constellation) }}
             {% else %}
                 <p class="missing">No biographical history available for this identity.</p>
             {% endif %}

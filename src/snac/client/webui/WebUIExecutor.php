@@ -264,6 +264,7 @@ class WebUIExecutor {
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param string|boolean $summary The type of constellation summary to request or false if requesting all
      * @return string[] The response from the server. It is a json_decode'ed response from curl.
      */
     protected function getConstellation(&$input, &$display, $summary=false) {
@@ -480,6 +481,43 @@ class WebUIExecutor {
 
 
     /**
+     * Display Sources Page
+     *
+     * Loads the sources page for a given constellation input into the display.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySourcesPage(&$input, &$display) {
+        //$serverResponse = $this->getConstellation($input, $display, false);
+        $serverResponse = $this->getConstellation($input, $display, false);
+
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("source_page");
+
+            $constellation = new \snac\data\Constellation($serverResponse["constellation"]);
+
+            $sources = $constellation->collateAllSCMCitationsBySource();
+            uasort($sources, function($a, $b) {
+                if ($a->getID() == null)
+                    return 1;
+                if ($b->getID() == null)
+                    return -1;
+                return $a->getDisplayName() <=> $b->getDisplayName();
+            });
+            $constellation->setAllSources($sources);
+
+            $this->logger->addDebug("Setting constellation data into the page template");
+            $display->setData(array_merge(
+                $constellation->toArray()
+            ));
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+
+    /**
      * Display Detailed View Page
      *
      * Loads the detailed view page for a given constellation input into the display.
@@ -490,8 +528,8 @@ class WebUIExecutor {
     public function displayDetailedViewPage(&$input, &$display) {
         $serverResponse = array();
 
-        if (isset($input["part"]) && ($input["part"] == "constellationRelations" ||
-            $input["part"] == "resourceRelations"))
+        if ((isset($input["part"]) && ($input["part"] == "constellationRelations" ||
+            $input["part"] == "resourceRelations")) || isset($input["preview"]))
             $serverResponse = $this->getConstellation($input, $display, false);
         else
             $serverResponse = $this->getConstellation($input, $display, "summary_meta");
@@ -503,6 +541,8 @@ class WebUIExecutor {
 
             if (isset($input["part"]))
                 $display->setTemplate("detailed_view_tabs/".$input["part"]);
+            else if (isset($input["preview"]))
+                $display->setTemplate("detailed_preview_page");
             else
                 $display->setTemplate("detailed_view_page");
 
@@ -655,7 +695,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
-        
+
         $query = array(
             "command" => "constellation_list_assertions",
             "constellationid" => $input["constellationid"]
@@ -663,7 +703,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse2 = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
-        
+
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("maybesame_list_page");
             $displayData = array(
@@ -1048,7 +1088,7 @@ class WebUIExecutor {
         $constellation = $mapper->serializeToConstellation($input);
 
         if ($constellation != null) {
-            $display->setTemplate("detailed_view_page");
+            $display->setTemplate("detailed_preview_page");
             if (isset($input["view"]) && $input["view"] == "hrt") {
                 $display->setTemplate("view_page");
             }
@@ -2285,8 +2325,14 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        if (isset($input['savemessage'])) {
-            $request["message"] = $input["savemessage"];
+
+        if (isset($input['savemessage']) || isset($input["reviewmessage"])) {
+            $message = "";
+            if (isset($input["reviewmessage"]))
+                $message .= $input["reviewmessage"] . "\n\n";
+            if (isset($input["savemessage"]))
+                $message .= $input["savemessage"];
+            $request["message"] = $message;
         }
         $serverResponse = $this->connect->query($request);
 
@@ -2685,8 +2731,13 @@ class WebUIExecutor {
         }
 
         // Add a message if we have it
-        if (isset($input['savemessage'])) {
-            $request["message"] = $input["savemessage"];
+        if (isset($input['savemessage']) || isset($input["reviewmessage"])) {
+            $message = "";
+            if (isset($input["reviewmessage"]))
+                $message .= $input["reviewmessage"] . "\n\n";
+            if (isset($input["savemessage"]))
+                $message .= $input["savemessage"];
+            $request["message"] = $message;
         }
 
         // Send the query to the server
