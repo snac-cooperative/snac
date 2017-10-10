@@ -17,6 +17,17 @@ var somethingHasBeenEdited = false;
 // Global Undo Set
 var undoSet = new Array();
 
+var defaults = {
+    language: {
+        id: 130,
+        term: "eng"
+    },
+    script: {
+        id: 586,
+        term: "Latn"
+    }
+};
+
 /**
  * Display Error message
  *
@@ -1696,6 +1707,27 @@ function updatePlaceHeading(shortName, i, newValue) {
 
 
 }
+
+function magicDefaultFill(selectID, vocabType) {
+   if (typeof(defaults[vocabType]) !== undefined) { 
+       
+       var data = {
+           id: defaults[vocabType].id,
+           text: defaults[vocabType].term
+       };
+
+       // If the selected item exists, then select it. Else, add a new option
+       // and select it.
+       if ($('#'+selectID).find("option[value='" + data.id + "']").length) {
+               $('#'+selectID).val(data.id).trigger('change');
+       } else {
+           var newOption = new Option(data.text, data.id, false, true);
+           $('#'+selectID).append(newOption).trigger('change');
+       }
+   }
+
+}
+
 
 /**
  * Things to do when the page finishes loading

@@ -156,24 +156,48 @@
                     <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.language.display }}
                     </label>
-                    <div class="col-xs-8" id="select_nameEntry_languagelanguage_{{i}}">
-                        <input id="nameEntry_languagelanguage_id_{{i}}" name="nameEntry_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.id }}"/>
-                        <input id="nameEntry_languagelanguage_term_{{i}}" name="nameEntry_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.term }}"/>
-                        <input id="nameEntry_languagelanguage_vocabtype_{{i}}" name="nameEntry_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                        <input id="nameEntry_languagelanguage_minlength_{{i}}" name="nameEntry_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                        <p class="form-control-static">{{ nameEntry.language.language.term }}</p>
+                    <div class="col-xs-8">
+                        <div class="input-group select2-bootstrap-append">
+                            <div id="select_nameEntry_languagelanguage_{{i}}">
+                                <input id="nameEntry_languagelanguage_id_{{i}}" name="nameEntry_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.id }}"/>
+                                <input id="nameEntry_languagelanguage_term_{{i}}" name="nameEntry_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.term }}"/>
+                                <input id="nameEntry_languagelanguage_vocabtype_{{i}}" name="nameEntry_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                <input id="nameEntry_languagelanguage_minlength_{{i}}" name="nameEntry_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                <p class="form-control-static">{{ nameEntry.language.language.term }}</p>
+                            </div>
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary snac-hidden"
+                                    id="nameEntry_languagelanguage_magic_{{i}}" disabled
+                                    onClick="magicDefaultFill('nameEntry_languagelanguage_id_{{i}}', 'language'); return false;"
+                                    title="Apply user's default value">
+                                    <i class="fa fa-magic" aria-hidden="true"></i>
+                                </button>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.script.display }}
                     </label>
-                    <div class="col-xs-8" id="select_nameEntry_languagescript_{{i}}">
-                        <input id="nameEntry_languagescript_id_{{i}}" name="nameEntry_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.id }}"/>
-                        <input id="nameEntry_languagescript_term_{{i}}" name="nameEntry_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.term }}"/>
-                        <input id="nameEntry_languagescript_vocabtype_{{i}}" name="nameEntry_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                        <input id="nameEntry_languagescript_minlength_{{i}}" name="nameEntry_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                        <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
+                    <div class="col-xs-8">
+                        <div class="input-group select2-bootstrap-append">
+                            <div id="select_nameEntry_languagescript_{{i}}">
+                                <input id="nameEntry_languagescript_id_{{i}}" name="nameEntry_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.id }}"/>
+                                <input id="nameEntry_languagescript_term_{{i}}" name="nameEntry_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.term }}"/>
+                                <input id="nameEntry_languagescript_vocabtype_{{i}}" name="nameEntry_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                <input id="nameEntry_languagescript_minlength_{{i}}" name="nameEntry_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
+                            </div>
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary snac-hidden"
+                                    id="nameEntry_languagescript_magic_{{i}}" disabled
+                                    onClick="magicDefaultFill('nameEntry_languagescript_id_{{i}}', 'script'); return false;"
+                                    title="Apply user's default value">
+                                    <i class="fa fa-magic" aria-hidden="true"></i>
+                                </button>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
