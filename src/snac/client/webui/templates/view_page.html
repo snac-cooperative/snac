@@ -3,6 +3,15 @@
 <head>
 <title>{{data.nameEntries.0.original}} - Social Networks and Archival Context</title>
 
+<meta property="og:title" content="{{data.nameEntries.0.original}} @ SNAC">
+<meta property="og:image" content="{{control.snacURL}}/images/snac-icon.png">
+{% if data.biogHists.0.text %}
+    <meta property="og:description" content="{{data.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}">
+{% else %}
+    <meta property="og:description" content="No biographical history available for this identity.">
+{% endif %}
+<meta property="og:description" content="">
+
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 
