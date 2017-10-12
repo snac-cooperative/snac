@@ -38,7 +38,11 @@
     },
     "ark" : {
         "display" : "Permalink",
-        "tooltip" : "The permanent identifier for this Constellation"
+        "tooltip" : "The permanent URI for this Constellation"
+    },
+    "arkid" : {
+        "display" : "Ark ID",
+        "tooltip" : "The shortened permanent URI identifier for this Constellation"
     },
     "constellationid" : {
         "display" : "SNAC ID",

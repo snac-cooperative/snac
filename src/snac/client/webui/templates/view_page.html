@@ -381,6 +381,8 @@
                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
                           <dt><strong>Permalink:</strong></dt>
                           <dd>{{data.ark}}</dd>
+                          <dt><strong>Ark ID:</strong></dt>
+                          <dd>{{data.ark|replace({'http://n2t.net/ark:/99166/': ''})}}</dd>
                           <dt><strong>SNAC ID:</strong></dt>
                           <dd>{{data.id}}</dd>
                       </div>
