@@ -32,6 +32,16 @@
    .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw
    { float: left;
    margin-right: 0.33em; }
+
+    .date {
+        font-weight: bold;
+    }
+
+    ul.chronlist {
+        list-style-type: none;
+        margin-left: 0;
+        padding-left: 0;
+    }
 </style>
 
 <!-- Latest compiled and minified CSS -->
@@ -240,16 +250,52 @@
                   </div>
                   {% if data.new.biogHists.0.text %}
                       <div class="biogHist updated">
-                      {{ data.new.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
+                          {{ data.new.biogHists.0.text|replace({
+                             '<citation ':"<p class='source' ", 
+                             '</citation>':"</p>", 
+                             'chronList':"ul class='chronlist'", 
+                             'chronItem':"li", 
+                             '<date':"<span class='date'", 
+                             '</date>':"</span>: ", 
+                             '</fromDate>':"</fromDate> -", 
+                             '<dateRange': "<span class='date'", 
+                             '</dateRange>':"</span>: ",
+                             '<daterange':"<span class='date'", 
+                             '</daterange>':"</span>: "
+                          })|raw }}
                       </div>
                   {% elseif data.old.biogHists.0.text %}
                       <div class="biogHist older">
-                      {{ data.old.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
+                      {{ data.old.biogHists.0.text|replace({
+                             '<citation ':"<p class='source' ", 
+                             '</citation>':"</p>", 
+                             'chronList':"ul class='chronlist'", 
+                             'chronItem':"li", 
+                             '<date':"<span class='date'", 
+                             '</date>':"</span>: ", 
+                             '</fromDate>':"</fromDate> -", 
+                             '<dateRange': "<span class='date'", 
+                             '</dateRange>':"</span>: ",
+                             '<daterange':"<span class='date'", 
+                             '</daterange>':"</span>: "
+                          })|raw }}
                       </div>
                   {% else %}
                       <div class="biogHist">
                       {% if data.biogHists.0.text %}
-                        {{ data.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
+                        {{ data.biogHists.0.text|replace({
+                             '<citation ':"<p class='source' ", 
+                             '</citation>':"</p>", 
+                             'chronList':"ul class='chronlist'", 
+                             'chronItem':"li", 
+                             '<date':"<span class='date'", 
+                             '</date>':"</span>: ", 
+                             '</fromDate>':"</fromDate> -", 
+                             '<dateRange': "<span class='date'", 
+                             '</dateRange>':"</span>: ",
+                             '<daterange':"<span class='date'", 
+                             '</daterange>':"</span>: "
+                          })|raw }}
                       {% else %}
                         <div class="alert alert-info" style="clear: both;">not available for this record</div>
                       {% endif %}
