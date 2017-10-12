@@ -581,24 +581,48 @@
                         <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.language.display }}
                         </label>
-                        <div class="col-xs-8" id="select_source_languagelanguage_{{i}}">
-                            <input id="source_languagelanguage_id_{{i}}" name="source_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.id }}"/>
-                            <input id="source_languagelanguage_term_{{i}}" name="source_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.term }}"/>
-                            <input id="source_languagelanguage_vocabtype_{{i}}" name="source_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                            <input id="source_languagelanguage_minlength_{{i}}" name="source_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ source.language.language.term }}</p>
+                        <div class="col-xs-8">
+                            <div class="input-group select2-bootstrap-append">
+                                <div id="select_source_languagelanguage_{{i}}">
+                                    <input id="source_languagelanguage_id_{{i}}" name="source_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.id }}"/>
+                                    <input id="source_languagelanguage_term_{{i}}" name="source_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.term }}"/>
+                                    <input id="source_languagelanguage_vocabtype_{{i}}" name="source_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                    <input id="source_languagelanguage_minlength_{{i}}" name="source_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                    <p class="form-control-static">{{ source.language.language.term }}</p>
+                                </div>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary snac-hidden"
+                                        id="source_languagelanguage_magic_{{i}}" disabled
+                                        onClick="magicDefaultFill('source_languagelanguage_id_{{i}}', 'language'); return false;"
+                                        title="Apply user's default value">
+                                        <i class="fa fa-magic" aria-hidden="true"></i>
+                                    </button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.script.display }}
                         </label>
-                        <div class="col-xs-8" id="select_source_languagescript_{{i}}">
-                            <input id="source_languagescript_id_{{i}}" name="source_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.id }}"/>
-                            <input id="source_languagescript_term_{{i}}" name="source_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.term }}"/>
-                            <input id="source_languagescript_vocabtype_{{i}}" name="source_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                            <input id="source_languagescript_minlength_{{i}}" name="source_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ source.language.script.term }}</p>
+                        <div class="col-xs-8">
+                            <div class="input-group select2-bootstrap-append">
+                                <div id="select_source_languagescript_{{i}}">
+                                    <input id="source_languagescript_id_{{i}}" name="source_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.id }}"/>
+                                    <input id="source_languagescript_term_{{i}}" name="source_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.term }}"/>
+                                    <input id="source_languagescript_vocabtype_{{i}}" name="source_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                    <input id="source_languagescript_minlength_{{i}}" name="source_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                    <p class="form-control-static">{{ source.language.script.term }}</p>
+                                </div>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary snac-hidden"
+                                        id="source_languagescript_magic_{{i}}" disabled
+                                        onClick="magicDefaultFill('source_languagescript_id_{{i}}', 'script'); return false;"
+                                        title="Apply user's default value">
+                                        <i class="fa fa-magic" aria-hidden="true"></i>
+                                    </button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -998,12 +1022,24 @@
                         <label class="control-label col-xs-4" data-content="{{X.languageUsed.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.languageUsed.display }}
                         </label>
-                        <div class="col-xs-8" id="select_language_language_{{i}}">
-                            <input id="language_language_id_{{i}}" name="language_language_id_{{i}}" type="hidden" class="form-control" value="{{ language.language.id }}"/>
-                            <input id="language_language_term_{{i}}" name="language_language_term_{{i}}" type="hidden" class="form-control" value="{{ language.language.term }}"/>
-                            <input id="language_language_vocabtype_{{i}}" name="language_language_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                            <input id="language_language_minlength_{{i}}" name="language_language_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ language.language.term }}</p>
+                        <div class="col-xs-8">
+                            <div class="input-group select2-bootstrap-append">
+                                <div id="select_language_language_{{i}}">
+                                    <input id="language_language_id_{{i}}" name="language_language_id_{{i}}" type="hidden" class="form-control" value="{{ language.language.id }}"/>
+                                    <input id="language_language_term_{{i}}" name="language_language_term_{{i}}" type="hidden" class="form-control" value="{{ language.language.term }}"/>
+                                    <input id="language_language_vocabtype_{{i}}" name="language_language_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                    <input id="language_language_minlength_{{i}}" name="language_language_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                    <p class="form-control-static">{{ language.language.term }}</p>
+                                </div>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary snac-hidden"
+                                        id="language_language_magic_{{i}}" disabled
+                                        onClick="magicDefaultFill('language_language_id_{{i}}', 'language'); return false;"
+                                        title="Apply user's default value">
+                                        <i class="fa fa-magic" aria-hidden="true"></i>
+                                    </button>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -1012,12 +1048,24 @@
                         <label class="control-label col-xs-4" data-content="{{X.scriptUsed.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scriptUsed.display }}
                         </label>
-                        <div class="col-xs-8" id="select_language_script_{{i}}">
-                            <input id="language_script_id_{{i}}" name="language_script_id_{{i}}" type="hidden" class="form-control" value="{{ language.script.id }}"/>
-                            <input id="language_script_term_{{i}}" name="language_script_term_{{i}}" type="hidden" class="form-control" value="{{ language.script.term }}"/>
-                            <input id="language_script_vocabtype_{{i}}" name="language_script_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                            <input id="language_script_minlength_{{i}}" name="language_script_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ language.script.term }}</p>
+                        <div class="col-xs-8">
+                            <div class="input-group select2-bootstrap-append">
+                                <div id="select_language_script_{{i}}">
+                                    <input id="language_script_id_{{i}}" name="language_script_id_{{i}}" type="hidden" class="form-control" value="{{ language.script.id }}"/>
+                                    <input id="language_script_term_{{i}}" name="language_script_term_{{i}}" type="hidden" class="form-control" value="{{ language.script.term }}"/>
+                                    <input id="language_script_vocabtype_{{i}}" name="language_script_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                    <input id="language_script_minlength_{{i}}" name="language_script_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                    <p class="form-control-static">{{ language.script.term }}</p>
+                                </div>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary snac-hidden"
+                                        id="language_script_magic_{{i}}" disabled
+                                        onClick="magicDefaultFill('language_script_id_{{i}}', 'script'); return false;"
+                                        title="Apply user's default value">
+                                        <i class="fa fa-magic" aria-hidden="true"></i>
+                                    </button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1509,12 +1557,24 @@
                 <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
                     {{ X.language.display }}
                 </label>
-                <div class="col-xs-8" id="select_biogHist_languagelanguage_{{i}}">
-                    <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.language.id }}"/>
-                    <input id="biogHist_languagelanguage_term_{{i}}" name="biogHist_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.language.term }}"/>
-                    <input id="biogHist_languagelanguage_vocabtype_{{i}}" name="biogHist_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                    <input id="biogHist_languagelanguage_minlength_{{i}}" name="biogHist_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                    <p class="form-control-static">{{ biogHist.language.language.term }}</p>
+                <div class="col-xs-8">
+                    <div class="input-group select2-bootstrap-append">
+                        <div id="select_biogHist_languagelanguage_{{i}}">
+                            <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.language.id }}"/>
+                            <input id="biogHist_languagelanguage_term_{{i}}" name="biogHist_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.language.term }}"/>
+                            <input id="biogHist_languagelanguage_vocabtype_{{i}}" name="biogHist_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                            <input id="biogHist_languagelanguage_minlength_{{i}}" name="biogHist_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                            <p class="form-control-static">{{ biogHist.language.language.term }}</p>
+                        </div>
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary snac-hidden"
+                                id="biogHist_languagelanguage_magic_{{i}}" disabled
+                                onClick="magicDefaultFill('biogHist_languagelanguage_id_{{i}}', 'language'); return false;"
+                                title="Apply user's default value">
+                                <i class="fa fa-magic" aria-hidden="true"></i>
+                            </button>
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -1523,12 +1583,24 @@
                 <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
                     {{ X.script.display }}
                 </label>
-                <div class="col-xs-8" id="select_biogHist_languagescript_{{i}}">
-                    <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.script.id }}"/>
-                    <input id="biogHist_languagescript_term_{{i}}" name="biogHist_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.script.term }}"/>
-                    <input id="biogHist_languagescript_vocabtype_{{i}}" name="biogHist_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                    <input id="biogHist_languagescript_minlength_{{i}}" name="biogHist_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                    <p class="form-control-static">{{ biogHist.language.script.term }}</p>
+                <div class="col-xs-8">
+                    <div class="input-group select2-bootstrap-append">
+                        <div id="select_biogHist_languagescript_{{i}}">
+                            <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.script.id }}"/>
+                            <input id="biogHist_languagescript_term_{{i}}" name="biogHist_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.script.term }}"/>
+                            <input id="biogHist_languagescript_vocabtype_{{i}}" name="biogHist_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                            <input id="biogHist_languagescript_minlength_{{i}}" name="biogHist_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                            <p class="form-control-static">{{ biogHist.language.script.term }}</p>
+                        </div>
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary snac-hidden"
+                                id="biogHist_languagescript_magic_{{i}}" disabled
+                                onClick="magicDefaultFill('biogHist_languagescript_id_{{i}}', 'script'); return false;"
+                                title="Apply user's default value">
+                                <i class="fa fa-magic" aria-hidden="true"></i>
+                            </button>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
