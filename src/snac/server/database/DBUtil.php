@@ -232,7 +232,9 @@ class DBUtil
                                 'currently editing' => 1,
                                 'ingest cpf' => 1,
                                 'maybe same' => 1,
-                                'tombstone' => 1);
+                                'tombstone' => 1,
+                                'merge split' => 1,
+                                'initialize' => 1);
 
     /**
      * Check status values
@@ -503,7 +505,7 @@ class DBUtil
     /**
      * Get Current ICIDs for Ark
      *
-     * Returns the list of ICIDs for the given Ark.  Most of the time, this will be 
+     * Returns the list of ICIDs for the given Ark.  Most of the time, this will be
      * only one ICID, however some will return multiple ICIDs.  Multiple IDs will only
      * be returned if there was a split between the Ark's creation and the current
      * published versions.
@@ -518,9 +520,9 @@ class DBUtil
     /**
      * Get Current ICIDs for OtherID
      *
-     * Returns the list of ICIDs for the given OtherRecordID.  Most of the time, this will be 
-     * only one ICID, however some will return multiple ICIDs.  
-     *      
+     * Returns the list of ICIDs for the given OtherRecordID.  Most of the time, this will be
+     * only one ICID, however some will return multiple ICIDs.
+     *
      * @param string $otherID The other id to look up
      * @return int[] An array of ICIDs deemed current for this other id
      */
@@ -531,7 +533,7 @@ class DBUtil
     /**
      * Get Current ICIDs for ICID
      *
-     * Returns the list of ICIDs for the given ICID.  Most of the time, this will be 
+     * Returns the list of ICIDs for the given ICID.  Most of the time, this will be
      * only one ICID, however some will return multiple ICIDs.  Multiple IDs will only
      * be returned if there was a split between the IC's original creation and the current
      * published versions.
@@ -985,7 +987,7 @@ class DBUtil
             $this->logger->addDebug("The user wants place information");
             $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
         }
-        
+
         // If the user wants metadata, then include sources and convention declarations
         if (($flags & (DBUtil::$READ_SCM_METADATA)) != 0) {
             $this->logger->addDebug("The user wants metadata information");
@@ -1026,7 +1028,7 @@ class DBUtil
             $this->logger->addDebug("  Subject");
             $this->populateSubject($vhInfo, $cObj);
         }
-        
+
 
         if (($flags & DBUtil::$READ_RELATIONS) != 0) {
             $this->logger->addDebug("The user wants relations");
@@ -3619,7 +3621,7 @@ class DBUtil
 
         $this->sql->addNotSameAssertion($constellation1->getID(), $constellation2->getID(),
                                         $user->getUserID(), $assertion);
-        
+
         return true;
     }
 
@@ -3641,8 +3643,8 @@ class DBUtil
         if ($constellation === null) {
             return false;
         }
-        
-        $assertData = $this->sql->listAssertions($constellation->getID()); 
+
+        $assertData = $this->sql->listAssertions($constellation->getID());
 
         if ($assertData == null) {
             return false;
@@ -3676,8 +3678,8 @@ class DBUtil
                 $fullAssert->addConstellation($this->readConstellation($assertion["ic_id2"], null, $flags));
             array_push($assertReturn, $fullAssert);
         }
-        
-        return $assertReturn;    
+
+        return $assertReturn;
     }
 
 
@@ -3700,12 +3702,12 @@ class DBUtil
             return false;
         }
         list($c1, $c2) = $assertion->getConstellations();
-        $assertData = $this->sql->readAssertion($assertion->getType(), $c1->getID(), $c2->getID()); 
+        $assertData = $this->sql->readAssertion($assertion->getType(), $c1->getID(), $c2->getID());
 
         if ($assertData == null) {
             return false;
         }
-        
+
         $fullAssert = new \snac\data\Assertion();
         $fullAssert->setID($assertData["id"]);
         $fullAssert->setType($assertData["type"]);
@@ -3719,7 +3721,7 @@ class DBUtil
         $fullAssert->setUser($user);
         $fullAssert->addConstellation($this->readConstellation($assertData["ic_id1"], null, DBUtil::$READ_MICRO_SUMMARY));
         $fullAssert->addConstellation($this->readConstellation($assertData["ic_id2"], null, DBUtil::$READ_MICRO_SUMMARY));
-        return $fullAssert;    
+        return $fullAssert;
     }
 
     /**
@@ -3758,7 +3760,7 @@ class DBUtil
 
         $this->sql->addMaybeSameLink($constellation1->getID(), $constellation2->getID(),
                                         $user->getUserID(), $assertion);
-        
+
         return true;
     }
 
@@ -4272,7 +4274,7 @@ class DBUtil
         $response = array();
 
         $icids = $this->sql->listMaybeSameIDsFor($icid);
-        
+
         if ($icids === false || $icids == null)
             return 0;
 
