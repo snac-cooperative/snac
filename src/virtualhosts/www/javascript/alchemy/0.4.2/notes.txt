@@ -1,0 +1,40 @@
+pan and zoom were not working so had to make this change:
+
+Alchemy.prototype.begin = function(userConf) {
+      var conf;
+      conf = this.setConf(userConf);
+	  Alchemy.prototype.instances.push(this);
+      switch (typeof this.conf.dataSource) {
+        case 'string':
+          d3.json(this.a.conf.dataSource, this.a.startGraph);
+          break;
+        case 'object':
+          this.a.startGraph(this.a.conf.dataSource);
+      }
+      this.plugins.init();
+      return this;
+    };
+
+
+
+
+(moved "Alchemy.prototype.instances.push(this);" above the switch)
+See:
+https://github.com/GraphAlchemist/Alchemy/issues/568
+
+
+
+Also, clustering has issues:
+
+
+    It looks like the problem is with the Clustering.prototype.edgeGradient function not being called anywhere (on 0.4.1). So the edgeStyle function enters the final else if and calls:
+
+
+    gid = "cluster-gradient-" + id;
+    return "url(#" + gid + ")";
+
+    Since edgeGradient was never called, the gid referenced wasn't set up in defs, and the function is returning a url to nothing.
+
+As @kylerob points out, this can be "fixed" in a local installation by changing the return value to a fixed color (suited my need). In the min js version, the line looks like this f="cluster-gradient-"+g,"<insert color here>").
+
+This doesn't ruin the layout of the graph -- doesn't need root=true. If needed, a default edge color specification can be incorporated with some work.

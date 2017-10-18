@@ -19,30 +19,30 @@ namespace snac\data;
  * Function data storage class
  *
  *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
- * 
+ *
  * @author Robbie Hott
- *        
+ *
  */
 class SNACFunction extends AbstractData {
 
     /**
      * Vocabulary Term
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * function/term
-     * 
+     *
      * @var \snac\data\Term Function controlled vocabulary term
      */
     private $term;
 
     /**
      * Type of Function
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * function/@localType
-     * 
+     *
      * @var \snac\data\Term Type of the function
      */
     private $type;
@@ -50,22 +50,22 @@ class SNACFunction extends AbstractData {
 
     /**
      * Descriptive Note
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * function/descriptiveNote
-     * 
+     *
      * @var string Descriptive note for the function
      */
     private $note;
 
     /**
      * Vocabulary Source
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * function/term/@vocabularySource
-     * 
+     *
      * @var string Vocabulary source for the function
      */
     private $vocabularySource = '';
@@ -74,10 +74,10 @@ class SNACFunction extends AbstractData {
      * Constructor
      *
      * Functions may only have one date object.
-     * 
+     *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
-     * 
+     *
      */
     public function __construct($data = null) {
         $this->setMaxDateCount(1);
@@ -86,10 +86,10 @@ class SNACFunction extends AbstractData {
 
 
     /**
-     * Get the Term for this function 
+     * Get the Term for this function
      *
      * * function/term
-     * 
+     *
      * @return \snac\data\Term Function controlled vocabulary term
      *
      */
@@ -97,12 +97,12 @@ class SNACFunction extends AbstractData {
     {
         return $this->term;
     }
-    
+
     /**
-     * Get the type of this function 
+     * Get the type of this function
      *
      * * function/@localType
-     * 
+     *
      * @return \snac\data\Term Type of the function
      *
      */
@@ -114,11 +114,11 @@ class SNACFunction extends AbstractData {
 
     /**
      * Get Descriptive Note
-     * 
-     * Get the human-readable descriptive note for this function 
+     *
+     * Get the human-readable descriptive note for this function
      *
      * * function/descriptiveNote
-     * 
+     *
      * @return string Descriptive note for the function
      *
      */
@@ -131,13 +131,25 @@ class SNACFunction extends AbstractData {
      * Get the vocabulary source
      *
      * * function/term/@vocabularySource
-     * 
+     *
      * @return string Vocabulary source for the function
      *
      */
     public function getVocabularySource()
     {
         return $this->vocabularySource;
+    }
+
+    /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        return "Function: " . $this->term->getTerm();
     }
 
     /**
@@ -154,7 +166,7 @@ class SNACFunction extends AbstractData {
             "vocabularySource" => $this->vocabularySource,
             "note" => $this->note
         );
-            
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -208,9 +220,9 @@ class SNACFunction extends AbstractData {
 
     /**
      * Set the term of this function
-     * 
+     *
      * This comes from the controlled vocabulary
-     * 
+     *
      * @param \snac\data\Term $term term
      */
     public function setTerm($term) {
@@ -220,7 +232,7 @@ class SNACFunction extends AbstractData {
 
     /**
      * Set the type of this function
-     * 
+     *
      * @param \snac\data\Term $type type
      */
     public function setType($type) {
@@ -255,29 +267,29 @@ class SNACFunction extends AbstractData {
      * @param \snac\data\SNACFunction $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\SNACFunction))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getVocabularySource() != $other->getVocabularySource())
             return false;
         if ($this->getNote() != $other->getNote())
             return false;
-        
+
         if (($this->getTerm() != null && ! $this->getTerm()->equals($other->getTerm())) ||
                  ($this->getTerm() == null && $other->getTerm() != null))
             return false;
         if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
                  ($this->getType() == null && $other->getType() != null))
             return false;
-        
+
         return true;
     }
 }

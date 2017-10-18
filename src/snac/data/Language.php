@@ -3,7 +3,7 @@
  * Language File
  *
  * Contains the data class for the languages
- * 
+ *
  * License:
  *
  *
@@ -18,14 +18,14 @@ namespace snac\data;
  * Language Class
  *
  *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
- * 
+ *
  * Stores the data related to an individual Constellation's language and script.
- * 
+ *
  * @author Robbie Hott
  *
  */
 class Language extends AbstractData {
-    
+
     /**
      * @var \snac\data\Term Language, a controlled vocabulary term object
      */
@@ -45,10 +45,10 @@ class Language extends AbstractData {
      * @var string Note attached to language. A simple string.
      */
     private $note = null;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param string[] $data optional Array of data to pre-fill this object
      */
     public function __construct($data = null) {
@@ -57,11 +57,11 @@ class Language extends AbstractData {
     }
 
     /**
-     * Get the language controlled vocab term 
+     * Get the language controlled vocab term
      *
      * @return \snac\data\Term Language controlled vocabulary term
-     * 
-     */ 
+     *
+     */
     public function getLanguage()
     {
         return $this->language;
@@ -71,8 +71,8 @@ class Language extends AbstractData {
      * Get the script controlled vocab term
      *
      * @return \snac\data\Term Script controlled vocabulary term
-     * 
-     */ 
+     *
+     */
     public function getScript()
     {
         return $this->script;
@@ -82,7 +82,7 @@ class Language extends AbstractData {
      * Get the vocabulary source for this language
      *
      * @return string Vocabulary source for the language
-     */ 
+     */
     public function getVocabularySource()
     {
         return $this->vocabularySource;
@@ -113,6 +113,18 @@ class Language extends AbstractData {
     }
 
     /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        return "Language: " . ($this->language ? $this->language->getTerm() . " " : "") . ($this->script ? "(".$this->script->getTerm().")" : "");
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -126,7 +138,7 @@ class Language extends AbstractData {
             "vocabularySource" => $this->vocabularySource,
             "note" => $this->note
         );
-            
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -176,34 +188,34 @@ class Language extends AbstractData {
 
         return true;
     }
-    
+
     /**
      * Set the language controlled vocabulary name
-     * 
+     *
      * @param \snac\data\Term $language The language term
      */
     public function setLanguage($language) {
         $this->language = $language;
     }
-    
+
     /**
      * Set the script controlled vocabulary name
-     * 
+     *
      * @param \snac\data\Term $script The script term
      */
     public function setScript($script) {
         $this->script = $script;
     }
-    
+
     /**
-     * Set the vocabulary source. 
+     * Set the vocabulary source.
      *
      * @param string $vocab Vocabulary source string
      */
     public function setVocabularySource($vocab) {
         $this->vocabularySource = $vocab;
     }
-    
+
     /**
      * Set the descriptive note for this language
      *
@@ -220,21 +232,21 @@ class Language extends AbstractData {
      * @param \snac\data\Language $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
         if ($other == null || ! ($other instanceof \snac\data\Language))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getVocabularySource() != $other->getVocabularySource())
             return false;
         if ($this->getNote() != $other->getNote())
             return false;
-                
+
         if ( ($this->getScript() != null && !$this->getScript()->equals($other->getScript())) ||
                 ($this->getScript() == null && $other->getScript() != null))
             return false;
@@ -242,8 +254,8 @@ class Language extends AbstractData {
         if ( ($this->getLanguage() != null && !$this->getLanguage()->equals($other->getLanguage())) ||
                 ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;
-        
+
         return true;
     }
-    
+
 }

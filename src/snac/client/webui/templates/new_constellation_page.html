@@ -23,6 +23,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 -->
 
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
 <!-- Tiny MCE text editor
 <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
 <script>
@@ -38,17 +41,19 @@
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
-<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Javascript -->
-<script src="javascript/save_actions.js{{control.noCache}}"></script>
-<script src="javascript/select_loaders.js{{control.noCache}}"></script>
-<script src="javascript/scripts.js{{control.noCache}}"></script>
-<script src="javascript/name_heading_punctuator.js{{control.noCache}}"></script>
-<script src="javascript/edit_scripts.js{{control.noCache}}"></script>
-<script src="javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/name_heading_punctuator.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/edit_scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -64,7 +69,7 @@ $(document).ready(function() {
 </script>
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 </head>
 <body role="document">
@@ -73,13 +78,13 @@ $(document).ready(function() {
 {% import 'date_entry.html' as dates %}
 
 
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
 <div class="container snac" role="main">
 
-    <form class="form-horizontal" id="constellation_form" action="?command=new_edit" method="post">
+    <form class="form-horizontal" id="constellation_form" action="{{control.snacURL}}/new_edit" method="post">
         <h1>New Constellation</h1>
 
         <!-- Constellation Data -->
@@ -135,7 +140,7 @@ $(document).ready(function() {
 
                                 {% set i = 0 %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, true, false, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, true, false, nameEntry, i, false) }}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
@@ -165,14 +170,9 @@ $(document).ready(function() {
                         </div>
                         <div class="panel-body">
                             <p>You may perform any of the following actions on this constellation.</p>
-                            <!--
                             <div class="list-group">
-                                <a href="#" class="list-group-item list-group-item-success" id="preview"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>
-                            </div>
-                            -->
-                            <div class="list-group">
-                                <a href="#" class="list-group-item list-group-item-info" id="continue_and_reconcile"><span class="glyphicon glyphicon-floppy-disk"></span> Continue <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Attempt to create a constellation with this information" data-toggle="popover" data-placement="top"></span></a>
-                                <a href="#" class="list-group-item list-group-item-danger" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Cancel and do not continue working on this constellation." data-toggle="popover" data-placement="top"></span></a>
+                                <a href="#" class="list-group-item list-group-item-info" id="continue_and_reconcile"><i class="fa fa-fw fa-floppy-o"></i> Continue <span class="pull-right fa fa-fw fa-question-circle" title="Help" data-content="Attempt to create a constellation with this information" data-toggle="popover" data-placement="top"></span></a>
+                                <a href="#" class="list-group-item list-group-item-danger" id="cancel"><i class="fa fa-fw fa-times-circle"></i> Cancel <span class="pull-right fa fa-fw fa-question-circle" title="Help" data-content="Cancel and do not continue working on this constellation." data-toggle="popover" data-placement="top"></span></a>
                             </div>
 
                             <textarea id="savemessage" name="savemessage" class='panel panel-default panel-body' style='width: 100%' placeholder="You may write an optional save log message here..."></textarea>
@@ -203,8 +203,8 @@ $(document).ready(function() {
                         <div class="panel-body">
                             <p>The following are debugging options.</p>
                             <div class="list-group">
-                                <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
-                                <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+                                <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><i class="fa fa-fw fa-eye"></i> View Constellation</a>
+                                <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><i class="fa fa-fw fa-align-left"></i> View Full Server Response</a>
                             </div>
                         </div>
                     </div>
@@ -255,6 +255,9 @@ $(document).ready(function() {
             <div id="component_template" style="display:none">
                 {{ components.displayComponent(X, true, true, null, 'ZZ', 'YY') }}
             </div>
+            <div id="rule_template" style="display:none">
+            {{ components.displayNameRule(X, true, true, null, 'ZZ', 'YY') }}
+            </div>
         </div>
 
         <div class="modal fade" id="reconcilePane" tabindex="-1" role="dialog" aria-labelledby="reconcilePane">
@@ -275,5 +278,6 @@ $(document).ready(function() {
             </div>
         </div>
     </div>
+    {{ footer(X, user, permissions, control) }}
     </body>
     </html>

@@ -12,6 +12,10 @@
             ga('send', 'pageview');
         </script>
     {% endif %}
+        
+    <script>
+        var snacUrl = "{{control.snacURL}}";
+    </script>
 
     {% if control.interfaceVersion == "development" %}
     <nav class="navbar navbar-inverse navbar-fixed-top navbar-development-version">
@@ -28,28 +32,32 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand active" href="?"><span class="snac-name-header">snac</span></a>
+            <a class="navbar-brand active" href="{{control.snacURL}}"><span class="snac-name-header">snac</span></a><!--<span class="snac-fullname-header"> | social networks and archival context</span>-->
         </div>
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-            <!-- {% if user.userName %} -->
-                <li><a href="?command=dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
-            <!-- {% endif %} -->
-                <li><a href="?command=search"><i class="fa fa-search" aria-hidden="true"></i> Search</a></li>
-            <!-- {% if user.userName %} -->
-                <li><a href="?command=browse"><i class="fa fa-book" aria-hidden="true"></i> Browse</a></li>
-            <!-- {% endif %} -->
+                <li><a href="{{control.snacURL}}/search"><i class="fa fa-search" aria-hidden="true"></i> Search</a></li>
+                <!-- {% if user.userName %} -->
+                <li><a href="{{control.snacURL}}/browse"><i class="fa fa-book" aria-hidden="true"></i> Browse</a></li>
+                <li><a href="{{control.snacURL}}/dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
+                <li class="navbar-hideable"><a href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messages</a></li>
+                <!-- {% endif %} -->
             </ul>
             <div class="navbar-right">
                 <ul class="nav navbar-nav">
+                    <li><a href="{{control.snacURL}}/static/about/about.html"><i class="fa fa-info-circle" aria-hidden="true"></i> About</a></li>
+                    <!-- {% if user.userName %} -->
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                        <span class="glyphicon glyphicon-question-sign"></span> Help <span class="caret"></span>
+                        <i class="fa fa-question-circle"></i> Help <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li class="disabled"><a href="#">Coming Soon</a></li>
+                        <li><a href="{{control.snacURL}}/api_help">Rest API Commands</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{{control.snacURL}}/contact">Contact Us</a></li>
                     </ul>
                     </li>
+                    <!-- {% endif %} -->
 
             <!-- {% if user.userName %} -->
                     <li class="dropdown">
@@ -57,19 +65,21 @@
                         <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.fullName }} <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="?command=dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
+                        <li><a href="{{control.snacURL}}/dashboard"><i class="fa fa-fw fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
+                        <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         {% if permissions.ViewAdminDashboard %}
-                        <li><a href="?command=administrator"><i class="fa fa-cogs" aria-hidden="true"></i> Administration</a></li>
-                        <li><a href="?command=vocab_administrator"><i class="fa fa-list-alt" aria-hidden="true"></i> Vocabulary</a></li>
+                        <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Administration</a></li>
+                        <li><a href="{{control.snacURL}}/vocab_administrator"><i class="fa fa-fw fa-list-alt" aria-hidden="true"></i> Vocabulary</a></li>
                         {% endif %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
-                        <li><a href="?command=profile"><i class="fa fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
-                        <li><a href="?command=logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                        <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
+                        <li><a href="{{control.snacURL}}/api_key"><i class="fa fa-fw fa-key" aria-hidden="true"></i> Rest API Key</a></li>
+                        <li><a href="{{control.snacURL}}/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
                     </ul>
                     </li>
             <!-- {% else %} -->
-                    <li><a href="?command=login"><span class="glyphicon glyphicon-user"></span> Login</a></li>
+                <li><a href="{{control.snacURL}}/login?r={{control.currentURL | url_encode}}"><i class="fa fa-sign-in"></i> Login</a></li>
             <!-- {% endif %}  -->
                 </ul>
             </div>
@@ -81,4 +91,54 @@
     {% elseif control.interfaceVersion == "demo" %}
     <p class="snac-system-notice">This is the <b>demo version</b>.  Edits made to these Constellations will not be permanent.</p>
     {% endif %}
+{% endmacro %}
+                
+{% macro footer(X, user, permissions, control) %}
+    {% if control.interfaceVersion == "development" %}
+    <div class="footer footer-development-version">
+    {% elseif control.interfaceVersion == "demo" %}
+    <div class="footer footer-demo-version">
+    {% else %}
+    <div class="footer footer-inverse">
+    {% endif %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 footer-content">
+                    <p class="text-center">
+                    <img src="{{control.snacURL}}/images/paper_dolls_art2.png"/><br/>
+                    Social Networks and Archival Context
+                    </p>
+                    <p class="text-center" style="margin-top: 5px;">
+                        <a href="https://twitter.com/snaccooperative" title="Visit us on Twitter">
+                            <i class="fa fa-2x fa-twitter-square" style="vertical-align: middle" aria-hidden="true"></i></a>
+                        <a href="{{control.snacURL}}/contact" title="Contact us"><span class="fa-stack fa-sm">
+                                  <i class="fa fa-square fa-stack-2x"></i>
+                                    <i class="fa fa-envelope fa-stack-1x" style="color: #000"></i>
+                            </span></a>
+                        <a href="{{control.snacURL}}/static/terms.html" title="Terms and Information"><span class="fa-stack fa-sm">
+                                  <i class="fa fa-square fa-stack-2x"></i>
+                                    <i class="fa fa-life-ring fa-stack-1x" style="color: #000"></i>
+                            </span></a>
+                    </p>
+                </div>
+                <div class="col-md-4 footer-content">
+                    <h3 class="">Sponsors</h3>
+                    <p class="">
+                    <a href="http://www.mellon.org" target="_blank">The Andrew W. Mellon Foundation</a><br>
+                    <a href="http://www.imls.gov" target="_blank">Institute of Museum and Library Services</a><br>
+                    <a href="http://www.neh.gov" target="_blank">National Endowment for the Humanities</a>
+                    </p>
+                </div>
+                <div class="col-md-4 footer-content">
+                    <h3 class="">Collaborators</h3>
+                    <p class="">
+                    <a href="http://library.virginia.edu" target="_blank">UVa Library</a><br>
+                    <a href="http://www.iath.virginia.edu" target="_blank">UVa IATH</a><br>
+                    <a href="http://www.ischool.berkeley.edu" target="_blank">UC Berkeley School of Information</a><br>
+                    <a href="http://www.cdlib.org" target="_blank">California Digital Library</a><br>
+                    <a href="http://www.archives.gov" target="_blank">National Archives and Records Administration</a></p> 
+                </div>
+            </div>
+        </div>
+    </div>
 {% endmacro %}

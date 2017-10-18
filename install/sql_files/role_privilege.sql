@@ -17,6 +17,7 @@ insert into privilege (label, description) values ('Manage Institutions', 'Manag
 insert into privilege (label, description) values ('View Admin Dashboard', 'Use the Administration dashboard to manage users and groups');
 insert into privilege (label, description) values ('View Reports', 'View reports on SNAC');
 insert into privilege (label, description) values ('Generate Reports', 'Generate reports on SNAC');
+insert into privilege (label, description) values ('Merge', 'Merge Constellations');
 
 insert into role (label, description) values ('Contributor', 'Create simplified constellations, suggest edits');
 insert into role (label, description) values ('Editor, Training', 'Editor in training');
@@ -45,7 +46,7 @@ select (select id from role where label='Reviewer'), id from privilege where
 
 insert into privilege_role_link (rid, pid)
 select (select id from role where label='Administrator'), id from privilege where 
-    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users', 'View Admin Dashboard', 'View Reports', 'Generate Reports');
+    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users', 'View Admin Dashboard', 'View Reports', 'Generate Reports', 'Merge');
 
 insert into privilege_role_link 
     (pid, rid) 

@@ -112,6 +112,10 @@ class EACCPFSerializerTest extends \PHPUnit\Framework\TestCase {
                                                  'ingest cpf');
         $this->dbu->writeConstellationStatus($this->user,$retObj->getID(), "published");
 
+        // If this is published, then it should point to itself in the lookup table.
+        $selfDirect = array($retObj);
+        $this->dbu->updateConstellationLookup($retObj, $selfDirect);
+
         $fromDB = $this->dbu->readPublishedConstellationByID($retObj->getID(), \snac\server\database\DBUtil::$FULL_CONSTELLATION
                                                                 | \snac\server\database\DBUtil::$READ_MAINTENANCE_INFORMATION);
 

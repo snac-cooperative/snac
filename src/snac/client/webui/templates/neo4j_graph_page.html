@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{data.nameEntries.0.original}} - Connection Graph - Social Networks and Archival Context</title>
+
+<!-- Alchemy Javascript and Styles -->
+<link rel="stylesheet" type="text/css" href="{{control.snacURL}}/javascript/alchemy/0.4.2/styles/vendor.css">
+<link rel="stylesheet" type="text/css" href="{{control.snacURL}}/javascript/alchemy/0.4.2/alchemy.css">
+<script type="text/javascript" src="{{control.snacURL}}/javascript/alchemy/0.4.2/scripts/vendor.js"></script>
+<script type="text/javascript" src="{{control.snacURL}}/javascript/alchemy/0.4.2/alchemy.js"></script>
+
+<style type="text/css">
+div#alchemy_box { height: 800px; }
+div#graph_controls { margin: 18px 0px 0px 24px; }
+</style>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+
+
+</head>
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+    
+    <div class="container snac" role="main">
+    
+    <h1>{{data.nameEntries.0.original}}</h1>
+    <ol class="breadcrumb">
+        <li><a href="{{control.snacURL}}/view/{{data.id}}">{{data.nameEntries.0.original}}</a></li>
+        <li>Connection Graph</li>
+    </ol>
+
+    <div id="alchemy_box">
+    <div id="alchemy" class="alchemy"></div>
+    </div>
+    
+    <form id="graph_form" name="graph_form" action="?" method="GET">
+    <div id="graph_controls">
+    <input type="hidden" id="constellationid" name="constellationid" value="{{ data.id }}">
+    <input type="checkbox" id="captions" name="captions" onchange="toggle_captions(this)"> <label for="captions">Captions</label>
+    &nbsp; &nbsp; 
+    <input type="radio" id="degree_1" name="degree" value="1"> <label for="degree_1">1</label>
+    <input type="radio" checked id="degree_2" name="degree" value="2"> <label for="degree_2">2</label>
+    <input type="radio" id="degree_3" name="degree" value="3"> <label for="degree_3">3 Degrees</label>
+    &nbsp; &nbsp; <input type="range" id="delta" name="delta" min="0" max="20" step="1" value="10" style="width:300px;display:inline-block;vertical-align:middle;"> <label for="delta">Delta</label>
+    &nbsp; &nbsp; <input type="button" id="graph_button" name="graph_button" value="Re-Graph" onClick="load_data()">
+    &nbsp; &nbsp; <input type="checkbox" checked id="force" name="force" onchange="toggle_force(this)"> <label for="force">Force</label>
+    </div>
+    </form>
+        
+	<script type="text/javascript">
+    <!--
+	
+    function lookup(dbid)
+    {
+        var the_url = '{{control.snacURL}}/view/' + dbid;
+        window.open(the_url, '_blank');
+    }
+		
+	function toggle_force(e)
+    {
+        if(!e.checked) { alchemy.force.stop(); alchemy.conf.forceLocked = true; }
+        if(e.checked) { alchemy.conf.forceLocked = false; alchemy.force.start(); }
+    }
+	
+	function toggle_captions(e)
+    {
+        if(e.checked) { d3.selectAll(".alchemy text").style("display", "block"); alchemy.conf.nodeCaptionsOnByDefault = true; }
+        if(!e.checked) { d3.selectAll(".alchemy text").style("display", "none"); alchemy.conf.nodeCaptionsOnByDefault = false; }
+    }
+	
+	function load_data() {
+	
+		$("#graph_button").prop("disabled", "true").val("Loading...");
+		
+		$.get("{{control.snacURL}}/visualize/connection_data", $("#graph_form").serialize(), function (data) {
+			$("#alchemy").html("");
+			alchemy = null;
+			alchemy = new Alchemy();
+
+            if (typeof data == 'string') {
+                $("#alchemy").html(data);
+            } else {
+          
+                var config = {
+                dataSource: data,
+                forceLocked: false,
+                directedEdges: true,
+                nodeCaptionsOnByDefault: $("#captions").prop("checked") ? true : false,
+                nodeTypes: { "dgr": ["x0", "x1", "x2", "x3", "x4"] },
+                nodeStyle: {
+                    "all": { color: "#FFFFFF", borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" } },
+                    "x0": { color: "#00CCCC", radius: 19, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#00CCCC" }, highlighted: { color: "#00FFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+                    "x1": { color: "#66CC66", radius: 11, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#66CC66" }, highlighted: { color: "#66FF66", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+                    "x2": { color: "#CCCC00", radius: 6, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CCCC00" }, highlighted: { color: "#FFFF00", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+                    "x3": { color: "#CC66CC", radius: 3, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CC00CC" }, highlighted: { color: "#FF66FF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+                    "x4": { color: "#CCCCCC", radius: 1, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  }
+                },
+                edgeStyle: { "all": { width: 2 } },
+                nodeClick: function(n) { lookup(n.getProperties().dbid); },
+                initialScale: 1.0, 
+                initialTranslate: [0,0]
+                };
+                
+                alchemy.begin(config);
+                
+                $("#force").prop("checked", "true");
+                
+                $("#graph_button").prop("disabled", false).val("Re-Graph");
+            }
+		});
+		
+		return false;
+	}
+	
+    $(document).ready(function() {
+		load_data();
+	});
+	
+    //-->
+    </script>
+
+</div>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>

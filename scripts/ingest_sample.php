@@ -68,10 +68,12 @@ if (is_dir($argv[1])) {
 
         $constellation = $e->parseFile($filename);
 
-        list($junk, $parts) = explode("ark:/", $constellation->getArk());
-        $ark = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
+        $rels = count($constellation->getRelations()) + count($constellation->getResourceRelations());
 
-        $rels = trim(shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
+        //list($junk, $parts) = explode("ark:/", $constellation->getArk());
+        //$ark = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
+
+        //$rels = trim(shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
 
         if ($rels < 350) {
             // Write the constellations to the DB
@@ -81,24 +83,36 @@ if (is_dir($argv[1])) {
             $dbu->writeConstellationStatus($user, $written->getID(), "published");
 
             indexESearch($written);
+            
+            // If this is published, then it should point to itself in the lookup table.
+            $selfDirect = array($written);
+            $dbu->updateConstellationLookup($written, $selfDirect);
         }
     }
 
     // Washington
-    echo "Parsing: George Washington\n";
+    echo "Parsing: George Washington : ";
     $constellation = $e->parseFile($argv[1]."/99166-w6028ps4.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     // Update them to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
+    echo $written->getID()."\n";
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
 
     // Jefferson
-    echo "Parsing: Thomas Jefferson\n";
+    echo "Parsing: Thomas Jefferson : ";
     $constellation = $e->parseFile($argv[1]."/99166-w6w9576g.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     // Update them to be published
+    echo $written->getID()."\n";
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
 
     // Oppenheimer
     echo "Parsing: Robert Oppenheimer\n";
@@ -107,6 +121,9 @@ if (is_dir($argv[1])) {
     // Update them to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
 
     // Joseph Henry (large record)
     echo "Parsing: Joseph Henry\n";
@@ -115,6 +132,9 @@ if (is_dir($argv[1])) {
     // Update them to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
 
     //Now, write samples to edit
     echo "Parsing: Sparse other sample files .";
@@ -122,32 +142,50 @@ if (is_dir($argv[1])) {
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
     echo ".";
     $constellation = $e->parseFile($argv[1]."/99166-w69b3nm4.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
     echo ".";
     $constellation = $e->parseFile($argv[1]."/99166-w6ck24z2.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
     echo ".";
     $constellation = $e->parseFile($argv[1]."/99166-w61z46b8.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
     echo ".\n";
     $constellation = $e->parseFile($argv[1]."/99166-w66182x0.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
 
     echo "Parsing: SNAC Sample test file (from db test)\n";
     $constellation = $e->parseFile("../test/snac/server/database/test_record.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
     $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
     echo "Parsing: Parsons, Edward Alexander, 1878-1962 (needed for cpfRelation sameAs test_record.xml)\n";
@@ -155,6 +193,9 @@ if (is_dir($argv[1])) {
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    // If this is published, then it should point to itself in the lookup table.
+    $selfDirect = array($written);
+    $dbu->updateConstellationLookup($written, $selfDirect);
     $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
     echo ".\n";
 

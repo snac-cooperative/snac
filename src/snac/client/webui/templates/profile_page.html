@@ -23,16 +23,18 @@ $('.selectpicker').selectpicker();
 </script>
 
 <!-- SNAC Scripts -->
-<script src="javascript/profile.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/profile.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -46,8 +48,8 @@ $('.selectpicker').selectpicker();
             </div>
             <h4>Options</h4>
             <div class="list-group">
-                <a href="#" id="edit" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span> {{ X.edit.display }}</a>
-                <a href="#" id="update" class="list-group-item list-group-item-success" onClick="event.preventDefault();" style="display:none;"><span class="glyphicon glyphicon-pencil"></span> {{ X.save.display }}</a>
+                <a href="#" id="edit" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><i class="fa fa-fw fa-pencil"></i> {{ X.edit.display }}</a>
+                <a href="#" id="update" class="list-group-item list-group-item-success" onClick="event.preventDefault();" style="display:none;"><i class="fa fa-fw fa-pencil"></i> {{ X.save.display }}</a>
             </div>
         </div>
 
@@ -85,7 +87,7 @@ $('.selectpicker').selectpicker();
                             {% if data.user.affiliation.ark %}
                                 <br>
                                 <span><em>{{data.user.affiliation.ark}} </em>
-                                <a class="label label-info" target="_blank" href="?command=view&constellationid={{data.user.affiliation.id}}">View</a>
+                                <a class="label label-info" target="_blank" href="{{control.snacURL}}/view/{{data.user.affiliation.id}}">View</a>
                                 </span>
                             {% endif %}
                         </p>
@@ -175,5 +177,6 @@ $('.selectpicker').selectpicker();
     </div>
 </form>
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

@@ -24,19 +24,19 @@ $('.selectpicker').selectpicker();
 </script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/admin.js{{control.noCache}}"></script>
-<script src="javascript/save_actions.js{{control.noCache}}"></script>
-<script src="javascript/select_loaders.js{{control.noCache}}"></script>
-<script src="javascript/scripts.js{{control.noCache}}"></script>
-<script src="javascript/dashboard.js{{control.noCache}}"></script>
-<script src="javascript/search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/admin.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/search.js{{control.noCache}}"></script>
 
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation %}
+{% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -65,7 +65,7 @@ $('.selectpicker').selectpicker();
 
             <div class="panel panel-success">
                 <div class="panel-heading">
-                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
+                    <h3 class="panel-title"><i class="fa fa-fw fa-question-circle"></i> Help</h3>
                 </div>
                 <div class="panel-body">
                     <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
@@ -86,11 +86,11 @@ $('.selectpicker').selectpicker();
                     <p>Use the following links to administer controlled vocabularies.</p>
                     <div class="list-group">
                         {% if permissions.AddUsers %}
-                        <a href="?command=vocab_administrator&subcommand=add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Vocabulary Term</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Vocabulary Term</a>
                         {% endif %}
 
                         {% if permissions.ModifyUsers or permissions.AssignRoles %}
-                        <a href="?command=vocab_administrator&subcommand=search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Vocabularies</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Vocabularies</a>
                         {% endif %}
                     </div>
                 </div>
@@ -104,8 +104,8 @@ $('.selectpicker').selectpicker();
                 <div class="panel-body">
                     <p>Use the following links to administer geographic vocabulary terms.</p>
                     <div class="list-group">
-                        <a href="?command=vocab_administrator&subcommand=add_geoterm" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Geographic Term</a>
-                        <a href="?command=vocab_administrator&subcommand=geosearch" class="list-group-item"><i class="fa fa-globe fa-fw" aria-hidden="true"></i> Search Geographic Terms</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/add_geoterm" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Geographic Term</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/geosearch" class="list-group-item"><i class="fa fa-globe fa-fw" aria-hidden="true"></i> Search Geographic Terms</a>
                     </div>
                 </div>
             </div>
@@ -121,8 +121,8 @@ $('.selectpicker').selectpicker();
                 <div class="panel-body">
                     <p>Use the following links to administer the resource cache.</p>
                     <div class="list-group">
-                        <a href="?command=vocab_administrator&subcommand=add_resource" class="list-group-item disabled"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Resource</a>
-                        <a href="?command=vocab_administrator&subcommand=resources" class="list-group-item disabled"><i class="fa fa-book fa-fw" aria-hidden="true"></i> Manage Resources</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/add_resource" class="list-group-item disabled"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Resource</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/resources" class="list-group-item disabled"><i class="fa fa-book fa-fw" aria-hidden="true"></i> Manage Resources</a>
                     </div>
                 </div>
             </div>
@@ -158,5 +158,6 @@ $('.selectpicker').selectpicker();
 		</div>
 	</div>
 </div>
+{{ footer(X, user, permissions, control) }}
 </body>
 </html>

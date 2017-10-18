@@ -15,6 +15,13 @@ jQuery.fn.exists = function(){return this.length>0;}
 var geoMapView = null;
 var impliedRelationsLoaded = false;
 
+var holdingsMapView = null;
+var bounds = new L.LatLngBounds();
+
+
+// Reservations for Edit
+var reservedForEdit = false;
+
 /**
  * Open the GeoPlace display
  *
@@ -25,7 +32,7 @@ function openGeoPlaceViewer(id) {
     $("#geoPlaceInfo").html("<p class='text-center'>Loading...</p>");
     $("#geoPlaceInfoPane").modal();
 
-    $.get("?command=vocabulary&subcommand=read&type=geoPlace&id="+id, null, function (data) {
+    $.get(snacUrl+"/vocabulary/read?type=geoPlace&id="+id, null, function (data) {
         if (data.result && data.result == "success" && data.term) {
             // Remove the old map
             if (geoMapView != null) {
@@ -61,8 +68,63 @@ function openGeoPlaceViewer(id) {
     return false;
 }
 
+
 $(document).ready(function() {
-// Check that we're on the view page to add these:
+
+    if ($('#page_type').exists()) {
+        if ($('#page_type').val() == 'view_page') {
+            // load the relations, then call the normal startup
+            var url = snacUrl+"/view/"+$("#constellationid").val()+"/"+$("#version").val()+"?part=relations";
+            $.get(url, null, function (data) {
+                $("#relations_pane").html(data);
+                startupScript();
+            });
+        } else {
+            // call the normal startup scripts
+            startupScript();
+        }
+    } else {
+        // call the normal startup scripts
+        startupScript();
+    }
+});
+
+function displayHoldingsMap() {
+    if (holdingsMapView != null) {
+        return;
+    }
+    // Add a slight delay to the map viewing so that the modal window has time to load
+    setTimeout(function() {
+        holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
+        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(holdingsMapView);
+        var bounds = new L.LatLngBounds();
+
+        $(".holdings_location_name").each(function(i) {
+            var id = $(this).attr('id').replace("holdings_location_name_", "");
+            var latitude = $("#holdings_location_lat_"+id).val();
+            var longitude = $("#holdings_location_lon_"+id).val();
+            if (latitude != '' && longitude != '') {
+                var marker = L.marker([latitude, longitude]).addTo(holdingsMapView).bindPopup($(this).val());
+                bounds.extend(marker.getLatLng());
+            }
+        });
+        holdingsMapView.fitBounds(bounds);
+    }, 400);
+}
+
+function startupScript() {
+
+    // If there is a display holdings map button and a holdings map on the page, then activate it
+    if ($('#displayHoldingsMap').exists() && $('#holdingsMap').exists()){
+        $('#displayHoldingsMap').removeClass('disabled');
+        $('#displayHoldingsMap').click(displayHoldingsMap);
+    }
+
+
+ // Check that we're on the view page to add these:
 if ($('#relatedPeopleImpliedLoad').exists()){
     var loadFunction = function() {
         // don't load a second time
@@ -79,7 +141,7 @@ if ($('#relatedPeopleImpliedLoad').exists()){
         $('#relatedFamiliesImplied').html(loadingHTML);
         $('#relatedOrganizationsImplied').html(loadingHTML);
 
-        $.get("?command=relations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+        $.get(snacUrl+"/relations/"+$('#constellationid').val()+"/"+$('#version').val(), null, function (data) {
             var peopleHTML = "";
             var familiesHTML = "";
             var organizationsHTML = "";
@@ -87,21 +149,21 @@ if ($('#relatedPeopleImpliedLoad').exists()){
                 for (var key in data.in) {
                     if (data.in[key].constellation.entityType.term == "person") {
                             peopleHTML += "<div class=\"person\">" +
-                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                "<a href=\""+snacUrl+"/view/" + data.in[key].constellation.id + "\">" +
                                 data.in[key].constellation.nameEntries[0].original + "</a> " +
                                 " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
                                 "<div></div>" +
                             "</div>";
                     } else if (data.in[key].constellation.entityType.term == "corporateBody") {
                             organizationsHTML += "<div class=\"corporateBody\">" +
-                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                "<a href=\""+snacUrl+"/view/" + data.in[key].constellation.id + "\">" +
                                 data.in[key].constellation.nameEntries[0].original + "</a> " +
                                 " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
                                 "<div></div>" +
                             "</div>";
                     } else if (data.in[key].constellation.entityType.term == "family") {
                             familiesHTML += "<div class=\"family\">" +
-                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                "<a href=\""+snacUrl+"/view/" + data.in[key].constellation.id + "\">" +
                                 data.in[key].constellation.nameEntries[0].original + "</a> " +
                                 " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
                                 "<div></div>" +
@@ -121,6 +183,40 @@ if ($('#relatedPeopleImpliedLoad').exists()){
     $('#relatedOrganizationsImpliedLoad').click(loadFunction);
 }
 
+
+
+
+if ($('#reserveForEdit').exists()){
+    var reserveEditFunction = function() {
+        $("#reserveForEdit").addClass("disabled");
+        if (!reservedForEdit) {
+            $.get(snacUrl+"/checkout/"+$('#constellationid').val()+"/"+$('#version').val(), null, function (data) {
+                if (data.result == 'success') {
+                    bootbox.alert({
+                        title: "Reserved",
+                        message: "Constellation successfully reserved for edit."
+                    });
+
+                    $("#reserveForEditText").text("Reserved");
+                    reservedForEdit = true;
+                } else {
+                    bootbox.alert({
+                        title: "Error",
+                        message: "Constellation could not be reserved.  You may have already reserved or edited this Constellation, or another user has it checked out."
+                    });
+                    $("#reserveForEditText").text("Non-Reservable");
+                    reservedForEdit = true;
+                }
+            });
+        }
+        // Keep the page from changing
+        return false;
+    };
+
+    $('#reserveForEdit').click(reserveEditFunction);
+};
+
+
 // Load tooltips
 $(function () {
     $('[data-toggle="tooltip"]').tooltip()
@@ -133,4 +229,4 @@ $(function () {
     container: 'body'
     })
 })
-});
+}

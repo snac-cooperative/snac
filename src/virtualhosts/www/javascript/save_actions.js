@@ -94,7 +94,7 @@ $(document).ready(function() {
             });
 
             // Send the data back by AJAX call
-            $.post("?command=save", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/save", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then alert the
                 // user and make appropriate updates.
                 if (data.result == "success") {
@@ -207,7 +207,7 @@ $(document).ready(function() {
 		        $('#notification-message').slideDown();
 
 		        // Publish by AJAX call
-		        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
+		        $.post(snacUrl+"/unlock", $("#constellation_form").serialize(), function (data) {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
@@ -222,7 +222,7 @@ $(document).ready(function() {
 		                setTimeout(function(){
 
 		                    // Go to dashboard
-		                    window.location.href = "?command=dashboard";
+		                    window.location.href = snacUrl+"/dashboard";
 
 		                }, 1000);
 
@@ -272,7 +272,7 @@ $(document).ready(function() {
                 });
 
 	            // Send the data back by AJAX call
-	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
+	            $.post(snacUrl+"/save_unlock", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // No longer in editing, save succeeded
@@ -288,7 +288,7 @@ $(document).ready(function() {
                         setTimeout(function(){
 
                             // Go to dashboard
-                            window.location.href = "?command=dashboard";
+                            window.location.href = snacUrl+"/dashboard";
 
                         }, 1000);
 	                } else {
@@ -328,7 +328,7 @@ $(document).ready(function() {
 		        $('#notification-message').slideDown();
 
 		        // Publish by AJAX call
-		        $.post("?command=publish", $("#constellation_form").serialize(), function (data) {
+		        $.post(snacUrl+"/publish", $("#constellation_form").serialize(), function (data) {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
@@ -343,7 +343,7 @@ $(document).ready(function() {
 		                setTimeout(function(){
 
 		                    // Go to dashboard
-		                    window.location.href = "?command=dashboard";
+		                    window.location.href = snacUrl+"/dashboard";
 
 		                }, 1000);
 
@@ -394,7 +394,7 @@ $(document).ready(function() {
 
 
 	            // Send the data back by AJAX call
-	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
+	            $.post(snacUrl+"/save_publish", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // Edit succeeded, so save mode off
@@ -410,7 +410,7 @@ $(document).ready(function() {
 		                setTimeout(function(){
 
 		                    // Go to dashboard
-		                    window.location.href = "?command=dashboard";
+		                    window.location.href = snacUrl+"/dashboard";
 
 		                }, 1000);
 	                } else {
@@ -423,126 +423,264 @@ $(document).ready(function() {
         });
     }
 
+    function save_and_review(){
+        // If EntityType and NameEntry do not have values, then don't let the user save or publish
+        var noNameEntryText = true;
+        $("input[id^='nameEntry_original_']").each(function() {
+            if ($(this).val() != "")
+                noNameEntryText = false;
+        });
+        if ($('#entityType').val() == "" || noNameEntryText) {
+            $('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
+            setTimeout(function(){
+                $('#error-message').slideDown();
+            }, 500);
+            setTimeout(function(){
+                $('#error-message').slideUp();
+            }, 10000);
+            return;
+        }
+
+        // Copy the review message from the modal into the form body
+        $("#reviewmessage").val($("#sendReviewMessage").val());
+
+        // If nothing has changed, alert the user and publish
+        if (somethingHasBeenEdited == false) {
+            $('#notification-message').html("<p>No new changes to save.  Sending Constellation for review... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            // Publish by AJAX call
+            $.post(snacUrl+"/review", $("#constellation_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // Edit succeeded, so save mode off
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    $('#success-message').html("<p>Constellation sent for review. Going to dashboard.</p>");
+                    setTimeout(function(){
+                        $('#success-message').slideDown();
+                    }, 500);
+                    setTimeout(function(){
+
+                        // Go to dashboard
+                        window.location.href = snacUrl+"/dashboard";
+
+                    }, 1000);
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        } else {
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Saving and sending Constellation for review... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            // Save any XML editor contents back to their text areas before saving
+            $("textarea[id*='_text_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+            $("textarea[id*='_source_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+
+            // Go through all the panels and update any dates
+            $("div[id*='_panel_']").each(function() {
+                var cont = $(this);
+                // Don't look at any of the ZZ hidden panels
+                if (cont.attr('id').indexOf("ZZ") == -1) {
+                    var split = cont.attr('id').split("_");
+
+                    // Split reveals a normal panel:
+                    if (split.length == 3) {
+                        var short = split[0];
+                        var id = split[2];
+
+                        updateDate(short, id);
+                    }
+                }
+            });
+
+            // Send the data back by AJAX call
+            $.post(snacUrl+"/save_review", $("#constellation_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // Edit succeeded, so save mode off
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+
+                    $('#success-message').html("<p>Constellation saved and sent for review. Going to dashboard.</p>");
+                    setTimeout(function(){
+                        $('#success-message').slideDown();
+                    }, 500);
+                    setTimeout(function(){
+
+                        // Go to dashboard
+                        window.location.href = snacUrl+"/dashboard";
+
+                    }, 1000);
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        }
+    }
+
+    function save_and_send_editor(){
+        // If EntityType and NameEntry do not have values, then don't let the user save or publish
+        var noNameEntryText = true;
+        $("input[id^='nameEntry_original_']").each(function() {
+            if ($(this).val() != "")
+                noNameEntryText = false;
+        });
+        if ($('#entityType').val() == "" || noNameEntryText) {
+            $('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
+            setTimeout(function(){
+                $('#error-message').slideDown();
+            }, 500);
+            setTimeout(function(){
+                $('#error-message').slideUp();
+            }, 10000);
+            return;
+        }
+
+        // If nothing has changed, alert the user and publish
+        if (somethingHasBeenEdited == false) {
+            $('#notification-message').html("<p>No new changes to save.  Sending Constellation to editor... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            // Publish by AJAX call
+            $.post(snacUrl+"/send", $("#constellation_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // Edit succeeded, so save mode off
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    $('#success-message').html("<p>Constellation sent for review. Going to dashboard.</p>");
+                    setTimeout(function(){
+                        $('#success-message').slideDown();
+                    }, 500);
+                    setTimeout(function(){
+
+                        // Go to dashboard
+                        window.location.href = snacUrl+"/dashboard";
+
+                    }, 1000);
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        } else {
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Saving and sending Constellation to editor... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            // Save any XML editor contents back to their text areas before saving
+            $("textarea[id*='_text_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+            $("textarea[id*='_source_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+
+            // Go through all the panels and update any dates
+            $("div[id*='_panel_']").each(function() {
+                var cont = $(this);
+                // Don't look at any of the ZZ hidden panels
+                if (cont.attr('id').indexOf("ZZ") == -1) {
+                    var split = cont.attr('id').split("_");
+
+                    // Split reveals a normal panel:
+                    if (split.length == 3) {
+                        var short = split[0];
+                        var id = split[2];
+
+                        updateDate(short, id);
+                    }
+                }
+            });
+
+
+            // Send the data back by AJAX call
+            $.post(snacUrl+"/save_send", $("#constellation_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // Edit succeeded, so save mode off
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+
+                    $('#success-message').html("<p>Constellation saved and sent to editor. Going to dashboard.</p>");
+                    setTimeout(function(){
+                        $('#success-message').slideDown();
+                    }, 500);
+                    setTimeout(function(){
+
+                        // Go to dashboard
+                        window.location.href = snacUrl+"/dashboard";
+
+                    }, 1000);
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        }
+    }
+
+    // Save and Send Back to Editor button
+    if($('#save_and_send_back').exists()) {
+        $('#save_and_send_back').click(function() {
+            save_and_send_editor();
+        });
+    }
+
 
     // Save and Send for Review button
-    if($('#save_and_review').exists()) {
-        $('#save_and_review').click(function(){
+    if($('#save_and_review_touser').exists()) {
+        $('#save_and_review_touser').click(function() {
+            $("#reviewer").val($("#reviewersearchbox").val());
+            save_and_review();
+        });
+    }
 
-        	// If EntityType and NameEntry do not have values, then don't let the user save or publish
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
-        		return;
-        	}
-
-        	// If nothing has changed, alert the user and publish
-        	if (somethingHasBeenEdited == false) {
-		        $('#notification-message').html("<p>No new changes to save.  Sending Constellation for review... Please wait.</p>");
-		        $('#notification-message').slideDown();
-
-		        // Publish by AJAX call
-		        $.post("?command=review", $("#constellation_form").serialize(), function (data) {
-		            // Check the return value from the ajax. If success, then go to dashboard
-		            if (data.result == "success") {
-		                // Edit succeeded, so save mode off
-		                somethingHasBeenEdited = false;
-
-		                $('#notification-message').slideUp();
-
-		                $('#success-message').html("<p>Constellation sent for review. Going to dashboard.</p>");
-		                setTimeout(function(){
-		                    $('#success-message').slideDown();
-		                }, 500);
-		                setTimeout(function(){
-
-		                    // Go to dashboard
-		                    window.location.href = "?command=dashboard";
-
-		                }, 1000);
-
-		            } else {
-		                $('#notification-message').slideUp();
-		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                        displayErrorMessage(data.error,data);
-		            }
-		        });
-        	} else {
-
-	            // Open up the warning alert box and note that we are saving
-	            $('#notification-message').html("<p>Saving and sending Constellation for review... Please wait.</p>");
-	            $('#notification-message').slideDown();
-
-                // Save any XML editor contents back to their text areas before saving
-                $("textarea[id*='_text_']").each(function() {
-                    var obj = $(this);
-                    if (obj.get(0).CodeMirror) {
-                        obj.get(0).CodeMirror.save();
-                    }
-
-                });
-                $("textarea[id*='_source_']").each(function() {
-                    var obj = $(this);
-                    if (obj.get(0).CodeMirror) {
-                        obj.get(0).CodeMirror.save();
-                    }
-
-                });
-
-                // Go through all the panels and update any dates
-                $("div[id*='_panel_']").each(function() {
-                    var cont = $(this);
-                    // Don't look at any of the ZZ hidden panels
-                    if (cont.attr('id').indexOf("ZZ") == -1) {
-                        var split = cont.attr('id').split("_");
-
-                        // Split reveals a normal panel:
-                        if (split.length == 3) {
-                            var short = split[0];
-                            var id = split[2];
-
-                            updateDate(short, id);
-                        }
-                    }
-                });
-
-
-	            // Send the data back by AJAX call
-	            $.post("?command=save_review", $("#constellation_form").serialize(), function (data) {
-	                // Check the return value from the ajax. If success, then go to dashboard
-	                if (data.result == "success") {
-	                    // Edit succeeded, so save mode off
-	                    somethingHasBeenEdited = false;
-
-	                    $('#notification-message').slideUp();
-
-
-		                $('#success-message').html("<p>Constellation saved and sent for review. Going to dashboard.</p>");
-		                setTimeout(function(){
-		                    $('#success-message').slideDown();
-		                }, 500);
-		                setTimeout(function(){
-
-		                    // Go to dashboard
-		                    window.location.href = "?command=dashboard";
-
-		                }, 1000);
-	                } else {
-	                    $('#notification-message').slideUp();
-	                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                        displayErrorMessage(data.error,data);
-	                }
-	            });
-        	}
+    if($('#save_and_review_general').exists()) {
+        $('#save_and_review_general').click(function() {
+            $("#reviewer").val("");
+            save_and_review();
         });
     }
 
@@ -570,14 +708,14 @@ $(document).ready(function() {
         	});
         	if ($('#constellationid').val() == "" || $('#entityType').val() == "" || noNameEntryText) {
         		// Go to dashboard
-                window.location.href = "?command=dashboard";
+                window.location.href = snacUrl+"/dashboard";
         		return;
         	}
 
 
 
         	// Unlock
-	        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
+	        $.post(snacUrl+"/unlock", $("#constellation_form").serialize(), function (data) {
 	            // Check the return value from the ajax. If success, then go to dashboard
 	            if (data.result == "success") {
 	                somethingHasBeenEdited = false;
@@ -588,7 +726,7 @@ $(document).ready(function() {
 	                setTimeout(function(){
 
 	                    // Go to dashboard
-	                    window.location.href = "?command=dashboard";
+	                    window.location.href = snacUrl+"/dashboard";
 
 	                }, 1000);
 
@@ -614,7 +752,7 @@ $(document).ready(function() {
             }, 3000);
 
             // Send the data back by AJAX call
-            $.post("?command=preview", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/preview", $("#constellation_form").serialize(), function (data) {
                 var previewWindow = window.open("", "Preview");
                 previewWindow.document.write(data);
             });
@@ -688,7 +826,7 @@ $(document).ready(function() {
             });
 
             // Send the data back by AJAX call
-            $.post("?command=new_reconcile", $("#constellation_form").serialize(), function (data) {
+            $.post(snacUrl+"/new_reconcile", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
@@ -711,8 +849,8 @@ $(document).ready(function() {
                             html += "<div class='col-xs-8'><h4 class='list-group-item-heading'>"+data.results[key].nameEntries[0].original+"</h4>";
                             html += "<p class='list-group-item-text'>"+data.results[key].ark+"</p></div>";
                             html += "<div class='col-xs-4 list-group'>";
-                            html += "<a class='list-group-item list-group-item-success' target='_blank' href='?command=view&preview&constellationid="+data.results[key].id+"'><span  class='fa fa-eye' aria-hidden='true'></span> View</a></a>";
-                            html += "<a class='list-group-item list-group-item-info' href='?command=edit&constellationid="+data.results[key].id+"'><span  class='fa fa-pencil-square-o' aria-hidden='true'></span> Edit</a></div>";
+                            html += "<a class='list-group-item list-group-item-success' target='_blank' href='"+snacUrl+"/view/"+data.results[key].id+"?preview'><span  class='fa fa-eye' aria-hidden='true'></span> View</a></a>";
+                            html += "<a class='list-group-item list-group-item-info' href='"+snacUrl+"/edit/"+data.results[key].id+"'><span  class='fa fa-pencil-square-o' aria-hidden='true'></span> Edit</a></div>";
                             html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntries[0].original.replace("'", "&#39;")+"'/>";
                             var arkID = "";
                             if (data.results[key].ark != null)

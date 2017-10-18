@@ -25,7 +25,7 @@
         {% if other.type.uri %}
         <otherRecordId localType="{{ other.type.uri }}">{{ other.uri}}</otherRecordId>
         {% else %}
-        <otherRecordId localType="other.type.term">{{ other.uri}}</otherRecordId>
+        <otherRecordId localType="{{ other.type.term }}">{{ other.uri}}</otherRecordId>
         {% endif %}
         {% endfor %}
         <maintenanceStatus>{{data.maintenanceStatus.term}}</maintenanceStatus>
@@ -79,6 +79,13 @@
     <cpfDescription>
         <identity>
             <entityType>{{ data.entityType.term }}</entityType>
+            {% for other in data.entityIDs %}
+            {% if other.type.uri %}
+            <entityId localType="{{ other.type.uri }}">{{ other.text }}</entityId>
+            {% else %}
+            <entityId>{{ other.text }}</entityId>
+            {% endif %}
+            {% endfor %}
             {#
             We appear not to use the language element.
 
@@ -232,6 +239,15 @@
             {% for place in data.places %}
             {% if place.geoplace %}
             <place localType="{{place.type.uri}}">
+                {% if place.confirmed %}
+                <placeEntry certaintyScore="{{ place.score }}"
+                                           vocabularySource="{{place.geoplace.uri}}"
+                                           latitude="{{place.geoplace.latitude}}"
+                                           longitude="{{place.geoplace.longitude}}"
+                                           administrationCode="{{place.geoplace.administrationCode}}"
+                                           countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
+                </placeEntry>
+                {% else %}
                 <snac:placeEntry>
                     <placeEntry>{{ place.original }}</placeEntry>
                     {% if place.score > 0.06 %}
@@ -250,36 +266,51 @@
                                                   administrationCode="{{place.geoplace.administrationCode}}"
                                                   countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
                     </snac:placeEntryBestMaybeSame>
-                    {% if place.dates %}
-                    {% if place.dates[1] %}
-                    <dateSet>
-                        {% endif %}
-                        {% for date in place.dates %}
-                        {% if not date.isRange %}
-                        <date standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}</date>
-                        {% else %}
-                        <dateRange>
-                            {{'&lt;fromDate'|decode_entities|raw}}
-                            {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
-                            {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
-                            localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}"
-                            standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
-                            {% if date.toDate %}
-                            {{'&lt;toDate'|decode_entities|raw}}
-                            {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
-                            {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
-                            localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}"
-                            standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
-                            {% endif %}
-                        </dateRange>
-                        {% endif %}
-                        {% endfor %}
-                        {% if place.dates[1] %}
-                    </dateSet>
-                    {% endif %}
-                    {% endif %}
                     {% endif %}
                 </snac:placeEntry>
+                {% endif %}
+                {% if place.dates %}
+                {% if place.dates[1] %}
+                <dateSet>
+                    {% endif %}
+                    {% for date in place.dates %}
+                    {% if not date.isRange %}
+                    <date standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}</date>
+                    {% else %}
+                    <dateRange>
+                        {{'&lt;fromDate'|decode_entities|raw}}
+                        {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
+                        {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}"
+                        standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
+                        {% if date.toDate %}
+                        {{'&lt;toDate'|decode_entities|raw}}
+                        {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
+                        {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}"
+                        standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
+                        {% endif %}
+                    </dateRange>
+                    {% endif %}
+                    {% endfor %}
+                    {% if place.dates[1] %}
+                </dateSet>
+                {% endif %}
+                {% endif %}
+
+                {% if place.address %}
+                <address>
+                    {% for addressLine in place.address %}
+                        {% if addressLine.type.uri %}
+                        <addressLine localType="{{addressLine.type.uri}}">{{addressLine.text}}</addressLine>
+                        {% elseif addressLine.type.term %}
+                        <addressLine localType="{{addressLine.type.term}}">{{addressLine.text}}</addressLine>
+                        {% else %}
+                        <addressLine>{{addressLine.text}}</addressLine>
+                        {% endif %}
+                    {% endfor %}
+                </address>
+                {% endif %}
             </place>
             {% else %}
             <place localType="{{place.type.uri}}">
@@ -385,10 +416,10 @@
             resRel.role, xlink:arcrole, creatorOf, referencedIn
             #}
             {% for resRel in data.resourceRelations %}
-            {% if resRel.documentType.uri %}
-            {% set xlink_role = resRel.documentType.uri %}
+            {% if resRel.resource.documentType.uri %}
+            {% set xlink_role = resRel.resource.documentType.uri %}
             {% else %}
-            {% set xlink_role = resRel.documentType.term %}
+            {% set xlink_role = resRel.resource.documentType.term %}
             {% endif %}
             {% if resRel.role.uri %}
             {% set xlink_arcrole = resRel.role.uri %}

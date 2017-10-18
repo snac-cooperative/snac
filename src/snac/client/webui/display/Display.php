@@ -144,6 +144,20 @@ class Display {
     }
 
     /**
+     * Clean String
+     *
+     * Given a string, quotes it appropriately in UTF-8.
+     *
+     * @param string $string The string to clean
+     * @return string The cleaned string
+     */
+    private function cleanString($string) {
+        $outStr = mb_convert_encoding($string, 'UTF-8', 'UTF-8');
+        $outStr = htmlentities($outStr, ENT_QUOTES, 'UTF-8');
+        return $outStr;
+    }
+
+    /**
      * Generate the page to return
      *
      * @return string Page to return to the user
@@ -156,12 +170,16 @@ class Display {
 
         $this->data["control"] = array();
 
+        // Put some PHP variables into the control section
+        $this->data["control"]["currentURL"] = $this->cleanString("http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
+        $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
+        $this->data["control"]["snacURL"] = \snac\Config::$WEBUI_URL;
+
         if (isset(\snac\Config::$INTERFACE_VERSION)) {
             if (\snac\Config::$INTERFACE_VERSION === "development")
                 $this->data["control"]["interfaceVersion"] = "development";
             if (\snac\Config::$INTERFACE_VERSION === "demo")
                 $this->data["control"]["interfaceVersion"] = "demo";
-
         }
 
         if (isset(\snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID) &&
@@ -172,18 +190,54 @@ class Display {
         // If the system is in DEBUG mode, then the display will disallow
         // caching of javascript.
         if (\snac\Config::$DEBUG_MODE == true) {
-            $this->data["control"]["noCache"] = "?_=".`git rev-parse HEAD`;
+            $this->data["control"]["noCache"] = trim("?_=".`git rev-parse HEAD`);
         }
 
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array(
                 //'cache' => \snac\Config::$TEMPLATE_CACHE,
             ));
+        $twig->addExtension(new \Jasny\Twig\PcreExtension());
+        $twig->addExtension(new \Twig_Extensions_Extension_Text());
 
         return $twig->render($this->templateFileName, $this->data);
 
         $template = create_function('$data', file_get_contents($this->templateFileName()));
         $template($this->data);
         return "<html><body><h1>Testing</h1></body></html>";
+    }
+
+    /**
+     * Set an html file in static display
+     *
+     * Sets the given filename into a display template.  This method reads the
+     * content of the HTML file, then inputs the <title> into the title of the
+     * template and dumps the entire <body> content into the body of the template.
+     *
+     * @param string $filename The filename of the file to parse and display
+     * @return boolean True if successful, false otherwise
+     */
+    public function setStaticDisplay($filename) {
+        if (is_file(\snac\Config::$STATIC_FILE_DIR ."/". $filename)) {
+            $dom = new \DOMDocument;
+            $dom->preserveWhiteSpace = false;
+            $dom->formatOutput = true;
+            $dom->loadHTMLFile(\snac\Config::$STATIC_FILE_DIR ."/". $filename, LIBXML_NOERROR);
+            $title = $dom->getElementsByTagName('title')->item(0)->textContent;
+            $body = $dom->getElementsByTagName('body')->item(0);
+
+            $newBody = new \DOMDocument;
+            foreach ($body->childNodes as $child) {
+                $newBody->appendChild($newBody->importNode($child, true));
+            }
+            $bodyHTML = $newBody->saveHTML();
+            $this->setTemplate("static_page");
+            $this->setData(array(
+                "body" => $bodyHTML,
+                "title" => $title
+            ));
+            return true;
+        }
+        return false;
     }
 }

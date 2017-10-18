@@ -26,20 +26,20 @@ abstract class AbstractTermData extends AbstractData {
 
     /**
      * @var string $dataType The data type of this object.
-     * 
+     *
      * This should be overwritten by any inheriting/child class
      */
     protected $dataType;
 
     /**
-     * @var \snac\data\Term $term The term for this object 
+     * @var \snac\data\Term $term The term for this object
      */
     protected $term;
 
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param string[] $data optional Array with data to build this object
      */
     public function __construct($data = null) {
@@ -56,7 +56,7 @@ abstract class AbstractTermData extends AbstractData {
     {
         return $this->dataType;
     }
-    
+
     /**
      * Set the data type for this object
      *
@@ -85,6 +85,18 @@ abstract class AbstractTermData extends AbstractData {
     }
 
     /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        return $this->dataType . ": " . $this->getTerm()->getTerm();
+    }
+
+    /**
      * Required method to convert this term structure to an array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -95,9 +107,9 @@ abstract class AbstractTermData extends AbstractData {
             'dataType' => $this->dataType,
             'term' => $this->getTerm() == null ? null : $this->getTerm()->toArray($shorten)
         );
-        
+
         $return = array_merge($return, parent::toArray($shorten));
-       
+
         // Shorten if necessary
         if ($shorten) {
             $return2 = array();
@@ -109,7 +121,7 @@ abstract class AbstractTermData extends AbstractData {
         }
 
 
-        return $return; 
+        return $return;
     }
 
     /**
@@ -122,19 +134,19 @@ abstract class AbstractTermData extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != $this->dataType)
             return false;
 
-            
+
         parent::fromArray($data);
-        
+
         unset($this->term);
         if (isset($data["term"]))
             $this->term = new \snac\data\Term($data["term"]);
         else
             $this->term = null;
     }
-    
+
     /**
      * {@inheritDoc}
-     * 
+     *
      * @param \snac\data\AbstractTermData $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
@@ -146,17 +158,17 @@ abstract class AbstractTermData extends AbstractData {
         if ($other == null || !($other instanceof \snac\data\AbstractTermData))
             return false;
 
-        
+
         if ($other->getDataType() != $this->getDataType())
             return false;
-        
+
         if (!parent::equals($other, $strict))
             return false;
-        
+
         if (($this->getTerm() != null && !$this->getTerm()->equals($other->getTerm())) ||
                 ($this->getTerm() == null && $other->getTerm() != null))
             return false;
-        
+
         return true;
     }
 

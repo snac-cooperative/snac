@@ -106,13 +106,22 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "search",
                 "view",
                 "details",
+                "sources",
                 "download",
                 "error",
                 "vocabulary",
                 "quicksearch",
                 "relations",
+                "maybesame",
+                "diff",
                 "explore",
-                "history"
+                "visualize",
+                "history",
+                "history_diff",
+                "static",
+                "api_help",
+                "contact",
+                "feedback"
         );
 
         // These are read-only commands that are allowed in read-only mode
@@ -120,12 +129,17 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "search",
             "view",
             "details",
+            "sources",
             "download",
             "error",
             "vocabulary",
             "quicksearch",
             "relations",
             "explore",
+            "history_diff",
+            "static",
+            "api_help",
+            "visualize",
             "history"
         );
 
@@ -247,6 +261,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 session_name("SNACWebUI");
                 session_start();
 
+                if (isset($this->input["r"])) {
+                    $_SESSION['redirect_postlogin'] = $this->input["r"];
+                }
+
                 // if the user wants to log in, then send them to the login server
                 $authUrl = $provider->getAuthorizationUrl();
                 header('Location: ' . $authUrl);
@@ -266,6 +284,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
                 // Set the user details in the session
                 $_SESSION['user_details'] = serialize($ownerDetails);
+
+                $redirect = \snac\Config::$WEBUI_URL . "/dashboard";
+                if (isset($_SESSION['redirect_postlogin'])) {
+                    $tmp = $_SESSION['redirect_postlogin'];
+                    if (strstr($tmp, 'command') !== false && strstr($tmp, 'logout') === false)
+                        $redirect = htmlspecialchars_decode(urldecode($tmp));
+                    unset($_SESSION['redirect_postlogin']);
+                }
 
                 $tokenUnserialized = unserialize($_SESSION['token']);
                 $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
@@ -291,7 +317,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $_SESSION['snac_user'] = serialize($user);
 
                 // Go directly to the Dashboard, do not pass Go, do not collect $200
-                header('Location: index.php?command=dashboard');
+                header("Location: $redirect");
                 return;
 
             case "logout":
@@ -305,7 +331,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $_SESSION = array();
 
                 // Go to the homepage
-                header('Location: index.php');
+                header('Location: ' . \snac\Config::$WEBUI_URL);
                 return;
 
             // Editing, Preview, View, and Other Commands
@@ -337,21 +363,66 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "details":
                 $executor->displayDetailedViewPage($this->input, $display);
                 break;
+            case "sources":
+                $executor->displaySourcesPage($this->input, $display);
+                break;
             case "relations":
                 $response = $executor->performRelationsQuery($this->input);
+                break;
+            case "maybesame":
+                $response = $executor->displayMaybeSameListPage($this->input, $display);
+                break;
+            case "add_maybesame":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->addMaybeSameAssertion($this->input);
+                } else {
+                    $executor->displayPermissionDeniedPage("Add Maybe Same", $display);
+                }
+                break;
+            case "assert_notsame":
+                $response = $executor->processNotSameAssertion($this->input);
+                break;
+            case "diff":
+                $response = $executor->displayMaybeSameDiffPage($this->input, $display);
+                break;
+            case "diff_merge":
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
+                    $response = $executor->displayMaybeSameDiffPage($this->input, $display, true);
+                } else {
+                    $executor->displayPermissionDeniedPage("Compare Constellations for Merge", $display);
+                }
+                break;
+            case "merge":
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
+                    $response = $executor->processMerge($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
+                break;
+            case "auto_merge":
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
+                    $response = $executor->processAutoMerge($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
+                break;
+            case "merge_cancel":
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
+                    $response = $executor->cancelMerge($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
                 break;
             case "history":
                 $executor->displayHistoryPage($this->input, $display);
                 break;
 
+            case "history_diff":
+                $executor->displayHistoryComparePage($this->input, $display);
+                break;
+
             case "preview":
                 $executor->displayPreviewPage($this->input, $display);
-                break;
-            case "dashboard":
-                $executor->displayDashboardPage($display);
-                break;
-            case "profile":
-                $executor->displayProfilePage($display);
                 break;
             case "download":
                 $this->response = $executor->handleDownload($this->input, $display, $this->responseHeaders);
@@ -361,7 +432,41 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     return;
                 }
             case "explore":
-                $executor->displayGridPage($display);
+                $executor->displayGridPage($this->input, $display);
+                break;
+
+            // User and messaging commands
+            case "dashboard":
+                $executor->displayDashboardPage($display);
+                break;
+            case "profile":
+                $executor->displayProfilePage($display);
+                break;
+            case "api_key":
+                $executor->displayAPIInfoPage($display, $user);
+                break;
+            case "api_help":
+                $executor->displayAPIHelpPage($display, $user);
+                break;
+            case "messages":
+                $executor->displayMessageListPage($display);
+                break;
+            case "message_read":
+                $response = $executor->readMessage($this->input);
+                break;
+            case "message_send":
+                $response = $executor->sendMessage($this->input);
+                break;
+            case "message_delete":
+                $response = $executor->deleteMessage($this->input);
+                break;
+            case "feedback":
+                $response = $executor->sendFeedbackMessage($this->input);
+                break;
+
+            // visualization commands
+			case "visualize":
+                $response = $executor->handleVisualization($this->input, $display);
                 break;
 
             // Administrator command (the sub method handles admin commands)
@@ -395,7 +500,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->unlockConstellation($this->input);
                 // if unlocked by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully unlocked");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully unlocked");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
@@ -410,7 +515,22 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->sendForReviewConstellation($this->input);
                 // if sent for review by constellationid parameter alone, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully sent for review");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully sent for review");
+                    return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
+                }
+                break;
+
+            case "save_send":
+                $response = $executor->saveAndSendConstellation($this->input);
+                break;
+
+            case "send":
+                $response = $executor->sendConstellation($this->input);
+                // if sent for review by constellationid parameter alone, then send them to the dashboard.
+                if (!isset($response["error"]) && !isset($this->input["entityType"])) {
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully sent to editor");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
@@ -425,11 +545,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->publishConstellation($this->input);
                 // if published by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully published");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully published");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
                 }
+                break;
+
+            case "checkout":
+                $response = $executor->checkoutConstellation($this->input);
                 break;
 
             case "save_resource":
@@ -440,7 +564,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->deleteConstellation($this->input);
                 // if deleted by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                    header("Location: index.php?command=dashboard&message=Constellation successfully deleted");
+                    header("Location: " . \snac\Config::$WEBUI_URL ."/dashboard?message=Constellation successfully deleted");
                     return;
                 } else if (!isset($this->input["entityType"])) {
                     $executor->drawErrorPage($response, $display);
@@ -474,6 +598,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->performBrowseSearch($this->input);
                 break;
 
+            case "user_search":
+                $response = $executor->performUserSearch($this->input);
+                break;
+
+            case "contact":
+                $executor->displayContactPage($display);
+                break;
+
             // Error command
             case "error":
                 $error = array("error" => array(
@@ -483,13 +615,18 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->drawErrorPage($error, $display);
                 break;
 
+            case "static":
+                $found = $executor->displayStaticPage($this->input, $display);
+                if (!$found)
+                    array_push($this->responseHeaders, "HTTP/1.0 404 Not Found");
+                break;
 
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only
                 // $executor->displayLandingPage($display);
                 // The grid page is the "new" landing page
-                $executor->displayGridPage($display);
+                $executor->displayGridPage($this->input, $display);
                 break;
         }
 
@@ -501,7 +638,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $this->logger->addDebug("Response page created, sending back to user");
         } else {
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
+            array_push($this->responseHeaders, "Content-Type: application/json");
         }
         return;
     }

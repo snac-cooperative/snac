@@ -44,14 +44,14 @@ abstract class AbstractData implements \Serializable {
      * @var string $OPERATION_DELETE the delete operation
      */
     public static $OPERATION_DELETE = "delete";
-    
+
     /**
      *
      * The record id, or constellation id for this class. This has two different meanings, depending on the
      * class. For Constellation.php this is the ic_id of the constellation aka version_history.ic_id. For
      * all other classes this is table.id, which is the record id, not the constellation id.
      *
-     * @var int $id 
+     * @var int $id
      */
     protected $id = null;
 
@@ -61,14 +61,14 @@ abstract class AbstractData implements \Serializable {
      * The record version number, or constellation version (max) for this class. For Constellation.php this is
      * the "constellation version number" aka max(version) aka max(version_history.id). For all other classes,
      * this is the table.version which is a per-record version number, <= the constellation version number.
-     * 
-     * @var int $version 
+     *
+     * @var int $version
      */
     protected $version = null;
 
 
     /**
-     * @var \snac\data\SNACDate[] $dateList Universal date object list. 
+     * @var \snac\data\SNACDate[] $dateList Universal date object list.
      *
      *
      */
@@ -76,22 +76,22 @@ abstract class AbstractData implements \Serializable {
 
     /**
      * How many dates might be in the $dateList. Objects with no dates set this to some number greater than zero.
-     * 
+     *
      * @var int $maxDateCount maximum number of dates allowed in this object
      */
     protected $maxDateCount = 0;
 
-    
+
     /**
      * var \snac\data\SNACControlMetadata[] $snacControlMetadata The snac control metadata entries for this piece of data.
      */
     protected $snacControlMetadata;
-    
+
     /**
      * @var string Operation for this object.  Must be set to one of the constant values or null.
      */
     protected $operation;
-    
+
     /**
      * @var \Monolog\Logger $logger Logger for this class
      */
@@ -115,29 +115,29 @@ abstract class AbstractData implements \Serializable {
         $this->dateList = array();
         if ($data != null && is_array($data))
             $this->fromArray($data);
-            
+
         // create a log channel
         $this->logger = new \Monolog\Logger(get_class($this));
         $this->logger->pushHandler($log);
     }
-    
+
     /**
      * Is Equal
-     * 
+     *
      * This function tests whether the current object is equal to the parameter.  They
      * must match exactly.  It allows for a parameter to enable skipping of the ID/version/operation
      * matching.
-     * 
+     *
      * @param \snac\data\AbstractData $other The other object to compare
      * @param boolean $strict optional Whether to disable strict checking (skip id)
-     * 
+     *
      * @return boolean true if equal, false if not
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || !($other instanceOf \snac\data\AbstractData))
             return false;
-        
+
         if ($strict) {
             if ($this->getID() != $other->getID())
                 return false;
@@ -147,10 +147,10 @@ abstract class AbstractData implements \Serializable {
                 return false;
         }
 
-        
-        if ($this->getMaxDateCount() != $other->getMaxDateCount()) 
+
+        if ($this->getMaxDateCount() != $other->getMaxDateCount())
             return false;
-        
+
         if ($this->getMaxDateCount() > 0) {
             $tmp = array();
 
@@ -160,17 +160,17 @@ abstract class AbstractData implements \Serializable {
 
         if (!$this->checkArrayEqual($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict))
             return false;
-        
+
         // If all the tests pass, they are equal
         return true;
     }
-    
+
     /**
      * Array Equality
-     * 
+     *
      * Checks that two arrays are equal.  Specifically, tests that the second array has all
      * the same objects as the first.
-     * 
+     *
      * @param \snac\data\AbstractData[] $first first array
      * @param \snac\data\AbstractData[] $second second array
      * @param boolean $strict optional whether or not to check ID/Version/Operation
@@ -183,12 +183,12 @@ abstract class AbstractData implements \Serializable {
             return false;
         if (count($first) != count($second))
             return false;
-        
+
         $tmp = array();
 
         foreach ($first as $data) {
             foreach ($second as $k => $odata) {
-                if ((($data == null && $odata == null) || ($data != null && $data->equals($odata, $strict))) 
+                if ((($data == null && $odata == null) || ($data != null && $data->equals($odata, $strict)))
                         && !isset($tmp[$k])) {
                     $tmp[$k] = true;
                 }
@@ -197,18 +197,77 @@ abstract class AbstractData implements \Serializable {
 
         $count = count($tmp);
         unset($tmp);
-        
+
         if ($count != count($second))
             return false;
- 
+
         return true;
-        
+
+    }
+
+    /**
+     * diff Array
+     *
+     * Goes through arrays of AbstractData and performs a diff.  It returns an array of
+     * three different arrays: intersection (the shared components), first (the items
+     * of the first not appearing in the second), and second (the items of the
+     * second not appearing in the first).
+     *
+     * @param \snac\data\AbstractData[] $first first array
+     * @param \snac\data\AbstractData[] $second second array
+     * @param boolean $strict optional whether or not to check ID/Version/Operation
+     * @return mixed[] An associative array of AbstractData[] with "intersection," "first," and "second" keys
+     */
+    protected function diffArray($first, $second, $strict = true) {
+        $return = array(
+            "intersection" => array(),
+            "first" => array(),
+            "second" => array()
+        );
+
+        if ($first == null && $second == null)
+            return $return;
+        if ($first == null) {
+            $return["second"] = $second;
+            return $return;
+        }
+        if ($second == null) {
+            $return["first"] = $first;
+            return $return;
+        }
+
+        $tmp = array();
+        foreach ($first as $data) {
+            $seen = false;
+            foreach ($second as $k => $odata) {
+                if ($data != null && $data->equals($odata, $strict)
+                        && !isset($tmp[$k])) {
+                    // in case there are duplicates in first
+                    $tmp[$k] = true;
+                    $seen = true;
+                    array_push($return["intersection"], $data);
+                }
+            }
+            if (!$seen) {
+                array_push($return["first"], $data);
+            }
+        }
+
+        foreach ($second as $k => $odata) {
+            // make use of our key-bitmap to not have an inner loop
+            if (!isset($tmp[$k])) {
+                array_push($return["second"], $odata);
+            }
+        }
+
+        return $return;
+
     }
 
     /**
      * Set the number of date objects we can have in the list of dates.
      *
-     * @param integer $count The number of dates supported.  
+     * @param integer $count The number of dates supported.
      *
      */
     protected function setMaxDateCount($count)
@@ -219,7 +278,7 @@ abstract class AbstractData implements \Serializable {
     /**
      * Get the number of date objects we can have in the list of dates.
      *
-     * @return integer $count The number of dates supported.  
+     * @return integer $count The number of dates supported.
      *
      */
     public function getMaxDateCount()
@@ -228,13 +287,13 @@ abstract class AbstractData implements \Serializable {
     }
 
     /**
-     * Get the list of dates. 
+     * Get the list of dates.
      *
      * @return \snac\data\SNACDate[] Returns a list of SNACDate objects, or an empty list if there are no
      * dates. If someone has called unsetDateList() then it won't be a list and the calling code is expecting
      * a list, always, even if empty.
      *
-     */ 
+     */
     public function getDateList()
     {
         return $this->dateList;
@@ -257,7 +316,7 @@ abstract class AbstractData implements \Serializable {
         }
         return false;
     }
-    
+
     /**
      * Set the Date List
      *
@@ -276,7 +335,7 @@ abstract class AbstractData implements \Serializable {
         }
         return false;
     }
-    
+
 
     /**
      * Set this object's database info in a single setter call, equivalent to setVersion($version); setID($id);
@@ -289,7 +348,7 @@ abstract class AbstractData implements \Serializable {
      * @param int $id An id number. For constellation objects this is version_history.ic_id. For all other
      * objects this is table.id. If $id is true for any meaning of true, then assign it to our private
      * variable.
-     * 
+     *
      */
     public function setDBInfo($version, $id)
     {
@@ -341,7 +400,7 @@ abstract class AbstractData implements \Serializable {
     public function setID($id) {
         $this->id = $id;
     }
-    
+
     /**
      * Get the version number of this. For constellation this is *the* constellation version
      * aka max(version) aka max(version_history.id). For all other objects this is table.version for each
@@ -363,35 +422,144 @@ abstract class AbstractData implements \Serializable {
     public function setVersion($version) {
         $this->version = $version;
     }
-    
+
     /**
      * Add a piece of snac control metadata to this structure
-     * 
+     *
      * @param \snac\data\SNACControlMetadata $metadata snac control metadata to add to this structure
      */
     public function addSNACControlMetadata($metadata) {
         array_push($this->snacControlMetadata, $metadata);
     }
-    
+
     /**
      * Set all the snac control metadata for this structure
-     * 
+     *
      * @param \snac\data\SNACControlMetadata[] $metadata Array of snac control metadata to add to this structure
      */
     public function setAllSNACControlMetadata($metadata) {
         unset($this->snacControlMetadata);
         $this->snacControlMetadata = $metadata;
     }
-    
+
     /**
      * Get all snac control metadata for this structure
-     * 
+     *
      * @return \snac\data\SNACControlMetadata[] Array of snac control metadata about this data
      */
     public function getSNACControlMetadata() {
         if (isset($this->snacControlMetadata))
             return $this->snacControlMetadata;
         return null;
+    }
+
+    /**
+     * Update SCM Citations
+     *
+     * Goes through the SCMs attached to this data object and updates any with citation
+     * oldSource to use citation newSource instead.
+     *
+     * @param  \snac\data\Source $oldSource Source to replace
+     * @param  \snac\data\Source $newSource Source to replace with
+     */
+    public function updateSCMCitation($oldSource, $newSource=null) {
+        if ($oldSource === null) {
+            return;
+        }
+
+        if (isset($this->dateList) && $this->dateList !== null) {
+            foreach ($this->dateList as &$date) {
+                $date->updateSCMCitation($oldSource, $newSource);
+            }
+        }
+        if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
+            foreach ($this->snacControlMetadata as &$scm) {
+                if ($scm->getCitation() !== null && $scm->getCitation()->getID() == $oldSource->getID()) {
+                    $scm->setCitation($newSource);
+                }
+            }
+        }
+    }
+
+    /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        return get_class($this);
+    }
+
+    /**
+     * Collate SCM by Source
+     *
+     * Collates all SCM of this object by the source and attaches them into the sources
+     * given in the first parameter.  It assumes that the sources array is given with
+     * associative IDs equal to the actual source ID, with array[0] reserved for SCM
+     * without a source attached.
+     *
+     * @param  \snac\data\Source[] $sources Associative array of Source objects (with key = source id)
+     */
+    public function collateSCMCitationsBySource(&$sources) {
+        if (isset($this->dateList) && $this->dateList !== null) {
+            foreach ($this->dateList as &$date) {
+                $date->collateSCMCitationsBySource($sources);
+            }
+        }
+        if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
+            foreach ($this->snacControlMetadata as &$scm) {
+                $newSCM = new \snac\data\SNACControlMetadata($scm->toArray());
+
+                //TODO might be useful to have a toString() that would convert this data object into
+                // a display-like short string to display here rather than the full object.
+                $newSCM->setObject($this->toString());
+
+                if ($scm->getCitation() !== null) {
+                    $sources[$scm->getCitation()->getID()]->addSNACControlMetadata($newSCM);
+                } else {
+                    $sources[0]->addSNACControlMetadata($newSCM);
+                }
+            }
+        }
+    }
+
+    /**
+     * Cleanse all sub-elements
+     *
+     * Removes the ID and Version from sub-elements and updates the operation to be
+     * INSERT.  If the operation is specified by the parameter, this method
+     * will use that operation instead of INSERT.
+     *
+     * This includes SCM and Date from AbstractData. Override for other objects like
+     * Language in names.
+     *
+     * @param string $operation optional The operation to use (default is INSERT)
+     */
+    public function cleanseSubElements($operation=null) {
+        $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
+        if ($operation !== null) {
+            $newOperation = $operation;
+        }
+
+        if (isset($this->dateList) && $this->dateList !== null) {
+            foreach ($this->dateList as &$date) {
+                $date->setID(null);
+                $date->setVersion(null);
+                $date->setOperation($newOperation);
+                $date->cleanseSubElements($newOperation);
+            }
+        }
+        if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
+            foreach ($this->snacControlMetadata as &$scm) {
+                $scm->setID(null);
+                $scm->setVersion(null);
+                $scm->setOperation($newOperation);
+                $scm->cleanseSubElements($newOperation);
+            }
+        }
     }
 
     /**
@@ -418,7 +586,7 @@ abstract class AbstractData implements \Serializable {
     public function getOperation() {
         return $this->operation;
     }
-    
+
     /**
      * Required method to convert this data object to an array
      *
@@ -439,13 +607,13 @@ abstract class AbstractData implements \Serializable {
                 $return["dates"][$i] = $v->toArray($shorten);
             }
         }
-        
+
         if (isset($this->snacControlMetadata) && !empty($this->snacControlMetadata)) {
             $return['snacControlMetadata'] = array();
             foreach ($this->snacControlMetadata as $i => $v)
                 $return["snacControlMetadata"][$i] = $v->toArray($shorten);
         }
-        
+
         // Shorten if necessary
         if ($shorten) {
             $return2 = array();
@@ -457,7 +625,7 @@ abstract class AbstractData implements \Serializable {
         }
 
 
-        return $return; 
+        return $return;
     }
 
     /**
@@ -466,7 +634,7 @@ abstract class AbstractData implements \Serializable {
      * @param string[][] $data The data for this object in an associative array
      */
     public function fromArray($data) {
-            
+
         unset($this->id);
         if (isset($data["id"]))
             $this->id = $data["id"];
@@ -484,7 +652,7 @@ abstract class AbstractData implements \Serializable {
             $this->operation = $data["operation"];
         else
             $this->operation = null;
-        
+
         unset($this->snacControlMetadata);
         $this->snacControlMetadata = array();
         if (isset($data["snacControlMetadata"])) {
@@ -512,7 +680,7 @@ abstract class AbstractData implements \Serializable {
      */
     public function toJSON($shorten = true) {
         return json_encode($this->toArray($shorten), JSON_PRETTY_PRINT);
-    } 
+    }
 
     /**
      * Prepopulate this object from the given JSON
@@ -525,7 +693,7 @@ abstract class AbstractData implements \Serializable {
         $return = $this->fromArray($data);
         unset($data);
         return $return;
-    } 
+    }
 
     /**
      * Serialization Method
@@ -533,9 +701,9 @@ abstract class AbstractData implements \Serializable {
      * Allows PHP's serialize() method to correctly serialize the object.
      *
      * {@inheritDoc}
-     * 
+     *
      * @return string Serialized form of this object
-     */ 
+     */
     public function serialize() {
         return $this->toJSON();
     }
@@ -546,11 +714,11 @@ abstract class AbstractData implements \Serializable {
      * Allows PHP's unserialize() method to correctly unserialize the object.
      *
      * {@inheritDoc}
-     * 
+     *
      * @param string $data Serialized version of this object
-     */ 
+     */
     public function unserialize($data) {
         $this->fromJSON($data);
-    }    
+    }
 
 }

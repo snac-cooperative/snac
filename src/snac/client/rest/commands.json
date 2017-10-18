@@ -1,0 +1,284 @@
+{
+    "vocabulary" : {
+        "title" : "Search Vocabulary",
+        "description" : "Search through the controlled vocabulary.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "read_vocabulary" : {
+        "title" : "Read Vocabulary Term",
+        "description" : "Read a particular controlled vocabulary term.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "reconcile" : {
+        "title" : "Reconcile Against SNAC",
+        "description" : "Reconcile a given constellation against all constellations in SNAC, returning the top results.",
+        "parameters" : [
+            {"constellation" : "Full Constellation object"}
+        ],
+        "returns" : [
+        ]
+    },
+    "user_information" : {
+        "title" : "Get User Information",
+        "description" : "Returns the information for the given user, including information for Constellations locked to the user.",
+        "parameters" : [
+            {"user" : "User object"}
+        ],
+        "returns" : [
+        ]
+    },
+    "insert_constellation" : {
+        "title" : "Insert New Constellation",
+        "description" : "Insert a new Constellation into SNAC. The Constellation must have the operation flags set to \"insert\".",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellation" : "Full Constellation object"}
+        ],
+        "returns" : [
+            {"constellation" : "Full Constellation object"}
+        ]
+    },
+    "update_constellation" : {
+        "title" : "Update Constellation",
+        "description" : "Updates SNAC's copy of the given Constellation with this one.  Any components with operation flags set to \"update\" will be overwritten with the new version.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellation" : "Full Constellation object"}
+        ],
+        "returns" : [
+            {"constellation" : "Full Constellation object"}
+        ]
+    },
+    "unlock_constellation" : {
+        "title" : "Unlock Constellation",
+        "description" : "Drops the lock on the given Constellation from \"currently editing\" down to simply locked to the user.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellation" : "Full Constellation object"}
+        ],
+        "returns" : [
+            {"user" : "User object"}
+        ]
+    },
+    "publish_constellation" : {
+        "title" : "Publish Constellation",
+        "description" : "Publishes the given Constellation in SNAC.  This does not make any updates to the Constellation data in SNAC.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellation" : "Full Constellation object"}
+        ],
+        "returns" : [
+            {"constellation" : "Full Constellation object"}
+        ]
+    },
+    "review_constellation" : {
+        "title" : "Send Constellation for Review",
+        "description" : "Sends the given Constellation in SNAC for review.  This does not make any updates to the Constellation data in SNAC.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellation" : "Full Constellation object"}
+        ],
+        "returns" : [
+            {"constellation" : "Full Constellation object"}
+        ]
+    },
+    "delete_constellation" : {
+        "title" : "Delete Constellation",
+        "description" : "Deletes the given Constellation from SNAC.  This does not make any updates to the Constellation data in SNAC before deleting.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellation" : "Full Constellation object"}
+        ],
+        "returns" : [
+            {"constellation" : "Full Constellation object"}
+        ]
+    },
+    "reassign_constellation" : {
+        "title" : "Reassign Constellation to Another User",
+        "description" : "Reassigns the given Constellation to a different user, i.e. changes which user to which the Constellation is locked.  This does not make any updates to the Constellation data in SNAC.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellation" : "Full Constellation object"}
+        ],
+        "returns" : [
+        ]
+    },
+    "recently_published" : {
+        "title" : "List Recently Published",
+        "description" : "Returns a list of the most recently published Constellations in SNAC.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "random_constellations" : {
+        "title" : "List Random Constellations",
+        "description" : "Returns a random subset of the Constellations in SNAC.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "list_constellations" : {
+        "title" : "List Constellations",
+        "description" : "Returns a list of Constellations based on the query parameters.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "constellation_history" : {
+        "title" : "Get Constellation History",
+        "description" : "Returns the edit history of the given Constellation.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "download_constellation" : {
+        "title" : "Download Constellation",
+        "description" : "Returns the full Constellation in the requested format.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "constellation_list_maybesame" : {
+        "title" : "List Maybe-Same Constellations",
+        "description" : "Returns a list of Constellations denoted as maybe-same-as the given Constellation.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "constellation_diff" : {
+        "title" : "Compute Constellation Diff",
+        "description" : "Computes the difference between the two given Constellations.  Returns Constellation objects containing: only those items in the first, only those items in the second, and components shared.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellationid1" : "Constellation ID for one Constellation to compare"},
+            {"constellationid2" : "Constellation ID for the other Constellation to compare"}
+        ],
+        "returns" : [
+            {"constellation1" : "Constellation object containing only data distinct to the first Constellation"},
+            {"constellation2" : "Constellation object containing only data distinct to the second Constellation"},
+            {"intersection" : "Constellation object containing only data shared by both Constellations"},
+            {"mergeable" : "Boolean value denoting whether these two Constellations can be merged by this user"}
+        ]
+    },
+    "constellation_diff_merge" : {
+        "title" : "Compute Constellation Diff and Set Merge",
+        "description" : "Computes the difference between the two given Constellations.  Checks out the two Constellations in editing for the given user to allow a merge.  Returns Constellation objects containing: only those items in the first, only those items in the second, and components shared.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellationid1" : "Constellation ID for one Constellation to compare"},
+            {"constellationid2" : "Constellation ID for the other Constellation to compare"}
+        ],
+        "returns" : [
+            {"constellation1" : "Constellation object containing only data distinct to the first Constellation"},
+            {"constellation2" : "Constellation object containing only data distinct to the second Constellation"},
+            {"intersection" : "Constellation object containing only data shared by both Constellations"},
+            {"mergeable" : "Boolean value denoting whether these two Constellations can be merged by this user"}
+        ]
+    },
+    "constellation_merge" : {
+        "title" : "Merge Constellations",
+        "description" : "Given Constellation IDs and a full, merged, Constellation, creates a new Constellation in SNAC from the given Constellation and sets all Constellations given by the IDs to be \"tombstoned\" and redirected to the new, merged, Constellation.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellationids" : "Array of Constellation IDs to tombstone in favor of the merged Constellation"},
+            {"constellation" : "Full Merged Constellation object"}
+        ],
+        "returns" : [
+            {"constellation" : "Full merged Constellation object with IDs"}
+        ]
+    },
+    "constellation_auto_merge" : {
+        "title" : "Automatically Merge Constellations",
+        "description" : "Given Constellation IDs, creates a new Constellation in SNAC from the combined data from all Constellations, \"tombstones\" the originals, and redirects thier IDs to the new, merged, Constellation.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellationids" : "Array of Constellation IDs to merge"}
+        ],
+        "returns" : [
+            {"constellation" : "Full merged Constellation object"}
+        ]
+    },
+    "read" : {
+        "title" : "Read Constellation",
+        "description" : "Returns the full Constellation for viewing.",
+        "parameters" : [
+            {"constellationid" : "Constellation ID for Constellation to read", "optional" : true},
+            {"arkid" : "ARK ID for Constellation to read", "optional": true},
+            {"version" : "Version of the Constellation to read", "optional":true}
+        ],
+        "returns" : [
+            {"constellation" : "Full Constellation object"}
+        ]
+    },
+    "edit" : {
+        "title" : "Edit Constellation",
+        "description" : "Check out the Constellation for editing.",
+        "parameters" : [
+            {"user" : "User object"},
+            {"constellation" : "Constellation object with ID and version to edit"}
+        ],
+        "returns" : [
+            {"constellation" : "Full Constellation object checked out for editing"}
+        ]
+    },
+    "search" : {
+        "title" : "Search Constellations",
+        "description" : "Search for a Constellation, returning a list of possible matches.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "browse" : {
+        "title" : "Browse Constellations",
+        "description" : "Given a query name heading, returns the surrounding matching Constellations (in alphabetical order).",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "insert_resource" : {
+        "title" : "Insert Resource",
+        "description" : "Given a Resource, inserts it into SNAC's resource cache.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "update_resource" : {
+        "title" : "Update Resource",
+        "description" : "Given a Resource, update the resource cache in SNAC by overwriting it with the given one.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "read_resource" : {
+        "title" : "Read Resource",
+        "description" : "Read the entire Resource from SNAC's resource cache.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
+    "resource_search" : {
+        "title" : "Search Resources",
+        "description" : "Searches the resource cache in SNAC.  Returns the top matches.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    }
+}

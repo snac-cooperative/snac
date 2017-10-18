@@ -19,7 +19,7 @@ function setRelationSearchPosition(start) {
      if ($("#relation-searchbox").val() == "" || $("#relation-searchbox").val().length < 2) {
          $("#relation-results-box").html("");
      } else {
-         $.post("?command=quicksearch", $("#relation_search_form").serialize(), function (data) {
+         $.post(snacUrl+"/quicksearch", $("#relation_search_form").serialize(), function (data) {
              //var previewWindow = window.open("", "Preview");
              //previewWindow.document.write(data);
 
@@ -31,7 +31,7 @@ function setRelationSearchPosition(start) {
                      html += "<div class='list-group-item'><div class='row'>";
                      html += "<div class='col-xs-1'><input type='radio' name='relationChoice' id='relationChoice' value='"+data.results[key].id+"'></div>";
                      html += "<div class='col-xs-10'><h4 class='list-group-item-heading'>"+data.results[key].nameEntries[0].original+"</h4>";
-                     html += "<p class='list-group-item-text'>"+data.results[key].ark+" <a class='label label-info' target='_blank' href='?command=view&constellationid="+data.results[key].id+"'>View</a></p></div>";
+                     html += "<p class='list-group-item-text'>"+data.results[key].ark+" <a class='label label-info' target='_blank' href='"+snacUrl+"/view/"+data.results[key].id+"'>View</a></p></div>";
                      html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntries[0].original.replace("'", "&#39;")+"'/>";
                      var arkID = "";
                      if (data.results[key].ark != null)
@@ -88,7 +88,7 @@ function setRelationSearchPosition(start) {
  function searchResource() {
      resourceResults = null;
      $("#resource-results-box").html("<p style='text-align: center'>Loading...</p>");
-     $.post("?command=resource_search", $("#resource_search_form").serialize(), function (data) {
+     $.post(snacUrl+"/resource_search", $("#resource_search_form").serialize(), function (data) {
 
          var html = "";
          html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";

@@ -20,123 +20,123 @@ namespace snac\data;
  * Data class to store the information about a relationship between Constellations
  *
  * @author Robbie Hott
- *        
+ *
  */
 class ConstellationRelation extends AbstractData {
 
     /**
      * Source Constellation ID
-     * 
+     *
      * Postgres ID (source)
      *
      * Add commentary. Why is this necessary? This should be parent::getARK() and if that is true, we can get
-     * it at any time. 
-     * 
+     * it at any time.
+     *
      * @var int Source constellation ID
      */
     private $sourceConstellation = null;
 
     /**
      * Target Constellation ID
-     * 
+     *
      * Postgres ID (target)
-     * 
+     *
      * @var int Target constellation ID
      */
     private $targetConstellation = null;
 
     /**
      * ArkID of source
-     * 
+     *
      * @var string Source constellation ARK ID
      */
     private $sourceArkID = null;
 
     /**
      * ArkID of the target
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * cpfRelation/@href
-     * 
+     *
      * @var string Target constellation ARK ID
      */
     private $targetArkID = null;
-    
+
     /**
      * Entity type of the target
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * cpfRelation/@role
-     * 
+     *
      * @var \snac\data\Term Target entity type
      */
     private $targetEntityType = null;
 
     /**
      * Type of the relation
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * cpfRelation/@arcrole
-     * 
+     *
      * @var \snac\data\Term Type of the constellation
      */
     private $type = null;
 
     /**
      * Alternate Type (unused)
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * cpfRelation/@type cpfRelation@xlink:type
      *
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
      * serializing export.
-     * 
+     *
      * @var \snac\data\Term Alternate type
      */
     private $altType = null;
-    
+
     /**
      * Type of the relation
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * cpfRelation/@cpfRelationType
-     * 
+     *
      * @var \snac\data\Term CPF Relation Type
      */
     private $cpfRelationType = null;
 
     /**
      * Content in the relation tag
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * cpfRelation/relationEntry
-     * 
+     *
      * @var string Content of the relation
      */
     private $content = null;
-    
+
     /**
      * Descriptive Note
-     * 
-     * Descriptive note for the relation. 
-     * 
+     *
+     * Descriptive note for the relation.
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * cpfRelation/descriptiveNote
-     * 
+     *
      * @var string Note attached to relation
      */
     private $note = null;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param string[] $data optional An array of data to pre-fill this object
      */
     public function __construct($data = null) {
@@ -145,7 +145,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Get the Source Constellation's ID 
+     * Get the Source Constellation's ID
      *
      * @return int Source constellation ID
      *
@@ -156,7 +156,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Set the Source Constellation's ID 
+     * Set the Source Constellation's ID
      *
      * @param int $sourceConstellation Source constellation ID
      *
@@ -166,9 +166,9 @@ class ConstellationRelation extends AbstractData {
         $this->sourceConstellation = $sourceConstellation;
     }
 
-        
+
     /**
-     * Get the Target Constellation's ID 
+     * Get the Target Constellation's ID
      *
      * @return int Source constellation ID
      *
@@ -177,7 +177,7 @@ class ConstellationRelation extends AbstractData {
     {
         return $this->targetConstellation;
     }
-            
+
     /**
      * Get the Source Constellation's ARK ID
      *
@@ -204,7 +204,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Get the Target Constellation's ARK ID 
+     * Get the Target Constellation's ARK ID
      *
      * @return string Target constellation ARK ID
      *
@@ -215,7 +215,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Get the Target Constellation's Entity Type 
+     * Get the Target Constellation's Entity Type
      *
      * * cpfRelation/@role
      *
@@ -241,15 +241,15 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Get the xlink type. 
-     * 
+     * Get the xlink type.
+     *
      * This should not be used, as xlink type should always be simple
-     * 
+     *
      * * cpfRelation/@type cpfRelation@xlink:type
      *
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
      * serializing export.
-     * 
+     *
      * @return \snac\data\Term Alternate type
      *
      */
@@ -260,13 +260,13 @@ class ConstellationRelation extends AbstractData {
 
     /**
      * Get the secondary Relation type
-     * 
+     *
      * ANF Used this as a second way of describing
      * the normal relation type.  That is, "associative" for "associatedWith", and "temporal-after"
-     * for "isSucceededBy" 
+     * for "isSucceededBy"
      *
      * * cpfRelation/@cpfRelationType
-     * 
+     *
      * @return \snac\data\Term CPF Relation Type
      *
      */
@@ -276,10 +276,10 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Get the text/xml content of this relation 
+     * Get the text/xml content of this relation
      *
      * * cpfRelation/relationEntry
-     * 
+     *
      * @return string Content of the relation
      *
      */
@@ -290,17 +290,29 @@ class ConstellationRelation extends AbstractData {
 
     /**
      * Get descriptive note
-     * 
-     * Get the human readable descriptive note for this relation 
+     *
+     * Get the human readable descriptive note for this relation
      *
      * * cpfRelation/descriptiveNote
-     * 
+     *
      * @return string Note attached to relation
      *
      */
     function getNote()
     {
         return $this->note;
+    }
+
+    /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        return "Relation: " . ($this->type ? $this->type->getTerm() . " " : "") . $this->content;
     }
 
     /**
@@ -323,7 +335,7 @@ class ConstellationRelation extends AbstractData {
             "content" => $this->content,
             "note" => $this->note
         );
-            
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -423,13 +435,13 @@ class ConstellationRelation extends AbstractData {
 
         $this->targetArkID = $ark;
     }
-    
+
     /**
      * Set the target entity type
      *
      * Feb 8 2016 renamed from setTargetType() to setTargetEntityType() in order to match the variable name,
      * and to match getTargetEntityType().
-     * 
+     *
      * @param \snac\data\Term $type Target's entity type
      */
     public function setTargetEntityType($type) {
@@ -445,10 +457,10 @@ class ConstellationRelation extends AbstractData {
 
         $this->type = $type;
     }
-    
+
     /**
      * Set the CPF Relation type
-     * 
+     *
      * @param \snac\data\Term $type CPF Relation Type
      */
     public function setCPFRelationType($type) {
@@ -472,17 +484,17 @@ class ConstellationRelation extends AbstractData {
 
     /**
      * Set the content of the relation
-     * 
+     *
      * @param string $content Relation content
      */
     public function setContent($content) {
 
         $this->content = $content;
     }
-    
+
     /**
      * Set the note for this constellation relation
-     * 
+     *
      * @param string $note Resource note
      */
     public function setNote($note) {
@@ -497,14 +509,14 @@ class ConstellationRelation extends AbstractData {
      * @param \snac\data\ConstellationRelation $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\ConstellationRelation))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
 
@@ -514,20 +526,20 @@ class ConstellationRelation extends AbstractData {
                 $this->getContent() != $other->getContent() ||
                 $this->getNote() != $other->getNote())
             return false;
-        
+
         // If strict checking is off, then we might not have target or source constellation IDs.
         if ($strict && ($this->getSourceConstellation() != $other->getSourceConstellation() ||
                 $this->getTargetConstellation() != $other->getTargetConstellation()))
             return false;
-        
+
         if (($this->getType() != null && !($this->getType()->equals($other->getType()))) ||
                 ($this->getType() == null && $other->getType() != null))
             return false;
-                
+
         if (($this->getAltType() != null && !($this->getAltType()->equals($other->getAltType()))) ||
                 ($this->getAltType() == null && $other->getAltType() != null))
             return false;
-                
+
         if (($this->getCpfRelationType() != null && !($this->getCpfRelationType()->equals($other->getCpfRelationType()))) ||
                 ($this->getCpfRelationType() == null && $other->getCpfRelationType() != null))
             return false;

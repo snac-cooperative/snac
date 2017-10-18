@@ -30,7 +30,7 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
                 selectItem.select2({
                     ajax: {
                         url: function() {
-                            var query = "?command=vocabulary&type="+type+"&id=";
+                            var query = snacUrl + "/vocabulary?type="+type+"&id=";
                                 query += $("#constellationid").val()+"&version="+$("#version").val();
                                 query += "&entity_type="+$("#entityType").val();
                                 return query;
@@ -67,7 +67,7 @@ function geovocab_select_replace(selectItem, idMatch) {
             selectItem.select2({
                 ajax: {
                     url: function() {
-                        var query = "?command=vocabulary&type=geo_place&format=term";
+                        var query = snacUrl+"/vocabulary?type=geo_place&format=term";
                             query += "&entity_type="+$("#entityType").val();
                             return query;
                     },
@@ -104,6 +104,9 @@ function geovocab_select_replace(selectItem, idMatch) {
         }
 }
 
+
+var lastSourceSearchResults = null;
+
 /**
  * Replace a select that is linked to a Constellation Source search
  *
@@ -118,7 +121,7 @@ function scm_source_select_replace(selectItem, idMatch) {
                 selectItem.select2({
                     ajax: {
                         url: function() {
-                            var query = "?command=vocabulary&type=ic_sources&id=";
+                            var query = snacUrl+"/vocabulary?type=ic_sources&id=";
                                 query += $("#constellationid").val()+"&version="+$("#version").val();
                                 query += "&entity_type="+$("#entityType").val();
                                 return query;
@@ -132,7 +135,14 @@ function scm_source_select_replace(selectItem, idMatch) {
                             };
                         },
                         processResults: function (data, page) {
-                            return { results: data.results };
+                            // Modify the results to be in the format we want
+                            lastSourceSearchResults = data.results;
+                            // need id, text
+                            var results = new Array();
+                            data.results.forEach(function(res) {
+                                results.push({id: res.id, text: res.displayName});
+                            });
+                            return { results: results };
                         },
                         cache: true
                     },
@@ -142,7 +152,35 @@ function scm_source_select_replace(selectItem, idMatch) {
                     theme: 'bootstrap',
                     placeholder: 'Select'
                 });
-            }
+
+            selectItem.on('change', function (evt) {
+                // TODO: Get the current selected value and update the well in the page to reflect it!
+                // Note: all the selections are available in the global lastSourceSearchResults variable.
+                var sourceID = $(this).val();
+                var inPageID = $(this).attr("id");
+                var idArray = inPageID.split("_");
+                if (idArray.length >= 6) {
+                    var i = idArray[5];
+                    var j = idArray[4];
+                    var shortName = idArray[1];
+                    lastSourceSearchResults.forEach(function(source) {
+                        if (source.id == sourceID) {
+                            // Update the text of the source
+                            if (typeof source.text !== 'undefined')
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).html(source.text).removeClass('hidden');
+                            else
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).text("").addClass('hidden');
+                            // Update the URI of the source
+                            if (typeof source.uri !== 'undefined')
+                                $("#scm_" + shortName + "_source_uri_" + j + "_" + i).html('<a href="'+source.uri+'" target="_blank">'+source.uri+'</a>');
+                            else
+                                $("#scm_" + shortName + "_source_uri_" + j + "_" + i).html('');
+                        }
+                    });
+                }
+            });
+
+        }
 }
 
 /**
@@ -157,7 +195,7 @@ function affiliation_select_replace(selectItem) {
                 selectItem.select2({
                     ajax: {
                         url: function() {
-                            var query = "?command=vocabulary&type=affiliation";
+                            var query = snacUrl+"/vocabulary?type=affiliation";
                                 return query;
                         },
                         dataType: 'json',
@@ -178,6 +216,35 @@ function affiliation_select_replace(selectItem) {
                     allowClear: false,
                     theme: 'bootstrap',
                     placeholder: 'Select Affiliation'
+                });
+            }
+}
+
+function reviewer_select_replace(selectItem) {
+        if(selectItem != null) {
+                selectItem.select2({
+                    ajax: {
+                        url: function() {
+                            var query = snacUrl+"/user_search?role=Reviewer";
+                                return query;
+                        },
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                q: params.term,
+                                page: params.page
+                            };
+                        },
+                        processResults: function (data, page) {
+                            return { results: data.results };
+                        },
+                        cache: true
+                    },
+                    width: '100%',
+                    minimumInputLength: 1,
+                    allowClear: false,
+                    theme: 'bootstrap'
                 });
             }
 }
@@ -232,4 +299,8 @@ $(document).ready(function() {
     // Replace the Affiliation dropdowns, if one exists
     if ($("#affiliationid").exists())
         affiliation_select_replace($("#affiliationid"));
+
+    // Replace the User search dropdown, if one exists
+    if ($("#reviewersearchbox").exists())
+        reviewer_select_replace($("#reviewersearchbox"));
 });

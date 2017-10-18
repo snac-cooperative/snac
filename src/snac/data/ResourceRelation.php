@@ -131,6 +131,17 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        return "Resource Relation: " . ($this->role ? $this->role->getTerm() . " " : "") . ($this->resource ? $this->resource->getTitle() . " " : $this->content);
+    }
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components

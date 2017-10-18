@@ -1,0 +1,11 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>Sources</h2>
+
+{% set i = 0 %}
+{% for source in data.sources %}
+    {{ components.displaySource(X, false, true, source, i) }}
+    {% set i = i + 1 %}
+{% endfor %}

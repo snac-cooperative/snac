@@ -163,6 +163,18 @@ class NameEntry extends AbstractData {
     }
 
     /**
+     * To String
+     *
+     * Converts this object to a human-readable summary string.  This is enough to identify
+     * the object on sight, but not enough to discern programmatically.
+     *
+     * @return string A human-readable summary string of this object
+     */
+    public function toString() {
+        return "Name Entry: " . $this->original;
+    }
+
+    /**
      * Returns this object's data as an associative array.
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -327,5 +339,42 @@ class NameEntry extends AbstractData {
             return false;
 
         return true;
+    }
+
+    /**
+     * Cleanse all sub-elements
+     *
+     * Removes the ID and Version from sub-elements and updates the operation to be
+     * INSERT.  If the operation is specified by the parameter, this method
+     * will use that operation instead of INSERT.
+     *
+     * @param string $operation optional The operation to use (default is INSERT)
+     */
+    public function cleanseSubElements($operation=null) {
+        $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
+        if ($operation !== null) {
+            $newOperation = $operation;
+        }
+
+        parent::cleanseSubElements($newOperation);
+
+        foreach ($this->contributors as &$contributor) {
+            $contributor->setID(null);
+            $contributor->setVersion(null);
+            $contributor->setOperation($newOperation);
+            $contributor->cleanseSubElements($newOperation);
+        }
+        foreach ($this->components as &$component) {
+            $component->setID(null);
+            $component->setVersion(null);
+            $component->setOperation($newOperation);
+            $component->cleanseSubElements($newOperation);
+        }
+        if (isset($this->language) && $this->language != null) {
+            $this->language->setID(null);
+            $this->language->setVersion(null);
+            $this->language->setOperation($newOperation);
+            $this->language->cleanseSubElements($newOperation);
+        }
     }
 }
