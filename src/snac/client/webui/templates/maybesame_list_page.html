@@ -160,15 +160,15 @@ function notSameAssert(icid1, icid2, id) {
                     {% endif %}
                     <p class="final" style="margin-top: 5px;">
                         <a href="{{control.snacURL}}/diff?constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
-                        {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
+                        {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Merge %}
                         <a href="{{control.snacURL}}/diff_merge?constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
                         {% endif %}
-                        {% if user.email and permissions.Publish %}
+                        {% if user.email and permissions.NotSameAssertion %}
                         <a href="#" class="btn-sm btn-warning" data-toggle="modal" data-target="#notSameModal{{loop.index}}">Mark Not Same</a>
                         {% endif %}
                     </p>
                     </div>
-                    {% if user.email and permissions.Publish %}
+                    {% if user.email and permissions.NotSameAssertion %}
                     <div class="modal fade" id="notSameModal{{loop.index}}" tabindex="-1" role="dialog" aria-labelledby="notSameModalTitle{{loop.index}}">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
