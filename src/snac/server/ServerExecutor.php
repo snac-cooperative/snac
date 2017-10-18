@@ -1898,11 +1898,12 @@ class ServerExecutor {
         $this->logger->addDebug("Updating indexes after publish");
         // Read in the constellation from the database to update elastic search
         //      currently, we need NRD, names, relations and resource relations (for counts)
-        $published = $this->cStore->readPublishedConstellationByID($icid,
+        /*$published = $this->cStore->readPublishedConstellationByID($icid,
             DBUtil::$READ_NRD |
             DBUtil::$READ_ALL_NAMES |
             DBUtil::$READ_RELATIONS |
-            DBUtil::$READ_RESOURCE_RELATIONS);
+            DBUtil::$READ_RESOURCE_RELATIONS);*/
+        $published = $this->cStore->readPublishedConstellationByID($icid); // reading the entire constellation now
 
         // Update the Elastic Search Indices
         $this->elasticSearch->writeToNameIndices($published);

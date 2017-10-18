@@ -67,6 +67,29 @@ class ElasticSearchUtil {
             $wiki = new \snac\server\util\WikipediaUtil();
             list($hasImage, $imgURL, $imgMeta) = $wiki->getWikiImage($constellation->getArk());
 
+
+            $subjects = [];
+            foreach ($constellation->getSubjects() as $subject) {
+                array_push($subjects, $subject->getTerm()->getTerm());
+            }
+            
+            $occupations = [];
+            foreach ($constellation->getOccupations() as $occupation) {
+                array_push($occupations, $occupation->getTerm()->getTerm());
+            }
+
+            $functions = [];
+            foreach ($constellation->getFunctions() as $function) {
+                array_push($functions, $function->getTerm()->getTerm());
+            }
+
+            $biogHists = [];
+            foreach ($constellation->getBiogHistList() as $biogHist) {
+                array_push($biogHists, $biogHist->getText());
+            }
+
+
+
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
@@ -78,6 +101,10 @@ class ElasticSearchUtil {
                     'id' => (int) $constellation->getID(),
                     'degree' => (int) count($constellation->getRelations()),
                     'resources' => (int) count($constellation->getResourceRelations()),
+                    'subject' => $subjects,
+                    'occupation' => $occupations,
+                    'function' => $functions,
+                    'biogHist' => $biogHists,
                     'hasImage' => $hasImage,
                     'imageURL' => $imgURL,
                     'imageMeta' => $imgMeta,
