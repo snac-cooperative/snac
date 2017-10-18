@@ -180,7 +180,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                     ]
                 ],
                 "view" => [
-                    "url" => \snac\Config::$WEBUI_URL . "/view/{{id}}"
+                    "url" => \snac\Config::$WEBUI_URL . "view/{{id}}"
                 ],
                 "identifierSpace" => \snac\Config::$WEBUI_URL,
                 "name" => "SNAC Reconciliation for OpenRefine",
