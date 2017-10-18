@@ -76,7 +76,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
         //  - else give information about the endpoint 
         if (isset($this->input["query"])) {
             $query = $this->input["query"];
-            $max = 5;
+            $max = 10;
             if (isset($query["limit"]))
                 $max = $query["limit"];
 
@@ -152,7 +152,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                         // only grab the first 5 results
                         if ($i > $max) break;
                         
-                        // build the CSV line to print
+                        // build the results line
                         $output = array(
                             "name" => $result["identity"]["nameEntries"][0]["original"],
                             "id" => $result["identity"]["id"],
@@ -175,20 +175,12 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
             $response = [
                 "defaultTypes" => [
                     [
-                        "id" => "person",
-                        "name" => "Identity Constellation P"
-                    ],
-                    [
-                        "id" => "corporateBody",
-                        "name" => "Identity Constellation C"
-                    ],
-                    [
-                        "id" => "family",
-                        "name" => "Identity Constellation F"
+                        "id" => "constellation",
+                        "name" => "Identity Constellation"
                     ]
                 ],
                 "view" => [
-                    "url" => \snac\Config::$WEBUI_URL . "/?command=view&constellationid={{id}}"
+                    "url" => \snac\Config::$WEBUI_URL . "/view/{{id}}"
                 ],
                 "identifierSpace" => \snac\Config::$WEBUI_URL,
                 "name" => "SNAC Reconciliation for OpenRefine",
