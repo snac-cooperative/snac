@@ -70,13 +70,7 @@ class Config {
 
     /**
      *
-     * @var string URL of the back-end server
-     */
-    public static $WEBUI_URL = "http://localhost/www/";
-
-    /**
-     *
-     * @var string URL of the back-end server
+     * @var string URL of the openrefine endpoint
      */
     public static $OPENREFINE_URL = "http://localhost/openrefine/";
 
