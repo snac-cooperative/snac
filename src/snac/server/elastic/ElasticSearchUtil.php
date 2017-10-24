@@ -271,12 +271,33 @@ class ElasticSearchUtil {
                     'from' => $start,
                     'size' => $count*/
 
-                    /* This query uses a full-phrase matching search */
+                    /* This query uses a full-phrase matching search 
                     'query' => [
                         'match_phrase_prefix' => [
                             'nameEntry' => [
                                 'query' => $query,
                                 'slop' => 20
+                            ]
+                        ]
+                    ],*/
+                    'query' => [
+                        'filtered' => [
+                            'query' => [
+                                'match_phrase_prefix' => [
+                                    'nameEntry' => [
+                                        'query' => $query,
+                                        'slop' => 20
+                                    ]
+                                ]
+                            ],
+                            'filter' => [
+                                'bool' => [
+                                    'must' => [
+                                        'term' => [
+                                            'subject' => 'women sculptors'
+                                        ]
+                                    ]
+                                ]
                             ]
                         ]
                     ],
@@ -386,7 +407,7 @@ class ElasticSearchUtil {
      * @param integer $count optional The number of results to return from the start (default 10)
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchMainIndexAdvanced($query, $entityType=null, $start=0, $count=10) {
+    public function searchMainIndexAdvanced($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=null) {
 
         $searchBody = [
             /* This query uses a full-word matching search */
@@ -400,7 +421,9 @@ class ElasticSearchUtil {
                                    'query' => $query,
                                    'default_operator' => 'and'
                                ]
-                            ]
+                           ], 
+                           "filter" => [
+                           ]
                         ]
                     ],
                     'field_value_factor' => [
@@ -413,13 +436,37 @@ class ElasticSearchUtil {
                 ]
             ]
         ];
-        if ($entityType !== null) {
-            $searchBody["query"]["function_score"]["query"]["bool"]["filter"] = [
-                    "term" => [
-                        'entityType' => strtolower($entityType) // strange elastic search behavior
+        if ($fullSearch !== null) {
+            unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
+            $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
+                [
+                    'simple_query_string' => [
+                        'fields' => ['nameEntry', 'biogHist'],
+                        'query' => $query,
+                        'default_operator' => 'and'
                     ]
+                ]
             ];
         }
+        if ($entityType !== null) {
+            array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                'term' => [
+                    'entityType' => strtolower($entityType) // strange elastic search behavior
+                ]
+            ]);
+        }
+        if ($parameters !== null) {
+            foreach ($parameters as $type=>$value) {
+                array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                    'match' => [
+                        $type => [
+                            'query' => $value 
+                        ]
+                    ]
+                ]);
+            }
+        }
+
 
 
         return $this->elasticSearchQuery($searchBody, $start, $count);
@@ -436,7 +483,7 @@ class ElasticSearchUtil {
      * @param integer $count optional The number of results to return from the start (default 10)
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10) {
+    public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=null) {
 
         $searchBody = [
             /* This query uses a full-word matching search */
@@ -451,6 +498,8 @@ class ElasticSearchUtil {
                                         'operator' => 'and'
                                     ]
                                 ]
+                            ],
+                            'filter' => [
                             ]
                         ]
                     ],
@@ -464,12 +513,45 @@ class ElasticSearchUtil {
                 ]
             ]
         ];
-        if ($entityType !== null) {
-            $searchBody["query"]["function_score"]["query"]["bool"]["filter"] = [
-                    "term" => [
-                        'entityType' => strtolower($entityType) // strange elastic search behavior
+
+        if ($fullSearch !== null) {
+            unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
+            $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
+                [
+                    'match' => [
+                        'nameEntry' => [
+                            'query' => $query,
+                            'operator' => 'and'
+                        ]
                     ]
+                ],
+                [
+                    'match' => [
+                        'biogHist' => [
+                            'query' => $query,
+                            'operator' => 'and'
+                        ]
+                    ]
+                ]
             ];
+        }
+        if ($entityType !== null) {
+            array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                'term' => [
+                    'entityType' => strtolower($entityType) // strange elastic search behavior
+                ]
+            ]);
+        }
+        if ($parameters !== null) {
+            foreach ($parameters as $type=>$value) {
+                array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                    'match' => [
+                        $type => [
+                            'query' => $value 
+                        ]
+                    ]
+                ]);
+            }
         }
 
         return $this->elasticSearchQuery($searchBody, $start, $count);

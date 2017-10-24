@@ -3411,6 +3411,14 @@ class ServerExecutor {
             $input["search_type"] = "default";
         }
 
+        if (!isset($input["facets"])) {
+            $input["facets"] = null;
+        }
+
+        if (!isset($input["biog_hist"])) {
+            $input["biog_hist"] = null;
+        }
+
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
             switch($input["search_type"]) {
                 case "autocomplete":
@@ -3419,11 +3427,11 @@ class ServerExecutor {
                     break;
                 case "advanced":
                     $response = $this->elasticSearch->searchMainIndexAdvanced($input["term"], $input["entity_type"],
-                                                                        $input["start"], $input["count"]);
+                                                                        $input["start"], $input["count"], $input["facets"], $input["biog_hist"]);
                     break;
                 default:
                     $response = $this->elasticSearch->searchMainIndexWithDegree($input["term"], $input["entity_type"],
-                                                                            $input["start"], $input["count"]);
+                                                                            $input["start"], $input["count"], $input["facets"], $input["biog_hist"]);
             }
 
 

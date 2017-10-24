@@ -355,12 +355,31 @@ class WebUIExecutor {
         if (isset($input["q"])) {
             $input["term"] = $input["q"];
         }
+        
+        if (!isset($input["biog_hist"]))
+            $input["biog_hist"] = null;
+
+
+        $input["facets"] = array();
+        if (isset($input["subject"])) {
+            $input["facets"]["subject"] = $input["subject"];
+        }
+        if (isset($input["occupation"])) {
+            $input["facets"]["occupation"] = $input["occupation"];
+        }
+        if (isset($input["function"])) {
+            $input["facets"]["function"] = $input["function"];
+        }
+
         $results = $this->performNameSearch($input);
         if (isset($results["results"])) {
             $results["query"] = $input["term"];
             $results["entityType"] = $input["entity_type"];
             $results["searchType"] = $results["search_type"];
+            $results["facets"] = $input["facets"];
+            $results["biog_hist"] = $input["biog_hist"];
             $display->setTemplate("search_page");
+            $this->logger->addDebug("Set the following results into the search page", $results);
             $display->setData($results);
         } else {
             $this->logger->addDebug("Error page being drawn");
@@ -2825,6 +2844,14 @@ class WebUIExecutor {
             "start" => isset($input["start"]) ? $input["start"] : 0,
             "count" => isset($input["count"]) ? $input["count"] : 10
         );
+
+        if (isset($input["facets"])) {
+            $query["facets"] = $input["facets"];
+        }
+
+        if (isset($input["biog_hist"])) {
+            $query["biog_hist"] = $input["biog_hist"];
+        }
 
         if ($autocomplete) {
             $query["search_type"] = "autocomplete";

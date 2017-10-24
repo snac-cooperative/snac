@@ -12,6 +12,12 @@
 jQuery.fn.exists = function(){return this.length>0;}
 
 
+function goSearch(start) {
+    $("#start").val(start);
+    $("#search_form").submit();
+    return false;
+}
+
 function showCompareOption() {
     var constellation1 = null;
     var constellation2 = null;
@@ -50,13 +56,44 @@ function showCompareOption() {
 $(document).ready(function() {
     var timeoutID = null;
 
-    $('select').each(function() {
+    $('.search-select').each(function() {
         $(this).select2({
             minimumResultsForSearch: Infinity,
             allowClear: false,
             theme: 'bootstrap',
             width: ''
         });
+    });
+
+    $('.facet-select').each(function() {
+        var type = $(this).attr("id");
+        $(this).select2({
+            ajax: {
+                url: function() {
+                    var query = snacUrl + "/vocabulary?type=" + type;
+                    return query;
+                },
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        q: params.term,
+                        page: params.page
+                    };
+                },
+                processResults: function (data, page) {
+                    data.results.forEach(function(result) {
+                        result.id = result.value;
+                    });
+                    return { results: data.results };
+                },
+                cache: true
+            },
+            width: '100%',
+            minimumInputLength: 1,
+            theme: 'bootstrap'
+        });
+
     });
 
     $('#searchbox').autocomplete({
@@ -83,6 +120,19 @@ $(document).ready(function() {
                 $("#advancedSearchText").collapse("show");
             } else {
                 $("#advancedSearchText").collapse("hide");
+            }
+        });
+    }
+
+    /**
+     * If an advanced search button exists, then have it toggle the advanced search information box
+     */
+    if ($("#faceted").exists()) {
+        $("#faceted").on("change", function() {
+            if ( this.checked) {
+                $("#facetedSearch").collapse("show");
+            } else {
+                $("#facetedSearch").collapse("hide");
             }
         });
     }
