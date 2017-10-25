@@ -297,6 +297,7 @@ class Neo4JUtil {
         }
     }
 
+
     /**
      * Delete Constellation Node (and related data)
      *
@@ -348,22 +349,37 @@ class Neo4JUtil {
      *
      * @param \snac\data\Resource $resource The resource object to insert/update in Neo4J
      */
-    public function writeResource(&$resource) {
-
+    public function updateResourceIndex(&$resource) {
         if ($this->connector != null) {
-
-            /** Want to write at least:
-                    'id' => (int) $resource->getID(),
+            
+            // STEP 1: Update or insert this identity as a node:
+            $this->logger->addDebug("Updating/Inserting Node into Neo4J database"); 
+            $result = $this->connector->run("MATCH (a:Resource {id: {id} }) SET a.title = {title}, a.version = {version}, a.href = {href}
+                return a;", 
+                [
+                    'id' => $resource->getID(),
+                    'version' => $resource->getVersion(),
                     'title' => $resource->getTitle(),
-                    'url' => $resource->getLink(),
-                    'abstract' => $resource->getAbstract(),
-                    'type' => $resource->getDocumentType()->getTerm(),
-                    'type_id' => (int) $resource->getDocumentType()->getID(),
-                    'timestamp' => date('c')
-                    **/
+                    'href' => $resource->getLink()
+                ]
+            );
 
-            $this->logger->addDebug("Updated resource in neo4j");
-        }
+            // Check to see if anything was added
+            $records = $result->getRecords(); 
+            if (empty($records)) {
+                // Must create this record instead
+                $result = $this->connector->run("CREATE (n:Resource) SET n += {infos};", 
+                    [
+                        "infos" => [
+                            'id' => $resource->getID(),
+                            'version' => $resource->getVersion(),
+                            'title' => $resource->getTitle(),
+                            'href' => $resource->getLink()
+                        ]
+                    ]
+                );
+            }
+        }    
     }
 
     /**

@@ -1281,6 +1281,7 @@ class ServerExecutor {
                 $result = $this->cStore->writeResource($resource);
                 if (isset($result) && $result != false) {
                     $this->elasticSearch->writeToResourceIndices($resource);
+                    $this->neo4J->updateResourceIndex($resource);
                     $this->logger->addDebug("successfully wrote resource");
                     $response["resource"] = $result->toArray();
                     $response["result"] = "success";
