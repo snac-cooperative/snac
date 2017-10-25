@@ -79,17 +79,128 @@ class Neo4JUtil {
      *
      * @param \snac\data\Constellation $constellation The constellation object to insert/update in Neo4J
      */
-    public function writeConstellation(&$constellation) {
+    public function updateIdentityIndex(&$constellation) {
 
         if ($this->connector != null) {
-            /** Write at least
-                    'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
-                    'entityType' => $constellation->getEntityType()->getTerm(),
-                    'arkID' => $constellation->getArk(),
-                    'id' => (int) $constellation->getID(),
-                    'degree' => (int) count($constellation->getRelations()), // In Neo4J already by nature of graph database
-                    'resources' => (int) count($constellation->getResourceRelations()) // In Neo4J already if we include resources
-                    **/
+            
+            // STEP 1: Update or insert this identity as a node:
+            $this->logger->addDebug("Updating/Inserting Node into Neo4J database"); 
+            $result = $this->connector->run("MATCH (a:Identity {id: {icid} }) SET a.name = {name}, a.version = {version}, a.ark = {ark},
+                a.entity_type = {entityType} return a;", 
+                [
+                    'icid' => $constellation->getID(),
+                    'version' => $constellation->getVersion(),
+                    'name' => $constellation->getPreferredNameEntry()->getOriginal(),
+                    'ark' => $constellation->getArk(),
+                    'entityType' => $constellation->getEntityType()->getTerm()
+                ]
+            );
+
+            // Check to see if anything was added
+            $records = $result->getRecords(); 
+            if (empty($records)) {
+                // Must create this record instead
+                $result = $this->connector->run("CREATE (n:Identity) SET n += {infos};", 
+                    [
+                        "infos" => [
+                            'id' => $constellation->getID(),
+                            'version' => $constellation->getVersion(),
+                            'name' => $constellation->getPreferredNameEntry()->getOriginal(),
+                            'ark' => $constellation->getArk(),
+                            'entity_type' => $constellation->getEntityType()->getTerm()
+                        ]
+                    ]
+                );
+            }
+
+            // ************************************
+            // STEP 2: Check all the constellation relations. Update, insert, or delete as appropriate
+            $this->logger->addDebug("Reading relationships from Neo4J"); 
+            
+            $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:ICRELATION]->(b:Identity) return p;", 
+                [
+                    'icid' => $constellation->getID()
+                ]
+            );
+
+            // List out relations 
+            $rels = array();
+            foreach ($result->getRecords() as $record) {
+                $path = $record->pathValue("p");
+                array_push($rels, [
+                    "arcrole" => $path->relationships()[0]->value('arcrole'),
+                        "target" => $path->end()->value("id"),
+                    "operation" => "delete"
+                    ]
+                );
+            }
+
+            $this->logger->addDebug("Reconciling Relationships to Current IC"); 
+            $relsToDelete = array();
+            $relsToModify = array();
+            foreach($constellation->getRelations() as $relation) {
+                $add = true;
+                foreach ($rels as &$rel) {
+                    if ($relation->getTargetConstellation() == $rel["target"]) {
+                        // if it's been found, then don't add it to the index
+                        $add = false;
+                        if ($relation->getType() && $relation->getType()->getTerm() != $rel["arcrole"]) {
+                            $rel["arcrole"] = $relation->getType() ? $relation->getType()->getTerm() : "";
+                            $rel["operation"] = "update";
+                        } else {
+                            $rel["operation"] = null;
+                        }
+                        break;
+                    }
+                }
+                if ($add) 
+                    array_push($rels, [
+                        "target" => $relation->getTargetConstellation(),
+                        "arcrole" => $relation->getType() ? $relation->getType()->getTerm() : "",
+                        "operation" => "insert"
+                    ]);
+            }
+            $this->logger->addDebug("List of related identity paths", $rels); 
+
+            // Make the relationship changes
+            foreach ($rels as $rel) {
+                switch($rel["operation"]) {
+                    case "insert":
+                        $result = $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Identity {id: {id2} })
+                                                            CREATE (a)-[r:ICRELATION {infos}]->(b)", 
+                        [
+                            'id1' => $constellation->getID(),
+                            'id2' => $rel["target"],
+                            'infos' => [
+                                "arcrole" => $rel["arcrole"]
+                            ]
+                        ]);
+                        break;
+                    case "delete":
+                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:ICRELATION {arcrole:{arcrole}}]->(n2:Identity {id:{id2}}) 
+                                                          delete r;", 
+                        [
+                            'id1' => $constellation->getID(),
+                            'id2' => $rel["target"],
+                            "arcrole" => $rel["arcrole"]
+                        ]);
+                        break;
+                    case "update":
+                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:ICRELATION]->(n2:Identity {id:{id2}}) 
+                                                          set r.arcrole = {arcrole} return p;", 
+                        [
+                            'id1' => $constellation->getID(),
+                            'id2' => $rel["target"],
+                            "arcrole" => $rel["arcrole"]
+                        ]);
+                        break;
+                }                
+            }
+            
+            // ************************************
+            // STEP 3: Check all the resource relations. Update, insert, or delete as appropriate
+            $this->logger->addDebug("Reading resource relationships from Neo4J"); 
+            
 
             /** May want to include the other name entries as part of the node **/
             $this->logger->addDebug("Updated neo4j with constellation data");

@@ -1911,7 +1911,7 @@ class ServerExecutor {
         $this->cStore->updateNameIndex($published);
 
         // Update the Neo4J Indices
-        // TODO
+        $this->neo4J->updateIdentityIndex($published);
     }
 
     /**
@@ -2813,6 +2813,7 @@ class ServerExecutor {
             }
             $this->elasticSearch->deleteFromNameIndices($c);
             $this->cStore->deleteFromNameIndex($c);
+            //TODO Delete from neo4J index
         }
 
         // Remove maybe-same links between the originals, if they exist
