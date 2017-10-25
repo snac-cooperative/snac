@@ -201,6 +201,96 @@ class Neo4JUtil {
             // STEP 3: Check all the resource relations. Update, insert, or delete as appropriate
             $this->logger->addDebug("Reading resource relationships from Neo4J"); 
             
+            $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:RRELATION]->(b:Resource) return p;", 
+                [
+                    'icid' => $constellation->getID()
+                ]
+            );
+
+            // List out relations 
+            $rels = array();
+            foreach ($result->getRecords() as $record) {
+                $path = $record->pathValue("p");
+                array_push($rels, [
+                    "target" => $path->end()->value("id"),
+                    "role" => $path->relationships()[0]->value('role'),
+                    "id" => $path->relationships()[0]->value('id'),
+                    "version" => $path->relationships()[0]->value('version'),
+                    "operation" => "delete"
+                    ]
+                );
+            }
+
+            $this->logger->addDebug("Reconciling Resource Relationships to Current IC"); 
+            $relsToDelete = array();
+            $relsToModify = array();
+            foreach($constellation->getResourceRelations() as $relation) {
+                $add = true;
+                foreach ($rels as &$rel) {
+                    if ($relation->getResource()->getID() == $rel["target"]) {
+                        // if it's been found, then don't add it to the index
+                        $add = false;
+                        if ($relation->getVersion() != $rel["version"]) {
+                            $rel["role"] = $relation->getRole() ? $relation->getRole()->getTerm() : "";
+                            $rel["version"] = $relation->getVersion();
+                            $rel["operation"] = "update";
+                        } else {
+                            $rel["operation"] = null;
+                        }
+                        break;
+                    }
+                }
+                if ($add) 
+                    array_push($rels, [
+                        "target" => $relation->getResource()->getID(),
+                        "role" => $relation->getRole() ? $relation->getRole()->getTerm() : "",
+                        "id" => $relation->getID(),
+                        "version" => $relation->getVersion(),
+                        "operation" => "insert"
+                    ]);
+            }
+            $this->logger->addDebug("List of related resource paths", $rels); 
+            
+            // Make the relationship changes
+            foreach ($rels as $rel) {
+                switch($rel["operation"]) {
+                    case "insert":
+                        $result = $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
+                                                            CREATE (a)-[r:RRELATION {infos}]->(b)", 
+                        [
+                            'id1' => $constellation->getID(),
+                            'id2' => $rel["target"],
+                            'infos' => [
+                                "role" => $rel["role"],
+                                "id" => $rel["id"],
+                                "version" => $rel["version"]
+                            ]
+                        ]);
+                        break;
+                    case "delete":
+                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:RRELATION {id:{rid}}]->(n2:Resource {id:{id2}}) 
+                                                          delete r;", 
+                        [
+                            'id1' => $constellation->getID(),
+                            'id2' => $rel["target"],
+                            "rid" => $rel["id"]
+                        ]);
+                        break;
+                    case "update":
+                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:RRELATION]->(n2:Resource {id:{id2}}) 
+                                                          set r.role = {role}, r.id = {rid}, r.version = {rversion} return p;", 
+                        [
+                            'id1' => $constellation->getID(),
+                            'id2' => $rel["target"],
+                            "role" => $rel["role"],
+                            "rid" => $rel["id"],
+                            "rversion" => $rel["version"]
+                        ]);
+                        break;
+                }                
+            }
+            
+
 
             /** May want to include the other name entries as part of the node **/
             $this->logger->addDebug("Updated neo4j with constellation data");
