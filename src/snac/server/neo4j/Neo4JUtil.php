@@ -129,6 +129,8 @@ class Neo4JUtil {
                 $path = $record->pathValue("p");
                 array_push($rels, [
                     "arcrole" => $path->relationships()[0]->value('arcrole'),
+                    "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
+                    "version" => $path->relationships()[0]->hasValue('version') ? $path->relationships()[0]->value('version') : null,
                         "target" => $path->end()->value("id"),
                     "operation" => "delete"
                     ]
@@ -144,8 +146,10 @@ class Neo4JUtil {
                     if ($relation->getTargetConstellation() == $rel["target"]) {
                         // if it's been found, then don't add it to the index
                         $add = false;
-                        if ($relation->getType() && $relation->getType()->getTerm() != $rel["arcrole"]) {
+                        if ($relation->getType() && $relation->getVersion() != $rel["version"]) {
                             $rel["arcrole"] = $relation->getType() ? $relation->getType()->getTerm() : "";
+                            $rel["id"] = $relation->getID();
+                            $rel["version"] = $relation->getVersion();
                             $rel["operation"] = "update";
                         } else {
                             $rel["operation"] = null;
@@ -156,6 +160,8 @@ class Neo4JUtil {
                 if ($add) 
                     array_push($rels, [
                         "target" => $relation->getTargetConstellation(),
+                        "id" => $relation->getID(),
+                        "version" => $relation->getVersion(),
                         "arcrole" => $relation->getType() ? $relation->getType()->getTerm() : "",
                         "operation" => "insert"
                     ]);
@@ -172,6 +178,8 @@ class Neo4JUtil {
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
                             'infos' => [
+                                "id" => $rel["id"],
+                                "version" => $rel["version"],
                                 "arcrole" => $rel["arcrole"]
                             ]
                         ]);
@@ -182,15 +190,19 @@ class Neo4JUtil {
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
+                            "id" => $rel["id"],
+                            "version" => $rel["version"],
                             "arcrole" => $rel["arcrole"]
                         ]);
                         break;
                     case "update":
                         $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:ICRELATION]->(n2:Identity {id:{id2}}) 
-                                                          set r.arcrole = {arcrole} return p;", 
+                            set r.arcrole = {arcrole}, r.id = {id}, r.version = {version} return p;", 
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
+                            "id" => $rel["id"],
+                            "version" => $rel["version"],
                             "arcrole" => $rel["arcrole"]
                         ]);
                         break;
@@ -308,6 +320,12 @@ class Neo4JUtil {
     public function deleteConstellation(&$constellation) {
 
         if ($this->connector != null) {
+            $this->logger->addDebug("Deleting Identity Node from Neo4J database"); 
+            $result = $this->connector->run("MATCH (a:Identity {id: {icid}}) detach delete a;", 
+                [
+                    'icid' => $constellation->getID()
+                ]
+            );
             $this->logger->addDebug("Updated neo4j to remove constellation");
         }
 
@@ -323,8 +341,51 @@ class Neo4JUtil {
      */
     public function listConstellationInEdges(&$constellation) {
         $results = array();
+        $this->logger->addDebug("Reading relationships from Neo4J"); 
+        
+        $result = $this->connector->run("MATCH p=(a:Identity)-[r:ICRELATION]->(b:Identity {id: {icid}}) return p;", 
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
 
-        return $results;
+        // List out relations 
+        $rels = array();
+        foreach ($result->getRecords() as $record) {
+            $path = $record->pathValue("p");
+
+            $target = new \snac\data\Constellation();
+            $target->setID($path->start()->value("id"));
+            $target->setArkID($path->start()->value("ark"));
+            $target->setVersion($path->start()->value("version"));
+
+            $targetName = new \snac\data\NameEntry();
+            $targetName->setOriginal($path->start()->value("name"));
+
+            $target->addNameEntry($targetName);
+
+            $relation = new \snac\data\ConstellationRelation();
+            if ($path->relationships()[0]->hasValue('id'))
+                $relation->setID($path->relationships()[0]->value('id'));
+            if ($path->relationships()[0]->hasValue('version'))
+                $relation->setVersion($path->relationships()[0]->value('version'));
+            $type = new \snac\data\Term();
+            $type->setTerm($path->relationships()[0]->value('arcrole'));
+            $relation->setType($type);
+
+            array_push($rels, [
+                "constellation" => $target,
+                "relation" => $relation
+            ]);
+        }
+        
+        // Sort the in edges by preferred name
+        usort($rels,
+                function ($a, $b) {
+                    return $a['constellation']->getPreferredNameEntry()->getOriginal() <=> $b['constellation']->getPreferredNameEntry()->getOriginal();
+                });
+        
+        return $rels;
     }
 
     /**
@@ -336,9 +397,49 @@ class Neo4JUtil {
      * @return string[]                 The list of results
      */
     public function listConstellationOutEdges(&$constellation) {
-        $results = array();
+        $result = $this->connector->run("MATCH p=(a:Identity {id: {icid}})-[r:ICRELATION]->(b:Identity) return p;", 
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
 
-        return $results;
+        // List out relations 
+        $rels = array();
+        foreach ($result->getRecords() as $record) {
+            $path = $record->pathValue("p");
+
+            $target = new \snac\data\Constellation();
+            $target->setID($path->end()->value("id"));
+            $target->setArkID($path->end()->value("ark"));
+            $target->setVersion($path->end()->value("version"));
+
+            $targetName = new \snac\data\NameEntry();
+            $targetName->setOriginal($path->end()->value("name"));
+
+            $target->addNameEntry($targetName);
+
+            $relation = new \snac\data\ConstellationRelation();
+            if ($path->relationships()[0]->hasValue('id'))
+                $relation->setID($path->relationships()[0]->value('id'));
+            if ($path->relationships()[0]->hasValue('version'))
+                $relation->setVersion($path->relationships()[0]->value('version'));
+            $type = new \snac\data\Term();
+            $type->setTerm($path->relationships()[0]->value('arcrole'));
+            $relation->setType($type);
+
+            array_push($rels, [
+                "constellation" => $target,
+                "relation" => $relation
+            ]);
+        }
+        
+        // Sort the in edges by preferred name
+        usort($rels,
+                function ($a, $b) {
+                    return $a['constellation']->getPreferredNameEntry()->getOriginal() <=> $b['constellation']->getPreferredNameEntry()->getOriginal();
+                });
+        
+        return $rels;
     }
 
     /**
@@ -392,6 +493,12 @@ class Neo4JUtil {
     public function deleteResource(&$resource) {
 
         if ($this->connector != null) {
+            $this->logger->addDebug("Deleting Resource Node from Neo4J database"); 
+            $result = $this->connector->run("MATCH (a:Resource {id: {id}}) detach delete a;", 
+                [
+                    'id' => $resource->getID()
+                ]
+            );
             $this->logger->addDebug("Updated neo4j to remove resource");
         }
 
