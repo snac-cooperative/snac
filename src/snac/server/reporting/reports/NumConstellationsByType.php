@@ -33,7 +33,7 @@ class NumConstellationsByType extends helpers\Report {
     /**
      * @var string The type of the report data (series, text, numeric)
      */
-    protected $type = "list";
+    protected $type = "sum";
 
     /**
      * Run report
