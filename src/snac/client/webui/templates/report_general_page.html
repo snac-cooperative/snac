@@ -104,8 +104,10 @@ $('.selectpicker').selectpicker();
                             <div id="report{{i}}"></div>
                             <script>
                                 var cols = new Array();
+                                {% set sum = 0 %}
                                 {% for x,y in report.result %}
                                     cols.push(["{{x}}", {{y}}]);
+                                    {% set sum = sum + y %}
                                 {% endfor %}
                                 var chart = c3.generate({
                                     bindto: '#report{{i}}',
@@ -114,13 +116,7 @@ $('.selectpicker').selectpicker();
                                         columns: cols
                                     },
                                     donut: {
-                                        title: function() {
-                                            var sum = 0;
-                                            cols.forEach(function(col) {
-                                                sum += col[1];
-                                            });
-                                            return sum;
-                                        }
+                                        title: '{{sum|number_format}}'
                                     }
                                 });    
                             </script>
