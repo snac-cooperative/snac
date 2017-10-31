@@ -1281,6 +1281,7 @@ class ServerExecutor {
                 $result = $this->cStore->writeResource($resource);
                 if (isset($result) && $result != false) {
                     $this->elasticSearch->writeToResourceIndices($resource);
+                    $this->neo4J->updateResourceIndex($resource);
                     $this->logger->addDebug("successfully wrote resource");
                     $response["resource"] = $result->toArray();
                     $response["result"] = "success";
@@ -1912,7 +1913,7 @@ class ServerExecutor {
         $this->cStore->updateNameIndex($published);
 
         // Update the Neo4J Indices
-        // TODO
+        $this->neo4J->updateIdentityIndex($published);
     }
 
     /**
@@ -1979,7 +1980,7 @@ class ServerExecutor {
                     $this->cStore->deleteFromNameIndex($constellation);
 
                     // Delete from Neo4J Indices
-                    // TODO
+                    $this->neo4J->deleteConstellation($constellation);
 
                     // Since the Constellation still "exists" we should leave it in the DAG table
 
@@ -2814,6 +2815,7 @@ class ServerExecutor {
             }
             $this->elasticSearch->deleteFromNameIndices($c);
             $this->cStore->deleteFromNameIndex($c);
+            $this->neo4J->deleteConstellation($c);
         }
 
         // Remove maybe-same links between the originals, if they exist
@@ -3163,40 +3165,34 @@ class ServerExecutor {
 
         // TODO: We need to fully implement Neo4J so that we can ask these questions of that system
         // For now, we'll hack it out.
-        //if (\snac\Config::$USE_NEO4J) {
-        if (false) {
+        if (\snac\Config::$USE_NEO4J) {
+        //if (false) {
             // If using Neo4J, then ask Neo4J.  It will be a faster response time.
             $return = array("in" => array(), "out" => array());
 
             $results = $this->neo4J->listConstellationInEdges($constellation);
-            foreach ($results as $i => $val) {
-                // optionally, we could call readConstellation for a fuller constellation
-                $related = new \snac\data\Constellation();
-                //$related->setID($val["_source"]["id"]);
-                //$related->setArkID($val["_source"]["arkID"]);
-                $relatedName = new \snac\data\NameEntry();
-                //$relatedName->setOriginal($val["_source"]["nameEntry"]);
-                $related->addNameEntry($relatedName);
-                // TODO: put in the relationship pointing back to the queried constellation for context
-                array_push($return["in"], $related->toArray());
+            foreach ($results as $result) {
+                array_push($return["in"], 
+                    array(
+                        "constellation" => $this->cStore->readPublishedConstellationByID(
+                            $result["constellation"]->getID(),
+                            \snac\server\database\DBUtil::$READ_MICRO_SUMMARY)->toArray(),
+                         "relation" => $result["relation"]->toArray()
+                     )
+                );
             }
 
-            // This makes less sense since they are available within the original constellation data.
-            // Leaving here for now
             $results = $this->neo4J->listConstellationOutEdges($constellation);
-            foreach ($results as $i => $val) {
-                // optionally, we could call readConstellation for a fuller constellation
-                $related = new \snac\data\Constellation();
-                //$related->setID($val["_source"]["id"]);
-                //$related->setArkID($val["_source"]["arkID"]);
-                $relatedName = new \snac\data\NameEntry();
-                //$relatedName->setOriginal($val["_source"]["nameEntry"]);
-                $related->addNameEntry($relatedName);
-                // TODO: put in the relationships pointing from the queried constellation for context
-                array_push($return["out"], $related->toArray());
+            foreach ($results as $result) {
+                array_push($return["out"], 
+                    array(
+                        "constellation" => $this->cStore->readPublishedConstellationByID(
+                            $result["constellation"]->getID(),
+                            \snac\server\database\DBUtil::$READ_MICRO_SUMMARY)->toArray(),
+                         "relation" => $result["relation"]->toArray()
+                     )
+                );
             }
-
-            $this->logger->addDebug("Created neo4J constellation relations response to the user", $return);
 
             // Send the response back to the web client
             $response = $return;

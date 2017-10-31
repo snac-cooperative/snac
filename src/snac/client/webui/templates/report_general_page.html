@@ -32,12 +32,16 @@ $('.selectpicker').selectpicker();
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <!-- Datatables -->
 <link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+<!-- C3 chart library -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/c3@0.4.18/c3.css">
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/c3@0.4.18/c3.min.js"></script>
 
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
@@ -85,7 +89,7 @@ $('.selectpicker').selectpicker();
     <div class="row">
         <div class="col-md-4">
             {% for report in data.reports %}
-                {% if (report.type == "list" and report.result|length < 5) or report.type == "numerical" %}
+                {% if (report.type == "list" and report.result|length < 5) or report.type == "numerical" or report.type == "sum" %}
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">{{report.title}}</h3>
@@ -96,6 +100,30 @@ $('.selectpicker').selectpicker();
                             <div id="report{{i}}">
                                 <h3 class="text-center">{{report.result.value|number_format}}</h3>
                             </div>
+                        {% elseif report.type == "sum" %}
+                            <div id="report{{i}}"></div>
+                            <script>
+                                var cols = new Array();
+                                {% for x,y in report.result %}
+                                    cols.push(["{{x}}", {{y}}]);
+                                {% endfor %}
+                                var chart = c3.generate({
+                                    bindto: '#report{{i}}',
+                                    data: {
+                                        type: "donut",
+                                        columns: cols
+                                    },
+                                    donut: {
+                                        title: function() {
+                                            var sum = 0;
+                                            cols.forEach(function(col) {
+                                                sum += col[1];
+                                            });
+                                            return sum;
+                                        }
+                                    }
+                                });    
+                            </script>
                         {% elseif report.type == "list" %}
                             <div id="report{{i}}">
                                 <div class="form-horizontal">
@@ -138,14 +166,30 @@ $('.selectpicker').selectpicker();
                             <script>
                                 var x = new Array();
                                 var y = new Array();
+                                x.push("Date");
+                                y.push("Count");
                                 {% for x,y in report.result %}
                                     x.push("{{x}}");
                                     y.push({{y}});
                                 {% endfor %}
-                                Plotly.plot( "report{{i}}", [{
-                                    x: x,
-                                    y: y }], {
-                                    margin: { t: 0 } } );
+                                var chart = c3.generate({
+                                    bindto: '#report{{i}}',
+                                    data: {
+                                        x: 'Date',
+                                        columns: [
+                                            x,
+                                            y
+                                        ]
+                                    },
+                                    axis: {
+                                        x: {
+                                            type: 'timeseries',
+                                            tick: {
+                                                format: '%Y-%m-%d'
+                                            }
+                                        }
+                                    }
+                                });    
                             </script>
                         {% elseif report.type == "list" %}
                             <table id="reportTable{{i}}">
