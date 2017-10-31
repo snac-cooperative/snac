@@ -53,6 +53,16 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         echo "   - could not delete search index. It did not exist.\n";
     }
 
+    $vocab = array();
+    echo "Querying vocabulary cache from the database.\n";
+
+    $vocQuery = $db->query("select distinct id, value from
+                vocabulary where type in ('subject', 'function', 'occupation');", array());
+    while($v = $db->fetchrow($vocQuery))
+    {
+        $vocab[$v["id"]] = $v["value"];
+    }
+
     $counts = array();
 
     echo "Querying the relation degrees from the database.\n";
@@ -82,7 +92,67 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         $counts[$c["ic_id"]]["resources"] = $c["degree"];
     }
 
+    echo "Querying the controlled vocabulary terms (sub, fun, occ) from the database:";
 
+    $vocabQuery = $db->query("select a.ic_id, a.term_id from
+                (select v.id, v.ic_id, v.term_id from
+                    subject v,
+                    (select distinct id, max(version) as version from subject group by id) a
+                    where a.id = v.id and a.version = v.version and not v.is_deleted) a;", array());
+
+    while($v = $db->fetchrow($vocabQuery))
+    {
+        if (!isset($counts[$v["ic_id"]]["subject"]))
+            $counts[$v["ic_id"]]["subject"] = array();
+        array_push($counts[$v["ic_id"]]["subject"], $vocab[$v["term_id"]]);
+    }
+
+    echo ".";
+
+    $vocabQuery = $db->query("select a.ic_id, a.term_id from
+                (select v.id, v.ic_id, v.occupation_id as term_id from
+                    occupation v,
+                    (select distinct id, max(version) as version from occupation group by id) a
+                    where a.id = v.id and a.version = v.version and not v.is_deleted) a;", array());
+
+    while($v = $db->fetchrow($vocabQuery))
+    {
+        if (!isset($counts[$v["ic_id"]]["occupation"]))
+            $counts[$v["ic_id"]]["occupation"] = array();
+        array_push($counts[$v["ic_id"]]["occupation"], $vocab[$v["term_id"]]);
+    }
+
+    echo ".";
+
+    $vocabQuery = $db->query("select a.ic_id, a.term_id from
+                (select v.id, v.ic_id, v.function_id as term_id from
+                    function v,
+                    (select distinct id, max(version) as version from function group by id) a
+                    where a.id = v.id and a.version = v.version and not v.is_deleted) a where a.term_id is not null;", array());
+
+    while($v = $db->fetchrow($vocabQuery))
+    {
+        if (!isset($counts[$v["ic_id"]]["function"]))
+            $counts[$v["ic_id"]]["function"] = array();
+        array_push($counts[$v["ic_id"]]["function"], $vocab[$v["term_id"]]);
+    }
+
+    echo ".\n";
+
+    echo "Querying the BiogHists\n";
+
+    $biogHistQuery = $db->query("select a.ic_id, a.text from
+                (select v.id, v.ic_id, v.text from
+                    biog_hist v,
+                    (select distinct id, max(version) as version from biog_hist group by id) a
+                    where a.id = v.id and a.version = v.version and not v.is_deleted) a;", array());
+
+    while($v = $db->fetchrow($biogHistQuery))
+    {
+        if (!isset($counts[$v["ic_id"]]["biogHist"]))
+            $counts[$v["ic_id"]]["biogHist"] = array();
+        array_push($counts[$v["ic_id"]]["biogHist"], $v["text"]);
+    }
     $wikiURLs = array();
 
     echo "Querying wikipedia URLs from the database.\n";
@@ -181,7 +251,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
 
 function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
-    global $eSearch, $primaryBody, $primaryStart, $primaryCount, $wikiURLs, $wikiUtil;
+    global $eSearch, $primaryBody, $primaryStart, $primaryCount, $wikiURLs, $wikiUtil, $counts;
 
     // When adding to the main index, also ask Wikipedia for the image if they have one and add it.
     $hasImage = false;
@@ -205,6 +275,10 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
                             'id' => $icid,
                             'degree' => $degree,
                             'resources' => $resources,
+                            'subject' => isset($counts[$icid]["subject"]) ? $counts[$icid]["subject"] : [],
+                            'occupation' => isset($counts[$icid]["occupation"]) ? $counts[$icid]["occupation"] : [],
+                            'function' => isset($counts[$icid]["function"]) ? $counts[$icid]["function"] : [],
+                            'biogHist' => isset($counts[$icid]["biogHist"]) ? $counts[$icid]["biogHist"] : [],
                             'hasImage' => $hasImage,
                             'imageURL' => $imgURL,
                             'imageMeta' => $imgMeta,
@@ -233,6 +307,10 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
                 'id' => $icid,
                 'degree' => $degree,
                 'resources' => $resources,
+                'subject' => isset($counts[$icid]["subject"]) ? $counts[$icid]["subject"] : [],
+                'occupation' => isset($counts[$icid]["occupation"]) ? $counts[$icid]["occupation"] : [],
+                'function' => isset($counts[$icid]["function"]) ? $counts[$icid]["function"] : [],
+                'biogHist' => isset($counts[$icid]["biogHist"]) ? $counts[$icid]["biogHist"] : [],
                 'hasImage' => $hasImage,
                 'imageURL' => $imgURL,
                 'imageMeta' => $imgMeta,
