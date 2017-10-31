@@ -456,14 +456,16 @@ class ElasticSearchUtil {
             ]);
         }
         if ($parameters !== null) {
-            foreach ($parameters as $type=>$value) {
-                array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
-                    'match' => [
-                        $type => [
-                            'query' => $value 
+            foreach ($parameters as $type=>$values) {
+                foreach ($values as $value) {
+                    array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                        'match' => [
+                            $type => [
+                                'query' => $value 
+                            ]
                         ]
-                    ]
-                ]);
+                    ]);
+                }
             }
         }
 
@@ -543,14 +545,16 @@ class ElasticSearchUtil {
             ]);
         }
         if ($parameters !== null) {
-            foreach ($parameters as $type=>$value) {
-                array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
-                    'match' => [
-                        $type => [
-                            'query' => $value 
+            foreach ($parameters as $type=>$values) {
+                foreach ($values as $value) {
+                    array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                        'match' => [
+                            $type => [
+                                'query' => $value 
+                            ]
                         ]
-                    ]
-                ]);
+                    ]);
+                }
             }
         }
 
