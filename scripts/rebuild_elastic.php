@@ -166,10 +166,10 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
                 ]
             ]
         ];
-        $response = $eSearch->indices()->delete($params);
-        echo "   - deleted search index\n";
+        $response = $eSearch->indices()->create($params);
+        echo "   - created search index\n";
     } catch (\Exception $e) {
-        echo "   - could not delete search index. It did not exist.\n";
+        echo "   - could not create search index\n";
     }
 
     $vocab = array();
