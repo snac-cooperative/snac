@@ -584,7 +584,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
 
             case "search":
-                $executor->displaySearchPage($this->input, $display);
+                if (isset($this->input["format"]) && $this->input["format"] == "json")
+                    $response = $executor->searchConstellations($this->input);
+                else
+                    $executor->displaySearchPage($this->input, $display);
                 break;
 
             case "resource_search":

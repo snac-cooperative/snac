@@ -42,6 +42,14 @@
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 <meta name="viewport" content="initial-scale = 1.0" />
+<style>
+.facet-select {
+    height: 1px;
+    display: none;
+    visibility: hidden;
+}
+</style>
+
 </head>
 
 <body role="document">
@@ -54,13 +62,13 @@
 
 		<h1>Search</h1>
 
-		<form class="form-horizontal" id="search_form" method="GET" action="?">
+		<form class="form-horizontal" id="search_form" method="POST" action="?">
 			<div class="well well-lg text-center search-box">
                     <input type="hidden" id="count" name="count" value="10">
                     <input type="hidden" id="start" name="start" value="0">
 					<div class="input-group select2-bootstrap-append">
                         <span class="search-entity-type">
-                            <select id="entityType" name="entity_type" class="search-entity-type-select">
+                            <select id="entityType" name="entity_type" class="search-entity-type-select search-select">
                                 <option value="" {{data.entityType == '' ? 'selected'}}>All Types</option>
                                 <option value="person" {{data.entityType == 'person' ? 'selected'}}>Person</option>
                                 <option value="corporateBody" {{data.entityType == 'corporateBody' ? 'selected'}}>Corporate Body</option>
@@ -70,22 +78,30 @@
 						<input type="text" class="form-control search-box-text"
 							placeholder="Search for..." id="searchbox" name="term" value="{{data.query}}">
                         <span class="input-group-btn search-box-button">
-                             <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
+                             <button class="btn btn-default" id="searchbutton" name="command" value="search" onClick="return goSearch(0);">Search</button>
                         </span>
 					</div>
                     <div class="row">
-                        <div class="col-xs-6 text-left">
+                        <div class="col-xs-8 text-left">
                             <div id="advancedSearch" class="text-left" style="margin-top: 15px;">
                                 <label>
+                                    <input type="checkbox" value="true" name="biog_hist" id="biog_hist" data-toggle="toggle" {{data.biog_hist ? 'checked'}}>
+                                    <span style="padding-left: 10px; padding-right: 20px; font-weight: normal;">Search Biographies</span>
+                                </label>
+                                <label>
                                     <input type="checkbox" value="advanced" name="search_type" id="advanced" data-toggle="toggle" data-target="advancedSearchText" {{data.searchType == 'advanced' ? 'checked'}}>
-                                    <span style="padding-left: 10px; font-weight: normal;">Advanced Search</span>
+                                    <span style="padding-left: 10px; padding-right: 20px; font-weight: normal;">Advanced Search</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" value="faceted" name="faceted" id="faceted" data-toggle="toggle" data-target="facetedSearch" {{data.facets|length > 0 ? 'checked'}}>
+                                    <span style="padding-left: 10px; padding-right: 20px; font-weight: normal;">Faceted Search</span>
                                 </label>
                             </div>
                         </div>
-                        <div class="col-xs-6 text-right">
+                        <div class="col-xs-4 text-right">
                             <div id="otherOptions" class="text-right" style="margin-top: 15px;">
                                 <span style="padding-right: 5px; font-weight: normal;">Show</span>
-                                <select id="count" name="count" style="width: 70px;">
+                                <select id="count" name="count" class="search-select normal-select" style="width: 70px;">
                                     <option value="10" {{data.count == 10 ? 'selected'}}>10</option>
                                     <option value="25" {{data.count == 25 ? 'selected'}}>25</option>
                                     <option value="50" {{data.count == 50 ? 'selected'}}>50</option>
@@ -98,16 +114,55 @@
                     <div class="row">
 
                         <div id="advancedSearchText" class="text-left collapse {{ data.searchType == 'advanced' ? 'in'}}">
-                            <h4>The following commands may be used for advanced searching</h4>
-                            <dl>
-                                <dt>*</dt> <dd>Prefix search. Ex: <em>Wash*</em> will match anything starting with <em>Wash</em> including <em>Washington</em>.</dd>
-                                <dt>+</dt> <dd>Search must include the following term (AND operation). Ex: <em>Washington +George</em> will find George Washingtons.</dd>
-                                <dt>|</dt> <dd>Search may include either of the terms (OR operation). Ex: <em>Washington |George</em> will find either Georges OR Washingtons.</dd>
-                                <dt>" "</dt> <dd>Wrap a phrase with quotes to search the exact phrase.</dd>
-                                <dt>( )</dt> <dd>Add preferred clauses with parentheses. Ex: <em>(Washington + George) | (Jefferson + Thomas)</em> will find either George Washingtons or Thomas Jeffersons, but not George Jeffersons.</dd>
-                                <dt>-</dt> <dd>Search must not include the connected term.  Ex: <em>Washington -George</em> will find Washingtons not named George.</dd>
-                                <dt>~N</dt> <dd>Edit distance search. Finds names similar to the one typed. A larger number <strong>N</strong> will produce "fuzzier" results.  Ex: <em>Wash~1</em> will find <em>Wash, Hash, Wast, Mash,</em> etc.</dd>
-                            </dl>
+                            <div class="col-xs-12">
+                                <h4>The following commands may be used for advanced searching</h4>
+                                <dl>
+                                    <dt>*</dt> <dd>Prefix search. Ex: <em>Wash*</em> will match anything starting with <em>Wash</em> including <em>Washington</em>.</dd>
+                                    <dt>+</dt> <dd>Search must include the following term (AND operation). Ex: <em>Washington +George</em> will find George Washingtons.</dd>
+                                    <dt>|</dt> <dd>Search may include either of the terms (OR operation). Ex: <em>Washington |George</em> will find either Georges OR Washingtons.</dd>
+                                    <dt>" "</dt> <dd>Wrap a phrase with quotes to search the exact phrase.</dd>
+                                    <dt>( )</dt> <dd>Add preferred clauses with parentheses. Ex: <em>(Washington + George) | (Jefferson + Thomas)</em> will find either George Washingtons or Thomas Jeffersons, but not George Jeffersons.</dd>
+                                    <dt>-</dt> <dd>Search must not include the connected term.  Ex: <em>Washington -George</em> will find Washingtons not named George.</dd>
+                                    <dt>~N</dt> <dd>Edit distance search. Finds names similar to the one typed. A larger number <strong>N</strong> will produce "fuzzier" results.  Ex: <em>Wash~1</em> will find <em>Wash, Hash, Wast, Mash,</em> etc.</dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div id="facetedSearch" class="faceted-search text-left collapse {{ data.facets|length > 0 or data.biog_hist ? 'in' }}">
+                            <div class="col-xs-12" style="margin-top: 20px;">
+                                <p>Use the following boxes to narrow your search to multiple subjects, functions, or occupations.  These are cumulative filters, so only results matching all selected values will be returned.</p>
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-2">Subjects</label>
+                                        <div class="col-xs-10">
+                                            <select id="subject" name="subject[]" class="facet-select" multiple="multiple">
+                                                {% for facet in data.facets.subject %}
+                                                    <option value='{{facet}}' selected="selected">{{facet}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-2">Occupations</label>
+                                        <div class="col-xs-10">
+                                            <select id="occupation" name="occupation[]" class="facet-select" multiple="multiple">
+                                                {% for facet in data.facets.occupation %}
+                                                    <option value='{{facet}}' selected="selected">{{facet}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-2">Functions</label>
+                                        <div class="col-xs-10">
+                                            <select id="function" name="function[]" class="facet-select" multiple="multiple">
+                                                {% for facet in data.facets.function %}
+                                                    <option value='{{facet}}' selected="selected">{{facet}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                         </div>
 
@@ -116,23 +171,31 @@
 		</form>
 
     <div class="row">
-        <div class="col-md-12 search-results">
-            {% if data.term %}
-                <p class="search-info">Found {{data.total}} results in {{data.timing}} ms.
+        <div class="col-md-9 search-results">
+            <p class="search-info" id="search_info">
+            {% if data.term and data.total > 0 %}
+                Found {{data.total}} results in {{data.timing}} ms.
                 {% if data.total >= (data.count * data.pagination) %}
                 Showing up to {{data.count * data.pagination}} of the total results.
                 {% endif %}
-                </p>
-                <form class="form-horizontal" id="compare_form" method="POST" action="{{control.snacURL}}/diff">
-                    <div id="compareBox" class="collapse">
-                    <div class="well well-sm">
-                        <input type="hidden" name="constellationid1" id="compare1">
-                        <input type="hidden" name="constellationid2" id="compare2">
-                            <button type="submit" class="btn btn-primary" id="compareButton" disabled>Compare Selected Constellations</button>
-                            <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
-                    </div>
-                    </div>
-                </form>
+            {% endif %}
+            </p>
+            <form class="form-horizontal" id="compare_form" method="POST" action="{{control.snacURL}}/diff">
+                <div id="compareBox" class="collapse">
+                <div class="well well-sm">
+                    <input type="hidden" name="constellationid1" id="compare1">
+                    <input type="hidden" name="constellationid2" id="compare2">
+                        <button type="submit" class="btn btn-primary" id="compareButton" disabled>Compare Selected Constellations</button>
+                        <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
+                </div>
+                </div>
+            </form>
+            <div id="search_results">
+            {% if not data.term %}
+                <p class="search-empty">Please use the search bar above to search.</p>
+            {% elseif data.total == 0 %}
+                <p class="search-empty">No results found</p>
+            {% else %}
                 {% for result in data.results %}
                     <h4><a href="{{control.snacURL}}/view/{{result.id}}">{{result.nameEntries.0.original}}</a></h4>
                     <p class="identity-info">
@@ -146,27 +209,69 @@
                     {% endif %}
                     <p class="final"><input class="compare-checkbox" type="checkbox" value="{{result.id}}"> Select this Identity Constellation to compare</p>
                 {% endfor %}
-
-
-
-                {% if data.pagination > 1 %}
-                    <nav class="text-center"><ul class='pagination'>
-                        {% if data.page != 0 %}
-                        <li><a href='{{control.snacURL}}/search?count={{data.count}}&start={{(data.page - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Previous'><span aria-hidden='true'>&lt;</span></a></li>
-                        {% endif %}
-
-                        {% for i in 1..data.pagination %}
-                        <li {{i-1 == data.page ? 'class="active"' }}><a href="{{control.snacURL}}/search?count={{data.count}}&start={{(i - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}">{{i}}</a></li>
-                        {% endfor %}
-
-                        {% if data.page != data.pagination - 1 %}
-                        <li><a href='{{control.snacURL}}/search?count={{data.count}}&start={{(data.page + 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Next'><span aria-hidden='true'>&gt;</span></a></li>
-                        {% endif %}
-                    </ul></nav>
-                {% endif %}
-            {% else %}
-                <p>Please use the search bar above to search.</p>
             {% endif %}
+            </div>
+
+
+            <div id="pagination">
+            {% if data.pagination > 1 %}
+                <nav class="text-center"><ul class='pagination'>
+                    {% if data.page != 0 %}
+                    <li><a href='#' aria-label='Previous' onClick='return goSearch({{(data.page - 1) * data.count}})'><span aria-hidden='true'>&lt;</span></a></li>
+                    {% endif %}
+
+                    {% for i in 1..data.pagination %}
+                    <li {{i-1 == data.page ? 'class="active"' }}><a href="#" onClick='return goSearch({{(i - 1) * data.count}})'>{{i}}</a></li>
+                    {% endfor %}
+
+                    {% if data.page != data.pagination - 1 %}
+                    <li><a href='#' aria-label='Next' onClick='return goSearch({{(data.page + 1) * data.count}})'><span aria-hidden='true'>&gt;</span></a></li>
+                    {% endif %}
+                </ul></nav>
+            {% endif %}
+            </div>
+        </div>
+        <div class="col-md-3 search-side {{ data.term and data.results|length > 0 ? '' : "snac-hidden" }}" id="search_sidebar">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Refine Results</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Subjects</h4>
+                        </div>
+                        <div class="list-group" id="subject_agg">
+                            {% for facet in data.aggregations.subject %}
+                                {% if facet.term not in data.facets.subject %}
+                                <a href="#" class="list-group-item" onclick='searchFacet("subject", "{{facet.term|e('js')}}"); return false;'>{{ facet.term }} ({{facet.count}})</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Occupations</h4>
+                        </div>
+                        <div class="list-group" id="occupation_agg">
+                            {% for facet in data.aggregations.occupation %}
+                            <a href="#" class="list-group-item" onclick='searchFacet("occupation", "{{facet.term|e('js')}}"); return false;'>{{ facet.term }} ({{facet.count}})</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Functions</h4>
+                        </div>
+                        <div class="list-group" id="function_agg">
+                            {% for facet in data.aggregations.function %}
+                            <a href="#" class="list-group-item" onclick='searchFacet("function", "{{facet.term|e('js')}}"); return false;'>{{ facet.term }} ({{facet.count}})</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

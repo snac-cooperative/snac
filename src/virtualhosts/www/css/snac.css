@@ -130,6 +130,13 @@ h1 {
     color: #888888;
 }
 
+.search-results p.search-empty {
+    margin-top: 50px;
+    text-align: center;
+    color: #888888;
+    font-size: 24px;
+}
+
 .search-results p.missing {
     color: #666666;
     font-style: italic;
@@ -143,6 +150,17 @@ h1 {
 
 .search-results p.identity-info span {
     margin-right: 15px;
+}
+
+.search-side a {
+    font-size: 12px;
+}
+.search-side h4.panel-title {
+    font-size: 14px;
+}
+
+.faceted-search .form-group {
+    margin-bottom: 3px;
 }
 
 .snac-name-header {

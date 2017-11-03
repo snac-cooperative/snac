@@ -33,7 +33,7 @@ class NumConstellationsByType extends helpers\Report {
     /**
      * @var string The type of the report data (series, text, numeric)
      */
-    protected $type = "list";
+    protected $type = "sum";
 
     /**
      * Run report
@@ -42,7 +42,8 @@ class NumConstellationsByType extends helpers\Report {
      * @return string[]       Report results
      */
     public function compute($psql) {
-        $sql = "select v.value, count(*)
+        $sql = "select v.value, count(*) from 
+            (select distinct v.value, cc.id
                 from version_history as aa,
                     (select n.ic_id, n.entity_type, b.version from nrd n, 
                         (select max(version) as version, ic_id from nrd
@@ -58,7 +59,8 @@ class NumConstellationsByType extends helpers\Report {
                     bb.ic_id=cc.id and
                     bb.version<=cc.version and
                     v.id = bb.entity_type and
-                    aa.status = 'published' group by v.value order by v.value desc;";
+                    aa.status = 'published') as v
+                group by v.value order by v.value desc;";
 
         $result = $psql->query($sql, array());
         $rawResults = $psql->fetchAll($result);

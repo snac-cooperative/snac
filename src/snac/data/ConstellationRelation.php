@@ -170,7 +170,7 @@ class ConstellationRelation extends AbstractData {
     /**
      * Get the Target Constellation's ID
      *
-     * @return int Source constellation ID
+     * @return int Target constellation ID
      *
      */
     function getTargetConstellation()

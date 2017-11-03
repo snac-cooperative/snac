@@ -70,6 +70,12 @@ class Config {
 
     /**
      *
+     * @var string URL of the openrefine endpoint
+     */
+    public static $OPENREFINE_URL = "http://localhost/openrefine/";
+
+    /**
+     *
      * @var string URL of the back-end server
      */
     public static $INTERNAL_SERVERURL = "http://localhost:82";

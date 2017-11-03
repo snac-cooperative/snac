@@ -67,6 +67,29 @@ class ElasticSearchUtil {
             $wiki = new \snac\server\util\WikipediaUtil();
             list($hasImage, $imgURL, $imgMeta) = $wiki->getWikiImage($constellation->getArk());
 
+
+            $subjects = [];
+            foreach ($constellation->getSubjects() as $subject) {
+                array_push($subjects, $subject->getTerm()->getTerm());
+            }
+            
+            $occupations = [];
+            foreach ($constellation->getOccupations() as $occupation) {
+                array_push($occupations, $occupation->getTerm()->getTerm());
+            }
+
+            $functions = [];
+            foreach ($constellation->getFunctions() as $function) {
+                array_push($functions, $function->getTerm()->getTerm());
+            }
+
+            $biogHists = [];
+            foreach ($constellation->getBiogHistList() as $biogHist) {
+                array_push($biogHists, $biogHist->getText());
+            }
+
+
+
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
@@ -78,6 +101,10 @@ class ElasticSearchUtil {
                     'id' => (int) $constellation->getID(),
                     'degree' => (int) count($constellation->getRelations()),
                     'resources' => (int) count($constellation->getResourceRelations()),
+                    'subject' => $subjects,
+                    'occupation' => $occupations,
+                    'function' => $functions,
+                    'biogHist' => $biogHists,
                     'hasImage' => $hasImage,
                     'imageURL' => $imgURL,
                     'imageMeta' => $imgMeta,
@@ -244,12 +271,33 @@ class ElasticSearchUtil {
                     'from' => $start,
                     'size' => $count*/
 
-                    /* This query uses a full-phrase matching search */
+                    /* This query uses a full-phrase matching search 
                     'query' => [
                         'match_phrase_prefix' => [
                             'nameEntry' => [
                                 'query' => $query,
                                 'slop' => 20
+                            ]
+                        ]
+                    ],*/
+                    'query' => [
+                        'filtered' => [
+                            'query' => [
+                                'match_phrase_prefix' => [
+                                    'nameEntry' => [
+                                        'query' => $query,
+                                        'slop' => 20
+                                    ]
+                                ]
+                            ],
+                            'filter' => [
+                                'bool' => [
+                                    'must' => [
+                                        'term' => [
+                                            'subject' => 'women sculptors'
+                                        ]
+                                    ]
+                                ]
                             ]
                         ]
                     ],
@@ -359,7 +407,7 @@ class ElasticSearchUtil {
      * @param integer $count optional The number of results to return from the start (default 10)
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchMainIndexAdvanced($query, $entityType=null, $start=0, $count=10) {
+    public function searchMainIndexAdvanced($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=null) {
 
         $searchBody = [
             /* This query uses a full-word matching search */
@@ -373,7 +421,9 @@ class ElasticSearchUtil {
                                    'query' => $query,
                                    'default_operator' => 'and'
                                ]
-                            ]
+                           ], 
+                           "filter" => [
+                           ]
                         ]
                     ],
                     'field_value_factor' => [
@@ -386,13 +436,50 @@ class ElasticSearchUtil {
                 ]
             ]
         ];
-        if ($entityType !== null) {
-            $searchBody["query"]["function_score"]["query"]["bool"]["filter"] = [
-                    "term" => [
-                        'entityType' => strtolower($entityType) // strange elastic search behavior
+        if ($fullSearch !== null) {
+            unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
+            $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
+                [
+                    'simple_query_string' => [
+                        'fields' => ['nameEntry', 'biogHist'],
+                        'query' => $query,
+                        'default_operator' => 'and'
                     ]
+                ]
             ];
+            $searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"] = 1;
         }
+        if ($entityType !== null) {
+            array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                'term' => [
+                    'entityType' => strtolower($entityType) // strange elastic search behavior
+                ]
+            ]);
+        }
+        
+        if ($parameters !== null && is_array($parameters) && !empty($parameters)) {
+            // Allow an empty query that will just return whatever (as long as there are parameters
+            if ($query == "" ) {
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["must"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["should"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["should"]);
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]);
+            }
+            foreach ($parameters as $type=>$values) {
+                foreach ($values as $value) {
+                    array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                        'match' => [
+                            $type.".untokenized" => [
+                                'query' => $value 
+                            ]
+                        ]
+                    ]);
+                }
+            }
+        }
+
 
 
         return $this->elasticSearchQuery($searchBody, $start, $count);
@@ -409,7 +496,7 @@ class ElasticSearchUtil {
      * @param integer $count optional The number of results to return from the start (default 10)
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10) {
+    public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=null) {
 
         $searchBody = [
             /* This query uses a full-word matching search */
@@ -424,6 +511,8 @@ class ElasticSearchUtil {
                                         'operator' => 'and'
                                     ]
                                 ]
+                            ],
+                            'filter' => [
                             ]
                         ]
                     ],
@@ -437,12 +526,62 @@ class ElasticSearchUtil {
                 ]
             ]
         ];
-        if ($entityType !== null) {
-            $searchBody["query"]["function_score"]["query"]["bool"]["filter"] = [
-                    "term" => [
-                        'entityType' => strtolower($entityType) // strange elastic search behavior
+
+
+        if ($fullSearch !== null) {
+            unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
+            $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
+                [
+                    'match' => [
+                        'nameEntry' => [
+                            'query' => $query,
+                            'operator' => 'and'
+                        ]
                     ]
+                ],
+                [
+                    'match' => [
+                        'biogHist' => [
+                            'query' => $query,
+                            'operator' => 'and'
+                        ]
+                    ]
+                ]
             ];
+            $searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"] = 1;
+        }
+
+
+        if ($entityType !== null) {
+            array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                'term' => [
+                    'entityType' => strtolower($entityType) // strange elastic search behavior
+                ]
+            ]);
+        }
+        if ($parameters !== null && is_array($parameters) && !empty($parameters)) {
+            // Allow an empty query that will just return whatever (as long as there are parameters
+            if ($query == "" ) {
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["must"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["should"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["should"]);
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]);
+            }
+
+            // Filter on the given parameters
+            foreach ($parameters as $type=>$values) {
+                foreach ($values as $value) {
+                    array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
+                        'match' => [
+                            $type.".untokenized" => [
+                                'query' => $value 
+                            ]
+                        ]
+                    ]);
+                }
+            }
         }
 
         return $this->elasticSearchQuery($searchBody, $start, $count);
@@ -468,6 +607,28 @@ class ElasticSearchUtil {
             $body["from"] = $start;
             $body["size"] = $count;
 
+            $aggs = [
+                    "subject"=> [
+                        "terms"=> [
+                            "field" => "subject.untokenized",
+                            "size" => 10
+                        ]
+                    ],
+                    "occupation"=> [
+                        "terms"=> [
+                            "field" => "occupation.untokenized",
+                            "size" => 10
+                        ]
+                    ],
+                    "function"=> [
+                        "terms"=> [
+                            "field" => "function.untokenized",
+                            "size" => 10
+                        ]
+                    ]
+                ];
+            $body["aggregations"] = $aggs;
+
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
@@ -487,9 +648,27 @@ class ElasticSearchUtil {
                 array_push($return, $val["_source"]);
             }
 
+            $aggregations = array();
+            if (isset($results["aggregations"])) {
+                foreach($results["aggregations"] as $agg => $vals) {
+                    if (!isset($aggregations[$agg]))
+                        $aggregations[$agg] = array();
+
+                    if (isset($vals["buckets"])) {
+                        foreach ($vals["buckets"] as $term) {
+                            array_push($aggregations[$agg], [
+                                "term" => $term["key"],
+                                "count" => $term["doc_count"]
+                            ]);
+                        }
+                    }
+                }
+            }
+
             $response = array();
             $response["total"] = $results["hits"]["total"];
             $response["results"] = $return;
+            $response["aggregations"] = $aggregations;
 
             if ($response["total"] == 0 || $count == 0) {
                 $response["pagination"] = 0;
