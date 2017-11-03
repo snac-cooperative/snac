@@ -468,7 +468,7 @@ class ElasticSearchUtil {
                 foreach ($values as $value) {
                     array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                         'match' => [
-                            $type => [
+                            $type.".untokenized" => [
                                 'query' => $value 
                             ]
                         ]
