@@ -455,7 +455,15 @@ class ElasticSearchUtil {
                 ]
             ]);
         }
-        if ($parameters !== null) {
+        
+        if ($parameters !== null && is_array($parameters) && !empty($parameters)) {
+            // Allow an empty query that will just return whatever (as long as there are parameters
+            if ($query == "" ) {
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["must"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["should"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["should"]);
+            }
             foreach ($parameters as $type=>$values) {
                 foreach ($values as $value) {
                     array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
@@ -516,6 +524,7 @@ class ElasticSearchUtil {
             ]
         ];
 
+
         if ($fullSearch !== null) {
             unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
             $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
@@ -537,6 +546,8 @@ class ElasticSearchUtil {
                 ]
             ];
         }
+
+
         if ($entityType !== null) {
             array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                 'term' => [
@@ -544,12 +555,21 @@ class ElasticSearchUtil {
                 ]
             ]);
         }
-        if ($parameters !== null) {
+        if ($parameters !== null && is_array($parameters) && !empty($parameters)) {
+            // Allow an empty query that will just return whatever (as long as there are parameters
+            if ($query == "" ) {
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["must"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["should"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["should"]);
+            }
+
+            // Filter on the given parameters
             foreach ($parameters as $type=>$values) {
                 foreach ($values as $value) {
                     array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                         'match' => [
-                            $type => [
+                            $type.".untokenized" => [
                                 'query' => $value 
                             ]
                         ]
@@ -581,6 +601,28 @@ class ElasticSearchUtil {
             $body["from"] = $start;
             $body["size"] = $count;
 
+            $aggs = [
+                    "subject"=> [
+                        "terms"=> [
+                            "field" => "subject.untokenized",
+                            "size" => 10
+                        ]
+                    ],
+                    "occupation"=> [
+                        "terms"=> [
+                            "field" => "occupation.untokenized",
+                            "size" => 10
+                        ]
+                    ],
+                    "function"=> [
+                        "terms"=> [
+                            "field" => "function.untokenized",
+                            "size" => 10
+                        ]
+                    ]
+                ];
+            $body["aggregations"] = $aggs;
+
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
@@ -600,9 +642,27 @@ class ElasticSearchUtil {
                 array_push($return, $val["_source"]);
             }
 
+            $aggregations = array();
+            if (isset($results["aggregations"])) {
+                foreach($results["aggregations"] as $agg => $vals) {
+                    if (!isset($aggregations[$agg]))
+                        $aggregations[$agg] = array();
+
+                    if (isset($vals["buckets"])) {
+                        foreach ($vals["buckets"] as $term) {
+                            array_push($aggregations[$agg], [
+                                "term" => $term["key"],
+                                "count" => $term["doc_count"]
+                            ]);
+                        }
+                    }
+                }
+            }
+
             $response = array();
             $response["total"] = $results["hits"]["total"];
             $response["results"] = $return;
+            $response["aggregations"] = $aggregations;
 
             if ($response["total"] == 0 || $count == 0) {
                 $response["pagination"] = 0;

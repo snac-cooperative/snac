@@ -82,19 +82,23 @@
                         </span>
 					</div>
                     <div class="row">
-                        <div class="col-xs-6 text-left">
+                        <div class="col-xs-8 text-left">
                             <div id="advancedSearch" class="text-left" style="margin-top: 15px;">
+                                <label>
+                                    <input type="checkbox" value="true" name="biog_hist" id="biog_hist" data-toggle="toggle" {{data.biog_hist ? 'checked'}}>
+                                    <span style="padding-left: 10px; padding-right: 20px; font-weight: normal;">Search Biographies</span>
+                                </label>
                                 <label>
                                     <input type="checkbox" value="advanced" name="search_type" id="advanced" data-toggle="toggle" data-target="advancedSearchText" {{data.searchType == 'advanced' ? 'checked'}}>
                                     <span style="padding-left: 10px; padding-right: 20px; font-weight: normal;">Advanced Search</span>
                                 </label>
                                 <label>
-                                    <input type="checkbox" value="faceted" name="faceted" id="faceted" data-toggle="toggle" data-target="facetedSearch" {{data.facets|length > 0 or data.biog_hist ? 'checked'}}>
-                                    <span style="padding-left: 10px; font-weight: normal;">Faceted Search</span>
+                                    <input type="checkbox" value="faceted" name="faceted" id="faceted" data-toggle="toggle" data-target="facetedSearch" {{data.facets|length > 0 ? 'checked'}}>
+                                    <span style="padding-left: 10px; padding-right: 20px; font-weight: normal;">Faceted Search</span>
                                 </label>
                             </div>
                         </div>
-                        <div class="col-xs-6 text-right">
+                        <div class="col-xs-4 text-right">
                             <div id="otherOptions" class="text-right" style="margin-top: 15px;">
                                 <span style="padding-right: 5px; font-weight: normal;">Show</span>
                                 <select id="count" name="count" class="search-select normal-select" style="width: 70px;">
@@ -123,19 +127,10 @@
                                 </dl>
                             </div>
                         </div>
-                        <div id="facetedSearch" class="text-left collapse {{ data.facets|length > 0 or data.biog_hist ? 'in' }}">
+                        <div id="facetedSearch" class="faceted-search text-left collapse {{ data.facets|length > 0 or data.biog_hist ? 'in' }}">
                             <div class="col-xs-12" style="margin-top: 20px;">
                                 <p>Use the following boxes to narrow your search to multiple subjects, functions, or occupations.  These are cumulative filters, so only results matching all selected values will be returned.</p>
                                 <div class="form-horizontal">
-                                    <div class="form-group">
-                                        <div class="control-label col-xs-2"></div>
-                                        <div class="col-xs-10">
-                                            <label>
-                                                <input type="checkbox" value="true" name="biog_hist" id="biog_hist" data-toggle="toggle" {{data.biog_hist ? 'checked'}}>
-                                                <span class="form-control-static" style="padding-left: 15px; font-weight: normal;">Search Biographical Histories</span>
-                                            </label>
-                                        </div>
-                                    </div>
                                     <div class="form-group">
                                         <label class="control-label col-xs-2">Subjects</label>
                                         <div class="col-xs-10">
@@ -176,61 +171,107 @@
 		</form>
 
     <div class="row">
-        <div class="col-md-12 search-results">
-            {% if data.term %}
-                {% if data.total == 0 %}
-                    <p class="search-empty">No results found</p>
-                {% else %}
-                    <p class="search-info">Found {{data.total}} results in {{data.timing}} ms.
-                    {% if data.total >= (data.count * data.pagination) %}
-                    Showing up to {{data.count * data.pagination}} of the total results.
-                    {% endif %}
+        <div class="col-md-9 search-results">
+            <p class="search-info" id="search_info">
+            {% if data.term and data.total > 0 %}
+                Found {{data.total}} results in {{data.timing}} ms.
+                {% if data.total >= (data.count * data.pagination) %}
+                Showing up to {{data.count * data.pagination}} of the total results.
+                {% endif %}
+            {% endif %}
+            </p>
+            <form class="form-horizontal" id="compare_form" method="POST" action="{{control.snacURL}}/diff">
+                <div id="compareBox" class="collapse">
+                <div class="well well-sm">
+                    <input type="hidden" name="constellationid1" id="compare1">
+                    <input type="hidden" name="constellationid2" id="compare2">
+                        <button type="submit" class="btn btn-primary" id="compareButton" disabled>Compare Selected Constellations</button>
+                        <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
+                </div>
+                </div>
+            </form>
+            <div id="search_results">
+            {% if not data.term %}
+                <p class="search-empty">Please use the search bar above to search.</p>
+            {% elseif data.total == 0 %}
+                <p class="search-empty">No results found</p>
+            {% else %}
+                {% for result in data.results %}
+                    <h4><a href="{{control.snacURL}}/view/{{result.id}}">{{result.nameEntries.0.original}}</a></h4>
+                    <p class="identity-info">
+                        <span>{{result.ark}}</span>
+                        <span>({{result.entityType.term}})</span>
                     </p>
-                    <form class="form-horizontal" id="compare_form" method="POST" action="{{control.snacURL}}/diff">
-                        <div id="compareBox" class="collapse">
-                        <div class="well well-sm">
-                            <input type="hidden" name="constellationid1" id="compare1">
-                            <input type="hidden" name="constellationid2" id="compare2">
-                                <button type="submit" class="btn btn-primary" id="compareButton" disabled>Compare Selected Constellations</button>
-                                <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
-                        </div>
-                        </div>
-                    </form>
-                    {% for result in data.results %}
-                        <h4><a href="{{control.snacURL}}/view/{{result.id}}">{{result.nameEntries.0.original}}</a></h4>
-                        <p class="identity-info">
-                            <span>{{result.ark}}</span>
-                            <span>({{result.entityType.term}})</span>
-                        </p>
-                        {% if result.biogHists.0.text %}
-                        <p>{{result.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}</p>
-                        {% else %}
-                            <p class="missing">No biographical history available for this identity.</p>
-                        {% endif %}
-                        <p class="final"><input class="compare-checkbox" type="checkbox" value="{{result.id}}"> Select this Identity Constellation to compare</p>
+                    {% if result.biogHists.0.text %}
+                    <p>{{result.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}</p>
+                    {% else %}
+                        <p class="missing">No biographical history available for this identity.</p>
+                    {% endif %}
+                    <p class="final"><input class="compare-checkbox" type="checkbox" value="{{result.id}}"> Select this Identity Constellation to compare</p>
+                {% endfor %}
+            {% endif %}
+            </div>
+
+
+            <div id="pagination">
+            {% if data.pagination > 1 %}
+                <nav class="text-center"><ul class='pagination'>
+                    {% if data.page != 0 %}
+                    <li><a href='#' aria-label='Previous' onClick='return goSearch({{(data.page - 1) * data.count}})'><span aria-hidden='true'>&lt;</span></a></li>
+                    {% endif %}
+
+                    {% for i in 1..data.pagination %}
+                    <li {{i-1 == data.page ? 'class="active"' }}><a href="#" onClick='return goSearch({{(i - 1) * data.count}})'>{{i}}</a></li>
                     {% endfor %}
 
-
-
-                    {% if data.pagination > 1 %}
-                        <nav class="text-center"><ul class='pagination'>
-                            {% if data.page != 0 %}
-                            <li><a href='#' aria-label='Previous' onClick='return goSearch({{(data.page - 1) * data.count}})'><span aria-hidden='true'>&lt;</span></a></li>
-                            {% endif %}
-
-                            {% for i in 1..data.pagination %}
-                            <li {{i-1 == data.page ? 'class="active"' }}><a href="#" onClick='return goSearch({{(i - 1) * data.count}})'>{{i}}</a></li>
-                            {% endfor %}
-
-                            {% if data.page != data.pagination - 1 %}
-                            <li><a href='#' aria-label='Next' onClick='return goSearch({{(data.page + 1) * data.count}})'><span aria-hidden='true'>&gt;</span></a></li>
-                            {% endif %}
-                        </ul></nav>
+                    {% if data.page != data.pagination - 1 %}
+                    <li><a href='#' aria-label='Next' onClick='return goSearch({{(data.page + 1) * data.count}})'><span aria-hidden='true'>&gt;</span></a></li>
                     {% endif %}
-                {% endif %}
-            {% else %}
-                <p class="search-empty">Please use the search bar above to search.</p>
+                </ul></nav>
             {% endif %}
+            </div>
+        </div>
+        <div class="col-md-3 search-side {{ data.term and data.results|length > 0 ? '' : "snac-hidden" }}" id="search_sidebar">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Refine Results</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Subjects</h4>
+                        </div>
+                        <div class="list-group" id="subject_agg">
+                            {% for facet in data.aggregations.subject %}
+                                {% if facet.term not in data.facets.subject %}
+                                <a href="#" class="list-group-item" onclick='searchFacet("subject", "{{facet.term|e('js')}}"); return false;'>{{ facet.term }} ({{facet.count}})</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Occupations</h4>
+                        </div>
+                        <div class="list-group" id="occupation_agg">
+                            {% for facet in data.aggregations.occupation %}
+                            <a href="#" class="list-group-item" onclick='searchFacet("occupation", "{{facet.term|e('js')}}"); return false;'>{{ facet.term }} ({{facet.count}})</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Functions</h4>
+                        </div>
+                        <div class="list-group" id="function_agg">
+                            {% for facet in data.aggregations.function %}
+                            <a href="#" class="list-group-item" onclick='searchFacet("function", "{{facet.term|e('js')}}"); return false;'>{{ facet.term }} ({{facet.count}})</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

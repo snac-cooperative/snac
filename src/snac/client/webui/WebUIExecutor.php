@@ -346,6 +346,52 @@ class WebUIExecutor {
     * @param \snac\client\webui\display\Display $display The display object for page creation
     */
     public function displaySearchPage(&$input, &$display) {
+        if (!isset($input["term"])) {
+            // if the user didn't set a term, then show an empty search page.
+            $display->setTemplate("search_page");
+            return;
+        }
+
+        if (!isset($input["entity_type"]))
+            $input["entity_type"] = "";
+
+        if (isset($input["q"])) {
+            $input["term"] = $input["q"];
+        }
+        
+        if (!isset($input["biog_hist"]))
+            $input["biog_hist"] = null;
+
+
+        $input["facets"] = array();
+        if (isset($input["subject"])) {
+            $input["facets"]["subject"] = $input["subject"];
+        }
+        if (isset($input["occupation"])) {
+            $input["facets"]["occupation"] = $input["occupation"];
+        }
+        if (isset($input["function"])) {
+            $input["facets"]["function"] = $input["function"];
+        }
+
+        $results = $this->performNameSearch($input);
+        if (isset($results["results"])) {
+            $results["query"] = $input["term"];
+            $results["entityType"] = $input["entity_type"];
+            $results["searchType"] = $results["search_type"];
+            $results["facets"] = $input["facets"];
+            $results["aggregations"] = $results["aggregations"];
+            $results["biog_hist"] = $input["biog_hist"];
+            $display->setTemplate("search_page");
+            $this->logger->addDebug("Set the following results into the search page", $results);
+            $display->setData($results);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($results, $display);
+        }
+    }
+    
+    public function searchConstellations(&$input) {
         if (!isset($input["term"]))
             $input["term"] = "";
 
@@ -377,14 +423,11 @@ class WebUIExecutor {
             $results["entityType"] = $input["entity_type"];
             $results["searchType"] = $results["search_type"];
             $results["facets"] = $input["facets"];
+            $results["aggregations"] = $results["aggregations"];
             $results["biog_hist"] = $input["biog_hist"];
-            $display->setTemplate("search_page");
-            $this->logger->addDebug("Set the following results into the search page", $results);
-            $display->setData($results);
-        } else {
-            $this->logger->addDebug("Error page being drawn");
-            $this->drawErrorPage($results, $display);
-        }
+        } 
+
+        return $results;
     }
 
     /**

@@ -152,6 +152,17 @@ h1 {
     margin-right: 15px;
 }
 
+.search-side a {
+    font-size: 12px;
+}
+.search-side h4.panel-title {
+    font-size: 14px;
+}
+
+.faceted-search .form-group {
+    margin-bottom: 3px;
+}
+
 .snac-name-header {
     font-family: "Crimson Text";
     font-weight: 800;
