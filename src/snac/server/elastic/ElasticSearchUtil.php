@@ -447,6 +447,7 @@ class ElasticSearchUtil {
                     ]
                 ]
             ];
+            $searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"] = 1;
         }
         if ($entityType !== null) {
             array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
@@ -463,6 +464,8 @@ class ElasticSearchUtil {
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
                 if (isset($searchBody["query"]["function_score"]["query"]["bool"]["should"]))
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["should"]);
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]);
             }
             foreach ($parameters as $type=>$values) {
                 foreach ($values as $value) {
@@ -545,6 +548,7 @@ class ElasticSearchUtil {
                     ]
                 ]
             ];
+            $searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"] = 1;
         }
 
 
@@ -562,6 +566,8 @@ class ElasticSearchUtil {
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
                 if (isset($searchBody["query"]["function_score"]["query"]["bool"]["should"]))
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["should"]);
+                if (isset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]))
+                    unset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]);
             }
 
             // Filter on the given parameters
