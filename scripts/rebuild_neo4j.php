@@ -64,7 +64,7 @@ while($row = $db->fetchrow($result))
 
 echo "Querying the relations from the database.\n";
 
-$allRel = $db->query("select r.id, r.ic_id, r.related_id, r.related_ark, r.arcrole from
+$allRel = $db->query("select r.id, r.version, r.ic_id, r.related_id, r.related_ark, r.arcrole from
                 related_identity r,
                 (select distinct id, max(version) as version from related_identity group by id) a
                 where a.id = r.id and a.version = r.version and not r.is_deleted", array());
@@ -74,6 +74,8 @@ while($row = $db->fetchrow($allRel))
         $rels[$row["ic_id"]] = array();
     
     $rels[$row["ic_id"]][$row["id"]] = [
+        "id" => $row["id"],
+        "version" => $row["version"],
         "source" => $row["ic_id"],
         "target" => $row["related_id"], 
         "target_ark" => $row["related_ark"],
