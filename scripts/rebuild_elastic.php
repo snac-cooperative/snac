@@ -59,7 +59,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
             "index" => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
             "body" => [
                 "mappings" => [
-                    "namesearch" => [
+                     \snac\Config::$ELASTIC_SEARCH_BASE_TYPE => [
                         "properties"=> [
                             "arkID"=> [
                                 "type"=> "string"
