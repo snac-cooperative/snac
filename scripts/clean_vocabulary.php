@@ -83,7 +83,7 @@ for( $i = 0; $i < 10; $i++) {
 //echo json_encode($sample, JSON_PRETTY_PRINT);
 echo "\n\n";
 
-//update_database($clean["subject"], "subject", "term_id");
+update_database($clean["subject"], "subject", "term_id");
 update_database($clean["occupation"], "occupation", "occupation_id");
 update_database($clean["function"], "function", "function_id");
 
