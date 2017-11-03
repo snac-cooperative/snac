@@ -53,6 +53,125 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         echo "   - could not delete search index. It did not exist.\n";
     }
 
+    echo "Trying to create the Elastic Search Index: " . \snac\Config::$ELASTIC_SEARCH_BASE_INDEX . "\n";
+    try {
+        $params = [
+            "index" => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+            "body" => [
+                "mappings" => [
+                    "namesearch" => [
+                        "properties"=> [
+                            "arkID"=> [
+                                "type"=> "string"
+                            ],
+                            "biogHist"=> [
+                                "type"=> "string"
+                            ],
+                            "degree"=> [
+                                "type"=> "long"
+                            ],
+                            "entityType"=> [
+                                "type"=> "string",
+                                "fields"=> [
+                                    "untokenized"=> [
+                                        "type"=> "string",
+                                        "index"=> "not_analyzed"
+                                    ]
+                                ]
+                            ],
+                            "function"=> [
+                                "type"=> "string",
+                                "fields"=> [
+                                    "untokenized"=> [
+                                        "type"=> "string",
+                                        "index"=> "not_analyzed"
+                                    ]
+                                ]
+                            ],
+                            "hasImage"=> [
+                                "type"=> "boolean"
+                            ],
+                            "id"=> [
+                                "type"=> "long"
+                            ],
+                            "imageMeta"=> [
+                                "properties"=> [
+                                    "author"=> [
+                                        "properties"=> [
+                                            "name"=> [
+                                                "type"=> "string"
+                                            ],
+                                            "url"=> [
+                                                "type"=> "string"
+                                            ]
+                                        ]
+                                    ],
+                                    "info"=> [
+                                        "type"=> "string"
+                                    ],
+                                    "infoURL"=> [
+                                        "type"=> "string"
+                                    ],
+                                    "license"=> [
+                                        "properties"=> [
+                                            "name"=> [
+                                                "type"=> "string"
+                                            ],
+                                            "url"=> [
+                                                "type"=> "string"
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ],
+                            "imageURL"=> [
+                                "type"=> "string"
+                            ],
+                            "nameEntry"=> [
+                                "type"=> "string",
+                                "fields"=> [
+                                    "untokenized"=> [
+                                        "type"=> "string",
+                                        "index"=> "not_analyzed"
+                                    ]
+                                ]
+                            ],
+                            "occupation"=> [
+                                "type"=> "string",
+                                "fields"=> [
+                                    "untokenized"=> [
+                                        "type"=> "string",
+                                        "index"=> "not_analyzed"
+                                    ]
+                                ]
+                            ],
+                            "resources"=> [
+                                "type"=> "long"
+                            ],
+                            "subject"=> [
+                                "type"=> "string",
+                                "fields"=> [
+                                    "untokenized"=> [
+                                        "type"=> "string",
+                                        "index"=> "not_analyzed"
+                                    ]
+                                ]
+                            ],
+                            "timestamp"=> [
+                                "format"=> "strict_date_optional_time||epoch_millis",
+                                "type"=> "date"
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $response = $eSearch->indices()->delete($params);
+        echo "   - deleted search index\n";
+    } catch (\Exception $e) {
+        echo "   - could not delete search index. It did not exist.\n";
+    }
+
     $vocab = array();
     echo "Querying vocabulary cache from the database.\n";
 
