@@ -466,6 +466,10 @@ class ElasticSearchUtil {
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["should"]);
                 if (isset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]))
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]);
+                $searchBody["sort"] = [
+                    [ "nameEntry.untokenized" => "asc" ],
+                    "_score"
+                ];
             }
             foreach ($parameters as $type=>$values) {
                 foreach ($values as $value) {
@@ -568,6 +572,10 @@ class ElasticSearchUtil {
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["should"]);
                 if (isset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]))
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]);
+                $searchBody["sort"] = [
+                    [ "nameEntry.untokenized" => "asc" ],
+                    "_score"
+                ];
             }
 
             // Filter on the given parameters
