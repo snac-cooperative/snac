@@ -3412,7 +3412,7 @@ class ServerExecutor {
         }
 
         if (!isset($input["biog_hist"])) {
-            $input["biog_hist"] = null;
+            $input["biog_hist"] = false;
         }
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {

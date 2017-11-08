@@ -338,13 +338,13 @@ class WebUIExecutor {
 
 
     /**
-    * Display Search Page
-    *
-    * Loads the search page for a given query input into the display.
-    *
-    * @param string[] $input Post/Get inputs from the webui
-    * @param \snac\client\webui\display\Display $display The display object for page creation
-    */
+     * Display Search Page
+     *
+     * Loads the search page for a given query input into the display.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
     public function displaySearchPage(&$input, &$display) {
         if (!isset($input["term"])) {
             // if the user didn't set a term, then show an empty search page.
@@ -390,7 +390,17 @@ class WebUIExecutor {
             $this->drawErrorPage($results, $display);
         }
     }
-    
+
+    /**
+     * Search Constellations
+     *
+     * This method requests a search from the server, then returns its response as JSON directly
+     * back to the web client.  This allows the client to update the search page by AJAX
+     * rather than needing to reload the page.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
     public function searchConstellations(&$input) {
         if (!isset($input["term"]))
             $input["term"] = "";

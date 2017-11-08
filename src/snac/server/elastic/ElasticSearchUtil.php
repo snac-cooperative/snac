@@ -405,9 +405,11 @@ class ElasticSearchUtil {
      * @param string $entityType optional The entity type to search for, or null
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
+     * @param string[][] $parameters optional The list of facets and other parameters to use when performing this search
+     * @param boolean $fullSearch optional Whether to search the full text (i.e. biogHist plus names). 
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchMainIndexAdvanced($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=null) {
+    public function searchMainIndexAdvanced($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=false) {
 
         $searchBody = [
             /* This query uses a full-word matching search */
@@ -436,7 +438,7 @@ class ElasticSearchUtil {
                 ]
             ]
         ];
-        if ($fullSearch !== null) {
+        if ($fullSearch !== false) {
             unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
             $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
                 [
@@ -498,9 +500,11 @@ class ElasticSearchUtil {
      * @param string $entityType optional The entity type to search for, or null
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
+     * @param string[][] $parameters optional The list of facets and other parameters to use when performing this search
+     * @param boolean $fullSearch optional Whether to search the full text (i.e. biogHist plus names). 
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=null) {
+    public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=false) {
 
         $searchBody = [
             /* This query uses a full-word matching search */
@@ -532,7 +536,7 @@ class ElasticSearchUtil {
         ];
 
 
-        if ($fullSearch !== null) {
+        if ($fullSearch !== false) {
             unset($searchBody["query"]["function_score"]["query"]["bool"]["must"]);
             $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
                 [
