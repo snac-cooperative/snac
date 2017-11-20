@@ -625,6 +625,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (!$found)
                     array_push($this->responseHeaders, "HTTP/1.0 404 Not Found");
                 break;
+            case "stats":
+                $response = $executor->displayStatsPage($this->input, $display);
+                break;
+            
+            case "upload":
+                $response = $executor->displayUploadPage($this->input, $display);
+                break;
 
             // If dropping through, then show the landing page
             default:
