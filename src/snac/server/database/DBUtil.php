@@ -702,6 +702,56 @@ class DBUtil
         return array();
     }
 
+
+    /**
+     * List recent constellations by user
+     *
+     * Lists the recently touched constellations for a given user.  This includes any changes they might
+     * have made, regardless of whether or not they published them.
+     *
+     * @param \snac\data\User $user The user to get the list of constellationsf or
+     *
+     * @param integer $limit optional Limit to the number of records. Not optional here. Must be -1 for all, or an
+     * integer . Default to the config when missing.
+     *
+     * @param integer $offset optional An offset to jump into the list of records in the database. Optional defaults to
+     * a config value. Must be -1 for all, or an integer. Default to the config when missing.
+     *
+     * @return \snac\data\Constellation[] A list of PHP constellation object (which might be summary objects),
+     * or an empty array when there are no constellations.
+     */
+    public function listRecentConstellationsForUser($user, $limit=null, $offset=null) {
+        if ($user == null || $user->getUserID() == null) {
+            return false;
+        }
+
+        if ($limit==null || ! is_int($limit))
+        {
+            $limit = \snac\Config::$SQL_LIMIT;
+        }
+        if ($offset == null || ! is_int($offset))
+        {
+            $offset = \snac\Config::$SQL_OFFSET;
+        }
+
+        $infoList = $this->sql->selectConstellationsUserEdited($user->getUserID(), $limit, $offset);
+        if ($infoList)
+        {
+            $constellationList = array();
+            foreach ($infoList as $idVer)
+            {
+                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['latest_version'], DBUtil::$READ_NRD | DBUtil::$READ_PREFERRED_NAME);
+                $current = $this->readConstellationUserStatus($idVer['ic_id']);
+                if (!isset($current["version"]) || $current["version"] >= $idVer["latest_version"])
+                    array_push($constellationList, $cObj);
+            }
+            $this->logger->addDebug("User had recently touched", $constellationList);
+            return $constellationList;
+        }
+        return array();
+
+    }
+
     /**
      * List constellations most recent by status for any user
      *
@@ -3488,7 +3538,7 @@ class DBUtil
             $note   = $this->sql->selectCurrentNoteForConstellation($mainID, $version);
             if ($status && $userid)
             {
-                return array("status"=>$status, "userid"=>$userid, "note"=>$note);
+                return array("status"=>$status, "userid"=>$userid, "note"=>$note, "version" => $version);
             }
         }
         return false;

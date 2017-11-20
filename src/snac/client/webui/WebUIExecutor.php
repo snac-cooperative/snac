@@ -1266,7 +1266,7 @@ class WebUIExecutor {
                         "id"=>$constellation->getID(),
                         "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
             }
-            $serverResponse["recents"] = $recents;
+            $serverResponse["allrecents"] = $recents;
         }
 
         $display->setData($serverResponse);

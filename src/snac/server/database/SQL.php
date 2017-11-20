@@ -1032,7 +1032,32 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['note'];
     }
+    
+    
+    public function selectConstellationsUserEdited($appUserID, $limit, $offset)
+    {
+        $limitStr = '';
+        $offsetStr = '';
+        $limitStr = $this->doLOValue('limit', $limit);
+        $offsetStr = $this->doLOValue('offset', $offset);
 
+        $queryString = sprintf(
+            'select id as ic_id, max(version) as latest_version from 
+                (select distinct id, version from version_history where user_id = $1) as a 
+                group by id order by latest_version desc %s %s;', $limitStr, $offsetStr);
+    
+
+        $this->logger->addDebug("Sending the following SQL request: " . $queryString);
+
+        $result = $this->sdb->query($queryString,
+                                    array($appUserID));
+        $this->logger->addDebug("Done request");
+        $all = array();
+        while($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row);
+        }
+        return $all;
+    }
     /**
      * Select by status and most recent, user only
      *

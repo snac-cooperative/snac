@@ -1084,6 +1084,21 @@ class ServerExecutor {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
 
+        $editList = $this->cStore->listRecentConstellationsForUser($user, 10);
+        $response["recent"] = array ();
+        if ($editList !== false) {
+            foreach ($editList as $constellation) {
+                if ($constellation->getPreferredNameEntry() != null) {
+                    $item = array (
+                            "id" => $constellation->getID(),
+                            "version" => $constellation->getVersion(),
+                            "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                    );
+                    array_push($response["recent"], $item);
+                }
+            }
+        }
+        
         return $response;
     }
 

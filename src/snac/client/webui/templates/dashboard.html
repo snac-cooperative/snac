@@ -115,7 +115,21 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 <div class="panel-body">
                     <p>Browse interesting and recently published Constellations from all of SNAC</p>
                     <div class="list-group">
-                        {% for recent in data.recents %}
+                        {% for recent in data.allrecents %}
+                        <a href="{{control.snacURL}}/view/{{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">View Your Recently Edited</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Browse Constellations you have recently edited in SNAC.</p>
+                    <div class="list-group">
+                        {% for recent in data.recent %}
                         <a href="{{control.snacURL}}/view/{{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
                         {% endfor %}
                     </div>
