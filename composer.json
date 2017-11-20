@@ -2,8 +2,8 @@
     "require": {
         "php": "~7.0",
         "twig/twig": "~1.23",
-        "league/oauth2-client": "^1.1",
-        "league/oauth2-google": "^1.0",
+        "league/oauth2-client": "^2.2",
+        "league/oauth2-google": "^2.0",
         "monolog/monolog": "^1.18",
         "elasticsearch/elasticsearch": "~2.0@beta",
         "phpmailer/phpmailer": "~5.2",
@@ -12,7 +12,8 @@
         "graphaware/neo4j-php-client": "^4.8",
         "jasny/twig-extensions": "^1.1",
         "twig/extensions": "^1.5",
-        "soundasleep/html2text": "~0.5"
+        "soundasleep/html2text": "~0.5",
+        "chrishemmings/oauth2-drupal": "^2.0"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "*",

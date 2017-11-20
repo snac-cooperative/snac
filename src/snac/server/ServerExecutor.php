@@ -119,21 +119,27 @@ class ServerExecutor {
      */
     private function checkOAuth($user) {
         // Google OAuth Settings (from Config)
-        $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
-        $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
+        //$clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
+        //$clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
         // Change this if you are not using the built-in PHP server
-        $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
+        //$redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
         // Initialize the provider
-        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
+        //$provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
 
+        $provider = new \ChrisHemmings\OAuth2\Client\Provider\Drupal([
+            'clientId'          => \snac\Config::$OAUTH_CONNECTION["drupal"]["client_id"],
+            'clientSecret'      => \snac\Config::$OAUTH_CONNECTION["drupal"]["client_secret"],
+            'redirectUri'       => \snac\Config::$OAUTH_CONNECTION["drupal"]["redirect_uri"],
+            'baseUrl'           => \snac\Config::$OAUTH_CONNECTION["drupal"]["drupal_uri"],
+        ]);
         try {
             $this->logger->addDebug("Trying to connect to OAuth2 Server to get user details");
 
             $accessToken = new AccessToken($user->getToken());
 
             $ownerDetails = $provider->getResourceOwner($accessToken);
-
-            if ($ownerDetails->getEmail() != $user->getEmail()) {
+            $this->logger->addDebug("got the following ID from OAUTH", array($ownerDetails->getPreferredName(), $user->getUserName()));
+            if ($ownerDetails->getPreferredName() != $user->getUserName()) {
                 // This user's token doesn't match the user's email
                 $this->logger->addDebug("Email mismatch from the user and OAuth details");
                 return false;

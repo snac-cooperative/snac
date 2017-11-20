@@ -3258,6 +3258,7 @@ class WebUIExecutor {
      */
     public function createUser($googleUser, $googleToken) {
         $user = new \snac\data\User();
+        /**
         $avatar = $googleUser->getAvatar();
         $avatarSmall = null;
         $avatarLarge = null;
@@ -3269,11 +3270,12 @@ class WebUIExecutor {
         $user->setAvatar($avatar);
         $user->setAvatarSmall($avatarSmall);
         $user->setAvatarLarge($avatarLarge);
-        $user->setUserName($googleUser->getEmail());
+        **/
+        $user->setUserName($googleUser->getPreferredName());
         $user->setEmail($googleUser->getEmail());
-        $user->setFirstName($googleUser->getFirstName());
+        //$user->setFirstName($googleUser->getFirstName());
         $user->setFullName($googleUser->getName());
-        $user->setLastName($googleUser->getLastName());
+        //$user->setLastName($googleUser->getLastName());
         $token = array (
                 "access_token" => $googleToken->getToken(),
                 "expires" => $googleToken->getExpires()

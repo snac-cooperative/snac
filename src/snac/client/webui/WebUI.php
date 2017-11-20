@@ -182,12 +182,18 @@ class WebUI implements \snac\interfaces\ServerInterface {
         session_start();
 
         // Google OAuth Settings (from Config)
-        $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
-        $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
+        //$clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
+        //$clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
         // Change this if you are not using the built-in PHP server
-        $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
+        //$redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
         // Initialize the provider
-        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
+        //$provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
+        $provider = new \ChrisHemmings\OAuth2\Client\Provider\Drupal([
+            'clientId'          => \snac\Config::$OAUTH_CONNECTION["drupal"]["client_id"],
+            'clientSecret'      => \snac\Config::$OAUTH_CONNECTION["drupal"]["client_secret"],
+            'redirectUri'       => \snac\Config::$OAUTH_CONNECTION["drupal"]["redirect_uri"],
+            'baseUrl'           => \snac\Config::$OAUTH_CONNECTION["drupal"]["drupal_uri"],
+        ]);
         $_SESSION['oauth2state'] = $provider->getState();
 
 
