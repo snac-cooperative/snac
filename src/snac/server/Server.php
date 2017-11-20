@@ -398,6 +398,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             // Reporting
+            case "stats":
+                $tmp = ["type"=>"public"];
+                $this->response = $executor->readReport($tmp);
+                break;
             case "report":
                 if (!$executor->hasPermission("View Reports"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to view reports.");

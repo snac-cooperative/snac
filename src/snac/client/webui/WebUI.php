@@ -121,6 +121,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "static",
                 "api_help",
                 "contact",
+                "stats",
                 "feedback"
         );
 
@@ -140,6 +141,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "static",
             "api_help",
             "visualize",
+            "stats",
             "history"
         );
 

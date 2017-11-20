@@ -83,11 +83,24 @@ class Cron implements \snac\interfaces\ServerInterface {
 
         $this->logger->addDebug("Handling input.", $this->input);
         switch($this->input["command"]) {
+            case "public_reports":
+                $this->logger->addDebug("Running Report Query.");
+                $query = [
+                    "command" => "report_generate",
+                    "type" => "public"
+                ];
+                $serverResponse = $this->connect->query($query);
+                break;
             case "weekly_reports":
                 $this->logger->addDebug("Running Report Query.");
                 $query = [
                     "command" => "report_generate",
                     "type" => "general"
+                ];
+                $serverResponse = $this->connect->query($query);
+                $query = [
+                    "command" => "report_generate",
+                    "type" => "public"
                 ];
                 $serverResponse = $this->connect->query($query);
                 break;

@@ -1140,6 +1140,30 @@ class WebUIExecutor {
         }
         return true;
     }
+    
+    /**
+     * Display Status Page
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayStatsPage(&$input, &$display) {
+        $ask = array(
+            "command"=>"stats"
+        );
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+            return $this->drawErrorPage($serverResponse, $display);
+        $display->setData($serverResponse);
+        $display->setTemplate("status");
+        return true;
+    }
+    
+    public function displayUploadPage(&$input, &$display) {
+        $display->setTemplate("upload");
+        return true;
+    }
+    
     /**
      * Display Preview Page
      *

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Status - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Datatables -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
+<!-- C3 chart library -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/c3@0.4.18/c3.css">
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/c3@0.4.18/c3.min.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+</head>
+
+<style>
+.big-banner {
+    /*font-family: Crimson Text;*/
+    font-family: Roboto;
+    font-weight: 300;
+    font-size: 5vw; 
+    text-align: center;
+}
+
+.second-banner {
+    font-family: Roboto;
+    font-weight: 300;
+    font-size: 4vw;
+    text-align: center;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+.above-map {
+    font-family: Roboto;
+    font-weight: 300;
+    font-size: 2vw;
+    text-align: left;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+
+.sub-second {
+    text-align: center;
+    font-size: 20px;
+}
+
+.row {
+    margin-top: 50px;
+}
+
+.geoplace-map {
+    height: 500px;
+}
+
+.leaflet-heatmap-layer {
+    opacity: 0.7;
+}
+</style>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+    <!--<h1>Status</h1>-->
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <p class="big-banner">{{data.reports["Number of Identity Constellations"].result.value|number_format}} constellations</p>
+                                
+
+            {% set total = data.reports["Number of Identity Constellations by Type"].result.person + data.reports["Number of Identity Constellations by Type"].result.corporateBody + data.reports["Number of Identity Constellations by Type"].result.family %}
+            <div class="progress">
+                <div class="progress-bar progress-bar-active" style="width: {{data.reports["Number of Identity Constellations by Type"].result.person / total * 100}}%">
+                    <span class="sr-only">{{data.reports["Number of Identity Constellations by Type"].result.person / total * 100}}%</span>
+                    Person
+                </div>
+                <div class="progress-bar progress-bar-success" style="width: {{data.reports["Number of Identity Constellations by Type"].result.corporateBody / total * 100}}%">
+                    <span class="sr-only">{{data.reports["Number of Identity Constellations by Type"].result.corporateBody / total * 100}}%</span>
+                    Corporate Body
+                </div>
+                <div class="progress-bar progress-bar-danger" style="width: {{data.reports["Number of Identity Constellations by Type"].result.family / total * 100}}%">
+                    <span class="sr-only">{{data.reports["Number of Identity Constellations by Type"].result.family / total * 100}}%</span>
+                    Family
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="panel panel-default" style="height: 300px;">
+                <div class="panel-body" style="margin-top: 15%;">
+
+                    <p class="second-banner" style="">##</p>
+                    <p class="sub-second">new this week</p>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+
+                <div id="edits">
+                </div>
+                <script>
+                    var x = new Array();
+                    var y = new Array();
+                    x.push("Date");
+                    y.push("Edits");
+                    {% for x,y in data.reports["Publishes Last Month"].result %}
+                        x.push("{{x}}");
+                        y.push({{y}});
+                    {% endfor %}
+                    var chart = c3.generate({
+                        bindto: '#edits',
+                        size: {
+                            height: 300
+                        },
+                        data: {
+                            x: 'Date',
+                            columns: [
+                                x,
+                                y
+                            ],
+                            type: 'bar'
+                        },
+                        axis: {
+                            x: {
+                                type: 'timeseries',
+                                tick: {
+                                    format: '%Y-%m-%d'
+                                }
+                            }
+                        },
+                        legend: {
+                            show: false
+                        }
+                    });    
+                </script>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            
+            <script src="javascript/leaflet-heat.js"></script>
+            <script>
+                $(document).ready(function() {
+                    // Load the map
+                    var holdingsMapView = null;
+                    var markers = new Array();
+                    holdingsMapView = L.map('holdingsMap').setView([20,0],2);//setView([35.092344, -39.023438], 2);
+                    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    }).addTo(holdingsMapView);
+                    
+                    //custom size for this example, and autoresize because map style has a percentage width
+
+                    // dataPoints is an array of arrays: [[lat, lng, intensity]...]
+                    var dataPoints = [];
+                    {% set max = 0 %}
+                    {% for d in data.reports["Holding Locations"].result %}
+                        {% if d.count > max %}
+                            {% set max = d.count %}
+                        {% endif %}
+                    {% endfor %}
+                    {% for d in data.reports["Holding Locations"].result %}
+                        dataPoints.push([{{d.latitude}}, {{d.longitude}}, {{max(d.count / max, 0.4)}}]);
+                    {% endfor %}
+                    
+                    
+                    var heatLayer = L.heatLayer(dataPoints, { maxZoom: 5 }).addTo(holdingsMapView);
+                    //heatLayer.setOpacity(0.6);
+
+
+                });
+            </script>
+            <p class="above-map">connected to holdings across the world...</p>
+            <div class="geoplace-map" id="holdingsMap"></div>
+        </div>
+    </div>
+</div>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>

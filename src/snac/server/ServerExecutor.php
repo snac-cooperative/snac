@@ -3522,6 +3522,9 @@ class ServerExecutor {
             case "holdings":
                 $reportName = "Holdings";
                 break;
+            case "public":
+                $reportName = "Public";
+                break;
             case "general":
             default:
                 break;
@@ -3553,6 +3556,13 @@ class ServerExecutor {
             case "holdings":
                 $reportName = "Holdings";
                 $reportEngine->addReport("AllHoldingInstitutions");
+                break;
+            case "public":
+                $reportName = "Public";
+                $reportEngine->addReport("AllHoldingLocations");
+                $reportEngine->addReport("NumConstellations");
+                $reportEngine->addReport("NumConstellationsByType");
+                $reportEngine->addReport("PublishesLastMonth");
                 break;
             case "general":
             default:
