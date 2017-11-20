@@ -192,6 +192,12 @@ class Config {
             "client_id" => 'XXXXXXXXX',
             "client_secret" => 'XXXXXXXX',
             "redirect_uri" => 'XXXXXXX',
+        ),
+        "drupal" => array(
+            "client_id" => 'XXXXX',
+            "client_secret" => 'XXXXXXX',
+            "redirect_uri" => 'XXXXX',
+            "drupal_uri" => 'XXXX'
         )
     );
 
