@@ -1033,7 +1033,18 @@ class SQL
         return $row['note'];
     }
     
-    
+
+    /**
+     * Select Constellations User Recently Edited
+     *
+     * Gets a list of the version history id, version that have been recently edited
+     * by the user (even if they have been published by someone else later.
+     *
+     * @param integer $appUserID The user ID to query
+     * @param integer $limit The maximum number of results to return
+     * @param integer $offset Where in the list of results to start
+     * @return string[][] The list of ic_id and version numbers recently edited
+     */ 
     public function selectConstellationsUserEdited($appUserID, $limit, $offset)
     {
         $limitStr = '';
