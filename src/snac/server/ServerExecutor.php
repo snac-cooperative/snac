@@ -3577,6 +3577,7 @@ class ServerExecutor {
                 $reportEngine->addReport("AllHoldingLocations");
                 $reportEngine->addReport("NumConstellations");
                 $reportEngine->addReport("NumConstellationsByType");
+                $reportEngine->addReport("NumNewConstellationsThisWeek");
                 $reportEngine->addReport("PublishesLastMonth");
                 break;
             case "general":

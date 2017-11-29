@@ -1155,7 +1155,7 @@ class WebUIExecutor {
         if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
             return $this->drawErrorPage($serverResponse, $display);
         $display->setData($serverResponse);
-        $display->setTemplate("status");
+        $display->setTemplate("stats");
         return true;
     }
     
