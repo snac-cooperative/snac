@@ -125,9 +125,11 @@
     </div>
     <div class="row" style="margin-top: 0px;">
         <div class="col-md-4">
-            <div class="panel panel-default" style="height: 300px;">
-                <div class="panel-body" style="margin-top: 15%;">
+            <div class="panel panel-default" style="height: 350px;">
+                <div class="panel-body">
 
+                    <p class="second-banner" style="">{{data.reports["Number of Edits This Week"].result.value|number_format}}</p>
+                    <p class="sub-second">edits this week</p>
                     <p class="second-banner" style="">{{data.reports["Number of New Identity Constellations This Week"].result.value|number_format}}</p>
                     <p class="sub-second">new this week</p>
 
@@ -150,7 +152,7 @@
                     var chart = c3.generate({
                         bindto: '#edits',
                         size: {
-                            height: 300
+                            height: 350
                         },
                         data: {
                             x: 'Date',

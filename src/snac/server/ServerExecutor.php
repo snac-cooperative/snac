@@ -3578,6 +3578,7 @@ class ServerExecutor {
                 $reportEngine->addReport("NumConstellations");
                 $reportEngine->addReport("NumConstellationsByType");
                 $reportEngine->addReport("NumNewConstellationsThisWeek");
+                $reportEngine->addReport("NumEditsThisWeek");
                 $reportEngine->addReport("PublishesLastMonth");
                 break;
             case "general":

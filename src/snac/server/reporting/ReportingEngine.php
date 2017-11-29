@@ -26,6 +26,11 @@ namespace snac\server\reporting;
 class ReportingEngine {
 
     /**
+     * @var \Monolog\Logger $logger the logger for this server
+     */
+    private $logger;
+
+    /**
      * Reports to run
      * @var \snac\server\reporting\reports\helpers\Report[] Reports to run
      */
@@ -41,6 +46,11 @@ class ReportingEngine {
      * Constructor
      */
     public function __construct() {
+        global $log;
+        // create a log channel
+        $this->logger = new \Monolog\Logger('Server');
+        $this->logger->pushHandler($log);
+        
         $this->reports = array();
         return;
     }
@@ -94,7 +104,9 @@ class ReportingEngine {
         foreach ($this->reports as $report) {
             $result = null;
             try {
+                $this->logger->addDebug("Running report: ", array($report->getName()));
                 $result = $report->compute($this->postgres);
+                $this->logger->addDebug("Finished report: ", array($report->getName()));
             } catch (\Exception $e) {
                 // Right now, ignore any errors
             }

@@ -59,9 +59,10 @@ class TopEditorsThisWeek extends helpers\Report {
         $rawResults = $psql->fetchAll($result);
 
         $results = array();
-
-        foreach ($rawResults as $result) {
-            $results[$result["fullname"]] = $result["count"];
+        if ($rawResults) {
+            foreach ($rawResults as $result) {
+                $results[$result["fullname"]] = $result["count"];
+            }
         }
         return $results;
 
