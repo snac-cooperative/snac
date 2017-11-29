@@ -201,10 +201,6 @@ class Display {
         $twig->addExtension(new \Twig_Extensions_Extension_Text());
 
         return $twig->render($this->templateFileName, $this->data);
-
-        $template = create_function('$data', file_get_contents($this->templateFileName()));
-        $template($this->data);
-        return "<html><body><h1>Testing</h1></body></html>";
     }
 
     /**
