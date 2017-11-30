@@ -926,7 +926,10 @@ class ServerExecutor {
                 }
 
                 // Send the message via email
-                $this->mailer->sendUserMessage($message);
+                //$this->mailer->sendUserMessage($message);
+
+                $osticket = new \snac\server\support\OSTicket();
+                $osticket->submitMessageAsTicket($message);
             }
             $response["result"] = "success";
         }

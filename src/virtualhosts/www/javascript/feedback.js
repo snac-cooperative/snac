@@ -135,6 +135,8 @@ function sendFeedback() {
 
     var feedbackBody = {
         "subject" : "SNAC Feedback",
+        "name" : $("#feedback_name").val(),
+        "email" : $("#feedback_email").val(),
         "body" : "<p>" + $("#feedback_body").val() + "</p>" +
                     "<p><strong>Page:</strong> " + $(document).find("title").text() + "<br>" +
                     "<strong>URL:</strong> " + $("#feedback_page_url").val() + "<br>" +

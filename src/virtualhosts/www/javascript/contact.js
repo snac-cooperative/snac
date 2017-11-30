@@ -7,12 +7,11 @@
  *            the Regents of the University of California
  */
 
-	+ "                                <p class=\"form-control-static\">"+ window.location.href + "</p>"
-	+ "                                <p class=\"form-control-static\">" + document.referrer + "</p>"
-
 function sendContactForm() {
     var feedbackBody = {
         "subject" : "SNAC Web Contact",
+        "name" : $("#name").val(),
+        "email" : $("#email").val(),
         "body" : "<p>" + tinymce.get("message").getContent() + "</p>" +
                     "<p><strong>Contact Information:</strong> " + $("#name").val() + " (" + $("#email").val() + ")</p>" +
                     "<p><strong>URL:</strong> " + window.location.href + "<br>" +

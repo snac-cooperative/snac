@@ -1441,7 +1441,11 @@ class WebUIExecutor {
                     $message->setFromUser($this->user);
                 } else {
                     // set this message from the IP address:
-                    $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+                    if (isset($input["email"]) && isset($input["name"])) {
+                        $message->setFromString($input["email"]);
+                    } else {
+                        $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+                    }
                 }
 
                 if (isset($input["screenshot"])) {
