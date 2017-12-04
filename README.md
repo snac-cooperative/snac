@@ -1,6 +1,6 @@
 # SNAC Server
 
-[![Gitter](https://badges.gitter.im/snac-cooperative/snac.svg)](https://gitter.im/snac-cooperative/snac?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Join the chat at https://gitter.im/snac-cooperative/snac](https://badges.gitter.im/snac-cooperative/snac.svg)](https://gitter.im/snac-cooperative/snac?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This repository contains the entirety of the SNAC Server code, including all components written by the UVA development team.
 
