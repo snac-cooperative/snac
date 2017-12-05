@@ -566,6 +566,15 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="source_citation_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceCitation.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sourceCitation.display }}
+                        </label>
+                        <div class="col-xs-8" id="textarea_source_citation_{{i}}">
+                            <textarea id="source_citation_{{i}}" name="source_citation_{{i}}" class="form-control" style="display:none;">{{ source.citation }}</textarea>
+                            <p class="form-control-static">{{ source.citation }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="source_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceText.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceText.display }}
                         </label>
@@ -1657,12 +1666,13 @@
                     <input id="scm_{{short}}_operation_{{j}}_{{i}}" name="scm_{{short}}_operation_{{j}}_{{i}}" type="hidden" value="{{ scm.operation }}"/>
                     <div class="form-group well well-sm">
                         <h5 class="text-center" style="font-weight: bold">Source Citation</h5>
-                        <p id="scm_{{short}}_source_text_{{j}}_{{i}}" class="panel panel-body scm-source-panel {{ not scm.citation.text ? 'hidden'}}">{{scm.citation.text|raw}}</p>
+                        <p id="scm_{{short}}_source_citation_{{j}}_{{i}}" class="panel panel-body scm-source-panel {{ not scm.citation.citation ? 'hidden'}}">{{scm.citation.citation|raw}}</p>
                         <p id="scm_{{short}}_source_uri_{{j}}_{{i}}" class="form-control-static text-center">
                             {% if scm.citation.uri %}
                             <a href="{{scm.citation.uri}}" target="_blank">{{scm.citation.uri}}</a>
                             {% endif %}
                         </p>
+                        <p id="scm_{{short}}_source_text_{{j}}_{{i}}" class="{{ not scm.citation.text ? 'hidden'}}" style="border-top: 1px solid #ccc; padding-top: 15px; margin-top: 15px;">{{scm.citation.text|raw|nl2br}}</p>
                     </div>
                     {% if inEdit %}
                     <div class="form-group">

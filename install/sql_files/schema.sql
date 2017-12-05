@@ -575,6 +575,7 @@ create table source (
     is_deleted   boolean default false,
     display_name text,    -- User entered display name to distinguish sources, esp in the UI
     text         text,    -- Text of this source
+    citation     text,    -- Text of this source
     note         text,    -- Note related to this source
     uri          text,    -- URI of this source
     language_id  integer, -- language, fk to vocabulary.id

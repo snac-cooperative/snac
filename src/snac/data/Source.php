@@ -55,6 +55,11 @@ class Source extends AbstractData {
     private $uri;
 
     /**
+     * @var string Citation of this source.
+     */
+    private $citation;
+
+    /**
      * @var \snac\data\Term Type of this source
      */
     private $type;
@@ -104,6 +109,17 @@ class Source extends AbstractData {
         return $this->text;
     }
 
+    /**
+     * Get the citation of this source
+     *
+     * @return string The citation 
+     *
+     */
+    public function getCitation()
+    {
+        return $this->citation;
+    }
+
 
     /**
      * Get the display name of this source
@@ -147,6 +163,7 @@ class Source extends AbstractData {
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "displayName" => $this->displayName,
             "text" => $this->text,
+            "citation" => $this->citation,
             "note" => $this->note,
             "uri" => $this->uri
         );
@@ -198,6 +215,11 @@ class Source extends AbstractData {
         else
             $this->displayName = null;
 
+        if (isset($data["citation"]))
+            $this->citation = $data["citation"];
+        else
+            $this->citation = null;
+
         if (isset($data["text"]))
             $this->text = $data["text"];
         else
@@ -230,6 +252,16 @@ class Source extends AbstractData {
     public function setText($text) {
 
         $this->text = $text;
+    }
+
+    /**
+     * Set the citation of this Source
+     *
+     * @param string $text The bibiographic citation of this source 
+     */
+    public function setCitation($citation) {
+
+        $this->citation = $citation;
     }
 
     /**

@@ -1639,7 +1639,7 @@ class SQL
     {
         $qq = 'select_source';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.citation, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where fk_id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -1667,7 +1667,7 @@ class SQL
     {
         $qq = 'select_source_list';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.citation, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where ic_id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -1732,7 +1732,7 @@ class SQL
     {
         $qq = 'select_source_by_id';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.citation, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -1774,7 +1774,7 @@ class SQL
      * because it is used by language as a foreign key.
      *
      */
-    public function insertSource($vhInfo, $id, $displayName, $text, $note, $uri)
+    public function insertSource($vhInfo, $id, $displayName, $text, $citation, $note, $uri)
     {
         if (! $id)
         {
@@ -1783,15 +1783,16 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq,
                             'insert into source
-                            (version, ic_id, id, display_name, text, note, uri)
+                            (version, ic_id, id, display_name, text, citation, note, uri)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
                                   $vhInfo['ic_id'],
                                   $id,
                                   $displayName,
                                   $text,
+                                  $citation,
                                   $note,
                                   $uri));
         $this->sdb->deallocate($qq);
