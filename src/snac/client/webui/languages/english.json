@@ -332,7 +332,11 @@
         "tooltip" : "The permanent link (if one exists) to this external source"
     },
     "sourceText" : {
-        "display" : "Source Text",
+        "display" : "Found Data",
+        "tooltip" : "The data found at this source"
+    },
+    "sourceCitation" : {
+        "display" : "Citation",
         "tooltip" : "A textual representation of this source, i.e. a full bibliographic citation"
     },
 

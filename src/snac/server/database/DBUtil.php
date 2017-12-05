@@ -2073,6 +2073,7 @@ class DBUtil
             $newObj = new \snac\data\Source();
             $newObj->setDisplayName($rec['display_name']);
             $newObj->setText($rec['text']);
+            $newObj->setCitation($rec['citation']);
             $newObj->setNote($rec['note']);
             $newObj->setURI($rec['uri']);
             $newObj->setDBInfo($rec['version'], $rec['id']);
@@ -2135,6 +2136,7 @@ class DBUtil
             $newObj = new \snac\data\Source();
             $newObj->setDisplayName($rec['display_name']);
             $newObj->setText($rec['text']);
+            $newObj->setCitation($rec['citation']);
             $newObj->setNote($rec['note']);
             $newObj->setURI($rec['uri']);
             $newObj->setDBInfo($rec['version'], $rec['id']);
@@ -4469,6 +4471,7 @@ class DBUtil
                                                             $gObj->getID(),
                                                             $gObj->getDisplayName(),
                                                             $gObj->getText(),
+                                                            $gObj->getCitation(),
                                                             $gObj->getNote(),
                                                             $gObj->getURI());
                 $gObj->setID($genericRecordID);

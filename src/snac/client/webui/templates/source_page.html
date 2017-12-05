@@ -72,7 +72,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="col-md-6">
                             <div class="form-group well well-sm">
                                 <h5 class="text-center" style="font-weight: bold">Source Information</h5>
-                                <p class="panel panel-body scm-source-panel {{ not source.text ? 'hidden'}}">{{source.text|e}}</p>
+                                <p class="panel panel-body scm-source-panel {{ not source.citation ? 'hidden'}}">{{source.citation|e}}</p>
                                 <p class="text-center">
                                     {% if source.uri %}
                                     <a href="{{source.uri}}" target="_blank">{{source.uri}}</a>
@@ -84,8 +84,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="panel panel-default">
                                 <div class="panel-heading"><h4 class="panel-title">Found Data</h4></div>
                                 <div class="panel-body">
-                                    {% if source.foundData %}
-                                        {{source.foundData|raw}}
+                                    {% if source.text %}
+                                        {{source.text|e|raw|nl2br}}
                                     {% else %}
                                         <p>No found data listed for this source</p>
                                     {% endif %}
