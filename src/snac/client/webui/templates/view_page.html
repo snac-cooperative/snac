@@ -157,23 +157,42 @@
          <div id="identity">
             <div class="name">
                <h1 style="display:inline;">
+                  <span style="font-size: 20px; vertical-align: top; display: inline-block;">
+                      {% if data.entityType.term == 'person' %}
+                      <span class="fa-stack fa-sm" title="Entity Type: Person">
+                          <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                          <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+                      </span>
+                      {% elseif data.entityType.term == 'corporateBody' %}
+                      <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                          <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                          <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+                      </span>
+                      {% elseif data.entityType.term == 'family' %}
+                      <span class="fa-stack fa-sm" title="Entity Type: Family">
+                          <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                          <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+                      </span>
+                      {% endif %}
+                      <!-- 
+                      <span class="fa-stack fa-sm">
+                          <i class="fa fa-square fa-stack-2x" style="color: #888;"></i>
+                          <i class="fa fa-archive fa-stack-1x fa-inverse"></i>
+                      </span>
+                      -->
+                  </span>
                   <span title="authorized form of name" class="person" data-xsl="identity">
                       {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
                           <span class="updated">{{data.new.nameEntries.0.original}}</span>
                       {% else %}
                         {{data.nameEntries.0.original}}
                       {% endif %}
-                    {% if data.entityType.term == 'person' %}
-                     <span class="icon-ind x2"></span>
-                    {% elseif data.entityType.term == 'corporateBody' %}
-                     <span class="icon-org x2"></span>
-                    {% elseif data.entityType.term == 'family' %}
-                     <span class="icon-fam x2"></span>
-                    {% endif %}
                   </span>
                </h1>
                <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
-
+               {% if data.holdingRepository %}
+                   <br><span class="label label-default"><i class="fa fa-archive" aria-hidden="true"></i> Holding Repository</span>
+               {% endif %}
 
             </div>
             <div>

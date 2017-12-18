@@ -6310,6 +6310,7 @@ div#identity>div {
 
 div#identity .name {
     padding-left:15px;
+    padding-bottom:10px;
     border-bottom:solid #e7e7e5 3px
 }
 
