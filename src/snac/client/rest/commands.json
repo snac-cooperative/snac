@@ -157,6 +157,14 @@
         "returns" : [
         ]
     },
+    "constellation_add_maybesame" : {
+        "title" : "Add Maybe-Same Constellation Assertions",
+        "description" : "Makes a maybe-same assertion between the constellations specified.",
+        "parameters" : [
+        ],
+        "returns" : [
+        ]
+    },
     "constellation_diff" : {
         "title" : "Compute Constellation Diff",
         "description" : "Computes the difference between the two given Constellations.  Returns Constellation objects containing: only those items in the first, only those items in the second, and components shared.",
