@@ -186,22 +186,23 @@ class BiogHist extends AbstractData {
      *
      * @param \snac\data\BiogHist $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true on equality, false otherwise
      *
      * @see \snac\data\AbstractData::equals()
      */
-    public function equals($other, $strict = true) {
+    public function equals($other, $strict = true, $checkSubcomponents = true) {
 
         if ($other == null || !($other instanceof \snac\data\BiogHist))
             return false;
 
-        if (! parent::equals($other, $strict))
+        if (! parent::equals($other, $strict, $checkSubcomponents))
             return false;
 
         if ($this->getText() != $other->getText())
             return false;
 
-        if (($this->getLanguage() != null && !$this->getLanguage()->equals($other->getLanguage(), $strict)) ||
+        if (($this->getLanguage() != null && !$this->getLanguage()->equals($other->getLanguage(), $strict, $checkSubcomponents)) ||
                 ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;
 
