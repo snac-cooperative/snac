@@ -130,10 +130,10 @@ abstract class AbstractData implements \Serializable {
      *
      * @param \snac\data\AbstractData $other The other object to compare
      * @param boolean $strict optional Whether to disable strict checking (skip id)
-     *
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true if equal, false if not
      */
-    public function equals($other, $strict = true) {
+    public function equals($other, $strict = true, $checkSubcomponents = true) {
 
         if ($other == null || !($other instanceOf \snac\data\AbstractData))
             return false;
@@ -154,12 +154,14 @@ abstract class AbstractData implements \Serializable {
         if ($this->getMaxDateCount() > 0) {
             $tmp = array();
 
-            if (!$this->checkArrayEqual($this->getDateList(), $other->getDateList(), $strict))
+            if (!$this->checkArrayEqual($this->getDateList(), $other->getDateList(), $strict, $checkSubcomponents))
                 return false;
         }
 
-        if (!$this->checkArrayEqual($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict))
-            return false;
+        if ($checkSubcomponents) {
+            if (!$this->checkArrayEqual($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict, $checkSubcomponents))
+                return false;
+        }
 
         // If all the tests pass, they are equal
         return true;
@@ -174,9 +176,10 @@ abstract class AbstractData implements \Serializable {
      * @param \snac\data\AbstractData[] $first first array
      * @param \snac\data\AbstractData[] $second second array
      * @param boolean $strict optional whether or not to check ID/Version/Operation
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true if equal, false otherwise
      */
-    protected function checkArrayEqual($first, $second, $strict = true) {
+    protected function checkArrayEqual($first, $second, $strict = true, $checkSubcomponents = true) {
         if ($first == null && $second == null)
             return true;
         if ($first == null || $second == null)
@@ -188,7 +191,7 @@ abstract class AbstractData implements \Serializable {
 
         foreach ($first as $data) {
             foreach ($second as $k => $odata) {
-                if ((($data == null && $odata == null) || ($data != null && $data->equals($odata, $strict)))
+                if ((($data == null && $odata == null) || ($data != null && $data->equals($odata, $strict, $checkSubcomponents)))
                         && !isset($tmp[$k])) {
                     $tmp[$k] = true;
                 }
@@ -216,9 +219,10 @@ abstract class AbstractData implements \Serializable {
      * @param \snac\data\AbstractData[] $first first array
      * @param \snac\data\AbstractData[] $second second array
      * @param boolean $strict optional whether or not to check ID/Version/Operation
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return mixed[] An associative array of AbstractData[] with "intersection," "first," and "second" keys
      */
-    protected function diffArray($first, $second, $strict = true) {
+    protected function diffArray($first, $second, $strict = true, $checkSubcomponents = true) {
         $return = array(
             "intersection" => array(),
             "first" => array(),
@@ -240,7 +244,7 @@ abstract class AbstractData implements \Serializable {
         foreach ($first as $data) {
             $seen = false;
             foreach ($second as $k => $odata) {
-                if ($data != null && $data->equals($odata, $strict)
+                if ($data != null && $data->equals($odata, $strict, $checkSubcomponents)
                         && !isset($tmp[$k])) {
                     // in case there are duplicates in first
                     $tmp[$k] = true;
