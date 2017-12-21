@@ -158,10 +158,8 @@ abstract class AbstractData implements \Serializable {
                 return false;
         }
 
-        if ($checkSubcomponents) {
-            if (!$this->checkArrayEqual($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict, $checkSubcomponents))
-                return false;
-        }
+        if ($checkSubcomponents && !$this->checkArrayEqual($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict, $checkSubcomponents))
+            return false;
 
         // If all the tests pass, they are equal
         return true;
