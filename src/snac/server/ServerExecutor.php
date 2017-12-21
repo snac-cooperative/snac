@@ -1102,6 +1102,30 @@ class ServerExecutor {
         return $response;
     }
 
+    public function listAllUnpublishedConstellationInfo($input = null) {
+        $response = array();
+
+        $cInfos = $this->cStore->listAllUnpublishedConstellationInfo($this->uStore);
+        $response["result"] = "success";
+        $response["results"] = [];
+
+        foreach ($cInfos as $cInfo) {
+            $result = array (
+                "user" => $cInfo["user"]->toArray(),
+                "constellations" => []
+            );
+
+            foreach ($cInfo["constellations"] as $c) {
+                array_push($result["constellations"], $c->toArray());
+            }
+
+            array_push($response["results"], $result);
+        }
+
+        
+        return $response;
+    }
+
     /**
      * Get Group Information
      *

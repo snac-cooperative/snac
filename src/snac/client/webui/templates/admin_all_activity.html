@@ -43,26 +43,6 @@ $('.selectpicker').selectpicker();
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
 
-<style>
-body {
-    padding-top: 70px;
-    padding-bottom: 30px;
-}
-
-.theme-dropdown .dropdown-menu {
-    position: static;
-    display: block;
-    margin-bottom: 20px;
-}
-
-.snac > p > .btn {
-    margin: 5px 0;
-}
-
-.snac .navbar .container {
-    width: auto;
-}
-</style>
 <script>
 
 $(document).ready(function() {
@@ -88,8 +68,6 @@ $(document).ready(function() {
 
     <ol class="breadcrumb">
         <li><a href="{{control.snacURL}}/administrator/dashboard">Administrator</a></li>
-        <li><a href="{{control.snacURL}}/administrator/users">User Management</a></li>
-        <li><a href="{{control.snacURL}}/administrator/edit_user?userid={{data.user.userid}}">{{data.user.fullName}}</a></li>
         <li>{{ data.title }}</li>
     </ol>
 
@@ -101,10 +79,7 @@ $(document).ready(function() {
     <div class="row">
         <div class="col-md-12">
             <div class="well well-lg">
-                <p><span style="font-weight: bold;">Instructions: </span>This page shows the current activity of the user, {{data.user.fullName}}.  Use the "Action" links to the right of any Constellation to view the published version, view the user's current in-progress version, unlock the constellation if the user is currently editing, or reassign the constellation to be edited by another user. </p>
-            </div>
-            <div>
-                <h2>{{data.user.fullName}}</h2>
+                <p><span style="font-weight: bold;">Instructions: </span>This page shows all Constellations currently checked out or edited by any user.  Use the "Action" links to the right of any Constellation to view the published version, view the current user's in-progress version, unlock the constellation if the user is currently editing, or reassign the constellation to be edited by another user. </p>
             </div>
             <div class="row">
                 <div class="col-md-12">
@@ -113,39 +88,29 @@ $(document).ready(function() {
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="width: 50%">Constellation</th>
-                                    <th style="width: 25%">Status</th>
-                                    <th class="text-right" style="width: 25%">Actions</th>
+                                    <th style="width: 40%">Constellation</th>
+                                    <th style="width: 20%">Status</th>
+                                    <th style="width: 20%">User</th>
+                                    <th class="text-right" style="width: 20%">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for link in data.editing %}
-                                <tr id="constellation_{{link.id}}">
-                                    <td>{{link.nameEntry}}</td>
-                                    <td id="status_{{link.id}}">Checked out (not editing)</td>
-                                    <td class="text-right">
-                                        <div class="btn-group" role="group" aria-label="Actions">
-                                            <a href="{{control.snacURL}}/details/{{link.id}}" class="btn btn-info" title="Published Version"><span  class="fa fa-file" aria-hidden="true"></span></a>
-                                            <a href="{{control.snacURL}}/details/{{link.id}}/{{link.version}}?preview=1" class="btn btn-success" title="Preview"><span  class="fa fa-eye" aria-hidden="true"></span></a>
-                                            <a href="#" class="btn btn-default disabled" title="Unlock"><span  class="fa fa-unlock" aria-hidden="true"></span></a>
-                                            <a href="#" class="btn btn-danger" title="Reassign" onClick="reassignConstellation({{link.id}},{{link.version}}); return false;"><span  class="fa fa-retweet" aria-hidden="true"></span></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                {% for link in data.editing_lock %}
-                                <tr id="constellation_{{link.id}}">
-                                    <td>{{link.nameEntry}}</td>
-                                    <td id="status_{{link.id}}">Locked (currently editing)</td>
-                                    <td class="text-right">
-                                        <div class="btn-group" role="group" aria-label="Actions">
-                                            <a href="{{control.snacURL}}/details/{{link.id}}" class="btn btn-info" title="Published Version"><span  class="fa fa-file" aria-hidden="true"></span></a>
-                                            <a href="{{control.snacURL}}/details/{{link.id}}/{{link.version}}?preview=1" class="btn btn-success" title="Preview"><span  class="fa fa-eye" aria-hidden="true"></span></a>
-                                            <a href="#" class="btn btn-warning" title="Unlock" id="button_{{link.id}}" onClick="unlockConstellation({{link.id}},{{link.version}}); return false;"><span  class="fa fa-unlock" aria-hidden="true"></span></a>
-                                            <a href="#" class="btn btn-danger" title="Reassign" onClick="reassignConstellation({{link.id}},{{link.version}}); return false;"><span  class="fa fa-retweet" aria-hidden="true"></span></a>
-                                        </div>
-                                    </td>
-                                </tr>
+                                {% for userpair in data.results %}
+                                    {% for constellation in userpair.constellations %}
+                                    <tr id="constellation_{{constellation.id}}">
+                                        <td>{{constellation.nameEntries.0.original}}</td>
+                                        <td id="status_{{constellation.id}}">{{constellation.status}}</td>
+                                        <td id="constellation_username_{{constellation.id}}">{{userpair.user.fullName}}</td>
+                                        <td class="text-right">
+                                            <input type="hidden" id="constellation_version_{{constellation.id}}" value="{{constellation.version}}">
+                                            <div class="btn-group" role="group" aria-label="Actions">
+                                                <a href="{{control.snacURL}}/details/{{constellation.id}}" class="btn btn-info" title="Published Version"><span  class="fa fa-file" aria-hidden="true"></span></a>
+                                                <a href="{{control.snacURL}}/details/{{constellation.id}}/{{constellation.version}}?preview=1" class="btn btn-success" title="Preview"><span  class="fa fa-eye" aria-hidden="true"></span></a>
+                                                <a href="#" class="btn btn-danger" title="Reassign" onClick="reassignConstellation({{constellation.id}},$('#constellation_version_{{constellation.id}}').val()); return false;"><span  class="fa fa-retweet" aria-hidden="true"></span></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -170,7 +135,7 @@ $(document).ready(function() {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="doReassignConstellation(true);">Reassign</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="doReassignConstellation(false);">Reassign</button>
                     </div>
                 </div>
             </div>
@@ -181,3 +146,4 @@ $(document).ready(function() {
 {{ footer(X, user, permissions, control) }}
 </body>
 </html>
+

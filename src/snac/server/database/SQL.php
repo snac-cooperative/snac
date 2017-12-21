@@ -1032,7 +1032,27 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['note'];
     }
+
+    public function selectAllVersionHistoryWhereNotPublished() {
+        $queryString = "select a.id as ic_id, a.version, a.status, a.user_id, u.fullname, u.email, u.username 
+                            from (select id as ic_id, max(version) as version from version_history group by id) b
+                                left join version_history a on a.id = b.ic_id and a.version = b.version 
+                                left join appuser u on a.user_id = u.id
+                            where a.status in ('currently editing', 'needs review',
+                                'locked editing', 'change locks');";
     
+
+        $this->logger->addDebug("Sending the following SQL request: " . $queryString);
+
+        $result = $this->sdb->query($queryString,
+                                    array());
+        $this->logger->addDebug("Done request");
+        $all = array();
+        while($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row);
+        }
+        return $all;
+    } 
 
     /**
      * Select Constellations User Recently Edited

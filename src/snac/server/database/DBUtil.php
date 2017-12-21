@@ -3732,6 +3732,52 @@ class DBUtil
         return $assertReturn;
     }
 
+    /**
+     * List all in-edit constellations and users
+     *      
+     * @param \snac\server\database\DBUser $uStore optional A handle to the DBUser object to get User information
+     * @return \snac\data\Assertion|boolean The complete assertion or false if none exists
+     */
+    public function listAllUnpublishedConstellationInfo($uStore=null) {
+        $results = array();
+
+        //
+        // $results = [ 
+        //              userid1 => 
+        //                 [ "user" => \snac\data\User, "constellations" => \snac\data\Constellation[] ]
+        //              userid2 => 
+        //                 [ "user" => \snac\data\User, "constellations" => \snac\data\Constellation[] ]
+        //            ]
+        //
+        
+        $idInfoList = $this->sql->selectAllVersionHistoryWhereNotPublished();
+
+        foreach ($idInfoList as $idInfo) {
+            // Check for the user and add them
+            $user = new \snac\data\User();
+            $user->setUserID($idInfo["user_id"]);
+            $user->setUserName($idInfo["username"]);
+            $user->setFullName($idInfo["fullname"]);
+            
+            if (!isset($results[$idInfo["user_id"]])) {
+                if ($uStore !== null) {
+                    $user = $uStore->readUser($user);
+                }
+                $results[$idInfo["user_id"]] = array(
+                    "user" => $user,
+                    "constellations" => []
+                );
+            }
+
+            // Add the constellation object
+            $cObj = $this->readConstellation($idInfo["ic_id"], $idInfo["version"], DBUtil::$READ_MICRO_SUMMARY);
+            $cObj->setStatus($idInfo["status"]);
+            array_push($results[$idInfo["user_id"]]["constellations"], $cObj);
+        }
+
+        return $results;
+    }
+
 
     /**
      * Read Assertion

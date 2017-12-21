@@ -284,6 +284,11 @@ class Server implements \snac\interfaces\ServerInterface {
             case "list_constellations":
                 $this->response = $executor->listConstellations($this->input);
                 break;
+            case "unpublished_constellations":
+                if (!$executor->hasPermission("Change Locks"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to see unpublished Constellations.");
+                $this->response = $executor->listAllUnpublishedConstellationInfo($this->input);
+                break;
 
             case "constellation_history":
                 $this->response = $executor->getConstellationHistory($this->input);

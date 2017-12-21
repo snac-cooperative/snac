@@ -53,7 +53,7 @@ function unlockConstellation(id, version) {
     });
 }
 
-function doReassignConstellation() {
+function doReassignConstellation(removeFromDOM) {
     var id = $('#reassignedConstellationID').val();
     var version = $('#reassignedConstellationVersion').val();
 
@@ -75,7 +75,12 @@ function doReassignConstellation() {
             }, 3000);
 
             // Remove this constellation from the DOM (no longer attached to this user)
-            $("#constellation_"+id).remove();
+            if (removeFromDOM) {
+                $("#constellation_"+id).remove();
+            } else {
+                $("#constellation_username_"+id).text($("#username_"+toUserID).text());
+                $("#constellation_version_"+id).val(data.constellation.version);
+            }
         }
     });
 
@@ -109,7 +114,7 @@ function reassignConstellation(id, version) {
 
                 html += '<tr>'
                     + '<td><input type="radio" name="reassignTo" value="'+data.users[key].userid+'"></td>'
-                    + '<td>' + data.users[key].fullName
+                    + '<td id="username_'+data.users[key].userid + '">' + data.users[key].fullName
                     + '</td>';
                 html += "<td>"+data.users[key].userName+"</td>";
                 html += "<td>"+affil+"</td>";

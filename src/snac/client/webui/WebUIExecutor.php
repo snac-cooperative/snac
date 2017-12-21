@@ -1673,6 +1673,18 @@ class WebUIExecutor {
                 $display->setData(array("roles" => $roles));
                 $display->setTemplate("admin_roles");
                 break;
+            
+            case "activity_all":
+                $ask = array("command"=>"unpublished_constellations");
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+
+                $serverResponse["title"] = "All User Activity";
+                $display->setData($serverResponse);
+                $display->setTemplate("admin_all_activity");
+                break;
+            
             case "dashboard":
                 if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
                     $display->setTemplate("admin_dashboard");
@@ -2583,12 +2595,14 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($request);
 
         $response = array ();
-        $response["server_debug"] = array ();
-        $response["server_debug"]["unlock"] = $serverResponse;
         if (isset($serverResponse["result"]))
             $response["result"] = $serverResponse["result"];
         if (isset($serverResponse["error"]))
             $response["error"] = $serverResponse["error"];
+        
+        if (isset($serverResponse["result"]) && $serverResponse["result"] == "success") {
+            $response["constellation"] = $serverResponse["constellation"];
+        }
 
         return $response;
     }
