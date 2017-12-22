@@ -19,7 +19,7 @@ namespace test\snac\data;
  *
  */
 class ConstellationTest extends \PHPUnit\Framework\TestCase {
-    
+
     /**
      * Test that trying to read garbage instead of JSON results in not importing any data
      */
@@ -331,7 +331,7 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
     }
 
     /**
-     * Test that equals() can ignore subcomponents
+     * Test that equals() can ignore metadata
      */
      public function testEqualsCanIgnoreMetadata() {
          $id1 = new \snac\data\Constellation();
@@ -352,6 +352,9 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
          $this->assertTrue($id1->equals($id2, false, false), "Equals failed to ignore SNACControlMetadata");
      }
 
+     /**
+      * Test that equals() can ignore NameEntry contributors
+      */
      public function testEqualsCanIgnoreContributors() {
          $id1 = new \snac\data\Constellation();
          $id2 = new \snac\data\Constellation();
@@ -372,13 +375,20 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
         $id1->addNameEntry($name1);
         $id2->addNameEntry($name2);
 
-        //should be inequal with $stict and $checkSubcomponents
+        //should be inequal with $strict and $checkSubcomponents
         $this->assertFalse($id1->equals($id2, true, true));
+        //should be inequal with $checkSubcomponents
+        $this->assertFalse($id1->equals($id2, false, true));
 
-        //should be equal without $stict and $checkSubcomponents
+        $this->assertTrue($id1->equals($id2, true, false));
+
+        //should be equal without $strict and $checkSubcomponents
         $this->assertTrue($id1->equals($id2, false, false), "Equals failed to ignore contributors");
      }
 
+     /**
+      * Test that equals() can ignore NameEntry components
+      */
      public function testEqualsCanIgnoreComponents() {
          $id1 = new \snac\data\Constellation();
          $id2 = new \snac\data\Constellation();
@@ -399,10 +409,15 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
         $id1->addNameEntry($name1);
         $id2->addNameEntry($name2);
 
-        //should be inequal with $stict and $checkSubcomponents
+        //should be inequal with $strict and $checkSubcomponents
         $this->assertFalse($id1->equals($id2, true, true));
+        //should be inequal with $checkSubcomponents
+        $this->assertFalse($id1->equals($id2, false, true));
 
-        //should be equal without $stict and $checkSubcomponents
+        $this->assertTrue($id1->equals($id2, true, false));
+
+
+        //should be equal without $strict and $checkSubcomponents
         $this->assertTrue($id1->equals($id2, false, false), "Equals failed to ignore components");
      }
 
