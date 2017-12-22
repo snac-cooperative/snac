@@ -217,10 +217,9 @@ abstract class AbstractData implements \Serializable {
      * @param \snac\data\AbstractData[] $first first array
      * @param \snac\data\AbstractData[] $second second array
      * @param boolean $strict optional whether or not to check ID/Version/Operation
-     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return mixed[] An associative array of AbstractData[] with "intersection," "first," and "second" keys
      */
-    protected function diffArray($first, $second, $strict = true, $checkSubcomponents = true) {
+    protected function diffArray($first, $second, $strict = true) {
         $return = array(
             "intersection" => array(),
             "first" => array(),
@@ -242,7 +241,7 @@ abstract class AbstractData implements \Serializable {
         foreach ($first as $data) {
             $seen = false;
             foreach ($second as $k => $odata) {
-                if ($data != null && $data->equals($odata, $strict, $checkSubcomponents)
+                if ($data != null && $data->equals($odata, $strict)
                         && !isset($tmp[$k])) {
                     // in case there are duplicates in first
                     $tmp[$k] = true;
