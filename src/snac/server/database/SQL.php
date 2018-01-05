@@ -4659,6 +4659,27 @@ class SQL
        return $all;
    }
 
+    /**
+     * Select Resource By Data
+     *
+     * Checks to see if a resource already exists in database
+     *
+     * @param int $Resource
+     * @param int $version Resource version
+     * @return string[] Returns associative array of resource data if found
+     */
+    public function selectResourceByData($title = null, $href = null, $type = null) {
+
+        $result = $this->sdb->query('select id, version from resource_cache 
+                                     where href = $1 and title = $2 
+                                     and type = $3 and not is_deleted 
+                                     and md5(title)::uuid = md5($2)::uuid', array($href,
+                                                                                  $title,
+                                                                                  $type));
+        
+        return $this->sdb->fetchAll($result);
+    }
+
 
     /**
      * Select all function records
