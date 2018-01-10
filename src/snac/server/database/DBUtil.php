@@ -2932,6 +2932,38 @@ class DBUtil
     }
 
     /**
+     * Read Resource By Data
+     *
+     * Read a resource by title, href and type if it exists in database
+     *
+     * @param  \snac\data\Resource $resource Resource object to read
+     * @return \snac\data\Resource|boolean The resource object or false if not in database
+     */
+    public function readResourceByData($resource){
+        if ($resource === null)
+            false;
+        // check if resource exists in database
+        $result = $this->sql->selectResourceByData($resource->getTitle(), $resource->getLink(), $resource->getDocumentType()->getID());
+        
+        if ($result === false)
+            return false;
+
+        if (count($result) == 1) {
+            return $this->populateResource($result[0]['id'], $result[0]['version']);
+        } else { 
+        // check equality(not strict) and see if any other resources match
+        // if so, return that matching resource
+            foreach ($result as $pair) {
+                $other = $this->populateResource($pair['id'], $pair['version']);
+                if ($resource->equals($other, false)){
+                    return $other;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Save Resource Languages
      *
      *

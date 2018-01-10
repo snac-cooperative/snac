@@ -1292,6 +1292,18 @@ class ServerExecutor {
         $response = array();
         if (isset($input["resource"])) {
             $resource = new \snac\data\Resource($input["resource"]);
+            
+            //check if resource is already in database, if so, return it 
+            $resourceCheck = $this->cStore->readResourceByData($resource);
+            if ($resourceCheck !== false) {
+                $response['resource'] = $resourceCheck->toArray();
+                $response["result"] = "success-notice";
+                $response["message"] = [
+                    "text" => "This resource already exists.",
+                ];
+                return $response;
+            }
+
             try {
                 $result = $this->cStore->writeResource($resource);
                 if (isset($result) && $result != false) {
