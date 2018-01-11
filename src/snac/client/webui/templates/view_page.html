@@ -72,6 +72,8 @@
 <script src="{{control.snacURL}}/javascript/wikipedia_image.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<script src="{{control.snacURL}}/javascript/message_current_editor.js{{control.noCache}}"></script>
 
 <meta name="viewport" content="initial-scale = 1.0" />
 <style>
@@ -393,11 +395,7 @@
                                     {% if data.editingUser %}
                                         <div class="list-group-item">
                                             <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
-                                            <div class="list-group" style="margin-bottom: 0px;">
-                                                <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
-                                                    <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
-                                                </a>
-                                            </div>
+                                            {{ include('_message_current_editor.html')}}                            
                                         </div>
                                     {% endif %}
                                 {% endif %}
