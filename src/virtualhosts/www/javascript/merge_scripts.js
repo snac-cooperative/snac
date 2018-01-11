@@ -74,10 +74,10 @@ $(document).ready(function() {
         return false;
     });
 
-    $("#hrt_preview_button").click(function() {
+    $("#simplified_preview_button").click(function() {
         bootbox.confirm({
-            title: "HRT Preview Notice",
-            message: "The HRT does not evidence all portions of the Identity Constellation.  Some data, such as places, sources, SCMs, and more, are not currently visible on the HRT.  This preview should only be used for aesthetic purposes.  Use the main \"Preview\" button to see the full potential-merged Constellation.",
+            title: "Simplified View Preview Notice",
+            message: "The Simplified View does not evidence all portions of the Identity Constellation.  Some data, such as places, sources, SCMs, and more, are not currently visible on the HRT.  This preview should only be used for aesthetic purposes.  Use the main \"Preview\" button to see the full potential-merged Constellation.",
             buttons: {
                 cancel: {
                     label: '<i class="fa fa-times"></i> Cancel'
