@@ -30,7 +30,7 @@ tinymce.init({
     }
 });
 
-function sendMessage() {
+function sendEditorMessage() {
     $.post(snacUrl+"/message_send", $("#new_message_form").serialize(), function (data) {
         if (data.result == "success") {
             // show success alert
@@ -75,7 +75,7 @@ function closeMessage() {
 
 $(document).ready(function() {
 
-    $("#send_message").click(sendMessage);
+    $("#send_message").click(sendEditorMessage);
     $("#cancel_message").click(closeMessage);
     $("#cancel_message_close").click(closeMessage);
 
