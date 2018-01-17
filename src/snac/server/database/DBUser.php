@@ -1334,22 +1334,22 @@ class DBUser
 
 
     /**
-     * Delete Message 
+     * Archive Message 
      *
-     * Deletes a message from the database 
+     * Archives a message from the database 
      *
-     * @param \snac\data\Message $message   Message to delete (with ID)
+     * @param \snac\data\Message $message   Message to archive (with ID)
      * @return boolean True if successful, false otherwise
      */
-    public function deleteMessage(&$message) {
-        $this->logger->addDebug("Deleting message1", $message->toArray());
+    public function archiveMessage(&$message) {
+        $this->logger->addDebug("Archiving message1", $message->toArray());
         if ($message == null || $message->getID() == null) {
             return false;
         }
 
-        $this->logger->addDebug("Deleting message2", $message->toArray());
+        $this->logger->addDebug("Archiving message2", $message->toArray());
 
-        return $this->sql->deleteMessageByID($message->getID());
+        return $this->sql->archiveMessageByID($message->getID());
     }
 
     /**

@@ -1386,16 +1386,16 @@ class WebUIExecutor {
     }
 
     /**
-     * Delete Message
+     * Archive Message
      *
-     * Asks the server to delete the message given as input by ID.  The user must have
-     * permission to delete the message or the server will return an error.
+     * Asks the server to archive the message given as input by ID.  The user must have
+     * permission to archive the message or the server will return an error.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @return string The response to the client
      */
-    public function deleteMessage(&$input) {
-        $ask = array("command"=>"delete_message",
+    public function archiveMessage(&$input) {
+        $ask = array("command"=>"archive_message",
                     "messageid"=>$input["messageid"]);
         $serverResponse = $this->connect->query($ask);
 

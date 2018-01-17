@@ -6100,15 +6100,15 @@ class SQL
     }
 
     /**
-     * Delete Message
+     * Archive Message
      *
-     * Sets the deleted flag for the given message ID, denoting that this message has been deleted
+     * Sets the deleted flag for the given message ID, denoting that this message has been archived
      * in the system.
      *
      * @param int $id The message ID to delete
      * @return boolean True on success, false otherwise
      */
-    public function deleteMessageByID($id) {
+    public function archiveMessageByID($id) {
         $result = $this->sdb->query(
             'update messages set deleted = true where id = $1 returning *',
             array($id));

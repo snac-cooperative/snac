@@ -759,10 +759,10 @@ class ServerExecutor {
     }
 
     /**
-     * Delete Message
+     * Archive Message
      *
-     * Deletes the message with given message id if it exists and the user has
-     * permission to delete this message (sender or recipient).  Note, this method
+     * Archives the message with given message id if it exists and the user has
+     * permission to archive this message (sender or recipient).  Note, this method
      * only sets the delete flag; a message is never actually deleted.
      *
      * @param string[] $input Input array from the Server object
@@ -770,9 +770,9 @@ class ServerExecutor {
      * @throws \snac\exceptions\SNACPermissionException
      * @return string[] The response to send to the client
      */
-    public function deleteMessage(&$input) {
+    public function archiveMessage(&$input) {
         if (!isset($input["messageid"])) {
-            throw new \snac\exceptions\SNACInputException("No message ID given to delete");
+            throw new \snac\exceptions\SNACInputException("No message ID given to archive");
         }
         $response = array();
 
@@ -781,24 +781,24 @@ class ServerExecutor {
         if ($message === false) {
             throw new \snac\exceptions\SNACInputException("Message does not exist");
         }
-        $this->logger->addDebug("Deleting message", $message->toArray());
+        $this->logger->addDebug("Archiving message", $message->toArray());
 
         if (($message->getToUser() !== null && $message->getToUser()->getUserID() === $this->user->getUserID()) ||
             ($message->getFromUser() !== null && $message->getFromUser()->getUserID() === $this->user->getUserID())) {
                 $response["message"] = $message->toArray();
         } else {
-            throw new \snac\exceptions\SNACPermissionException("User does not have permission to delete the message.");
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to archive the message.");
         }
 
-        $this->logger->addDebug("Starting to delete1");
-        $success = $this->uStore->deleteMessage($message);
-        $this->logger->addDebug("Done delete");
+        $this->logger->addDebug("Starting to archive");
+        $success = $this->uStore->archiveMessage($message);
+        $this->logger->addDebug("Done archiving");
         if ($success)
             $response["result"] = "success";
         else
             $response["result"] = "failure";
 
-        $this->logger->addDebug("Deleted", $response);
+        $this->logger->addDebug("Archived", $response);
         return $response;
 
     }
