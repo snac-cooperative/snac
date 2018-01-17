@@ -548,16 +548,17 @@ class Resource extends AbstractData {
      *
      * @param \snac\data\ResourceRelation $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true on equality, false otherwise
      *
      * @see \snac\data\AbstractData::equals()
      */
-    public function equals($other, $strict = true) {
+    public function equals($other, $strict = true, $checkSubcomponents = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\Resource))
             return false;
 
-        if (! parent::equals($other, $strict))
+        if (! parent::equals($other, $strict, $checkSubcomponents))
             return false;
 
         if ($this->getTitle() != $other->getTitle())
@@ -570,10 +571,10 @@ class Resource extends AbstractData {
         // Equals cannot check the Origination Names and Languages, since some times
         // for performance reasons we do not grab them.
         /**
-        if (!$this->checkArrayEqual($this->getOriginationNames(), $other->getOriginationNames(), $strict)) {
+        if (!$this->checkArrayEqual($this->getOriginationNames(), $other->getOriginationNames(), $strict, $checkSubcomponents)) {
             return false;
         }
-        if (!$this->checkArrayEqual($this->getLanguages(), $other->getLanguages(), $strict))
+        if (!$this->checkArrayEqual($this->getLanguages(), $other->getLanguages(), $strict, $checkSubcomponents))
             return false;
         **/
 
