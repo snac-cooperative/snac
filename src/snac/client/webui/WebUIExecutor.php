@@ -1498,7 +1498,7 @@ class WebUIExecutor {
                 $serverResponse = $this->connect->query($ask);
 
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
-                    array_push($errors, trim($toUserName));
+                    array_push($errors, trim($toUserID));
                 }
             }
 

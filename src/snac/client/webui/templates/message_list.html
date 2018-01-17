@@ -24,7 +24,7 @@ $('.selectpicker').selectpicker();
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Tiny MCE text editor -->
-<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
 
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
@@ -122,7 +122,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                                 {% endif %}
                             </p></td>
                             <td><p>{{ message.subject }}</p></td>
-                            <td><p>{{ message.timestamp|date('Y-m-d h:i:sa') }}</p></td>
+                            <td data-order="{{message.timestamp}}"><p>{{ message.timestamp|date('Y-m-d h:ia') }}</p></td>
                         </tr>
                         {% endfor %}
                     </tbody>

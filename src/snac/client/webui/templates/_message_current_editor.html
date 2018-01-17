@@ -1,0 +1,53 @@
+<div id="mail_editor_form">
+    <div class="modal fade" id="new_message_pane" role="dialog" aria-labelledby="new_message_pane">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="cancel_message_close">
+                    <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="new_message_title">New Message</h4>
+                </div>
+                <div class="modal-body" id="new_message_content">
+                    <div class="row">
+                        <div class="alert alert-01" id="send_status_message" style="display: none">
+                        </div><!-- end alert -->
+                    </div>
+                    <form id="new_message_form">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-xs-2">To</label>
+                                <div class="col-xs-10">
+                                    <input type="hidden" name="to_user" value={{data.editingUser.userid}} readonly>
+                                    <input type="text" class="form-control" value="{{data.editingUser.fullName}} <{{data.editingUser.email}}>" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-2">Subject</label>
+                                <div class="col-xs-10">
+                                    <input type="text" id="subject" name="subject" class="form-control" placeholder=""/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-xs-12">
+                                    <textarea id="body" name="body" class="form-control" rows="8" placeholder="Message Body"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="cancel_message"><i class="fa fa-times-circle-o" aria-hidden="true"></i>
+     Cancel</button>
+                    <button type="button" class="btn btn-primary" id="send_message"><i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+    Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="list-group" style="margin-bottom: 0px;">
+    <button type="button" class="btn list-group-item-info list-group-item" data-toggle="modal" data-target="#new_message_pane">
+        <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
+    </button>
+</div>
