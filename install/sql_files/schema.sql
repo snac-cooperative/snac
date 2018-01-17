@@ -244,7 +244,8 @@ create table privilege (
 create table privilege_role_link (
         pid        int,                -- fk to privilege.id
         rid        int                -- fk to role.id
-        );
+        constraint pr_link_unique unique (pid, rid)
+    );
 
 -- There may be multiple active sessions per user, so we need a separate table for sessions.
 
