@@ -16,6 +16,8 @@
 
 namespace snac\server\database;
 
+use snac\exceptions\SNACDatabaseException;
+
 /**
  * SQL Class
  *
@@ -677,9 +679,14 @@ class SQL
      * @param integer $pID A privilege id.
      */
     public function insertPrivilegeRoleLink($rID, $pID)
-    {
+    {   
+        try { 
         $this->sdb->query("insert into privilege_role_link (rid, pid) values ($1, $2)",
                           array($rID, $pID));
+        }
+        catch ( \snac\exceptions\SNACDatabaseException $e) {
+            // This should only happen if privilege_role_link already exists
+        }
     }
 
 
