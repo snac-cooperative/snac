@@ -73,6 +73,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                 <div style="margin-bottom: 15px">
                     <ul id="message_nav" class="nav nav-tabs">
                       <li role="presentation"><a href="{{control.snacURL}}/messages">Inbox</a></li>
+                      <li role="presentation"><a  href="{{control.snacURL}}/sent_messages">Sent</a></li>
                       <li role="presentation"><a  href="{{control.snacURL}}/archived_messages">Archived</a></li>
                     </ul>
                 </div>
@@ -84,16 +85,18 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                     </div>
 
                     <div class="btn-group" role="group" aria-label="Actions" style="margin-bottom: 15px;">
+                        {% if data.viewSetting != "sent" %}
                         <button type="button" id="reply_message" class="btn btn-default disabled" disabled>
                             <i class="fa fa-reply" aria-hidden="true"></i> Reply
                         </button>
+                        {% endif %}
                         <button type="button" id="forward_message" class="btn btn-default disabled" disabled>
                             <i class="fa fa-share" aria-hidden="true"></i> Forward
                         </button>                        
                         {% if data.viewSetting == "inbox" %}
-                            <button type="button" id="archive_message" class="btn btn-default disabled" disabled>
-                                <i class="fa fa-trash" aria-hidden="true"></i> Archive
-                            </button>
+                        <button type="button" id="archive_message" class="btn btn-default disabled" disabled>
+                            <i class="fa fa-trash" aria-hidden="true"></i> Archive
+                        </button>
                         {% endif %}
                     </div>
                 </div>
@@ -112,7 +115,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                         <tr id="message_list_{{message.id}}">
                             <td><p class="text-center">
                                 <span class="readflag">
-                                {% if message.read == true %}
+                                {% if message.read == true or data.viewSetting != "inbox"%}
                                 &nbsp;
                                 {% else %}
                                 <i class="fa fa-circle" aria-hidden="true" style="color: red;"></i>
