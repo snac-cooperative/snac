@@ -114,13 +114,17 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                         {% for message in data.messages %}
                         <tr id="message_list_{{message.id}}">
                             <td><p class="text-center">
+                                {% if data.viewSetting == "inbox" and not message.read %}
                                 <span class="readflag">
-                                {% if message.read == true or data.viewSetting != "inbox"%}
-                                &nbsp;
-                                {% else %}
-                                <i class="fa fa-circle" aria-hidden="true" style="color: red;"></i>
-                                {% endif %}
+                                    <i class="fa fa-circle" aria-hidden="true" style="color: red;"></i>
                                 </span>
+                                {% elseif data.viewSetting == "sent"%}
+                                <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                {% elseif data.viewSetting == "archived"%}
+                                <i class="fa fa-archive" aria-hidden="true" style="color: gray;"></i>
+                                {% else %}
+                                &nbsp;
+                                {% endif %}
                                 <input type="hidden" name="messageid" class="messageid" value="{{message.id}}">
                             </p></td>
                             <td><p>
