@@ -245,6 +245,10 @@ $(document).ready(function() {
         showMessage(messageID);
     });
 
+    // Mark Active Tab
+    var pathname = window.location.href;
+    $('#message_nav > li > a[href="'+pathname + '"]').parent().addClass('active')
+
     $("#send_message").click(sendMessage);
     $("#cancel_message").click(cancelMessage);
     $("#cancel_message_close").click(cancelMessage);

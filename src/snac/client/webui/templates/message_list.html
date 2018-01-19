@@ -70,6 +70,12 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
         <div class="col-md-6">
 
             <div>
+                <div style="margin-bottom: 15px">
+                    <ul id="message_nav" class="nav nav-tabs">
+                      <li role="presentation"><a href="{{control.snacURL}}/messages">Inbox</a></li>
+                      <li role="presentation"><a  href="{{control.snacURL}}/archived_messages">Archived</a></li>
+                    </ul>
+                </div>
                 <div style="margin-bottom: 15px;">
                     <div class="btn-group" role="group" aria-label="Actions" style="margin-bottom: 15px;">
                         <button type="button" class="btn btn-default" data-toggle="modal" data-target="#new_message_pane">
@@ -83,10 +89,12 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                         </button>
                         <button type="button" id="forward_message" class="btn btn-default disabled" disabled>
                             <i class="fa fa-share" aria-hidden="true"></i> Forward
-                        </button>
-                        <button type="button" id="archive_message" class="btn btn-default disabled" disabled>
-                            <i class="fa fa-trash" aria-hidden="true"></i> Archive
-                        </button>
+                        </button>                        
+                        {% if data.viewSetting == "inbox" %}
+                            <button type="button" id="archive_message" class="btn btn-default disabled" disabled>
+                                <i class="fa fa-trash" aria-hidden="true"></i> Archive
+                            </button>
+                        {% endif %}
                     </div>
                 </div>
 
