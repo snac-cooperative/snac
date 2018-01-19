@@ -6203,12 +6203,31 @@ class SQL
             array($userid));
 
         $all = array();
-        while ($row = $this->sdb->fetchrow($result))
-        {
+        while ($row = $this->sdb->fetchrow($result)) {
             array_push($all, $row);
         }
         return $all;
+    }
 
+    /**
+     * Select Messages from User
+     *
+     * Selects all messages for the given userID. 
+     *
+     * @param int $userid The userid of the user
+     * @return string[] The list of message data for the user
+     */
+    public function selectMessagesFromUser($userid) {
+        $result = $this->sdb->query(
+            'select m.*, to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m
+             where from_user = $1 order by m.time_sent desc',
+            array($userid));
+
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)){
+            array_push($all, $row);
+        }
+        return $all;
     }
 
     /**

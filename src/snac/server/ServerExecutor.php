@@ -777,6 +777,24 @@ class ServerExecutor {
     }
 
     /**
+     * List Sent Messages
+     *
+     * Returns a list of a user's sent messages.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function listUserSentMessages($input = null) {
+        $response["messages"] = array();
+        $messages = $this->uStore->listMessagesFromUser($this->user);
+        foreach ($messages as $message) {
+            array_push($response["messages"], $message->toArray());
+        }
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
      * Archive Message
      *
      * Archives the message with given message id if it exists and the user has

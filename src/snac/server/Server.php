@@ -184,6 +184,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->listUserArchivedMessages();
                 break;
 
+            case "sent_messages":
+                $this->response = $executor->listUserSentMessages();
+                break;
+
             case "send_feedback":
                 $this->response = $executor->sendFeedback($this->input);
                 break;

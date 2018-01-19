@@ -1379,10 +1379,29 @@ class WebUIExecutor {
     public function displayArchivedMessages(&$display) {
         $ask = array("command" => "archived_messages");
         $serverResponse = $this->connect->query($ask);
-        if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] !== "success")
             return $this->drawErrorPage($serverResponse, $display);
         
         $data = $serverResponse + ["viewSetting" => "archived"];
+        $display->setData($data);
+        $display->setTemplate("message_list");
+    }
+
+
+    /**
+     * Display Sent Messages
+     *
+     * Asks the server for user's sent messages, then loads the display with the message
+     * center (message list) template and sets the message center viewSetting
+     *
+     */
+    public function displaySentMessages(&$display) { 
+        $ask = array("command" => "sent_messages");
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] !== "success")
+            return $this->drawErrorPage($serverResponse, $display);
+
+        $data = $serverResponse + ["viewSetting" => "sent"];
         $display->setData($data);
         $display->setTemplate("message_list");
     }

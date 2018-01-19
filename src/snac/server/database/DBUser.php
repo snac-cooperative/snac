@@ -1410,6 +1410,23 @@ class DBUser
     }
 
     /**
+     * List Messages from the given user
+     *
+     * @param  \snac\data\User  $user        User in the from field
+     * @param  boolean $subjectOnly Whether or not to only return the subjects
+     * @param  boolean $unreadOnly    Whether or not to only return those that have been read
+     * @return \snac\data\Message[]               List of messages
+     */
+    public function listMessagesFromUser($user, $subjectOnly=true) {
+        $messageData = $this->sql->selectMessagesFromUser($user->getUserID());
+        $messages = array();
+        foreach ($messageData as $message) {
+            array_push($messages, $this->populateMessage($message, !$subjectOnly));
+        }
+        return $messages;
+    }
+
+    /**
      * Populate a Message Data Object
      *
      * Given a data array, it fills in a message object.
