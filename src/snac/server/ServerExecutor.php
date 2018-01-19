@@ -759,6 +759,24 @@ class ServerExecutor {
     }
 
     /**
+     * List Archived Messages
+     *
+     * Returns a list of a user's archived messages.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function listUserArchivedMessages($input = null) {
+        $response["messages"] = array();
+        $messages = $this->uStore->listMessagesToUser($this->user, false, false, true);
+        foreach ($messages as $message) {
+            array_push($response["messages"], $message->toArray());
+        }
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
      * Archive Message
      *
      * Archives the message with given message id if it exists and the user has

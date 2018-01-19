@@ -462,6 +462,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "message_archive":
                 $response = $executor->archiveMessage($this->input);
                 break;
+            case "archived_messages":
+                $response = $executor->displayArchivedMessages($display);
+                break;
             case "feedback":
                 $response = $executor->sendFeedbackMessage($this->input);
                 break;

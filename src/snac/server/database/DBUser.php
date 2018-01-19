@@ -1400,8 +1400,8 @@ class DBUser
      * @param  boolean $unreadOnly    Whether or not to only return those that have been read
      * @return \snac\data\Message[]               List of messages
      */
-    public function listMessagesToUser($user, $subjectOnly=true, $unreadOnly=false) {
-        $messageData = $this->sql->selectMessagesForUserID($user->getUserID(), true, $unreadOnly);
+    public function listMessagesToUser($user, $subjectOnly=true, $unreadOnly=false, $archivedOnly=false) {
+        $messageData = $this->sql->selectMessagesForUserID($user->getUserID(), true, $unreadOnly, $archivedOnly);
         $messages = array();
         foreach ($messageData as $message) {
             array_push($messages, $this->populateMessage($message, !$subjectOnly));

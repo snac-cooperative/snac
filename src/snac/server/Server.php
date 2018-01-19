@@ -180,6 +180,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->archiveMessage($this->input);
                 break;
 
+            case "archived_messages":
+                $this->response = $executor->listUserArchivedMessages();
+                break;
+
             case "send_feedback":
                 $this->response = $executor->sendFeedback($this->input);
                 break;
