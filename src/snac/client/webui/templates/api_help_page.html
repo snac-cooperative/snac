@@ -53,6 +53,12 @@ $(document).ready(function() {
     });
 });
 </script>
+
+<style>
+h2 {
+    padding-top: 60px;
+}
+</style>
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
@@ -68,20 +74,143 @@ $(document).ready(function() {
             <p>The following commands may be given as JSON <code>PUT</code> requests to the SNAC RestFUL API.  Most read-only API commands may be called without login, however anything that causes changes in the data require a <code>user</code> object which includes a temporary API key.  For examples using the RestFUL API in PHP and Java, view the <a href="https://github.com/snac-cooperative/Rest-API-Examples">SNAC RestAPI Examples Repository</a> on GitHub.
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h3 id="toc">Table of Contents</h3>
+                {% set numdone = 0 %}
+            <div class="row">
+                <div class="col-md-4">
+                    <ul>
+                        <li>Discovery
+                            <ul>
+                            {% for command,info in data.commands %}
+                                {% if info.category == 'discover' %}
+                                {% if info.examples %}
+                                   {% set numdone = numdone + 1 %}
+                                {% endif %}
+                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        </li>
+                        <li>Reconciliation
+                            <ul>
+                            {% for command,info in data.commands %}
+                                {% if info.category == 'reconciliation' %}
+                                {% if info.examples %}
+                                   {% set numdone = numdone + 1 %}
+                                {% endif %}
+                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        </li>
+                        <li>Constellation Views
+                            <ul>
+                            {% for command,info in data.commands %}
+                                {% if info.category == 'constellation' %}
+                                {% if info.examples %}
+                                   {% set numdone = numdone + 1 %}
+                                {% endif %}
+                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <ul>
+                        <li>Constellation Modifications
+                            <ul>
+                            {% for command,info in data.commands %}
+                                {% if info.category == 'modification' %}
+                                {% if info.examples %}
+                                   {% set numdone = numdone + 1 %}
+                                {% endif %}
+                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <ul>
+                        <li>Vocabulary Operations
+                            <ul>
+                            {% for command,info in data.commands %}
+                                {% if info.category == 'vocabulary' %}
+                                {% if info.examples %}
+                                   {% set numdone = numdone + 1 %}
+                                {% endif %}
+                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        </li>
+                        <li>Resource Operations
+                            <ul>
+                            {% for command,info in data.commands %}
+                                {% if info.category == 'resource' %}
+                                {% if info.examples %}
+                                   {% set numdone = numdone + 1 %}
+                                {% endif %}
+                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        </li>
+                        <li>User Operations
+                            <ul>
+                            {% for command,info in data.commands %}
+                                {% if info.category == 'user' %}
+                                {% if info.examples %}
+                                   {% set numdone = numdone + 1 %}
+                                {% endif %}
+                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            Percent Done: {{ numdone / data.commands|length * 100 }}
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-12">
 
             {% for command,info in data.commands %}
-            <h2>{{info.title}}</h2>
+            <h2 id="{{command}}">{{info.title}}</h2>
             <div class="row">
-                <div class="col-md-4">
-                    <p>{{info.description}}</p>
-                </div>
-                <div class="col-md-8">
+                <div class="col-md-12">
+                    <p>{{info.description|raw}}</p>
+                    <!--
+                    {% if info.examples %}
+                        <h4>Examples</h4>
+                        {% for example in info.examples %}
+                            <h5>{{example.title}}</h5>
+                            <p>{{example.description}}</p>
+                            <h6>Query:</h6>
+                            <pre>{{example.query|json_encode(constant('JSON_PRETTY_PRINT'))}}</pre>
+                            <h6>Response:</h6>
+                            <pre>{{example.response|json_encode(constant('JSON_PRETTY_PRINT'))}}</pre>
+                        {% endfor %}
+                    {% endif %}
+                    -->
+                <!--</div>
+                <div class="col-md-8">-->
                     <div class="panel panel-default">
-                        <div class="panel-heading">Usage</div>
+                        <div class="panel-heading">Usage Information</div>
                         <div class="panel-body">
+                            {% if info.permissions %}
+                            <div class="alert alert-danger">
+                                <strong>Permissions Required: </strong> {{ info.permissions|join(', ') }}
+                            </div>
+                            {% endif %}
                             <table class="table table-noborder">
                                 <tbody>
                                     <tr>
@@ -92,15 +221,13 @@ $(document).ready(function() {
                                         <tr>
                                             <td style="width: 20%"><p>Parameters:</p></td>
                                             <td style="width: 80%">
-                                                {% for param in info.parameters %}
-                                                    {% for k,v in param %}
-                                                    {% if k == "optional" %}
-                                                    <p style="margin-left: 15px"><em>optional</em></p>
-                                                    {% else %}
-                                                    <p><code>{{k}}</code></p>
-                                                    <p style="margin-left: 15px">{{v}}</p>
+                                                {% for param,details in info.parameters %}
+                                                    <p><code>{{param}}</code>: {{details.type}}
+                                                    {% if details.optional %}
+                                                    <span style="margin-left: 15px"><em>optional</em></span>
                                                     {% endif %}
-                                                    {% endfor %}
+                                                    </p>
+                                                    <p style="margin-left: 15px">{{details.description}}</p>
                                                 {% endfor %}
                                             </td>
                                         </tr>
@@ -109,11 +236,24 @@ $(document).ready(function() {
                                         <tr>
                                             <td style="width: 20%"><p>Return Values:</p></td>
                                             <td style="width: 80%">
-                                                {% for ret in info.returns %}
-                                                    {% for k,v in ret %}
-                                                    <p><code>{{k}}</code></p>
-                                                    <p style="margin-left: 15px">{{v}}</p>
-                                                    {% endfor %}
+                                                {% for ret,details in info.returns %}
+                                                    <p><code>{{ret}}</code>: {{details.type}}</p>
+                                                    <p style="margin-left: 15px">{{details.description}}</p>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                    {% if info.examples %}
+                                        <tr>
+                                            <td style="width: 20%"><p>Examples:</p></td>
+                                            <td style="width: 80%">
+                                                {% for example in info.examples %}
+                                                    <h4>{{example.title}}</h4>
+                                                    <p>{{example.description}}</p>
+                                                    <h5>Query:</h5>
+                                                    <pre>{{example.query|json_encode(constant('JSON_PRETTY_PRINT'))}}</pre>
+                                                    <h5>Response:</h5>
+                                                    <pre>{{example.response|json_encode(constant('JSON_PRETTY_PRINT'))}}</pre>
                                                 {% endfor %}
                                             </td>
                                         </tr>
@@ -124,6 +264,7 @@ $(document).ready(function() {
                     </div>
                 </div>
             </div>
+            <p style="text-align: right; margin-top: 0px; padding-top: 0px;"><a href="#">back to top</a></p>
             {% endfor %}
 
         </div>
