@@ -1,131 +1,1040 @@
 {
+    
     "vocabulary" : {
+        "category": "vocabulary",
         "title" : "Search Vocabulary",
         "description" : "Search through the controlled vocabulary.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "term_id" : {
+                "type": "Integer", 
+                "description" : "Term ID, if known.  If given a term id, that vocabulary term is directly returned.",
+                "optional" : true
+            },
+            "query_string" : {
+                "type": "String", 
+                "description" : "Search string to find in the vocabulary list"
+            },
+            "type" : {
+                "type": "String", 
+                "description" : "Type of the vocabulary to search, ex: subject, function, occupation, geo_place, ..."
+            },
+            "entity_type" : {
+                "type": "Integer|Null", 
+                "description" : "Entity type ID to filter vocabulary, if known"
+            }
+        },
+        "returns" : {
+            "results" : {
+                "type": "Array of Objects",
+                "description": "Array of SNAC Term Objects matching the requested query string"
+            },
+            "term" : {
+                "type": "Object",
+                "description": "SNAC Term Object of the requested term, if term_id was searched"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Direct Term Read",
+                "description": "When requesting to find only one term by id, this call returns that exact term, if it exists.",
+                "query" : {
+                   "command" : "vocabulary",
+                   "term_id" : 700
+                },
+                "response": {
+                    "term": {
+                        "id": "700",
+                        "term": "person",
+                        "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                        "type": "entity_type"
+                    },
+                    "result": "success",
+                    "timing": 9.12
+                }
+            },
+            {
+                "title": "Search for Term",
+                "description": "Being provided with a query string, the search method returns a list of matching results.",
+                "query" : {
+                   "command" : "vocabulary",
+                   "query_string" : "person",
+                   "type": "entity_type",
+                   "entity_type": null
+                },
+                "response":{
+                    "results": [
+                        {
+                            "id": "700",
+                            "term": "person",
+                            "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                            "type": "entity_type",
+                            "description": null
+                        }
+                    ],
+                    "timing": 10.91
+                } 
+            }
         ]
     },
     "read_vocabulary" : {
+        "category": "vocabulary",
         "title" : "Read Vocabulary Term",
         "description" : "Read a particular controlled vocabulary term.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "term_id" : {
+                "type": "Integer", 
+                "description" : "Term ID, if known.  If given a term id, that vocabulary term is directly returned."
+            },
+            "type" : {
+                "optional": true,
+                "type": "String", 
+                "description" : "Type of the vocabulary to search. Currently only uses if geoPlace."
+            }
+        },
+        "returns" : {
+            "term" : {
+                "type": "Object",
+                "description": "SNAC Term Object of the requested term"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Read Vocabulary Term",
+                "description": "When requesting to find only one term by id, this call returns that exact term, if it exists.",
+                "query" : {
+                   "command" : "read_vocabulary",
+                   "term_id" : 700
+                },
+                "response": {
+                    "term": {
+                        "id": "700",
+                        "term": "person",
+                        "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                        "type": "entity_type"
+                    },
+                    "result": "success",
+                    "timing": 9.12
+                }
+            },
+            {
+                "title": "Read Geo Vocabulary Term",
+                "description": "If type is set to geoPlace, this will read geographic terms.",
+                "query" : {
+                   "command" : "read_vocabulary",
+                   "type" : "geoPlace",
+                   "term_id" : 2358
+                },
+                "response": {
+                    "term": {
+                        "id": "2358",
+                        "uri": "http:\/\/www.geonames.org\/4752031",
+                        "name": "Charlottesville",
+                        "latitude": "38.0293100",
+                        "longitude": "-78.4766800",
+                        "administrationCode": "VA",
+                        "countryCode": "US"
+                    },
+                    "result": "success",
+                    "timing": 141.15
+                } 
+            }
         ]
     },
     "reconcile" : {
+        "category": "reconciliation",
         "title" : "Reconcile Against SNAC",
         "description" : "Reconcile a given constellation against all constellations in SNAC, returning the top results.",
-        "parameters" : [
-            {"constellation" : "Full Constellation object"}
-        ],
-        "returns" : [
+        "parameters" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Constellation object filled with as much information as known about the identity."
+            }
+        },
+        "returns" : {
+            "reconciliation" : {
+                "type": "Array of Objects", 
+                "description": "A list of reconciliation objects, including strength of the match, the Constellation matched, and a vector of individual scores that comprise the match strength."
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples" : [
+            {
+                "query" : {
+                    "command": "reconcile",
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "entityType": {
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Tubman, Harriet, 1820-1913",
+                                "preferenceScore": 1
+                            }
+                        ]
+                    }
+                },
+                "response" : {
+                    "reconciliation": [
+                        {
+                            "strength": 43.514907186098,
+                            "identity": {
+                                "dataType": "Constellation",
+                                "ark": "http:\/\/n2t.net\/ark:\/99166\/w6ms4s8z",
+                                "entityType": {
+                                    "term": "person"
+                                },
+                                "nameEntries": [
+                                    {
+                                        "dataType": "NameEntry",
+                                        "original": "Tubman, Harriet, 1820?-1913"
+                                    }
+                                ],
+                                "id": 17796401
+                            },
+                            "vector": {
+                                "ElasticOriginalNameEntry": 9.020508,
+                                "ElasticNameOnly": 9.020508,
+                                "ElasticSeventyFive": 9.020508,
+                                "MultiStage:ElasticNameOnly:SNACDegree": 13.195286648076,
+                                "EntityTypeFilter": 0,
+                                "OriginalLength": 3.2580965380215
+                            },
+                            "properties": {
+                                "degree": 14
+                            }
+                        },
+                        {
+                            "strength": 14.443286538021,
+                            "identity": {
+                                "dataType": "Constellation",
+                                "ark": "http:\/\/n2t.net\/ark:\/99166\/w6pz9nbf",
+                                "entityType": {
+                                    "term": "person"
+                                },
+                                "nameEntries": [
+                                    {
+                                        "dataType": "NameEntry",
+                                        "original": "Tubman, Harriet, 1815?-1913."
+                                    }
+                                ],
+                                "id": 49248679
+                            },
+                            "vector": {
+                                "ElasticOriginalNameEntry": 5.592595,
+                                "ElasticSeventyFive": 5.592595,
+                                "EntityTypeFilter": 0,
+                                "OriginalLength": 3.2580965380215
+                            },
+                            "properties": {
+                                "degree": 1
+                            }
+                        },
+                        {"...":"..."}
+                    ],
+                    "result": "success",
+                    "timing": 200.33
+                }
+            }
         ]
+
     },
     "user_information" : {
+        "category": "user",
         "title" : "Get User Information",
         "description" : "Returns the information for the given user, including information for Constellations locked to the user.",
-        "parameters" : [
-            {"user" : "User object"}
-        ],
-        "returns" : [
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "User object"
+            }
+        },
+        "returns" : {
+            "user" : {
+                "type": "Object", 
+                "description": "Full user object with name, affiliation Constellation, role and privilege list"
+            },
+            "groups" : {
+                "type": "Array of Objects", 
+                "description": "List of Group objects to which the user belongs"
+            },
+            "messages" : {
+                "type": "Array of Objects", 
+                "description": "Unread messages sent to this user"
+            },
+            "editing" : {
+                "type": "Array of Objects", 
+                "description": "Simplified objects of {id, version, nameEntry} of the Constellations this user has checked out"
+            },
+            "editing_lock" : {
+                "type": "Array of Objects", 
+                "description": "Simplified objects of {id, version, nameEntry} of the Constellations this user is currently editing (locked)"
+            },
+            "review" : {
+                "type": "Array of Objects", 
+                "description": "Simplified objects of {id, version, nameEntry} of the Constellations sent for review to any reviewer"
+            },
+            "review_lock" : {
+                "type": "Array of Objects", 
+                "description": "Simplified objects of {id, version, nameEntry} of the Constellations sent for review (locked) to this user"
+            },
+            "recent" : {
+                "type": "Array of Objects", 
+                "description": "Simplified objects of {id, version, nameEntry} of the Constellations recently published by this user"
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+
+        },
+        "examples" : [
+            {
+                "title": "Get Current User Information",
+                "description": "",
+                "query" : {
+                   "command" : "user_information",
+                   "user" : { "...":"..." }
+                },
+                "response": {
+                    "result" : "success",
+                    "user": {
+                        "userid": "123456",
+                        "userName": "...",
+                        "firstName": "John",
+                        "lastName": "Smith",
+                        "fullName": "John Smith",
+                        "email": "doctor@example.com",
+                        "active": true,
+                        "affiliation": {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6xq0t7h",
+                            "entityType": {
+                                "id": "698",
+                                "term": "corporateBody",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
+                                "type": "entity_type"
+                            },
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "University of Virginia",
+                                    "preferenceScore": "99",
+                                    "id": "18618207",
+                                    "version": "2717174"
+                                }
+                            ],
+                            "id": "18614776",
+                            "version": "2717175"
+                        },
+                        "token": {
+                            "access_token": "...",
+                            "expires": 1516245251
+                        },
+                        "roleList": [
+                            {
+                                "privilegeList": [
+                                    {
+                                        "dataType": "privilege",
+                                        "id": "1",
+                                        "label": "Edit",
+                                        "description": "Edit constellations"
+                                    },
+                                    { "...":"..." }
+                                ]
+                            }
+                        ],
+                        "groups": [
+                            {"...":"..."}
+                        ],
+                        "messages": [
+                            {"...":"..."}
+                        ],
+                        "editing": [
+                            {
+                                "id": "47758348",
+                                "version": "11244077",
+                                "nameEntry": "Feuerbach, Ludwig, 1804-1872"
+                            }
+                        ],
+                        "editing_lock": [
+                            {
+                                "id": "50774384",
+                                "version": "11243966",
+                                "nameEntry": "Karr, Gary, 1941-...."
+                            }
+                        ],
+                        "review_lock": [
+                            {
+                                "id": "45808987",
+                                "version": "11244000",
+                                "nameEntry": "Koresh, 1838-1908"
+                            }
+                        ],
+                        "review": [
+                            {"...":"..."}
+                        ],
+                        "recent": [
+                            {"...":"..."}
+                        ],
+                        "timing":25.678
+                    }
+                }
+            }
         ]
     },
     "insert_constellation" : {
+        "category": "modification",
+        "permissions" : [
+            "Edit"
+        ],
         "title" : "Insert New Constellation",
         "description" : "Insert a new Constellation into SNAC. The Constellation must have the operation flags set to \"insert\".",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellation" : "Full Constellation object"}
-        ],
-        "returns" : [
-            {"constellation" : "Full Constellation object"}
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "User object"
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object"
+            },
+            "message" : {
+                "optional": true,
+                "type": "String",
+                "description": "A commit message"
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Insert a simple Constellation",
+                "description": "Inserting a Constellation with only one nameEntry",
+                "query": {
+                    "command": "insert_constellation",
+                    "user": { "..." : "..." },
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "operation": "insert",
+                        "entityType": {
+                            "dataType": "Term",
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (1963-2018)",
+                                "preferenceScore": 99,
+                                "operation": "insert",
+                                "components": [
+                                    {
+                                        "dataType": "NameComponent",
+                                        "text": "Smith, John (1963-2018)",
+                                        "operation": "insert",
+                                        "order": 0,
+                                        "type": {
+                                            "id": 400228
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "message": "Example insert message."
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "locked editing",
+                        "entityType": {
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (1963-2018)",
+                                "preferenceScore": 99,
+                                "components": [
+                                    {
+                                        "dataType": "NameComponent",
+                                        "text": "Smith, John (1963-2018)",
+                                        "type": {
+                                            "id": 400228
+                                        },
+                                        "id": "76813081",
+                                        "version": "11244084",
+                                        "operation": "insert"
+                                    }
+                                ],
+                                "id": "76813080",
+                                "version": "11244084",
+                                "operation": "insert"
+                            }
+                        ],
+                        "id": "76813079",
+                        "version": "11244085",
+                        "operation": "insert"
+                    },
+                    "result": "success",
+                    "timing": 686.91
+                }
+            }
         ]
     },
     "update_constellation" : {
+        "category": "modification",
+        "permissions" : [
+            "Edit"
+        ],
         "title" : "Update Constellation",
         "description" : "Updates SNAC's copy of the given Constellation with this one.  Any components with operation flags set to \"update\" will be overwritten with the new version.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellation" : "Full Constellation object"}
-        ],
-        "returns" : [
-            {"constellation" : "Full Constellation object"}
-        ]
-    },
-    "unlock_constellation" : {
-        "title" : "Unlock Constellation",
-        "description" : "Drops the lock on the given Constellation from \"currently editing\" down to simply locked to the user.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellation" : "Full Constellation object"}
-        ],
-        "returns" : [
-            {"user" : "User object"}
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "User object"
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object, with current ids and versions (the result of calling edit)"
+            },
+            "message" : {
+                "optional": true,
+                "type": "String",
+                "description": "A commit message"
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Update a simple Constellation",
+                "description": "Update a Constellation with only one nameEntry",
+                "query": {
+                    "command": "insert_constellation",
+                    "user": { "..." : "..." },
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244085",
+                        "entityType": {
+                            "dataType": "Term",
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (Doctor), 1963-2018",
+                                "preferenceScore": 99,
+                                "id": "76813080",
+                                "version": "11244084",
+                                "operation": "update"
+                            }
+                        ]
+                    },
+                    "message": "Example update message."
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "locked editing",
+                        "entityType": {
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (Doctor), 1963-2018",
+                                "preferenceScore": 99,
+                                "id": "76813080",
+                                "version": "11244089",
+                                "operation": "update"
+                            }
+                        ],
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "result": "success",
+                    "timing": 583.96
+                }
+            }
         ]
     },
     "publish_constellation" : {
+        "category": "modification",
+        "permissions" : [
+            "Publish"
+        ],
         "title" : "Publish Constellation",
         "description" : "Publishes the given Constellation in SNAC.  This does not make any updates to the Constellation data in SNAC.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellation" : "Full Constellation object"}
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "User object"
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object, with current ids and versions (the result of calling edit)"
+            },
+            "message" : {
+                "optional": true,
+                "type": "String",
+                "description": "A commit message"
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Publish a Constellation",
+                "description": "When publishing, only the bare Constellation object is required to perform the publish.",
+                "query": {
+                    "command": "publish_constellation",
+                    "user": { "..." : "..." },
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244085"
+                    },
+                    "message": "Example publish message."
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "result": "success",
+                    "timing": 283.96
+                }
+            }
+        ]
+    },
+    "unlock_constellation" : {
+        "category": "modification",
+        "permissions" : [
+            "Edit"
         ],
-        "returns" : [
-            {"constellation" : "Full Constellation object"}
+        "title" : "Unlock Constellation",
+        "description" : "Drops the lock on the given Constellation from \"currently editing\" down to simply locked to the user.",
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "User object"
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description": "Constellation object with current ID and Version number"
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Unlocked Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Unlock a Constellation",
+                "description": "When unlocking, only the bare Constellation object is required to perform the unlock.",
+                "query": {
+                    "command": "unlock_constellation",
+                    "user": { "..." : "..." },
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244085"
+                    }
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "result": "success",
+                    "timing": 283.96
+                }
+            }
         ]
     },
     "review_constellation" : {
-        "title" : "Send Constellation for Review",
-        "description" : "Sends the given Constellation in SNAC for review.  This does not make any updates to the Constellation data in SNAC.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellation" : "Full Constellation object"}
+        "category": "modification",
+        "permissions" : [
+            "Edit"
         ],
-        "returns" : [
-            {"constellation" : "Full Constellation object"}
+        "title" : "Send Constellation for Review",
+        "description" : "Sends the given Constellation in SNAC for review.  This does not make any updates to the Constellation data in SNAC.  If a reviewer is specified, this query will put the Constellation in that user's review queue.  If no reviewer is specified, the Constellation will go for general review.",
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "User object"
+            },
+            "reviewer" : {
+                "type": "Object", 
+                "description": "User object of the intended reviewer",
+                "optional": true
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description": "Constellation object with at least current ID and Version"
+            },
+            "message" : {
+                "optional": true,
+                "type": "String",
+                "description": "A message for the reviewer"
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Sending for Review",
+                "description": "When sending for review, only the bare Constellation object is required to perform the request.",
+                "query": {
+                    "command": "review_constellation",
+                    "user": { "..." : "..." },
+                    "reviewer": { "..." : "..." },
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244085"
+                    },
+                    "message": "Please look over my name headings and biogHist entry"
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "result": "success",
+                    "timing": 283.96
+                }
+            }
         ]
     },
     "delete_constellation" : {
+        "category": "modification",
+        "permissions" : [
+            "Delete"
+        ],
         "title" : "Delete Constellation",
         "description" : "Deletes the given Constellation from SNAC.  This does not make any updates to the Constellation data in SNAC before deleting.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellation" : "Full Constellation object"}
-        ],
-        "returns" : [
-            {"constellation" : "Full Constellation object"}
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "User object"
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description": "Constellation object to delete with at least current ID and Version"
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object deleted"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Delete a Constellation",
+                "description": "When deleting, only the bare Constellation object is required to perform the request.",
+                "query": {
+                    "command": "delete_constellation",
+                    "user": { "..." : "..." },
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244085"
+                    }
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "result": "success",
+                    "timing": 283.96
+                }
+            }
         ]
     },
     "reassign_constellation" : {
+        "category": "modification",
+        "permissions" : [
+            "Change Locks"
+        ],
         "title" : "Reassign Constellation to Another User",
         "description" : "Reassigns the given Constellation to a different user, i.e. changes which user to which the Constellation is locked.  This does not make any updates to the Constellation data in SNAC.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellation" : "Full Constellation object"}
-        ],
-        "returns" : [
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "Acting user's User object"
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description": "Constellation object to assign, with at least current ID and Version"
+            },
+            "to_user" : {
+                "type": "Object", 
+                "description": "User object for the user to whom the Constellation should be assigned"
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Reassign Constellation",
+                "description": "When reassigning a Constellation, only the bare Constellation object is required to perform the request.",
+                "query": {
+                    "command": "reassign_constellation",
+                    "user": { "..." : "..." },
+                    "to_user": { "..." : "..." },
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244085"
+                    }
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "result": "success",
+                    "timing": 283.96
+                }
+            }
         ]
     },
     "recently_published" : {
+        "category": "discover",
         "title" : "List Recently Published",
         "description" : "Returns a list of the most recently published Constellations in SNAC.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Array of Objects", 
+                "description": "Simplified Constellation objects {id, ark, nameEntry} of the recently published Constellations"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "",
+                "description": "",
+                "query": {
+                    "command":"recently_published"
+                },
+                "response": {
+                    "constellation": [
+                        {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/snaccooperative.org\/ark:\/99999\/ZICtRNdP",
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "Smith, John (1963-2018)"
+                                }
+                            ],
+                            "id": 76813079
+                        },
+                        {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6zk9rbc",
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "100 Black Men of America, Inc."
+                                }
+                            ],
+                            "id": 19735756
+                        },
+                        { "..." : "..."}
+                    ],
+                    "result": "success",
+                    "timing": 1778.94
+                }
+            }
         ]
     },
     "random_constellations" : {
+        "category": "discover",
         "title" : "List Random Constellations",
         "description" : "Returns a random subset of the Constellations in SNAC.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Array of Objects", 
+                "description": "Simplified Constellation objects {id, ark, nameEntry} of random Constellations"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "",
+                "description": "",
+                "query": {
+                    "command":"random_constellations"
+                },
+                "response": {
+                    "constellation": [
+                        {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/snaccooperative.org\/ark:\/99999\/ZICtRNdP",
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "Smith, John (1963-2018)"
+                                }
+                            ],
+                            "id": 76813079
+                        },
+                        {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6zk9rbc",
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "100 Black Men of America, Inc."
+                                }
+                            ],
+                            "id": 19735756
+                        },
+                        { "..." : "..."}
+                    ],
+                    "result": "success",
+                    "timing": 1778.94
+                }
+            }
         ]
     },
     "list_constellations" : {
+        "category": "discover",
         "title" : "List Constellations",
         "description" : "Returns a list of Constellations based on the query parameters.",
         "parameters" : [
@@ -134,114 +1043,778 @@
         ]
     },
     "constellation_history" : {
+        "category": "constellation",
         "title" : "Get Constellation History",
         "description" : "Returns the edit history of the given Constellation.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "constellationid" : {
+                "type" : "Integer",
+                "description" : "Constellation ID" 
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full current Constellation Object"
+            },
+            "history" : {
+                "type": "Array of Objects", 
+                "description": "List of history objects, in reverse order, describing what has happened to the Constellation through the current version."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples" : [
+            {
+                "title" : "",
+                "description" : "",
+                "query": {
+                    "command" : "constellation_history",
+                    "constellationid" : 76813079
+                },
+                "response": {
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "entityType": {
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (Doctor), 1963-2018",
+                                "preferenceScore": 99,
+                                "id": "76813080",
+                                "version": "11244089"
+                            }
+                        ],
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "history": [
+                        {
+                            "date": "2017-04-19T10:34:47",
+                            "userName": "user@gmail.com",
+                            "fullName": "Example User",
+                            "version": "11244089",
+                            "status": "published",
+                            "note": ""
+                        },
+                        {
+                            "date": "2016-08-19T20:59:47",
+                            "userName": "system@localhost",
+                            "fullName": "System Service",
+                            "version": "11223504",
+                            "status": "published",
+                            "note": ""
+                        },
+                        {
+                            "date": "2016-08-19T20:59:47",
+                            "userName": "system@localhost",
+                            "fullName": "System Service",
+                            "version": "11223502",
+                            "status": "ingest cpf",
+                            "note": "",
+                            "data": {
+                                "maintenanceStatus": {
+                                    "id": "7656",
+                                    "term": "revised"
+                                },
+                                "maintenanceAgency": "SNAC: Social Networks and Archival Context Project",
+                                "maintenanceEvents": [
+                                    {
+                                        "dataType": "MaintenanceEvent",
+                                        "eventType": {
+                                            "id": "704",
+                                            "term": "revised"
+                                        },
+                                        "eventDateTime": "2015-09-18",
+                                        "agentType": {
+                                            "id": "687",
+                                            "term": "machine"
+                                        },
+                                        "agent": "CPF merge program",
+                                        "eventDescription": "Merge v2.0"
+                                    }
+                                ],
+                                "otherRecordIDs": [
+                                    {
+                                        "dataType": "SameAs",
+                                        "type": {
+                                            "id": 28224,
+                                            "term": "MergedRecord",
+                                            "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#MergedRecord"
+                                        },
+                                        "uri": "OCLC-TXG-6843155.r02",
+                                        "id": "76757792",
+                                        "version": "11223503"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "timing": 278.9
+                }
+            }
         ]
     },
     "download_constellation" : {
+        "category": "constellation",
         "title" : "Download Constellation",
-        "description" : "Returns the full Constellation in the requested format.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "description" : "Returns the full Constellation in the requested format.  To perform a direct download, without JSON wrapping, submit a request to the webUI interface, <code>http://snaccooperative.org/download/{constellationid}?type={type}</code> or <code>http://snaccooperative.org/download?arkid={ark}&type={type}</code>.",
+        "parameters" : {
+            "constellationid" : {
+                "type" : "Integer",
+                "description" : "Constellation ID for Constellation to read", 
+                "optional" : true
+            },
+            "version" : {
+                "type" : "Integer",
+                "description": "Version of the Constellation to read", 
+                "optional":true
+            },
+            "type" : {
+                "type" : "String",
+                "description": "What type of file to return: constellation_json or eac_cpf.", 
+                "optional":true
+            },
+            "arkid" : {
+                "type" : "String",
+                "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'", 
+                "optional": true
+            }
+        },
+        "returns" : {
+            "file" : {
+                "type" : "Object",
+                "description" : "File information object, including mime-type, filename, and base64-encoded content of the file." 
+            }
+        },
+        "examples" : [
+            {
+                "title" : "",
+                "description" : "",
+                "query": {
+                    "command" : "download_constellation",
+                    "constellationid" : 76813079,
+                    "type" : "eac-cpf"
+                },
+                "response": {
+                    "file": {
+                        "mime-type": "text\/xml",
+                        "filename": "99999-ZICtRNdP.xml",
+                        "content": "... BASE64 ..."
+                    },
+                    "timing": 399.35
+                }
+            }
         ]
     },
     "constellation_list_maybesame" : {
+        "category": "constellation",
         "title" : "List Maybe-Same Constellations",
-        "description" : "Returns a list of Constellations denoted as maybe-same-as the given Constellation.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "description" : "Returns a list of Constellations denoted as maybe-same-as the given Constellation.  If the user object is given, it will contain mergeable flags to denote if the user has permission to merge any of the Constellations.",
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "User object",
+                "optional": true
+            },
+            "constellationid" : {
+                "type" : "Integer",
+                "description" : "Constellation ID" 
+            }
+        },
+        "returns" : {
+            "mergeable" : {
+                "type": "Boolean", 
+                "description" : "Boolean value denoting whether the Constellations can be merged by this user"
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description": "Summary Constellation Object of the requested Constellation"
+            },
+            "maybe_same" : {
+                "type": "Array of Objects", 
+                "description": "Array of objects, each containing a \"mergeable\" flag and a Constellation Object of the Constellation asserted to be the maybe the same."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "",
+                "description": "",
+                "query": {
+                },
+                "response" : {
+                    "mergeable": true,
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "ark": "http:\/\/n2t.net\/ark:\/99166\/w6rf67f4",
+                        "entityType": {
+                            "id": "700",
+                            "term": "person",
+                            "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                            "type": "entity_type"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Slemp, C. Bascom (Campbell Bascom), 1870-1943",
+                                "preferenceScore": "99",
+                                "id": "66599026",
+                                "version": "9740651"
+                            }
+                        ],
+                        "biogHists": [
+                            {
+                                "dataType": "BiogHist",
+                                "text": "...",
+                                "id": "66598998",
+                                "version": "9740651"
+                            }
+                        ],
+                        "id": 66598997,
+                        "version": "9740652"
+                    },
+                    "maybe_same": [
+                        {
+                            "constellation": {
+                                "dataType": "Constellation",
+                                "ark": "http:\/\/n2t.net\/ark:\/99166\/w6k219nd",
+                                "entityType": {
+                                    "id": "700",
+                                    "term": "person",
+                                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                                    "type": "entity_type"
+                                },
+                                "nameEntries": [
+                                    {
+                                        "dataType": "NameEntry",
+                                        "original": "Slemp, C. B.",
+                                        "preferenceScore": "1",
+                                        "id": "15919565",
+                                        "version": "2323442"
+                                    }
+                                ],
+                                "id": "15919563",
+                                "version": "2323443"
+                            },
+                            "mergeable": true
+                        },
+                        {
+                            "constellation": {
+                                "dataType": "Constellation",
+                                "ark": "http:\/\/n2t.net\/ark:\/99166\/w6wj8g41",
+                                "entityType": {
+                                    "id": "700",
+                                    "term": "person",
+                                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                                    "type": "entity_type"
+                                },
+                                "nameEntries": [
+                                    {
+                                        "dataType": "NameEntry",
+                                        "original": "Slemp, Bascom",
+                                        "preferenceScore": "1",
+                                        "id": "68374832",
+                                        "version": "9995489"
+                                    }
+                                ],
+                                "id": "68374830",
+                                "version": "9995490"
+                            },
+                            "mergeable": true
+                        }
+                    ],
+                    "timing": 539.29
+                }
+            }
         ]
     },
     "constellation_add_maybesame" : {
+        "category": "modification",
         "title" : "Add Maybe-Same Constellation Assertions",
         "description" : "Makes a maybe-same assertion between the constellations specified.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description" : "User object"
+            },
+            "assertion" : {
+                "type": "String", 
+                "description" : "User's assertion statement about the similarity of these Constellations"
+            },
+            "constellationids" : {
+                "type": "Array of Integers", 
+                "description" :  "2 or more Constellation IDs to assert as maybe_same" 
+            }
+        },
+        "returns": {
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the merge succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples" : [
+            {
+                "title": "",
+                "description": "",
+                "query" : {
+                   "command" : "constellation_add_maybesame",
+                   "user" : { "...":"..." },
+                   "constellationids" : [123456, 987654, 626505],
+                   "assertion": "These three all have the same name and come from the same holding institution"
+                },
+                "response": {
+                    "result": "success",
+                    "timing": 246.13
+                }
+            }
         ]
     },
     "constellation_diff" : {
+        "category": "constellation",
         "title" : "Compute Constellation Diff",
         "description" : "Computes the difference between the two given Constellations.  Returns Constellation objects containing: only those items in the first, only those items in the second, and components shared.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellationid1" : "Constellation ID for one Constellation to compare"},
-            {"constellationid2" : "Constellation ID for the other Constellation to compare"}
-        ],
-        "returns" : [
-            {"constellation1" : "Constellation object containing only data distinct to the first Constellation"},
-            {"constellation2" : "Constellation object containing only data distinct to the second Constellation"},
-            {"intersection" : "Constellation object containing only data shared by both Constellations"},
-            {"mergeable" : "Boolean value denoting whether these two Constellations can be merged by this user"}
+        "parameters" : {
+            "constellationid1" :{
+                "type": "Integer", 
+                "description" :  "Constellation ID for one Constellation to compare"
+            },
+            "version1" : {
+                "type": "Integer", 
+                "description" :  "Constellation Version to compare.  If not set, it will compare the published version.",
+                "optional": true
+            },
+            "constellationid2" :{
+                "type": "Integer", 
+                "description" :  "Constellation ID for the other Constellation to compare"
+            },
+            "version2" : { 
+                "type": "Integer", 
+                "description" :  "Constellation Version to compare.  If not set, it will compare the published version.",
+                "optional": true
+            }
+        },
+        "returns" : {
+            "constellation1" : {"type": "Object", "description" : "Constellation object containing only data distinct to the first Constellation"},
+            "constellation2" : {"type": "Object", "description" : "Constellation object containing only data distinct to the second Constellation"},
+            "intersection" : {"type": "Object", "description" : "Constellation object containing only data shared by both Constellations"},
+            "mergeable" : {"type": "Boolean", "description" : "Boolean value denoting whether these two Constellations can be merged by this user"}
+        },
+        "examples" : [
+            {
+                "title": "Diff",
+                "description": "",
+                "query" : {
+                   "command" : "constellation_diff",
+                   "user" : { "...":"..." },
+                   "constellationid1" : 123456,
+                   "constellationid2" : 987654
+                },
+                "response": {
+                    "result" : "success",
+                    "constellation1" : { "...":"..." },
+                    "constellation2" : { "...":"..." },
+                    "intersection" : { "...":"..." },
+                    "mergeable" : true
+                }
+            }
         ]
     },
     "constellation_diff_merge" : {
+        "category": "modification",
+        "permissions" : [
+            "Merge"
+        ],
         "title" : "Compute Constellation Diff and Set Merge",
         "description" : "Computes the difference between the two given Constellations.  Checks out the two Constellations in editing for the given user to allow a merge.  Returns Constellation objects containing: only those items in the first, only those items in the second, and components shared.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellationid1" : "Constellation ID for one Constellation to compare"},
-            {"constellationid2" : "Constellation ID for the other Constellation to compare"}
-        ],
-        "returns" : [
-            {"constellation1" : "Constellation object containing only data distinct to the first Constellation"},
-            {"constellation2" : "Constellation object containing only data distinct to the second Constellation"},
-            {"intersection" : "Constellation object containing only data shared by both Constellations"},
-            {"mergeable" : "Boolean value denoting whether these two Constellations can be merged by this user"}
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description" : "User object"
+            },
+            "constellationid1" : {
+                "type": "Integer", 
+                "description" :  "Constellation ID for one Constellation to compare"
+            },
+            "constellationid2" : {
+                "type": "Integer", 
+                "description" :  "Constellation ID for the other Constellation to compare"
+            }
+        },
+        "returns" : {
+            "constellation1" : {
+                "type": "Object", 
+                "description" : "Constellation object containing only data distinct to the first Constellation"
+            },
+            "constellation2" : {
+                "type": "Object", 
+                "description" : "Constellation object containing only data distinct to the second Constellation"
+            },
+            "intersection" : { 
+                "type": "Object", 
+                "description" : "Constellation object containing only data shared by both Constellations"
+            },
+            "mergeable" : {
+                "type": "Boolean", 
+                "description" : "Boolean value denoting whether these two Constellations can be merged by this user"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Successful Mergeable Diff",
+                "description": "If the given user has permission to check both Constellations out for editing, then the system will automatically check them out to the user, produce the diff, and denote to the user in the mergeable flag that the user may merge these constellations.",
+                "query" : {
+                   "command" : "constellation_diff_merge",
+                   "user" : { "...":"..." },
+                   "constellationid1" : 123456,
+                   "constellationid2" : 987654
+                },
+                "response": {
+                    "result" : "success",
+                    "constellation1" : { "...":"..." },
+                    "constellation2" : { "...":"..." },
+                    "intersection" : { "...":"..." },
+                    "mergeable" : true
+                }
+            }
         ]
     },
     "constellation_merge" : {
+        "category": "modification",
         "title" : "Merge Constellations",
         "description" : "Given Constellation IDs and a full, merged, Constellation, creates a new Constellation in SNAC from the given Constellation and sets all Constellations given by the IDs to be \"tombstoned\" and redirected to the new, merged, Constellation.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellationids" : "Array of Constellation IDs to tombstone in favor of the merged Constellation"},
-            {"constellation" : "Full Merged Constellation object"}
-        ],
-        "returns" : [
-            {"constellation" : "Full merged Constellation object with IDs"}
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description" : "User object"
+            },
+            "constellationids" : {
+                "type": "Array of Integers", 
+                "description" :  "2 or more Constellation IDs to merge together.  Each Constellation will be \"tombstoned\" and point to a new Constellation that matches the one provided by the user in the Constellation parameter."
+            },
+            "constellation" : {
+                "type": "Object", 
+                "description" :  "Full merged Constellation object.  The version of the Constellation here will be considered by SNAC as the merged version; it will be written as a new Constellation."
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the merge succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Merge three Constellations",
+                "description": "If we want to merge three Constellations into one, which only has a name entry, we would provide all IDs and the appropriate merged version.",
+                "query" : {
+                   "command" : "constellation_merge",
+                   "user" : { "...":"..." },
+                   "constellationids" : [123456, 987654, 626505],
+                   "constellation": {
+                       "dataType": "Constellation",
+                       "entityType": {
+                           "id": 700,
+                           "term": "person"
+                       },
+                       "nameEntries": [
+                           {
+                               "dataType": "NameEntry",
+                               "original": "Smith, John (Doctor), 1963-2018",
+                               "preferenceScore": 99
+                           }
+                       ]
+                   }
+                },
+                "response": {
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "published",
+                        "entityType": {
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (Doctor), 1963-2018",
+                                "preferenceScore": 99,
+                                "id": "76813080",
+                                "version": "11244089"
+                            }
+                        ],
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "result": "success",
+                    "timing": 583.96
+                }
+            }
         ]
     },
     "constellation_auto_merge" : {
+        "category": "modification",
         "title" : "Automatically Merge Constellations",
         "description" : "Given Constellation IDs, creates a new Constellation in SNAC from the combined data from all Constellations, \"tombstones\" the originals, and redirects thier IDs to the new, merged, Constellation.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellationids" : "Array of Constellation IDs to merge"}
-        ],
-        "returns" : [
-            {"constellation" : "Full merged Constellation object"}
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description" : "User object"
+            },
+            "constellationids" : {
+                "type": "Array of Integers", 
+                "description" :  "2 or more Constellation IDs to merge together.  Each Constellation will be \"tombstoned\" and point to a new Constellation that matches the one provided by the user in the Constellation parameter."
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object", 
+                "description": "Full Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the merge succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Auto-merge three Constellations",
+                "description": "If we want to merge three Constellations into one, which only has a name entry, we would provide all IDs and the system automatically creates a merged version.",
+                "query" : {
+                   "command" : "constellation_auto_merge",
+                   "user" : { "...":"..." },
+                   "constellationids" : [123456, 987654, 626505]
+                },
+                "response": {
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "published",
+                        "entityType": {
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (Doctor), 1963-2018",
+                                "preferenceScore": 99,
+                                "id": "76813080",
+                                "version": "11244089"
+                            }
+                        ],
+                        "id": "76813079",
+                        "version": "11244089"
+                    },
+                    "result": "success",
+                    "timing": 738.96
+                }
+            }
         ]
     },
     "read" : {
+        "category": "constellation",
         "title" : "Read Constellation",
-        "description" : "Returns the full Constellation for viewing.",
-        "parameters" : [
-            {"constellationid" : "Constellation ID for Constellation to read", "optional" : true},
-            {"arkid" : "ARK ID for Constellation to read", "optional": true},
-            {"version" : "Version of the Constellation to read", "optional":true}
-        ],
-        "returns" : [
-            {"constellation" : "Full Constellation object"}
+        "description" : "Returns the full Constellation for viewing.  Either a constellationid or arkid are required.  If a constellationid and version are both supplied, this will read that version of the constellation, if it exists.",
+        "parameters" : {
+            "constellationid" : {
+                "type" : "Integer",
+                "description" : "Constellation ID for Constellation to read", 
+                "optional" : true
+            },
+            "version" : {
+                "type" : "Integer",
+                "description": "Version of the Constellation to read", 
+                "optional":true
+            },
+            "type" : {
+                "type" : "String",
+                "description": "How much of the Constellation to return.  Without this parameter, the entire Constellation is returned.  If set to \"summary\", a summary is returned without relationships.", 
+                "optional":true
+            },
+            "arkid" : {
+                "type" : "String",
+                "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'", 
+                "optional": true
+            }
+        },
+        "returns" : {
+            "result": {
+                "type": "String",
+                "description": "\"success\" if one Constellation is returned, \"success-notice\" if there is a special return."
+            },
+            "message": {
+                "type": "Object",
+                "description" : "Message relating to the \"success-notice\" result.  Contains a \"text\" string including a human-readable note and an \"info\" object of additional information about the Constellation."
+            },
+            "constellation" : {
+                "type": "Object|Array of Objects", 
+                "description": "Full Constellation object with current id and version numbers.  If the ID/Ark given point to a Constellation that has been split, multiple Constellation objects will be returned instead."
+            },
+            "maybesame_count": {
+                "type": "Integer",
+                "description": "Number of other Constellations in SNAC listed as maybe-the-same as this one."
+            }
+        },
+        "examples": [
+            {
+                "title": "Read a Constellation",
+                "description": "By requesting simply a constellationid, we get the current published version of the Constellation.",
+                "query": {
+                    "command": "read",
+                    "constellationid": 76813079
+                },
+                "response":{
+                    "result": "success",
+                    "maybesame_count": 0,
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "editable",
+                        "ark": "http:\/\/snaccooperative.org\/ark:\/99999\/ZICtRNdP",
+                        "entityType": {
+                            "id": "700",
+                            "term": "person",
+                            "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                            "type": "entity_type"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (1963-2018)",
+                                "preferenceScore": "99",
+                                "components": [
+                                    {
+                                        "dataType": "NameComponent",
+                                        "text": "Smith, John (1963-2018)",
+                                        "order": "0",
+                                        "type": {
+                                            "id": "400228",
+                                            "term": "Name",
+                                            "type": "name_component"
+                                        },
+                                        "id": "76813081",
+                                        "version": "11244084"
+                                    }
+                                ],
+                                "id": "76813080",
+                                "version": "11244084"
+                            }
+                        ],
+                        "id": "76813079",
+                        "version": "11244087"
+                    },
+                    "timing": 230.63
+                }
+            }
         ]
     },
     "edit" : {
+        "category": "modification",
+        "permissions" : [
+            "Edit"
+        ],
         "title" : "Edit Constellation",
         "description" : "Check out the Constellation for editing.",
         "parameters" : [
             {"user" : "User object"},
             {"constellation" : "Constellation object with ID and version to edit"}
         ],
-        "returns" : [
-            {"constellation" : "Full Constellation object checked out for editing"}
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description" : "User object"
+            },
+            "constellationid" : {
+                "type" : "Integer",
+                "description" : "Constellation ID for Constellation to edit" 
+            }
+        },
+        "returns" : {
+            "review_note": {
+                "type": "String",
+                "description": "Reviewer's note, if set by another user."
+            },
+            "constellation" : {
+                "type": "Object|Array of Objects", 
+                "description": "Full Constellation object with current id and version numbers, ready for editing.  Those id/version values must be present with future update queries."
+            }
+        },
+        "examples": [
+            {
+                "title": "Edit a Constellation",
+                "description": "",
+                "query": {
+                    "command": "edit",
+                    "user" : { "...":"..." },
+                    "constellationid": 76813079
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "editable",
+                        "ark": "http:\/\/snaccooperative.org\/ark:\/99999\/ZICtRNdP",
+                        "entityType": {
+                            "id": "700",
+                            "term": "person",
+                            "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                            "type": "entity_type"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (1963-2018)",
+                                "preferenceScore": "99",
+                                "components": [
+                                    {
+                                        "dataType": "NameComponent",
+                                        "text": "Smith, John (1963-2018)",
+                                        "order": "0",
+                                        "type": {
+                                            "id": "400228",
+                                            "term": "Name",
+                                            "type": "name_component"
+                                        },
+                                        "id": "76813081",
+                                        "version": "11244084"
+                                    }
+                                ],
+                                "id": "76813080",
+                                "version": "11244084"
+                            }
+                        ],
+                        "id": "76813079",
+                        "version": "11244087"
+                    },
+                    "timing": 230.63
+                }
+            }
         ]
     },
     "search" : {
+        "category": "discover",
         "title" : "Search Constellations",
         "description" : "Search for a Constellation, returning a list of possible matches.",
         "parameters" : [
@@ -250,6 +1823,7 @@
         ]
     },
     "browse" : {
+        "category": "discover",
         "title" : "Browse Constellations",
         "description" : "Given a query name heading, returns the surrounding matching Constellations (in alphabetical order).",
         "parameters" : [
@@ -258,6 +1832,10 @@
         ]
     },
     "insert_resource" : {
+        "category": "resource",
+        "permissions" : [
+            "Edit"
+        ],
         "title" : "Insert Resource",
         "description" : "Given a Resource, inserts it into SNAC's resource cache.",
         "parameters" : [
@@ -266,6 +1844,10 @@
         ]
     },
     "update_resource" : {
+        "category": "resource",
+        "permissions" : [
+            "Edit"
+        ],
         "title" : "Update Resource",
         "description" : "Given a Resource, update the resource cache in SNAC by overwriting it with the given one.",
         "parameters" : [
@@ -274,6 +1856,7 @@
         ]
     },
     "read_resource" : {
+        "category": "resource",
         "title" : "Read Resource",
         "description" : "Read the entire Resource from SNAC's resource cache.",
         "parameters" : [
@@ -282,6 +1865,7 @@
         ]
     },
     "resource_search" : {
+        "category": "resource",
         "title" : "Search Resources",
         "description" : "Searches the resource cache in SNAC.  Returns the top matches.",
         "parameters" : [
