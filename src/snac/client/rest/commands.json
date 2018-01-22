@@ -1035,11 +1035,60 @@
     },
     "list_constellations" : {
         "category": "discover",
-        "title" : "List Constellations",
-        "description" : "Returns a list of Constellations based on the query parameters.",
-        "parameters" : [
+        "permissions" : [
+            "Change Locks"
         ],
-        "returns" : [
+        "title" : "List Constellations",
+        "description" : "Returns a list of Constellations based on the query parameters.  By default, it will return a subset of published Constellations.  If a user object is supplied, additional statuses are allowed to be queried, including \"needs review\" for all Constellations needing review.",
+        "parameters" : {
+            "user" : {
+                "type": "Object", 
+                "description": "Acting user's User object",
+                "optional": true
+            },
+            "status" : {
+                "type": "String", 
+                "description": "Status of Constellations to return.  Currently supported: \"published\" (default) and \"needs review\"",
+                "optional": true
+            }
+        },
+        "returns" : {
+            "results" : {
+                "type": "Array of Objects", 
+                "description": "Simplified objects of {id, version, nameEntry} of the Constellations matching the query"
+            }
+        },
+        "examples": [
+            {
+                "title":"",
+                "description":"",
+                "query": {
+                    "command":"list_constellations"
+                },
+                "response": {
+                    "results": [
+                        {
+                            "id": "76806764",
+                            "version": "11243376",
+                            "nameEntry": "100 Black Men of Charleston, Inc."
+                        },
+                        {
+                            "id": "32319",
+                            "version": "11243333",
+                            "nameEntry": "Atlantic Yacht Club"
+                        },
+                        {
+                            "id": "1960345",
+                            "version": "11243501",
+                            "nameEntry": "Boardman, Mabel Thorp, 1860-1946"
+                        },
+                        {
+                            "...":"..."
+                        }
+                    ],
+                    "timing": 62303.38
+                }
+            }
         ]
     },
     "constellation_history" : {
@@ -1677,6 +1726,10 @@
             "maybesame_count": {
                 "type": "Integer",
                 "description": "Number of other Constellations in SNAC listed as maybe-the-same as this one."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
             }
         },
         "examples": [
@@ -1760,6 +1813,10 @@
             "constellation" : {
                 "type": "Object|Array of Objects", 
                 "description": "Full Constellation object with current id and version numbers, ready for editing.  Those id/version values must be present with future update queries."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
             }
         },
         "examples": [
@@ -1817,18 +1874,524 @@
         "category": "discover",
         "title" : "Search Constellations",
         "description" : "Search for a Constellation, returning a list of possible matches.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "term" : {
+                "type" : "String",
+                "description": "Search term to query against SNAC" 
+            },
+            "start" : {
+                "type" : "Integer",
+                "description": "Position in the results to start.  Begin with 0" 
+            },
+            "count" : {
+                "type" : "Integer",
+                "description": "Number of results to return" 
+            },
+            "entity_type" : {
+                "type" : "String",
+                "description": "The entity type of the identity to search (person, corporateBody, family)", 
+                "optional":true
+            },
+            "biog_hist" : {
+                "type" : "Boolean",
+                "description": "Whether or not to search biographical histories for the search term", 
+                "optional":true
+            },
+            "facets" : {
+                "type" : "Object of String Arrays",
+                "description": "Facets to use in searching.", 
+                "optional":true
+            },
+            "search_type" : {
+                "type" : "String",
+                "description": "What type of search to perform.  By default, performs standard keyword search.  Passing 'autocomplete' will use left-anchored autocomplete search.  Passing 'advanced' will allow wildcards and other advanced features.", 
+                "optional":true
+            }
+        },
+        "returns" : {
+            "results" : {
+                "type": "Array of Objects", 
+                "description": "Simplified Constellation objects {id, ark, nameEntry} of random Constellations"
+            },
+            "aggregations" : {
+                "type" : "Object of String Arrays",
+                "description": "List of facets that are included in the current search results" 
+            },
+            "term" : {
+                "type" : "String",
+                "description": "Search term to query against SNAC" 
+            },
+            "count" : {
+                "type" : "Integer",
+                "description": "Number of results returned in this request" 
+            },
+            "total" : {
+                "type" : "Integer",
+                "description": "Number of total search results" 
+            },
+            "page" : {
+                "type" : "Integer",
+                "description": "Page number of results based on total and count" 
+            },
+            "pagination" : {
+                "type" : "Integer",
+                "description": "Number of total pages of results based on total and count" 
+            },
+            "search_type" : {
+                "type" : "String",
+                "description": "What type of search to perform.  By default, performs standard keyword search.  Passing 'autocomplete' will use left-anchored autocomplete search.  Passing 'advanced' will allow wildcards and other advanced features." 
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Basic Search",
+                "description": "A basic search for \"Washington\" among people.",
+                "query": {
+                    "command": "search",
+                    "term": "Washington",
+                    "entity_type": "person",
+                    "start": 0,
+                    "count": 3
+                },
+                "response": {
+                    "total": 2170,
+                    "results": [
+                        {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6028ps4",
+                            "entityType": {
+                                "id": "700",
+                                "term": "person",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                                "type": "entity_type"
+                            },
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "Washington, George, 1732-1799",
+                                    "preferenceScore": "99",
+                                    "id": "57007281",
+                                    "version": "8341616"
+                                }
+                            ],
+                            "biogHists": [
+                                {
+                                    "dataType": "BiogHist",
+                                    "text": "...",
+                                    "id": "57005056",
+                                    "version": "8341616"
+                                }
+                            ],
+                            "id": "57005055",
+                            "version": "11243948"
+                        },
+                        {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6fb5542",
+                            "entityType": {
+                                "id": "700",
+                                "term": "person",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                                "type": "entity_type"
+                            },
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "Irving, Washington, 1783-1859",
+                                    "preferenceScore": "99",
+                                    "id": "58214892",
+                                    "version": "8509754"
+                                }
+                            ],
+                            "biogHists": [
+                                {
+                                    "dataType": "BiogHist",
+                                    "text": "...",
+                                    "id": "58214480",
+                                    "version": "8509754"
+                                }
+                            ],
+                            "id": "58214479",
+                            "version": "8509755"
+                        },
+                        {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6zp5fs0",
+                            "entityType": {
+                                "id": "700",
+                                "term": "person",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                                "type": "entity_type"
+                            },
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "Washington, Joe",
+                                    "preferenceScore": "4",
+                                    "id": "64784398",
+                                    "version": "9470486"
+                                }
+                            ],
+                            "id": "64784275",
+                            "version": "9470487"
+                        }
+                    ],
+                    "aggregations": {
+                        "occupation": [
+                            {
+                                "term": "Army officers.",
+                                "count": 8
+                            },
+                            {
+                                "term": "Authors.",
+                                "count": 7
+                            },
+                            {
+                                "term": "Lawyers.",
+                                "count": 7
+                            },
+                            {
+                                "term": "Collectors.",
+                                "count": 6
+                            },
+                            {
+                                "term": "Diplomats.",
+                                "count": 6
+                            },
+                            {
+                                "term": "Educators.",
+                                "count": 5
+                            },
+                            {
+                                "term": "Clergy.",
+                                "count": 4
+                            },
+                            {
+                                "term": "Farmers.",
+                                "count": 4
+                            },
+                            {
+                                "term": "Jurists.",
+                                "count": 4
+                            },
+                            {
+                                "term": "Soldiers--United States.",
+                                "count": 4
+                            }
+                        ],
+                        "subject": [
+                            {
+                                "term": "Agriculture",
+                                "count": 14
+                            },
+                            {
+                                "term": "Indians of North America",
+                                "count": 11
+                            },
+                            {
+                                "term": "Slavery",
+                                "count": 11
+                            },
+                            {
+                                "term": "African Americans",
+                                "count": 9
+                            },
+                            {
+                                "term": "Frontier and pioneer life",
+                                "count": 9
+                            },
+                            {
+                                "term": "Lawyers",
+                                "count": 9
+                            },
+                            {
+                                "term": "Physicians",
+                                "count": 9
+                            },
+                            {
+                                "term": "Real property",
+                                "count": 9
+                            },
+                            {
+                                "term": "Families--Social life and customs",
+                                "count": 8
+                            },
+                            {
+                                "term": "Pioneers",
+                                "count": 8
+                            }
+                        ],
+                        "function": []
+                    },
+                    "pagination": 15,
+                    "page": 0,
+                    "count": 3,
+                    "term": "Washington",
+                    "search_type": "default",
+                    "timing": 1092.14
+                }
+            }
         ]
     },
     "browse" : {
         "category": "discover",
         "title" : "Browse Constellations",
         "description" : "Given a query name heading, returns the surrounding matching Constellations (in alphabetical order).",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "term" : {
+                "type" : "String",
+                "description": "Search term to query against SNAC" 
+            },
+            "entity_type" : {
+                "type" : "String",
+                "description": "The entity type of the identity to search (person, corporateBody, family)", 
+                "optional":true
+            },
+            "position" : {
+                "type" : "String",
+                "description": "Whether the \"requested\" term in the browse list should be in the \"middle\" of the list, \"before\", or \"after\".",
+                "optional": true 
+            },
+            "icid" : {
+                "type" : "String",
+                "description": "Constellation ID if needed to distinguish between identical names in the response list",
+                "optional": true 
+            }
+        },
+        "returns" : {
+            "results" : {
+                "type": "Array of Objects", 
+                "description": "An array of names from SNAC, in a special format.  Includes the preferred name entry of a Constellation with its ark, Constellation ID, degree, resources, entity type, and timestamp of when it was updated.  These results also include the normalized lower-case name entry."
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title":"",
+                "description":"",
+                "query": {
+                    "command": "browse",
+                    "term": "Washington",
+                    "position": "middle"
+                },
+                "response": {
+                    "results": [
+                        {
+                            "name_entry": "Wash, Frank H. (Frank Hord), 1867-",
+                            "name_entry_lower": "wash, frank h. (frank hord), 1867-",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6xh8hz5",
+                            "ic_id": "27734815",
+                            "degree": "0",
+                            "resources": "3",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-14 16:04:00.34925"
+                        },
+                        {
+                            "name_entry": "Wash. Gallery of Mod. Art",
+                            "name_entry_lower": "wash. gallery of mod. art",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6fk5r89",
+                            "ic_id": "57074890",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "corporateBody",
+                            "timestamp": "2017-04-14 22:37:24.150557"
+                        },
+                        {
+                            "name_entry": "Washiashi, Fumio",
+                            "name_entry_lower": "washiashi, fumio",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6946grx",
+                            "ic_id": "39098837",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-14 18:30:16.606595"
+                        },
+                        {
+                            "name_entry": "Washida, Kyo.",
+                            "name_entry_lower": "washida, kyo.",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w64n0f57",
+                            "ic_id": "39156515",
+                            "degree": "0",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-14 18:30:55.68445"
+                        },
+                        {
+                            "name_entry": "W. A. Shields",
+                            "name_entry_lower": "w. a. shields",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6kj60fq",
+                            "ic_id": "27654177",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-14 16:03:04.819829"
+                        },
+                        {
+                            "name_entry": "Washinawatok, Gwendolyn Dodge.",
+                            "name_entry_lower": "washinawatok, gwendolyn dodge.",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6qr6f0k",
+                            "ic_id": "75832012",
+                            "degree": "0",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-15 03:10:03.948293"
+                        },
+                        {
+                            "name_entry": "Washines, Lorena.",
+                            "name_entry_lower": "washines, lorena.",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6vq3w4h",
+                            "ic_id": "6563783",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-14 11:55:33.983345"
+                        },
+                        {
+                            "name_entry": "Washines, Lorena Neaman, 1949-",
+                            "name_entry_lower": "washines, lorena neaman, 1949-",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6rr43x3",
+                            "ic_id": "727678",
+                            "degree": "2",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-14 10:51:38.349649"
+                        },
+                        {
+                            "name_entry": "Washinggon, G.",
+                            "name_entry_lower": "washinggon, g.",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w63d067h",
+                            "ic_id": "73588329",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-15 02:36:18.961325"
+                        },
+                        {
+                            "name_entry": "Washingon Public Power Supply System Organization",
+                            "name_entry_lower": "washingon public power supply system organization",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6mf4fhh",
+                            "ic_id": "32287913",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "corporateBody",
+                            "timestamp": "2017-04-14 17:02:08.145018"
+                        },
+                        {
+                            "name_entry": "Washington",
+                            "name_entry_lower": "washington",
+                            "ark": "http:\/\/snaccooperative.org\/ark:\/99999\/Z3Fcdj2v",
+                            "ic_id": "76806647",
+                            "degree": "6",
+                            "resources": "16",
+                            "entity_type": "person",
+                            "timestamp": "2017-05-16 10:21:36.134303"
+                        },
+                        {
+                            "name_entry": "Washington",
+                            "name_entry_lower": "washington",
+                            "ark": "http:\/\/snaccooperative.org\/ark:\/99999\/ZSpIRzTp",
+                            "ic_id": "76806699",
+                            "degree": "6",
+                            "resources": "16",
+                            "entity_type": "person",
+                            "timestamp": "2017-05-16 10:22:13.54157"
+                        },
+                        {
+                            "name_entry": "Washington ",
+                            "name_entry_lower": "washington ",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6w52tbs",
+                            "ic_id": "22801605",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "family",
+                            "timestamp": "2017-04-14 15:01:53.291301"
+                        },
+                        {
+                            "name_entry": "Washington, 1777",
+                            "name_entry_lower": "washington, 1777",
+                            "ark": "http:\/\/snaccooperative.org\/ark:\/99999\/ZCngp9Os",
+                            "ic_id": "76806751",
+                            "degree": "2",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-05-16 10:23:14.746397"
+                        },
+                        {
+                            "name_entry": "Washington, Aaron",
+                            "name_entry_lower": "washington, aaron",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6hr6r64",
+                            "ic_id": "9579544",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-14 12:29:17.04413"
+                        },
+                        {
+                            "name_entry": "Washington Abstinance Society.",
+                            "name_entry_lower": "washington abstinance society.",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6rz7btv",
+                            "ic_id": "16198707",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "corporateBody",
+                            "timestamp": "2017-04-14 13:43:39.761765"
+                        },
+                        {
+                            "name_entry": "Washington Academy.",
+                            "name_entry_lower": "washington academy.",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6b61j8k",
+                            "ic_id": "20509409",
+                            "degree": "0",
+                            "resources": "1",
+                            "entity_type": "corporateBody",
+                            "timestamp": "2017-04-14 14:34:04.568368"
+                        },
+                        {
+                            "name_entry": "Washington Academy.",
+                            "name_entry_lower": "washington academy.",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w60c969j",
+                            "ic_id": "35410477",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "corporateBody",
+                            "timestamp": "2017-04-14 17:40:40.749371"
+                        },
+                        {
+                            "name_entry": "Washington Academy (Lexington, Va.)",
+                            "name_entry_lower": "washington academy (lexington, va.)",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6713673",
+                            "ic_id": "53257876",
+                            "degree": "5",
+                            "resources": "7",
+                            "entity_type": "corporateBody",
+                            "timestamp": "2017-04-14 21:42:27.886325"
+                        },
+                        {
+                            "name_entry": "Washington Academy of Sciences",
+                            "name_entry_lower": "washington academy of sciences",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w64w024n",
+                            "ic_id": "16299930",
+                            "degree": "1",
+                            "resources": "1",
+                            "entity_type": "person",
+                            "timestamp": "2017-04-14 13:44:45.632322"
+                        }
+                    ],
+                    "result": "success",
+                    "timing": 440.19
+                }
+            }
         ]
     },
     "insert_resource" : {
@@ -1838,39 +2401,575 @@
         ],
         "title" : "Insert Resource",
         "description" : "Given a Resource, inserts it into SNAC's resource cache.",
-        "parameters" : [
-        ],
-        "returns" : [
-        ]
-    },
-    "update_resource" : {
-        "category": "resource",
-        "permissions" : [
-            "Edit"
-        ],
-        "title" : "Update Resource",
-        "description" : "Given a Resource, update the resource cache in SNAC by overwriting it with the given one.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "resource": {
+                "type": "Object",
+                "description": "Resource object to write to SNAC, with \"operation\" set to \"insert\"."
+            },
+            "user" : {
+                "type": "Object", 
+                "description" : "Acting user object"
+            }
+        },
+        "returns" : {
+            "resource": {
+                "type": "Object",
+                "description": "Full resource object as written to SNAC"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title":"",
+                "description":"",
+                "query":{
+                    "command": "insert_resource",
+                    "resource": {
+                        "dataType": "Resource",
+                        "title": "My Title",
+                        "link": "http://mylink.com",
+                        "abstract": "This is a full abstract",
+                        "source": "My full citation",
+                        "documentType": {
+                            "id": "696",
+                            "term": "ArchivalResource",
+                            "type": "document_type"
+                        },
+                        "extent": "20 pages",
+                        "repository": {
+                            "ark": "http://n2t.net/ark:/99166/w6kq8qkp",
+                            "dataType": "Constellation",
+                            "id": 76763300
+                        },
+                        "operation": "insert"
+                    },
+                    "user": {"...":"..."}
+                },
+                "response":{
+                    "resource": {
+                        "dataType": "Resource",
+                        "documentType": {
+                            "id": "696",
+                            "term": "ArchivalResource",
+                            "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
+                            "type": "document_type"
+                        },
+                        "link": "http:\/\/mylink.com",
+                        "source": "My full citation",
+                        "title": "My Title",
+                        "abstract": "This is a full abstract",
+                        "extent": "20 pages",
+                        "repository": {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6kq8qkp",
+                            "entityType": {
+                                "id": "698",
+                                "term": "corporateBody",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
+                                "type": "entity_type"
+                            },
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "Campbell University, Wiggins Memorial Library",
+                                    "preferenceScore": "99",
+                                    "id": "76763301",
+                                    "version": "11225237"
+                                }
+                            ],
+                            "places": [
+                                {
+                                    "dataType": "Place",
+                                    "original": "Campbell University, Wiggins Memorial Library",
+                                    "type": {
+                                        "id": "400242",
+                                        "term": "Address",
+                                        "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Address",
+                                        "type": "place_type"
+                                    },
+                                    "address": [
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "Wiggins Memorial Library",
+                                            "order": "0",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76763306",
+                                            "version": "11225237"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "P.O. Box 98 or 113 Main Street",
+                                            "order": "1",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76763307",
+                                            "version": "11225237"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "Buies Creek",
+                                            "order": "2",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76763308",
+                                            "version": "11225237"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "US-NC",
+                                            "order": "3",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76763309",
+                                            "version": "11225237"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "27506",
+                                            "order": "4",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76763310",
+                                            "version": "11225237"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "US",
+                                            "order": "5",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76763311",
+                                            "version": "11225237"
+                                        }
+                                    ],
+                                    "geoplace": {
+                                        "id": "16695",
+                                        "name": "Campbell University, Wiggins Memorial Library",
+                                        "latitude": "35.4070892",
+                                        "longitude": "-78.7394028"
+                                    },
+                                    "confirmed": true,
+                                    "id": "76763305",
+                                    "version": "11225237"
+                                }
+                            ],
+                            "id": "76763300",
+                            "version": "11225240"
+                        },
+                        "id": "11612307",
+                        "version": "8359251"
+                    },
+                    "result": "success",
+                    "timing": 706.34
+                }
+            }
         ]
     },
     "read_resource" : {
         "category": "resource",
         "title" : "Read Resource",
         "description" : "Read the entire Resource from SNAC's resource cache.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "resourceid": {
+                "type": "Integer",
+                "description": "The resource ID from SNAC to read"
+            }
+        },
+        "returns" : {
+            "resource": {
+                "type": "Object",
+                "description": "Full resource object from SNAC"
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title":"",
+                "description":"",
+                "query": {
+                    "command": "read_resource",
+                    "resourceid" : 7149468
+                },
+                "response": {
+                    "resource": {
+                        "dataType": "Resource",
+                        "documentType": {
+                            "id": "696",
+                            "term": "ArchivalResource",
+                            "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
+                            "type": "document_type"
+                        },
+                        "link": "http:\/\/www.worldcat.org\/oclc\/25756829",
+                        "source": "...",
+                        "title": "Papers, 1881-1958.",
+                        "abstract": "This collection contains business papers, political papers, and family papers. ",
+                        "extent": "4 boxes (2 cu.ft.)",
+                        "originationNames": [
+                            {
+                                "dataType": "OriginationName",
+                                "name": "Avary, Robert Lee.",
+                                "id": "9120396",
+                                "version": "7149468"
+                            }
+                        ],
+                        "repository": {
+                            "dataType": "Constellation",
+                            "ark": "http:\/\/n2t.net\/ark:\/99166\/w6nq2ssj",
+                            "entityType": {
+                                "id": "698",
+                                "term": "corporateBody",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
+                                "type": "entity_type"
+                            },
+                            "nameEntries": [
+                                {
+                                    "dataType": "NameEntry",
+                                    "original": "Atlanta History Center, Kenan Research Center \/ Cherokee Garden Library",
+                                    "preferenceScore": "99",
+                                    "id": "76760880",
+                                    "version": "11224337"
+                                }
+                            ],
+                            "places": [
+                                {
+                                    "dataType": "Place",
+                                    "original": "Atlanta History Center, Kenan Research Center \/ Cherokee Garden Library",
+                                    "type": {
+                                        "id": "400242",
+                                        "term": "Address",
+                                        "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Address",
+                                        "type": "place_type"
+                                    },
+                                    "address": [
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "130 W. Paces Ferry Rd. NW",
+                                            "order": "0",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76760885",
+                                            "version": "11224337"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "Atlanta",
+                                            "order": "1",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76760886",
+                                            "version": "11224337"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "US-GA",
+                                            "order": "2",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76760887",
+                                            "version": "11224337"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "30305-1366",
+                                            "order": "3",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76760888",
+                                            "version": "11224337"
+                                        },
+                                        {
+                                            "dataType": "AddressLine",
+                                            "text": "US",
+                                            "order": "4",
+                                            "type": {
+                                                "id": "400243",
+                                                "term": "Unspecified",
+                                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                "type": "address_part"
+                                            },
+                                            "id": "76760889",
+                                            "version": "11224337"
+                                        }
+                                    ],
+                                    "geoplace": {
+                                        "id": "16354",
+                                        "name": "Atlanta History Center, Kenan Research Center \/ Cherokee Garden Library",
+                                        "latitude": "33.8411636",
+                                        "longitude": "-84.3860474"
+                                    },
+                                    "confirmed": true,
+                                    "id": "76760884",
+                                    "version": "11224337"
+                                }
+                            ],
+                            "id": "76760879",
+                            "version": "11224340"
+                        },
+                        "id": "7149468",
+                        "version": "7149468"
+                    },
+                    "timing": 18.4
+                }
+            }
         ]
     },
     "resource_search" : {
         "category": "resource",
         "title" : "Search Resources",
         "description" : "Searches the resource cache in SNAC.  Returns the top matches.",
-        "parameters" : [
-        ],
-        "returns" : [
+        "parameters" : {
+            "term" : {
+                "type" : "String",
+                "description": "Search term to query against the SNAC resource cache." 
+            }
+        },
+        "returns" : {
+            "results" : {
+                "type" : "Array of Objects",
+                "description": "List of matching Resource objects from SNAC"
+            },
+            "total" : {
+                "type" : "Integer",
+                "description": "Number of total search results" 
+            },
+            "page" : {
+                "type" : "Integer",
+                "description": "Page number of results based on total and count" 
+            },
+            "pagination" : {
+                "type" : "Integer",
+                "description": "Number of total pages of results based on total and count" 
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "",
+                "description": "",
+                "query": {
+                    "command": "resource_search",
+                    "term": "Papers"
+                },
+                "response": {
+                    "total": 308000,
+                    "results": [
+                        {
+                            "dataType": "Resource",
+                            "documentType": {
+                                "id": "696",
+                                "term": "ArchivalResource",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
+                                "type": "document_type"
+                            },
+                            "link": "http:\/\/www.worldcat.org\/oclc\/25756829",
+                            "source": "...",
+                            "title": "Papers, 1881-1958.",
+                            "abstract": "This collection contains business papers, political papers, and family papers. ",
+                            "extent": "4 boxes (2 cu.ft.)",
+                            "originationNames": [
+                                {
+                                    "dataType": "OriginationName",
+                                    "name": "Avary, Robert Lee.",
+                                    "id": "9120396",
+                                    "version": "7149468"
+                                }
+                            ],
+                            "repository": {
+                                "dataType": "Constellation",
+                                "ark": "http:\/\/n2t.net\/ark:\/99166\/w6nq2ssj",
+                                "entityType": {
+                                    "id": "698",
+                                    "term": "corporateBody",
+                                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
+                                    "type": "entity_type"
+                                },
+                                "nameEntries": [
+                                    {
+                                        "dataType": "NameEntry",
+                                        "original": "Atlanta History Center, Kenan Research Center \/ Cherokee Garden Library",
+                                        "preferenceScore": "99",
+                                        "id": "76760880",
+                                        "version": "11224337"
+                                    }
+                                ],
+                                "places": [
+                                    {
+                                        "dataType": "Place",
+                                        "original": "Atlanta History Center, Kenan Research Center \/ Cherokee Garden Library",
+                                        "type": {
+                                            "id": "400242",
+                                            "term": "Address",
+                                            "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Address",
+                                            "type": "place_type"
+                                        },
+                                        "address": [
+                                            {
+                                                "dataType": "AddressLine",
+                                                "text": "130 W. Paces Ferry Rd. NW",
+                                                "order": "0",
+                                                "type": {
+                                                    "id": "400243",
+                                                    "term": "Unspecified",
+                                                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                    "type": "address_part"
+                                                },
+                                                "id": "76760885",
+                                                "version": "11224337"
+                                            },
+                                            {
+                                                "dataType": "AddressLine",
+                                                "text": "Atlanta",
+                                                "order": "1",
+                                                "type": {
+                                                    "id": "400243",
+                                                    "term": "Unspecified",
+                                                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                    "type": "address_part"
+                                                },
+                                                "id": "76760886",
+                                                "version": "11224337"
+                                            },
+                                            {
+                                                "dataType": "AddressLine",
+                                                "text": "US-GA",
+                                                "order": "2",
+                                                "type": {
+                                                    "id": "400243",
+                                                    "term": "Unspecified",
+                                                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                    "type": "address_part"
+                                                },
+                                                "id": "76760887",
+                                                "version": "11224337"
+                                            },
+                                            {
+                                                "dataType": "AddressLine",
+                                                "text": "30305-1366",
+                                                "order": "3",
+                                                "type": {
+                                                    "id": "400243",
+                                                    "term": "Unspecified",
+                                                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                    "type": "address_part"
+                                                },
+                                                "id": "76760888",
+                                                "version": "11224337"
+                                            },
+                                            {
+                                                "dataType": "AddressLine",
+                                                "text": "US",
+                                                "order": "4",
+                                                "type": {
+                                                    "id": "400243",
+                                                    "term": "Unspecified",
+                                                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Unspecified",
+                                                    "type": "address_part"
+                                                },
+                                                "id": "76760889",
+                                                "version": "11224337"
+                                            }
+                                        ],
+                                        "geoplace": {
+                                            "id": "16354",
+                                            "name": "Atlanta History Center, Kenan Research Center \/ Cherokee Garden Library",
+                                            "latitude": "33.8411636",
+                                            "longitude": "-84.3860474"
+                                        },
+                                        "confirmed": true,
+                                        "id": "76760884",
+                                        "version": "11224337"
+                                    }
+                                ],
+                                "id": "76760879",
+                                "version": "11224340"
+                            },
+                            "id": "7149468",
+                            "version": "7149468"
+                        },
+                        {
+                            "dataType": "Resource",
+                            "documentType": {
+                                "id": "697",
+                                "term": "BibliographicResource",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#BibliographicResource",
+                                "type": "document_type"
+                            },
+                            "title": "Johnston family papers, 1824-1922",
+                            "id": "2522525",
+                            "version": "2522525"
+                        },
+                        {
+                            "dataType": "Resource",
+                            "documentType": {
+                                "id": "697",
+                                "term": "BibliographicResource",
+                                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#BibliographicResource",
+                                "type": "document_type"
+                            },
+                            "title": "Mathematical papers : selected papers",
+                            "id": "3267730",
+                            "version": "3267730"
+                        }
+                    ],
+                    "pagination": 30800,
+                    "page": 0,
+                    "timing": 5846.73
+                }
+            }
         ]
     }
 }

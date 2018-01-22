@@ -77,7 +77,6 @@ h2 {
     <div class="row">
         <div class="col-md-12">
             <h3 id="toc">Table of Contents</h3>
-                {% set numdone = 0 %}
             <div class="row">
                 <div class="col-md-4">
                     <ul>
@@ -85,10 +84,7 @@ h2 {
                             <ul>
                             {% for command,info in data.commands %}
                                 {% if info.category == 'discover' %}
-                                {% if info.examples %}
-                                   {% set numdone = numdone + 1 %}
-                                {% endif %}
-                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                <li><a href="#{{command}}">{{info.title}}</a></li>
                                 {% endif %}
                             {% endfor %}
                             </ul>
@@ -97,10 +93,7 @@ h2 {
                             <ul>
                             {% for command,info in data.commands %}
                                 {% if info.category == 'reconciliation' %}
-                                {% if info.examples %}
-                                   {% set numdone = numdone + 1 %}
-                                {% endif %}
-                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                <li><a href="#{{command}}">{{info.title}}</a></li>
                                 {% endif %}
                             {% endfor %}
                             </ul>
@@ -109,10 +102,7 @@ h2 {
                             <ul>
                             {% for command,info in data.commands %}
                                 {% if info.category == 'constellation' %}
-                                {% if info.examples %}
-                                   {% set numdone = numdone + 1 %}
-                                {% endif %}
-                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                <li><a href="#{{command}}">{{info.title}}</a></li>
                                 {% endif %}
                             {% endfor %}
                             </ul>
@@ -125,10 +115,7 @@ h2 {
                             <ul>
                             {% for command,info in data.commands %}
                                 {% if info.category == 'modification' %}
-                                {% if info.examples %}
-                                   {% set numdone = numdone + 1 %}
-                                {% endif %}
-                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                <li><a href="#{{command}}">{{info.title}}</a></li>
                                 {% endif %}
                             {% endfor %}
                             </ul>
@@ -141,10 +128,7 @@ h2 {
                             <ul>
                             {% for command,info in data.commands %}
                                 {% if info.category == 'vocabulary' %}
-                                {% if info.examples %}
-                                   {% set numdone = numdone + 1 %}
-                                {% endif %}
-                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                <li><a href="#{{command}}">{{info.title}}</a></li>
                                 {% endif %}
                             {% endfor %}
                             </ul>
@@ -153,10 +137,7 @@ h2 {
                             <ul>
                             {% for command,info in data.commands %}
                                 {% if info.category == 'resource' %}
-                                {% if info.examples %}
-                                   {% set numdone = numdone + 1 %}
-                                {% endif %}
-                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                <li><a href="#{{command}}">{{info.title}}</a></li>
                                 {% endif %}
                             {% endfor %}
                             </ul>
@@ -165,10 +146,7 @@ h2 {
                             <ul>
                             {% for command,info in data.commands %}
                                 {% if info.category == 'user' %}
-                                {% if info.examples %}
-                                   {% set numdone = numdone + 1 %}
-                                {% endif %}
-                                <li><span class="fa fa-fw {{ info.examples ? 'fa-check-square-o' : 'fa-square-o'}}"></span> <a href="#{{command}}">{{info.title}}</a></li>
+                                <li><a href="#{{command}}">{{info.title}}</a></li>
                                 {% endif %}
                             {% endfor %}
                             </ul>
@@ -176,7 +154,6 @@ h2 {
                     </ul>
                 </div>
             </div>
-            Percent Done: {{ numdone / data.commands|length * 100 }}
         </div>
     </div>
 
