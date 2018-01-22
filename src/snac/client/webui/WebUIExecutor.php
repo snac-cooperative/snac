@@ -1395,6 +1395,7 @@ class WebUIExecutor {
      * Asks the server for user's sent messages, then loads the display with the message
      * center (message list) template and sets the message center viewSetting
      *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displaySentMessages(&$display) { 
         $ask = array("command" => "sent_messages");
