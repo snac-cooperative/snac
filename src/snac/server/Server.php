@@ -176,8 +176,16 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->sendMessage($this->input);
                 break;
             
-            case "delete_message":
-                $this->response = $executor->deleteMessage($this->input);
+            case "archive_message":
+                $this->response = $executor->archiveMessage($this->input);
+                break;
+
+            case "archived_messages":
+                $this->response = $executor->listUserArchivedMessages();
+                break;
+
+            case "sent_messages":
+                $this->response = $executor->listUserSentMessages();
                 break;
 
             case "send_feedback":
