@@ -33,6 +33,11 @@ class ServerConnect {
     private $user = null;
 
     /**
+     * @var int HTTP Response code
+     */
+    private $code = null;
+
+    /**
      * @var \Monolog\Logger $logger Logger for this server connection
      */
     private $logger = null;
@@ -103,6 +108,7 @@ class ServerConnect {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
+        $this->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
 
@@ -117,6 +123,16 @@ class ServerConnect {
         return $return;
     }
 
+    /**
+     * Get response code
+     *
+     * Returns the most recent query's response code
+     *
+     * @return int HTTP Response code
+     */
+    public function getResponseCode() {
+        return $this->code;
+    }
 
 
     /**

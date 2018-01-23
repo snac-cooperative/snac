@@ -100,7 +100,7 @@ class ServerExecutor {
             $userObj = new \snac\data\User($user);
             // authenticateUser sets $this->user
             if (!$this->authenticateUser($userObj)) {
-                throw new \snac\exceptions\SNACUserException("User is not authorized");
+                throw new \snac\exceptions\SNACUserException("User is not authorized", 403);
             }
             $this->logger->addDebug("User authenticated successfully");
 
@@ -219,10 +219,10 @@ class ServerExecutor {
 
                 if ($this->user === false) {
                     // The user wasn't found in the database
-                    throw new \snac\exceptions\SNACUserException("Invalid OAuth user");
+                    throw new \snac\exceptions\SNACUserException("Invalid OAuth user", 403);
                 }
             } else {
-                throw new \snac\exceptions\SNACUserException("Username required for login");
+                throw new \snac\exceptions\SNACUserException("Username required for login", 400);
             }
 
             $this->logger->addDebug("The user was found in the database", $this->user->toArray());
@@ -269,10 +269,10 @@ class ServerExecutor {
                     // Google approved the session and we successfully added it
                     return true;
                 } else {
-                    throw new \snac\exceptions\SNACUserException("User did not have a valid session to capture");
+                    throw new \snac\exceptions\SNACUserException("User did not have a valid session to capture", 400);
                 }
             } else {
-                throw new \snac\exceptions\SNACUserException("User did not have session");
+                throw new \snac\exceptions\SNACUserException("User did not have session", 400);
             }
 
             $this->logger->addDebug("Something went wrong checking user in SNAC");
@@ -390,7 +390,7 @@ class ServerExecutor {
      */
     public function searchUsers(&$input) {
         if (!isset($input["query_string"]))
-            throw new \snac\exceptions\SNACInputException("Query string required to search");
+            throw new \snac\exceptions\SNACInputException("Query string required to search", 400);
 
         $getAll = true;
         if (isset($input["filter"])) {
@@ -621,7 +621,7 @@ class ServerExecutor {
 
             if ($current->getType() == $term->getType() && $term->getTerm() != null && $term->getTerm() != "") {
                 // The term didn't change type and does not have an empty term field, so update
-                throw new \snac\exceptions\SNACPermissionException("Currently the system is not allowing updating terms.");
+                throw new \snac\exceptions\SNACPermissionException("Currently the system is not allowing updating terms.", 403);
             }
             $response["error"] = "The term to update was not found in the database.";
         }
@@ -681,7 +681,7 @@ class ServerExecutor {
 
         try {
             if (!isset($input["resourceid"])) {
-                throw new \snac\exceptions\SNACInputException("No resource to read");
+                throw new \snac\exceptions\SNACInputException("No resource to read", 400);
             }
             $id = $input["resourceid"];
             $version = null;
@@ -808,14 +808,14 @@ class ServerExecutor {
      */
     public function archiveMessage(&$input) {
         if (!isset($input["messageid"])) {
-            throw new \snac\exceptions\SNACInputException("No message ID given to archive");
+            throw new \snac\exceptions\SNACInputException("No message ID given to archive", 400);
         }
         $response = array();
 
         $message = $this->uStore->getMessageByID($input["messageid"]);
 
         if ($message === false) {
-            throw new \snac\exceptions\SNACInputException("Message does not exist");
+            throw new \snac\exceptions\SNACInputException("Message does not exist", 404);
         }
         $this->logger->addDebug("Archiving message", $message->toArray());
 
@@ -823,7 +823,7 @@ class ServerExecutor {
             ($message->getFromUser() !== null && $message->getFromUser()->getUserID() === $this->user->getUserID())) {
                 $response["message"] = $message->toArray();
         } else {
-            throw new \snac\exceptions\SNACPermissionException("User does not have permission to archive the message.");
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to archive the message.", 403);
         }
 
         $this->logger->addDebug("Starting to archive");
@@ -852,21 +852,21 @@ class ServerExecutor {
      */
     public function readMessage(&$input) {
         if (!isset($input["messageid"])) {
-            throw new \snac\exceptions\SNACInputException("No message ID given to read");
+            throw new \snac\exceptions\SNACInputException("No message ID given to read", 400);
         }
         $response = array();
 
         $message = $this->uStore->getMessageByID($input["messageid"]);
 
         if ($message === false) {
-            throw new \snac\exceptions\SNACInputException("Message does not exist");
+            throw new \snac\exceptions\SNACInputException("Message does not exist", 404);
         }
 
         if (($message->getToUser() !== null && $message->getToUser()->getUserID() === $this->user->getUserID()) ||
             ($message->getFromUser() !== null && $message->getFromUser()->getUserID() === $this->user->getUserID())) {
                 $response["message"] = $message->toArray();
         } else {
-            throw new \snac\exceptions\SNACPermissionException("User does not have permission to read the message.");
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to read the message.", 403);
         }
 
         $response["result"] = "success";
@@ -886,18 +886,18 @@ class ServerExecutor {
      */
     public function sendMessage(&$input) {
         if (!isset($input["message"])) {
-            throw new \snac\exceptions\SNACInputException("No message given to send");
+            throw new \snac\exceptions\SNACInputException("No message given to send", 400);
         }
         $response = array();
 
         $message = new \snac\data\Message($input["message"]);
 
         if ($message->getFromUser() === null || $message->getFromUser()->getUserID() !== $this->user->getUserID()) {
-            throw new \snac\exceptions\SNACPermissionException("User does not have permission to send messages as another user.");
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to send messages as another user.", 403);
         }
         $toUser = $this->uStore->readUser($message->getToUser());
         if ($toUser === false) {
-            throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
+            throw new \snac\exceptions\SNACUserException("Recipient User does not exist.", 400);
         }
 
         $message->setToUser($toUser);
@@ -925,7 +925,7 @@ class ServerExecutor {
      */
     public function sendFeedback(&$input) {
         if (!isset($input["message"])) {
-            throw new \snac\exceptions\SNACInputException("No feedback message given to send");
+            throw new \snac\exceptions\SNACInputException("No feedback message given to send", 400);
         }
         $response = array("result" => "failure");
 
@@ -933,13 +933,13 @@ class ServerExecutor {
         $this->logger->addDebug("Message received", $message->toArray());
 
         if ($message->getFromUser() === null && $message->getFromString() === null) {
-            throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent completely anonymously.");
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent completely anonymously.", 403);
         } else if ($message->getFromUser() !== null && $this->user !== null && $message->getFromUser()->getUserID() !== $this->user->getUserID()) {
-            throw new \snac\exceptions\SNACPermissionException("User does not have permission to send feedback as another user.");
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to send feedback as another user.", 403);
         } else if ($message->getFromUser() === null && $this->user !== null) {
-            throw new \snac\exceptions\SNACPermissionException("Feedback can't be anonymous if the user is logged in.");
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be anonymous if the user is logged in.", 403);
         } else if ($message->getFromUser() !== null && $this->user === null) {
-            throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent from a user if they are not logged in.");
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent from a user if they are not logged in.", 403);
         }
 
         if (isset(\snac\Config::$FEEDBACK_RECIPIENTS) && is_array(\snac\Config::$FEEDBACK_RECIPIENTS)) {
@@ -951,7 +951,7 @@ class ServerExecutor {
                 if (!\snac\Config::$FEEDBACK_EMAIL_ONLY) {
                     $toUser = $this->uStore->readUser($tmpUser);
                     if ($toUser === false) {
-                        throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
+                        throw new \snac\exceptions\SNACUserException("Recipient User does not exist.", 400);
                     }
                     $message->setToUser($toUser);
                     
@@ -1380,7 +1380,7 @@ class ServerExecutor {
     public function makeAssertion(&$input) {
         $response = array();
         if (!isset($input["assertion"]) || !isset($input["type"])) {
-            throw new \snac\exceptions\SNACInputException("Must specify an assertion to make");
+            throw new \snac\exceptions\SNACInputException("Must specify an assertion to make", 400);
         }
 
         $response["result"] = "failure";
@@ -1557,7 +1557,7 @@ class ServerExecutor {
                 // Get the full User object
                 $toUser = $this->uStore->readUser($toUser);
                 if ($toUser === false) {
-                    throw new \snac\exceptions\SNACInputException("Bad user information given.");
+                    throw new \snac\exceptions\SNACInputException("Bad user information given.", 400);
                 }
 
                 $currentStatus = $this->cStore->readConstellationStatus($constellation->getID());
@@ -1757,10 +1757,10 @@ class ServerExecutor {
 
                         // If the user doesn't exist, then don't allow the review to continue
                         if ($toUser === false) {
-                            throw new \snac\exceptions\SNACInputException("Tried to send constellation for review to unknown user");
+                            throw new \snac\exceptions\SNACInputException("Tried to send constellation for review to unknown user", 400);
                         }
                         if (!$this->uStore->hasPrivilegeByLabel($toUser, "Change Locks")) {
-                            throw new \snac\exceptions\SNACInputException("Tried to send constellation for review to non-reviewer");
+                            throw new \snac\exceptions\SNACInputException("Tried to send constellation for review to non-reviewer", 400);
                         }
                     }
 
@@ -1857,7 +1857,7 @@ class ServerExecutor {
 
                 $info = $this->cStore->readConstellationUserStatus($constellation->getID());
                 if ($info === null) {
-                    throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status");
+                    throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status", 403);
                 }
                 $currentStatus = $info["status"];
                 $currentUserID = $info["userid"];
@@ -2005,7 +2005,7 @@ class ServerExecutor {
 
                 $info = $this->cStore->readConstellationUserStatus($constellation->getID());
                 if ($info === null) {
-                    throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status");
+                    throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status", 403);
                 }
                 $currentStatus = $info["status"];
                 $currentUserID = $info["userid"];
@@ -2093,7 +2093,7 @@ class ServerExecutor {
                 $flags = \snac\server\database\DBUtil::$READ_ALL_BUT_RELATIONS;
             $constellations = $this->readConstellationFromDatabase($input, false, $flags);
             if ($constellations === null) {
-                throw new \snac\exceptions\SNACInputException("Constellation does not exist");
+                throw new \snac\exceptions\SNACInputException("Constellation does not exist", 404);
             } else if (count($constellations) > 1) {
                 // Send back multiple constellations
                 $response["constellation"] = array();
@@ -2181,7 +2181,7 @@ class ServerExecutor {
             // Read the constellation itself
             $constellations = $this->readConstellationFromDatabase($input);
             if ($constellations == null || count($constellations) > 1) {
-                throw new \snac\exceptions\SNACInputException("Constellation does not exist");
+                throw new \snac\exceptions\SNACInputException("Constellation does not exist", 404);
             }
             $constellation = $constellations[0];
             $response["constellation"] = $constellation->toArray();
@@ -2234,7 +2234,7 @@ class ServerExecutor {
             if (empty($icids)) {
                 // This means that the Constellation doesn't have a published version!
                 throw new \snac\exceptions\SNACInputException("Constellation with ark " .
-                        $input["arkid"] . " does not have a published version.");
+                        $input["arkid"] . " does not have a published version.", 404);
             }
 
         } else if (isset($input["constellationid"])) {
@@ -2250,7 +2250,7 @@ class ServerExecutor {
                 if ($constellation === false) {
                     throw new \snac\exceptions\SNACInputException("Constellation with id " .
                             $input["constellationid"] . " does not have version" .
-                            $input["version"] . ".");
+                            $input["version"] . ".", 404);
                 }
                 $this->logger->addDebug("Finished reading constellation from the database");
                 return array($constellation);
@@ -2261,7 +2261,7 @@ class ServerExecutor {
             if (empty($icids)) {
                 // This means that the Constellation doesn't have a published version!
                 throw new \snac\exceptions\SNACInputException("Constellation with id " .
-                        $input["constellationid"] . " does not have a published version.");
+                        $input["constellationid"] . " does not have a published version.", 404);
             }
 
         } else if (isset($input["sameas"])) {
@@ -2270,7 +2270,7 @@ class ServerExecutor {
             if (empty($icids)) {
                 // This means that the Constellation doesn't have a published version!
                 throw new \snac\exceptions\SNACInputException("Constellation with sameas ID " .
-                        $input["sameas"] . " does not have a published version.");
+                        $input["sameas"] . " does not have a published version.", 404);
             }
         }
 
@@ -2288,7 +2288,7 @@ class ServerExecutor {
         }
 
         if (count($constellations) == 0) {
-            throw new \snac\exceptions\SNACInputException("Constellation does not exist.");
+            throw new \snac\exceptions\SNACInputException("Constellation does not exist.", 404);
         }
 
         $this->logger->addDebug("Finished reading constellation from the database");
@@ -2322,13 +2322,13 @@ class ServerExecutor {
                 $cId = $constellation->getID();
                 $info = $this->cStore->readConstellationUserStatus($cId);
                 if (!is_array($info)) {
-                    throw new \snac\exceptions\SNACInputException("Constellation does not have a current version");
+                    throw new \snac\exceptions\SNACInputException("Constellation does not have a current version", 404);
                 }
 
                 $status = $info["status"];
 
                 if ($info["userid"] === $this->user->getUserID() && $status === "currently editing") {
-                    throw new \snac\exceptions\SNACConcurrentEditException("Constellation currently opened in another window");
+                    throw new \snac\exceptions\SNACConcurrentEditException("Constellation currently opened in another window", 403);
                 }
 
                 // If the current status is published
@@ -2345,7 +2345,7 @@ class ServerExecutor {
 
                     $response["result"] = "success";
                 } else {
-                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user.");
+                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user.", 403);
                 }
 
 
@@ -2374,7 +2374,7 @@ class ServerExecutor {
 
         if (isset($input["arkid"])) {
             // Editing the given ark id by reading querying the current HRT
-            throw new \snac\exceptions\SNACInputException("Please provide a Constellation ID for editing.  Arks are not supported.");
+            throw new \snac\exceptions\SNACInputException("Please provide a Constellation ID for editing.  Arks are not supported.", 400);
 
         } else if (isset($input["constellationid"])) {
             // Editing the given constellation id by reading the database
@@ -2386,13 +2386,13 @@ class ServerExecutor {
                 $cId = $input["constellationid"];
                 $info = $this->cStore->readConstellationUserStatus($cId);
                 if (!is_array($info)) {
-                    throw new \snac\exceptions\SNACInputException("Constellation does not have a current version");
+                    throw new \snac\exceptions\SNACInputException("Constellation does not have a current version", 404);
                 }
 
                 $status = $info["status"];
 
                 if ($info["userid"] === $this->user->getUserID() && $status === "currently editing") {
-                    throw new \snac\exceptions\SNACConcurrentEditException("Constellation currently opened in another window");
+                    throw new \snac\exceptions\SNACConcurrentEditException("Constellation currently opened in another window", 403);
                 }
 
                 // Should check the list of constellations for the user and only allow editing a "locked editing" constellation
@@ -2433,7 +2433,7 @@ class ServerExecutor {
                     $response["constellation"] = $constellation->toArray();
                     $this->logger->addDebug("Serialized constellation for output to client");
                 } else {
-                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user.");
+                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user.", 403);
                 }
 
 
@@ -2496,7 +2496,7 @@ class ServerExecutor {
                     $response["result"] = "success";
                     $this->logger->addDebug("Serialized constellation for output to client");
                 } else {
-                    throw new \snac\exceptions\SNACPermissionException("Constellation is not currently being edited, so can not sub-edit.  Must be opened in edit first.");
+                    throw new \snac\exceptions\SNACPermissionException("Constellation is not currently being edited, so can not sub-edit.  Must be opened in edit first.", 403);
                 }
 
 
@@ -2613,7 +2613,7 @@ class ServerExecutor {
                         $success1 = $this->cStore->writeConstellationStatus($this->user, $cId1, "currently editing");
                         if ($success1 === false) {
                             $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId1));
-                            throw new \snac\exceptions\SNACDatabaseException("Could not open the Constellation $cId1 for Editing");
+                            throw new \snac\exceptions\SNACDatabaseException("Could not open the Constellation $cId1 for Editing", 403);
                         }
                         $success2 = $this->cStore->writeConstellationStatus($this->user, $cId2, "currently editing");
                         if ($success2 === false) {
@@ -2627,7 +2627,7 @@ class ServerExecutor {
                                 $this->updateIndexesAfterPublish($cId1);
                             }
 
-                            throw new \snac\exceptions\SNACDatabaseException("Could not open the Constellation $cId2 for Editing");
+                            throw new \snac\exceptions\SNACDatabaseException("Could not open the Constellation $cId2 for Editing", 403);
                         }
                     }
                 } else {
@@ -2668,7 +2668,7 @@ class ServerExecutor {
             }
 
         } else {
-            throw new \snac\exceptions\SNACInputException("Diff requires two constellation IDs");
+            throw new \snac\exceptions\SNACInputException("Diff requires two constellation IDs", 400);
         }
 
         return $response;
@@ -2694,30 +2694,30 @@ class ServerExecutor {
         if (isset($input["constellationids"]) && is_array($input["constellationids"]) && isset($input["constellation"])) {
 
             if (count($input["constellationids"]) < 2) {
-                throw new \snac\exceptions\SNACInputException("Must merge at least 2 Constellations");
+                throw new \snac\exceptions\SNACInputException("Must merge at least 2 Constellations", 400);
             }
 
             $constellation = new \snac\data\Constellation($input["constellation"]);
             if ($constellation->isEmpty()) {
-                throw new \snac\exceptions\SNACInputException("Merged constellation is empty");
+                throw new \snac\exceptions\SNACInputException("Merged constellation is empty", 400);
             }
 
             $info = array();
             foreach ($input["constellationids"] as $cId) {
                 if (!is_numeric($cId)) {
-                    throw new \snac\exceptions\SNACInputException("Constellation ID $cId is not correctly formatted");
+                    throw new \snac\exceptions\SNACInputException("Constellation ID $cId is not correctly formatted", 400);
                 }
 
                 $info[$cId] = $this->cStore->readConstellationUserStatus($cId);
 
                 if (!is_array($info[$cId])) {
-                    throw new \snac\exceptions\SNACInputException("Constellation $cId does not have a current version");
+                    throw new \snac\exceptions\SNACInputException("Constellation $cId does not have a current version", 404);
                 }
 
                 if ($this->user->getUserID() !== $info[$cId]["userid"]) {
                     // This constellation is NOT checked out to this user, and so we cannot allow the merge
                     // to continue
-                    throw new \snac\exceptions\SNACPermissionException("User trying to merge constellations not checked out to them");
+                    throw new \snac\exceptions\SNACPermissionException("User trying to merge constellations not checked out to them", 403);
                 }
             }
 
@@ -2734,7 +2734,7 @@ class ServerExecutor {
 
             return $this->coreMerge($constellation, $originals);
         } else {
-            throw new \snac\exceptions\SNACInputException("Merge requires two constellation IDs and a merged constellation");
+            throw new \snac\exceptions\SNACInputException("Merge requires two constellation IDs and a merged constellation", 400);
         }
     }
 
@@ -2777,7 +2777,7 @@ class ServerExecutor {
         // Write the copy of the constellation with only Source objects
         $sourceConstellation = $this->cStore->writeConstellation($this->user, $sourceConstellation, "Loading Source objects", 'initialize');
         if ($sourceConstellation === false) {
-            throw new \snac\exceptions\SNACDatabaseException("Could not write the merged constellation");
+            throw new \snac\exceptions\SNACDatabaseException("Could not write the merged constellation", 500);
         }
 
         // Update the constellation with the new sources, keeping a mapping to the old sources
@@ -2843,14 +2843,14 @@ class ServerExecutor {
         $written = $this->cStore->writeConstellation($this->user, $constellation, $mergeNote, 'merge split');
         $this->logger->addDebug("Wrote the merged constellation", $constellation->toArray());
         if ($written === false) {
-            throw new \snac\exceptions\SNACDatabaseException("Could not write the merged constellation in full");
+            throw new \snac\exceptions\SNACDatabaseException("Could not write the merged constellation in full", 500);
         }
 
         // Publish the merged constellation and update the indexes
         $result = $this->corePublish($written);
         if (!isset($result) || $result === false) {
             $this->logger->addDebug("could not publish the constellation");
-            throw new \snac\exceptions\SNACDatabaseException("Could not publish the merged constellation");
+            throw new \snac\exceptions\SNACDatabaseException("Could not publish the merged constellation", 500);
         }
         $this->logger->addDebug("successfully published constellation");
         $this->updateIndexesAfterPublish($written->getID());
@@ -2874,7 +2874,7 @@ class ServerExecutor {
                 $this->logger->addError("Writing Constellation Status failed",
                     array("user"=>$this->user, "id"=>$c->getID()));
                 throw new \snac\exceptions\SNACDatabaseException("Could not tombstone Constellation " .
-                    $c->getID());
+                    $c->getID(), 500);
             }
             $this->elasticSearch->deleteFromNameIndices($c);
             $this->cStore->deleteFromNameIndex($c);
@@ -2936,19 +2936,19 @@ class ServerExecutor {
         if (isset($input["constellationids"]) && is_array($input["constellationids"])) {
 
             if (count($input["constellationids"]) < 2) {
-                throw new \snac\exceptions\SNACInputException("Must merge at least 2 Constellations");
+                throw new \snac\exceptions\SNACInputException("Must merge at least 2 Constellations", 400);
             }
 
             $info = array();
             foreach ($input["constellationids"] as $cId) {
                 if (!is_numeric($cId)) {
-                    throw new \snac\exceptions\SNACInputException("Constellation ID $cId is not correctly formatted");
+                    throw new \snac\exceptions\SNACInputException("Constellation ID $cId is not correctly formatted", 400);
                 }
 
                 $info[$cId] = $this->cStore->readConstellationUserStatus($cId);
 
                 if (!is_array($info[$cId])) {
-                    throw new \snac\exceptions\SNACInputException("Constellation $cId does not have a current version");
+                    throw new \snac\exceptions\SNACInputException("Constellation $cId does not have a current version", 404);
                 }
 
                 // Only able to merge if the status is published OR locked editing to this user
@@ -2963,7 +2963,7 @@ class ServerExecutor {
                 if ($info[$cId]["status"] != "currently editing" || $this->user->getUserID() !== $info[$cId]["userid"]) {
                     // Try to check out the constellation.  If it doesn't work, then we will cancel it
                     // TODOX
-                    throw new \snac\exceptions\SNACPermissionException("User trying to merge constellations not checked out to them");
+                    throw new \snac\exceptions\SNACPermissionException("User trying to merge constellations not checked out to them", 400);
                 }
             }
 
@@ -2989,7 +2989,7 @@ class ServerExecutor {
             return $this->coreMerge($constellation, $originals);
 
         } else {
-            throw new \snac\exceptions\SNACInputException("Auto merge requires at least two constellation IDs");
+            throw new \snac\exceptions\SNACInputException("Auto merge requires at least two constellation IDs", 400);
         }
     }
 
@@ -3058,13 +3058,13 @@ class ServerExecutor {
      */
     public function downloadConstellation($input) {
         if (!isset($input["type"])) {
-            throw new \snac\exceptions\SNACInputException("No download type specified");
+            throw new \snac\exceptions\SNACInputException("No download type specified", 400);
         }
 
 
         $constellations = $this->readConstellationFromDatabase($input, true);
         if ($constellations == null || count($constellations) > 1) {
-            throw new \snac\exceptions\SNACInputException("Constellation does not exist");
+            throw new \snac\exceptions\SNACInputException("Constellation does not exist", 404);
         }
         $constellation = $constellations[0];
 
@@ -3111,7 +3111,7 @@ class ServerExecutor {
                 $response["file"]["content"] = base64_encode($serializer->serialize($constellation));
                 break;
             default:
-                throw new \snac\exceptions\SNACInputException("Unknown download file type: " . $input["type"]);
+                throw new \snac\exceptions\SNACInputException("Unknown download file type: " . $input["type"], 400);
         }
 
         return $response;
@@ -3176,7 +3176,7 @@ class ServerExecutor {
 
         if (!$hasPermission) {
             //throw permission denied
-            throw new \snac\exceptions\SNACPermissionException("User does not have permission to list constellations with this status");
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to list constellations with this status", 403);
         }
 
         $list = $this->cStore->listConstellationsWithStatusForAny($status);
@@ -3220,7 +3220,7 @@ class ServerExecutor {
         $constellations = $this->readConstellationFromDatabase($input, false, \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
 
         if ($constellations === null || count($constellations) > 1) {
-            throw new \snac\exceptions\SNACInputException("Constellation not found");
+            throw new \snac\exceptions\SNACInputException("Constellation not found", 404);
         }
 
         // Use the first entry in the list
