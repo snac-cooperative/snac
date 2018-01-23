@@ -55,3 +55,16 @@ deployment:
   only:
     - master
 
+dev_deployment:
+  script:
+    - ssh snac-dev "cd /lv2/snac && composer update && git fetch origin && git merge"
+  stage: deploy
+  only:
+    - development
+
+alpha_deployment:
+  script:
+    - ssh snac-dev "cd /lv2/snac_alpha && composer update && git fetch origin && git merge"
+  stage: deploy
+  only:
+    - alpha

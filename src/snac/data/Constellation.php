@@ -539,7 +539,7 @@ class Constellation extends AbstractData {
                 $id = $i;
             }
         }
-        
+
         return $this->nameEntries[$id];
     }
 
@@ -1494,16 +1494,17 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Constellation $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true on equality, false otherwise
      *
      * @see \snac\data\AbstractData::equals()
      */
-    public function equals($other, $strict = true) {
+    public function equals($other, $strict = true, $checkSubcomponents = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\Constellation))
             return false;
 
-        if (! parent::equals($other, $strict))
+        if (! parent::equals($other, $strict, $checkSubcomponents))
             return false;
 
         if ($this->getArk() != $other->getArk())
@@ -1517,52 +1518,52 @@ class Constellation extends AbstractData {
          * Currently, we are not checking the maintenance events or images for equality
         *    if ($this->getMaintenanceAgency() != $other->getMaintenanceAgency())
         *        return false;
-        *    if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict)) ||
+        *    if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict, $checkSubcomponents)) ||
         *         ($this->getMaintenanceStatus() == null && $other->getMaintenanceStatus() != null))
         *        return false;
-        *    if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict))
+        *    if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict, $checkSubcomponents))
         *        return false;
-        *    if (!$this->checkArrayEqual($this->getImages(), $other->getImages(), $strict))
+        *    if (!$this->checkArrayEqual($this->getImages(), $other->getImages(), $strict, $checkSubcomponents))
         *        return false;
         **/
 
-        if (!$this->checkArrayEqual($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict))
+        if (!$this->checkArrayEqual($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getEntityIDs(), $other->getEntityIDs(), $strict))
+        if (!$this->checkArrayEqual($this->getEntityIDs(), $other->getEntityIDs(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getSources(), $other->getSources(), $strict))
+        if (!$this->checkArrayEqual($this->getSources(), $other->getSources(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getLegalStatuses(), $other->getLegalStatuses(), $strict))
+        if (!$this->checkArrayEqual($this->getLegalStatuses(), $other->getLegalStatuses(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getConventionDeclarations(), $other->getConventionDeclarations(), $strict))
+        if (!$this->checkArrayEqual($this->getConventionDeclarations(), $other->getConventionDeclarations(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getLanguagesUsed(), $other->getLanguagesUsed(), $strict))
+        if (!$this->checkArrayEqual($this->getLanguagesUsed(), $other->getLanguagesUsed(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getNameEntries(), $other->getNameEntries(), $strict))
+        if (!$this->checkArrayEqual($this->getNameEntries(), $other->getNameEntries(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getOccupations(), $other->getOccupations(), $strict))
+        if (!$this->checkArrayEqual($this->getOccupations(), $other->getOccupations(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getBiogHistList(), $other->getBiogHistList(), $strict))
+        if (!$this->checkArrayEqual($this->getBiogHistList(), $other->getBiogHistList(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getRelations(), $other->getRelations(), $strict))
+        if (!$this->checkArrayEqual($this->getRelations(), $other->getRelations(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getResourceRelations(), $other->getResourceRelations(), $strict))
+        if (!$this->checkArrayEqual($this->getResourceRelations(), $other->getResourceRelations(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getFunctions(), $other->getFunctions(), $strict))
+        if (!$this->checkArrayEqual($this->getFunctions(), $other->getFunctions(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getPlaces(), $other->getPlaces(), $strict))
+        if (!$this->checkArrayEqual($this->getPlaces(), $other->getPlaces(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getSubjects(), $other->getSubjects(), $strict))
+        if (!$this->checkArrayEqual($this->getSubjects(), $other->getSubjects(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getNationalities(), $other->getNationalities(), $strict))
+        if (!$this->checkArrayEqual($this->getNationalities(), $other->getNationalities(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getGenders(), $other->getGenders(), $strict))
+        if (!$this->checkArrayEqual($this->getGenders(), $other->getGenders(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getGeneralContexts(), $other->getGeneralContexts(), $strict))
+        if (!$this->checkArrayEqual($this->getGeneralContexts(), $other->getGeneralContexts(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getStructureOrGenealogies(), $other->getStructureOrGenealogies(), $strict))
+        if (!$this->checkArrayEqual($this->getStructureOrGenealogies(), $other->getStructureOrGenealogies(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getMandates(), $other->getMandates(), $strict))
+        if (!$this->checkArrayEqual($this->getMandates(), $other->getMandates(), $strict, $checkSubcomponents))
             return false;
 
         return true;
@@ -1659,7 +1660,7 @@ class Constellation extends AbstractData {
             $element->collateSCMCitationsBySource($sources);
 
 
-        return $sources; 
+        return $sources;
     }
 
     /**
@@ -1748,9 +1749,10 @@ class Constellation extends AbstractData {
      *
      * @param  \snac\data\Constellation $other Constellation object to diff
      * @param boolean $strict optional If true, will check IDs and Versions.  Else (default) only checks data
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return \snac\data\Constellation[] Associative array of "intersection," "this," and "other" Constellations.
      */
-    public function diff($other, $strict = false) {
+    public function diff($other, $strict = false, $checkSubcomponents = false) {
         $return = array (
             "intersection" => null,
             "this" => null,
@@ -1771,115 +1773,115 @@ class Constellation extends AbstractData {
             $intersection->setArkID($this->getArk());
         }
 
-        if ($this->getEntityType() != null && $this->getEntityType()->equals($other->getEntityType(), $strict)) {
+        if ($this->getEntityType() != null && $this->getEntityType()->equals($other->getEntityType(), $strict, $checkSubcomponents)) {
             $intersection->setEntityType($this->getEntityType());
         }
 
-        $result = $this->diffArray($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict);
+        $result = $this->diffArray($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict, $checkSubcomponents);
         $intersection->otherRecordIDs = $result["intersection"];
         $first->otherRecordIDs = $result["first"];
         $second->otherRecordIDs = $result["second"];
 
-        $result = $this->diffArray($this->getEntityIDs(), $other->getEntityIDs(), $strict);
+        $result = $this->diffArray($this->getEntityIDs(), $other->getEntityIDs(), $strict, $checkSubcomponents);
         $intersection->entityIDs = $result["intersection"];
         $first->entityIDs = $result["first"];
         $second->entityIDs = $result["second"];
 
-        $result = $this->diffArray($this->getSources(), $other->getSources(), $strict);
+        $result = $this->diffArray($this->getSources(), $other->getSources(), $strict, $checkSubcomponents);
         $intersection->sources = $result["intersection"];
         $first->sources = $result["first"];
         $second->sources = $result["second"];
 
-        $result = $this->diffArray($this->getLegalStatuses(), $other->getLegalStatuses(), $strict);
+        $result = $this->diffArray($this->getLegalStatuses(), $other->getLegalStatuses(), $strict, $checkSubcomponents);
         $intersection->legalStatuses = $result["intersection"];
         $first->legalStatuses = $result["first"];
         $second->legalStatuses = $result["second"];
 
-        $result = $this->diffArray($this->getConventionDeclarations(), $other->getConventionDeclarations(), $strict);
+        $result = $this->diffArray($this->getConventionDeclarations(), $other->getConventionDeclarations(), $strict, $checkSubcomponents);
         $intersection->conventionDeclarations = $result["intersection"];
         $first->conventionDeclarations = $result["first"];
         $second->conventionDeclarations = $result["second"];
 
-        $result = $this->diffArray($this->getLanguagesUsed(), $other->getLanguagesUsed(), $strict);
+        $result = $this->diffArray($this->getLanguagesUsed(), $other->getLanguagesUsed(), $strict, $checkSubcomponents);
         $intersection->languagesUsed = $result["intersection"];
         $first->languagesUsed = $result["first"];
         $second->languagesUsed = $result["second"];
 
-        $result = $this->diffArray($this->getNameEntries(), $other->getNameEntries(), $strict);
+        $result = $this->diffArray($this->getNameEntries(), $other->getNameEntries(), $strict, $checkSubcomponents);
         $intersection->nameEntries = $result["intersection"];
         $first->nameEntries = $result["first"];
         $second->nameEntries = $result["second"];
 
-        $result = $this->diffArray($this->getOccupations(), $other->getOccupations(), $strict);
+        $result = $this->diffArray($this->getOccupations(), $other->getOccupations(), $strict, $checkSubcomponents);
         $intersection->occupations = $result["intersection"];
         $first->occupations = $result["first"];
         $second->occupations = $result["second"];
 
-        $result = $this->diffArray($this->getBiogHistList(), $other->getBiogHistList(), $strict);
+        $result = $this->diffArray($this->getBiogHistList(), $other->getBiogHistList(), $strict, $checkSubcomponents);
         $intersection->biogHists = $result["intersection"];
         $first->biogHists = $result["first"];
         $second->biogHists = $result["second"];
 
-        $result = $this->diffArray($this->getRelations(), $other->getRelations(), $strict);
+        $result = $this->diffArray($this->getRelations(), $other->getRelations(), $strict, $checkSubcomponents);
         $intersection->relations = $result["intersection"];
         $first->relations = $result["first"];
         $second->relations = $result["second"];
 
-        $result = $this->diffArray($this->getResourceRelations(), $other->getResourceRelations(), $strict);
+        $result = $this->diffArray($this->getResourceRelations(), $other->getResourceRelations(), $strict, $checkSubcomponents);
         $intersection->resourceRelations = $result["intersection"];
         $first->resourceRelations = $result["first"];
         $second->resourceRelations = $result["second"];
 
-        $result = $this->diffArray($this->getFunctions(), $other->getFunctions(), $strict);
+        $result = $this->diffArray($this->getFunctions(), $other->getFunctions(), $strict, $checkSubcomponents);
         $intersection->functions = $result["intersection"];
         $first->functions = $result["first"];
         $second->functions = $result["second"];
 
-        $result = $this->diffArray($this->getPlaces(), $other->getPlaces(), $strict);
+        $result = $this->diffArray($this->getPlaces(), $other->getPlaces(), $strict, $checkSubcomponents);
         $intersection->places = $result["intersection"];
         $first->places = $result["first"];
         $second->places = $result["second"];
 
-        $result = $this->diffArray($this->getSubjects(), $other->getSubjects(), $strict);
+        $result = $this->diffArray($this->getSubjects(), $other->getSubjects(), $strict, $checkSubcomponents);
         $intersection->subjects = $result["intersection"];
         $first->subjects = $result["first"];
         $second->subjects = $result["second"];
 
-        $result = $this->diffArray($this->getNationalities(), $other->getNationalities(), $strict);
+        $result = $this->diffArray($this->getNationalities(), $other->getNationalities(), $strict, $checkSubcomponents);
         $intersection->nationalities = $result["intersection"];
         $first->nationalities = $result["first"];
         $second->nationalities = $result["second"];
 
-        $result = $this->diffArray($this->getGenders(), $other->getGenders(), $strict);
+        $result = $this->diffArray($this->getGenders(), $other->getGenders(), $strict, $checkSubcomponents);
         $intersection->genders = $result["intersection"];
         $first->genders = $result["first"];
         $second->genders = $result["second"];
 
-        $result = $this->diffArray($this->getGeneralContexts(), $other->getGeneralContexts(), $strict);
+        $result = $this->diffArray($this->getGeneralContexts(), $other->getGeneralContexts(), $strict, $checkSubcomponents);
         $intersection->generalContexts = $result["intersection"];
         $first->generalContexts = $result["first"];
         $second->generalContexts = $result["second"];
 
-        $result = $this->diffArray($this->getStructureOrGenealogies(), $other->getStructureOrGenealogies(), $strict);
+        $result = $this->diffArray($this->getStructureOrGenealogies(), $other->getStructureOrGenealogies(), $strict, $checkSubcomponents);
         $intersection->structureOrGenealogies = $result["intersection"];
         $first->structureOrGenealogies = $result["first"];
         $second->structureOrGenealogies = $result["second"];
 
-        $result = $this->diffArray($this->getMandates(), $other->getMandates(), $strict);
+        $result = $this->diffArray($this->getMandates(), $other->getMandates(), $strict, $checkSubcomponents);
         $intersection->mandates = $result["intersection"];
         $first->mandates = $result["first"];
         $second->mandates = $result["second"];
 
-        $result = $this->diffArray($this->getDateList(), $other->getDateList(), $strict);
+        $result = $this->diffArray($this->getDateList(), $other->getDateList(), $strict, $checkSubcomponents);
         $intersection->dateList = $result["intersection"];
         $first->dateList = $result["first"];
         $second->dateList = $result["second"];
 
-        $result = $this->diffArray($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict);
+        $result = $this->diffArray($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict, $checkSubcomponents);
         $intersection->snacControlMetadata = $result["intersection"];
         $first->snacControlMetadata = $result["first"];
         $second->snacControlMetadata = $result["second"];
-        
+
         if (!$intersection->isEmpty())
             $return["intersection"] = $intersection;
 
