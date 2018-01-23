@@ -91,13 +91,13 @@ class Rest implements \snac\interfaces\ServerInterface {
             $connect = new ServerConnect();
             $serverResponse = $connect->query($this->input);
             $this->response = json_encode($serverResponse, JSON_PRETTY_PRINT);
+            $this->responseCode = $connect->getResponseCode();
         } else if (isset($this->input["command"]) && $this->input["command"] == "help") {
             $this->response = json_encode([
                 "help" => "Available Commands are listed below.",
                 "commands" => $commands
             ], JSON_PRETTY_PRINT);
-
-            $this->responseCode = $connect->getResponseCode();
+            $this->responseCode = 200;
         } else {
             throw new \snac\exceptions\SNACInputException("Unknown Command. Use 'help' command for available options.", 400);
         } 
