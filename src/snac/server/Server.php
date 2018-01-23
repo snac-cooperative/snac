@@ -90,7 +90,7 @@ class Server implements \snac\interfaces\ServerInterface {
         $this->logger->addDebug("Server starting to handle request", array("input" => $this->input));
 
         if ($this->input == null || empty($this->input)) {
-            throw new \snac\exceptions\SNACInputException("No input given");
+            throw new \snac\exceptions\SNACInputException("No input given", 400);
         }
 
         $db = new \snac\server\database\DBUtil();
@@ -108,7 +108,7 @@ class Server implements \snac\interfaces\ServerInterface {
         $this->logger->addDebug("Switching on command");
 
         if (!isset($this->input["command"])) {
-            throw new \snac\exceptions\SNACUnknownCommandException("No command given");
+            throw new \snac\exceptions\SNACUnknownCommandException("No command given", 400);
 
 
         }
@@ -129,7 +129,7 @@ class Server implements \snac\interfaces\ServerInterface {
             // Vocabulary Updating
             case "update_vocabulary":
                 if (!$executor->hasPermission("View Admin Dashboard"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to modify vocabulary.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to modify vocabulary.", 403);
                 $this->response = $executor->updateVocabulary($this->input);
                 break;
 
@@ -154,13 +154,13 @@ class Server implements \snac\interfaces\ServerInterface {
 
             case "search_users":
                 if (!$executor->hasPermission("Edit"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to search users.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to search users.", 403);
                 $this->response = $executor->searchUsers($this->input);
                 break;
 
             case "list_users":
                 if (!$executor->hasPermission("Edit"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to view users.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to view users.", 403);
                 $this->response = $executor->listUsers($this->input);
                 break;
 
@@ -207,19 +207,19 @@ class Server implements \snac\interfaces\ServerInterface {
 
             case "admin_groups":
                 if (!$executor->hasPermission("Manage Groups"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->listGroups($this->input);
                 break;
 
             case "edit_group":
                 if (!$executor->hasPermission("Manage Groups"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->groupInformation($this->input);
                 break;
 
             case "update_group":
                 if (!$executor->hasPermission("Manage Groups"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->updateGroupInformation($this->input);
                 break;
 
@@ -237,48 +237,48 @@ class Server implements \snac\interfaces\ServerInterface {
             // Constellation Management
             case "insert_constellation":
                 if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to insert constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to insert constellations.", 403);
                 $this->response = $executor->writeConstellation($this->input);
                 break;
             case "update_constellation":
                 if (!$executor->hasPermission("Edit"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to update constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to update constellations.", 403);
                 $this->response = $executor->writeConstellation($this->input);
                 break;
 
             case "checkout_constellation":
                 if (!$executor->hasPermission("Edit"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to checkout constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to checkout constellations.", 403);
                 $this->response = $executor->checkoutConstellation($this->input);
                 break;
 
             case "unlock_constellation":
                 if (!$executor->hasPermission("Edit"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to unlock constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to unlock constellations.", 403);
                 $this->response = $executor->unlockConstellation($this->input);
                 break;
 
             case "publish_constellation":
                 if (!$executor->hasPermission("Publish"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to publish constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to publish constellations.", 403);
                 $this->response = $executor->publishConstellation($this->input);
                 break;
 
             case "review_constellation":
                 if (!$executor->hasPermission("Edit"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to send constellation for review.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to send constellation for review.", 403);
                 $this->response = $executor->sendForReviewConstellation($this->input);
                 break;
 
             case "delete_constellation":
                 if (!$executor->hasPermission("Delete"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to delete constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to delete constellations.", 403);
                 $this->response = $executor->deleteConstellation($this->input);
                 break;
 
             case "reassign_constellation":
                 if (!$executor->hasPermission("Change Locks"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to reassign constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to reassign constellations.", 403);
                 $this->response = $executor->reassignConstellation($this->input);
                 break;
 
@@ -319,42 +319,42 @@ class Server implements \snac\interfaces\ServerInterface {
 
             case "constellation_diff_merge":
                 if (!$executor->hasPermission("Merge")) {
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.", 403);
                 }
                 $this->response = $executor->diffConstellations($this->input, true);
                 break;
 
             case "constellation_merge":
                 if (!$executor->hasPermission("Merge")) {
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.", 403);
                 }
                 $this->response = $executor->mergeConstellations($this->input);
                 break;
 
             case "constellation_auto_merge":
                 if (!$executor->hasPermission("Merge")) {
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.", 403);
                 }
                 $this->response = $executor->autoMergeConstellations($this->input);
                 break;
             
             case "constellation_assert":
                 if (!($executor->hasPermission("Maybe Same Assertion") && $executor->hasPermission("Not Same Assertion"))) {
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to make Constellation assertions.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to make Constellation assertions.", 403);
                 }
                 $this->response = $executor->makeAssertion($this->input);
                 break;
             
             case "constellation_add_maybesame":
                 if (!$executor->hasPermission("Maybe Same Assertion")) {
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to add maybe-same links.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to add maybe-same links.", 403);
                 }
                 $this->response = $executor->addMaybeSameConstellation($this->input);
                 break;
 
             case "constellation_remove_maybesame":
                 if (!$executor->hasPermission("Maybe Same Assertion")) {
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to remove maybe-same links.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to remove maybe-same links.", 403);
                 }
                 $this->response = $executor->removeMaybeSameConstellation($this->input);
                 break;
@@ -367,14 +367,14 @@ class Server implements \snac\interfaces\ServerInterface {
 
             case "edit":
                 if (!$executor->hasPermission("Edit")) {
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to edit constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to edit constellations.", 403);
                 }
                 $this->response = $executor->editConstellation($this->input);
                 break;
 
             case "edit_part":
                 if (!$executor->hasPermission("Edit")) {
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to edit constellations.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to edit constellations.", 403);
                 }
                 $this->response = $executor->subEditConstellation($this->input);
                 break;
@@ -412,18 +412,18 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
             case "report":
                 if (!$executor->hasPermission("View Reports"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to view reports.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to view reports.", 403);
                 $this->response = $executor->readReport($this->input);
                 break;
             case "report_generate":
                 if (!$executor->hasPermission("Generate Reports"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to generate reports.");
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to generate reports.", 403);
                 $this->response = $executor->generateReport($this->input);
                 break;
 
 
             default:
-                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
+                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"], 400);
 
         }
 
