@@ -51,7 +51,10 @@ $(document).ready(function() {
             data: $("#api_query").val(),
             success: function(result) {
                 $("#api_response").val(JSON.stringify(result, null, '\t'));
-            }
+            },
+            error: function(xhr, statusText, errorThrown) {
+                $("#api_response").val(xhr.responseText);
+            } 
 
 
         });
