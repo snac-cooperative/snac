@@ -1880,6 +1880,7 @@ class WebUIExecutor {
         $commands = json_decode(file_get_contents(\snac\Config::$REST_COMMAND_FILE), true);
         $display->setTemplate("api_help_page");
         $display->setData([
+            "restURL" => \snac\Config::$REST_URL,
             "commands" => $commands
         ]);
     }
