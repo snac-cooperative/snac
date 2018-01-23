@@ -1791,10 +1791,6 @@
         ],
         "title" : "Edit Constellation",
         "description" : "Check out the Constellation for editing.",
-        "parameters" : [
-            {"user" : "User object"},
-            {"constellation" : "Constellation object with ID and version to edit"}
-        ],
         "parameters" : {
             "user" : {
                 "type": "Object", 
