@@ -3185,12 +3185,18 @@ class ServerExecutor {
         $response["results"] = array ();
         if ($list !== false) {
             foreach ($list as $constellation) {
+                // Error handling
+                if ($constellation->getPreferredNameEntry() == null) {
+                    $this->logger->addError("Constellation did not have name entry", $constellation->toArray());
+                    continue;
+                }
+
                 $item = array (
                     "id" => $constellation->getID(),
                     "version" => $constellation->getVersion(),
                     "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
                 );
-                $this->logger->addDebug("Needs Review", $item);
+                $this->logger->addDebug("Listing (".$status.")", $item);
                 array_push($response["results"], $item);
             }
         }
