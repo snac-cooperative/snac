@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SNAC Vocabulary: {{ data.title }}</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/vocab_admin.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+
+<style>
+.theme-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.snac > p > .btn {
+    margin: 5px 0;
+}
+
+.snac .navbar .container {
+    width: auto;
+}
+</style>
+<script>
+$(document).ready(function() {
+    $('select').each(function() {
+        $(this).select2({
+            minimumResultsForSearch: Infinity,
+            allowClear: false,
+            theme: 'bootstrap'
+        });
+    });
+});
+</script>
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+    <h1>Vocabulary: {{ data.title }}</h1>
+
+    <ol class="breadcrumb">
+        <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
+        <li><a href="{{control.snacURL}}/vocab_administrator/resources">Resource Management</a></li>
+        <li>{{data.title}}</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-md-8">
+        <form id="new_resource_form">
+            <div class="well well-lg">
+                <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit and save the resource.</p>
+            </div>
+
+            <input type="hidden" id="id" name="id" value="{{data.resource.id}}"/>
+
+            <div class="form-horizontal">
+                
+                <!--  -->
+                <div class="form-group">
+                    <label class="control-label col-xs-4">HREF</label>
+                    <div class="col-xs-8 editable" id="">
+                        <input type="text" name="href" class="form-control" value="{{data.resource.resource}}"/> <!-- -->
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Resource Label</label>
+                    <div class="col-xs-8 editable" id="">
+                        <input type="text" id="resource" name="resource" class="form-control" value="{{data.resource.resource}}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">URI</label>
+                    <div class="col-xs-8 editable" id="uriDiv">
+                        <input type="text" id="uri" name="uri" class="form-control" value="{{data.resource.uri}}" placeholder="http://full/URL/path"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Description</label>
+                    <div class="col-xs-8 editable" id="descriptionDiv">
+                        <input type="text" id="description" name="description" class="form-control" value="{{data.resource.description}}"/>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+        </div>
+
+        <!-- SAVE PANEL  -->
+        <div class="col-md-4">
+            <!-- Right Column -->
+
+            <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+                <p>Saving Resource...</p>
+            </div><!-- end alert -->
+            <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+                <p>Successfully saved!</p>
+            </div><!-- end alert -->
+            <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
+                <p>An error occured while saving</p>
+            </div><!-- end alert -->
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Actions</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-info" id="save_new_vocab"><i class="fa fa-fw fa-floppy-o"></i> Save Resource <span class="pull-right fa fa-question-circle" title="Help" data-content="Save Resource." data-toggle="popover" data-placement="top"></span></a>
+                        <a href="#" class="list-group-item list-group-item-danger" id="cancel_back"><i class="fa fa-fw fa-times-circle"></i> Cancel <span class="pull-right fa fa-question-circle" title="Help" data-content="Cancel and do not create this resource." data-toggle="popover" data-placement="top"></span></a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>
