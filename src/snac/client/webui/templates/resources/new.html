@@ -58,15 +58,29 @@ $('.selectpicker').selectpicker();
 }
 </style>
 <script>
-$(document).ready(function() {
-    $('select').each(function() {
-        $(this).select2({
-            minimumResultsForSearch: Infinity,
-            allowClear: false,
-            theme: 'bootstrap'
+    $(document).ready(function() {
+
+        var $resourceForm = $('#new-resource-form');
+
+        $resourceForm.on('submit', function(e) {
+            e.preventDefault();
+            $('#notification-message').html("<p>Saving Resoure... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            $.post(snacUrl+"/save_resource", $resourceForm.serialize(), function(data) {
+                // resourceResult = data;
+                // $('body').append(resourceResult);
+            })
+            .success(function(){
+                $('#success-message').html("<p>Vocabulary term successfully saved. Going to term search.</p>");
+                $('#success-message').slideDown();
+                setTimeout(function(){
+                    // Go to search
+                    window.location.href = snacUrl+"/vocab_administrator/resources";
+                }, 1500);
+            })
         });
     });
-});
 </script>
 </head>
 <body role="document">
@@ -83,79 +97,96 @@ $(document).ready(function() {
         <li>{{data.title}}</li>
     </ol>
 
+    <form id="new-resource-form">
     <div class="row">
         <div class="col-md-8">
-        <form id="new_resource_form">
             <div class="well well-lg">
                 <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit and save the resource.</p>
             </div>
 
-            <input type="hidden" id="id" name="id" value="{{data.resource.id}}"/>
-
             <div class="form-horizontal">
-                
-                <!--  -->
+
+                    <!-- HIDDEN VALUES-->
+                    <input  name="resource_operation_0" type="hidden" value="insert">
+                    <!-- <input  name="resource_documentType_vocabtype_0" type="hidden" value="document_type"> -->
+                    <!-- <input  name="resource_version_0" type="hidden" value=""> -->
+                    <!-- <input  name="resource_repo_0" type="hidden" value=""> -->
+                    <!-- <input  name="id" type="hidden" value="{{data.resource.id}}"/>      -->
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Title</label>
+                    <div class="col-xs-8">
+                        <input type="text" name="resource_title_0" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Resource Type</label>
+                    <div class="col-xs-8" id="typeDiv">
+                        <select id="type" name="resource_documentType_id_0" class="form-control" required>
+                            <option value=""></option>
+                            <option value="696">Archival Resource</option>
+                            <option value="697">Bibliographic Resource</option>
+                            <option value="400479">Digital Archival Resource</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label class="control-label col-xs-4">HREF</label>
-                    <div class="col-xs-8 editable" id="">
-                        <input type="text" name="href" class="form-control" value="{{data.resource.resource}}"/> <!-- -->
-                    </div>
-                </div>
-
-
-                <div class="form-group">
-                    <label class="control-label col-xs-4">Resource Label</label>
-                    <div class="col-xs-8 editable" id="">
-                        <input type="text" id="resource" name="resource" class="form-control" value="{{data.resource.resource}}"/>
+                    <div class="col-xs-8">
+                        <input type="text" name="resource_link_0" class="form-control" value="{{data.resource.uri}}" placeholder="http://full/URL/path"/>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label col-xs-4">URI</label>
-                    <div class="col-xs-8 editable" id="uriDiv">
-                        <input type="text" id="uri" name="uri" class="form-control" value="{{data.resource.uri}}" placeholder="http://full/URL/path"/>
+                    <label class="control-label col-xs-4">Abstract</label>
+                    <div class="col-xs-8">
+                        <textarea  name="resource_abstract_0" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label col-xs-4">Description</label>
-                    <div class="col-xs-8 editable" id="descriptionDiv">
-                        <input type="text" id="description" name="description" class="form-control" value="{{data.resource.description}}"/>
-                    </div>
-                </div>
-            </div>
+                   <label class="control-label col-xs-4">Repository</label>
+                   <div class="col-xs-8">
+                       <input type="number" name="resource_repo_0" class="form-control" value="" placeholder="(SNAC ID)"/>
+                       <div class="col-xs-8">
+                           <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
+                       </div>
+                   </div>
+               </div>
 
-        </form>
+
         </div>
 
-        <!-- SAVE PANEL  -->
-        <div class="col-md-4">
-            <!-- Right Column -->
+    </div>
+    <div class="col-md-4">
+        <!-- Right Column -->
 
-            <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
-                <p>Saving Resource...</p>
-            </div><!-- end alert -->
-            <div class="alert alert-01 alert-success" id="success-message" style="display: none">
-                <p>Successfully saved!</p>
-            </div><!-- end alert -->
-            <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
-                <p>An error occured while saving</p>
-            </div><!-- end alert -->
+        <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+            <p>Saving Resource...</p>
+        </div><!-- end alert -->
+        <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+            <p>Successfully saved!</p>
+        </div><!-- end alert -->
+        <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
+            <p>An error occured while saving</p>
+        </div><!-- end alert -->
 
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Actions</h3>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Actions</h3>
+            </div>
+            <div class="panel-body">
+                <div class="list-group">
+                    <button type="submit" class="list-group-item list-group-item-info" id="MY RESOURCE SAVE!!"><i class="fa fa-fw fa-floppy-o"></i> Save Resource </button>
+                    <a href="#" class="list-group-item list-group-item-danger" id="vocab_dashboard_cancel"><i class="fa fa-fw fa-times-circle"></i> Cancel </a>
                 </div>
-                <div class="panel-body">
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-info" id="save_new_vocab"><i class="fa fa-fw fa-floppy-o"></i> Save Resource <span class="pull-right fa fa-question-circle" title="Help" data-content="Save Resource." data-toggle="popover" data-placement="top"></span></a>
-                        <a href="#" class="list-group-item list-group-item-danger" id="cancel_back"><i class="fa fa-fw fa-times-circle"></i> Cancel <span class="pull-right fa fa-question-circle" title="Help" data-content="Cancel and do not create this resource." data-toggle="popover" data-placement="top"></span></a>
-                    </div>
 
-                </div>
             </div>
         </div>
     </div>
+    </form>
 </div>
 {{ footer(X, user, permissions, control) }}
 </body>
