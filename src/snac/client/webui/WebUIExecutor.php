@@ -1810,6 +1810,14 @@ class WebUIExecutor {
                 // maybe reuse the same save function?
                 return $this->saveVocabularyTerm($input, $user);
                 break;
+            case "add_resource":
+                $display->setData(array("title"=> "Add a Resource"));
+                $display->setTemplate("resources/new");
+                break;
+            case "resources":
+                $display->setData(array("title"=> "Edit a Resource"));
+                $display->setTemplate("resources/search");
+                break;
             case "dashboard":
                 if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
                     $display->setTemplate("vocab_dashboard");
