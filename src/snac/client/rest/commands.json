@@ -2768,6 +2768,11 @@
             "term" : {
                 "type" : "String",
                 "description": "Search term to query against the SNAC resource cache." 
+            },
+            "count" : {
+                "type" : "Integer",
+                "description": "Number of results to return",
+                "optional":true
             }
         },
         "returns" : {

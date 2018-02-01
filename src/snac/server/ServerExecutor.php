@@ -646,8 +646,12 @@ class ServerExecutor {
      */
     public function searchResources(&$input) {
         $response = array();
+        $this->logger->addError("this is the input: \n", array("input" => $input));
+        $start = $input["start"] ?? null;
+        $count = $input["count"] ?? null;
+        
         if (isset($input["term"])) {
-            $response = $this->elasticSearch->searchResourceIndex($input["term"]);
+            $response = $this->elasticSearch->searchResourceIndex($input["term"], $start, $count);
             // If there are results from the search, then replace them with full
             // resources from the database (rather than from ES results)
             $this->logger->addDebug("Got the following ES result", $response);
