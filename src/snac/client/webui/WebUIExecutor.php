@@ -3033,11 +3033,18 @@ class WebUIExecutor {
         }
 
         // Query the server for the elastic search results
-        $serverResponse = $this->connect->query(array(
-            "command" => "resource_search",
-            "term" => $input["term"]
-        ));
-
+        $request = array();
+        $request["command"] = "resource_search";
+        $request["term"] = $input["term"];
+        
+        if (isset($input["type"]))
+            $request["type"] = $input["type"];
+        if (isset($input["count"]))
+            $request["count"] = $input["count"];
+        if (isset($input["filters"]))
+            $request["filters"] = $input["filters"];
+        
+        $serverResponse = $this->connect->query($request);
         return $serverResponse;
 
     }

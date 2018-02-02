@@ -759,9 +759,10 @@ class ElasticSearchUtil {
      * @param string $query The search query
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
+     * @param array $filters optional Array of term => value pairs to filter by (default null)
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchResourceIndex($query, $start=0, $count=10) {
+    public function searchResourceIndex($query, $start=0, $count=10, $filters=null) {
         $this->logger->addDebug("Searching for a Resource");
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
@@ -806,6 +807,17 @@ class ElasticSearchUtil {
                     'size' => $count*/
                 ]
             ];
+            
+            if (isset($filters)){
+                // build an ES filter and append to $params
+                // TODO: put in filters as an array of terms instead of adding to one term
+                $queryFilter =  ['bool' => ['filter' => ['term' => []]]];  // any diff tween 'must' and 'filter'?
+                foreach ($filters as $field => $value) {
+                    $queryFilter['bool']['filter']['term'][$field] = $value;
+                }
+                $params['body']['filter'] = $queryFilter;
+            }
+
             $this->logger->addDebug("Defined parameters for search", $params);
 
             $results = $this->connector->search($params);

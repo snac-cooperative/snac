@@ -89,9 +89,7 @@ $('.selectpicker').selectpicker();
                         var abstract = result.abstract || "";
                         var href = result.link || ""
                         href = "<a href=" + href + " target='_blank'>" + href + "</a>";
-                        var title = result.title;
-                        if (title == null)
-                            title = "";
+                        var title = result.title || "";
                         var row = new Array(checkbox, title, abstract, href, type);
                         datatable.row.add(row);
                     }
@@ -126,7 +124,7 @@ $('.selectpicker').selectpicker();
                 <form class="form-horizontal" id="search-form" method="GET">
                     <div class="well well-lg text-center">
                         <div class="input-group select2-bootstrap-append">
-                            <select id="vocabType" name="link" style="width: 25%;">
+                            <select name="filters[type_id]" style="width: 25%;">
                                 <!-- TODO: enable search filters by type  -->
                                 <option value="696" selected>Archival Resource</option>
                                 <option value="697">Bibliographic Resource</option>
