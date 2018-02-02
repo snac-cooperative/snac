@@ -89,8 +89,17 @@ $('.selectpicker').selectpicker();
                         var abstract = result.abstract || "";
                         var href = result.link || ""
                         href = "<a href=" + href + " target='_blank'>" + href + "</a>";
+                        
+                        var repo = result.repository || "" 
+                        var holdingInstitution = ""
+                        if (repo) {        
+                            var holdingInstitution = repo.nameEntries[0].original || ""
+                            var holding_href = repo.ark || ""
+                            holdingInstitution = "<a href=" + holding_href + " target='_blank'>"
+                            + holdingInstitution + "</a>";
+                        }
                         var title = result.title || "";
-                        var row = new Array(checkbox, title, abstract, href, type);
+                        var row = new Array(checkbox, title, abstract, href, holdingInstitution, type);
                         datatable.row.add(row);
                     }
                 }
@@ -153,6 +162,7 @@ $('.selectpicker').selectpicker();
                                 <th>Title</th>
                                 <th>Abstract</th>
                                 <th>HREF</th>
+                                <th>Holding Institution</th>
                                 <th>Type</th>
                             </tr>
                         </thead>
