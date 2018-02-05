@@ -1818,6 +1818,10 @@ class WebUIExecutor {
                 $display->setData(array("title"=> "Edit a Resource"));
                 $display->setTemplate("resources/search");
                 break;
+            case "edit_resource":
+                $display->setData(array("title"=> "Edit a Resource"));
+                $display->setTemplate("resources/edit");
+                break;
             case "dashboard":
                 if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
                     $display->setTemplate("vocab_dashboard");
