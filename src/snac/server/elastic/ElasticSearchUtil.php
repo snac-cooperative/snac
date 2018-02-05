@@ -810,10 +810,8 @@ class ElasticSearchUtil {
             
             if (isset($filters)){
                 // build an ES filter and append to $params
-                // TODO: put in filters as an array of terms instead of adding to one term
-                $queryFilter =  ['bool' => ['filter' => ['term' => []]]];  // any diff tween 'must' and 'filter'?
                 foreach ($filters as $field => $value) {
-                    $queryFilter['bool']['filter']['term'][$field] = $value;
+                    $queryFilter['bool']['filter'][]['term'][$field] = $value;
                 }
                 $params['body']['filter'] = $queryFilter;
             }
