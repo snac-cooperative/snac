@@ -83,8 +83,10 @@ $('.selectpicker').selectpicker();
                 datatable.clear();
                 if (data.results.length > 0) {
                     for (var key in data.results) {
-                        result = data.results[key];
-                        var checkbox = "<input type='radio' name='resource-selection' value='" + result.id + "'>";
+                        var result = data.results[key];
+                        var editIcon = "<a href ='{{control.snacURL}}/vocab_administrator/edit_resource/" 
+                            + result.id + "/" + result.version + "'> <i class='fa fa-edit'></i> </a>";
+                        var title = result.title || "";
                         var type = result.documentType.term || "";
                         var abstract = result.abstract || "";
                         var href = result.link || ""
@@ -98,8 +100,7 @@ $('.selectpicker').selectpicker();
                             holdingInstitution = "<a href=" + holding_href + " target='_blank'>"
                             + holdingInstitution + "</a>";
                         }
-                        var title = result.title || "";
-                        var row = new Array(checkbox, title, abstract, href, holdingInstitution, type);
+                        var row = new Array(editIcon, title, abstract, href, holdingInstitution, type);
                         datatable.row.add(row);
                     }
                 }
@@ -175,11 +176,7 @@ $('.selectpicker').selectpicker();
     </div>
 
 
-        <!-- TODO: Build form for complete resource -->
-        <!-- TODO: use id to fetch resource -->
-        <!-- TODO: On submit, update resource -->
-        
-        <button type="button" class="btn btn-primary" name="button" id="edit-resource-btn"> Edit Resource</button>
+        <!-- <button type="button" class="btn btn-primary" name="button" id="edit-resource-btn"> Edit Resource</button>
         
         <div class="modal fade" id="resourceEditPane" tabindex="-1" role="dialog" aria-labelledby="resourceEditPane">
             <div class="modal-dialog" role="document">
@@ -189,7 +186,6 @@ $('.selectpicker').selectpicker();
                         <h4 class="modal-title" id="resourceEditLabel">Edit Resource</h4>
                     </div>
                     <div class="modal-body" id="resourceEditPaneContent">
-                        <!--TODO: Check for possible reuse of new-resource-form  -->
                         <form class="form-horizontal" id="resource_create_form" onsubmit="return false;">
                             <div class="modal-body">
                                 <p>Use this form to edit the resource</p>
@@ -205,7 +201,7 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
     
     {{ footer(X, user, permissions, control) }}
