@@ -1819,7 +1819,13 @@ class WebUIExecutor {
                 $display->setTemplate("resources/search");
                 break;
             case "edit_resource":
-                $display->setData(array("title"=> "Edit a Resource"));
+                // id passed is actually resourceID, 
+                $resourceID = $input["constellationid"];
+                $version = $input["version"];
+                $resource = $this->connect->lookupResource($resourceID, $version);
+                
+                $display->setData(array("title"=> "Edit a Resource",
+                                        "resource" => $resource));
                 $display->setTemplate("resources/edit");
                 break;
             case "dashboard":

@@ -646,7 +646,6 @@ class ServerExecutor {
      */
     public function searchResources(&$input) {
         $response = array();
-        $this->logger->addError("this is the input: \n", array("input" => $input));
         $start = $input["start"] ?? null;
         $count = $input["count"] ?? null;
         $filters = $input["filters"] ?? null;
