@@ -387,6 +387,10 @@ td.rotate > div > span {
     cursor: grab;
 }
 
+.edited-field {
+    background: #d9edf7
+}
+
 /* centered columns styles */
 .row-centered {
     text-align:center;

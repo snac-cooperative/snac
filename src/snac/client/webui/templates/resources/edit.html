@@ -65,6 +65,13 @@ $('.selectpicker').selectpicker();
                 }, 1500);
             })
         });
+        
+        function markEdited() {
+             $( "input, select, textarea" ).on("change", function(e) {
+                 $(e.target).addClass('edited-field')
+            });
+        }
+        markEdited()
     });
 </script>
 </head>
@@ -76,7 +83,6 @@ $('.selectpicker').selectpicker();
 <div class="container snac" role="main">
     <h1>Vocabulary: {{ data.title }}</h1>
 
-<h1>CURE: {{ data.title }}</h1
     <ol class="breadcrumb">
         <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
         <li><a href="{{control.snacURL}}/vocab_administrator/resources">Resource Management</a></li>
