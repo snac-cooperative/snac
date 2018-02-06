@@ -8,35 +8,37 @@
                 <!-- HIDDEN VALUES-->
                 <input  name="resource_operation_0" type="hidden" value="insert">
                 <!-- <input  name="resource_documentType_vocabtype_0" type="hidden" value="document_type"> -->
-                <!-- <input  name="resource_version_0" type="hidden" value=""> -->
+                <input  name="resource_version_0" type="hidden" value="">
                 <!-- <input  name="resource_repo_0" type="hidden" value=""> -->
-                <!-- <input  name="id" type="hidden" value="{{data.resource.id}}"/>      -->
+                <input  name="resource_id_0" type="hidden" value="{{data.resource.id}}"/>     
 
             <div class="form-group">
                 <label class="control-label col-xs-4">Title</label>
                 <div class="col-xs-8">
-                    <input type="text" name="resource_title_0" class="form-control" required>
+                    <input type="text" name="resource_title_0" class="form-control" value="{{data.resource.title}}" required>
                 </div>
             </div>
             
             <div class="form-group">
                 <label class="control-label col-xs-4">Relation Entry</label>
                 <div class="col-xs-8">
-                    <input type="text" name="" class="form-control" required>
+                    <input type="text" name="relation_entry_0" class="form-control" value="{{data.resource.relationEntry}}" required>
                 </div>
             </div>
             
             <div class="form-group">
                 <label class="control-label col-xs-4">Date</label>
                 <div class="col-xs-8">
-                    <input type="text" name="resource_date_0" class="form-control" required>
+                    <input type="text" name="resource_date_0" class="form-control" value="{{data.resource.date}}" required>
                 </div>
             </div>
             
             <div class="form-group">
                 <label class="control-label col-xs-4">Language</label>
                 <div class="col-xs-8">
-                    <input type="text" name="" class="form-control" required>
+                    <!-- TODO: language as select values -->
+                    {{data.resource.language.toArray()}}
+                    <input type="text" name="" class="form-control" value="{{data.resource.language.toArray()}}" required>
                 </div>
             </div>
 
@@ -44,10 +46,10 @@
                 <label class="control-label col-xs-4">Resource Type</label>
                 <div class="col-xs-8" id="typeDiv">
                     <select id="type" name="resource_documentType_id_0" class="form-control" required>
-                        <option value=""></option>
-                        <option value="696">Archival Resource</option>
-                        <option value="697">Bibliographic Resource</option>
-                        <option value="400479">Digital Archival Resource</option>
+                        <option value="{{data.resource.documentType.id}}"> {{data.resource.documentType.term}}</option>
+                        <option value="696">ArchivalResource</option>
+                        <option value="697">BibliographicResource</option>
+                        <option value="400479">DigitalArchivalResource</option>
                     </select>
                 </div>
             </div>
@@ -55,21 +57,33 @@
             <div class="form-group">
                 <label class="control-label col-xs-4">HREF</label>
                 <div class="col-xs-8">
-                    <input type="text" name="resource_link_0" class="form-control" value="{{data.resource.uri}}" placeholder="http://full/URL/path"/>
+                    <input type="text" name="resource_link_0" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="control-label col-xs-4">Abstract</label>
                 <div class="col-xs-8">
-                    <textarea  name="resource_abstract_0" class="form-control" rows="3"></textarea>
+                    <textarea  name="resource_abstract_0" class="form-control" rows="3">{{data.resource.abstract}}</textarea>
                 </div>
             </div>
 
             <div class="form-group">
-               <label class="control-label col-xs-4">Repository</label>
+                <label class="control-label col-xs-4">Holding Institution</label>
+                <div class="col-xs-8">                    
+                    <div class="control-label">
+                        <a href="{{data.resource.repository.ark}}" target="_blank">
+                            {{data.resource.repository.nameEntries[0].original}}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="form-group">
+               <label class="control-label col-xs-4">Repository ID</label>
                <div class="col-xs-8">
-                   <input type="number" name="resource_repo_0" class="form-control" value="" placeholder="(SNAC ID)"/>
+                   <input type="number" name="resource_repo_0" class="form-control" value="{{data.resource.repository.id}}" placeholder="(SNAC ID)" disabled/>
                    <div class="col-xs-8">
                        <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
                    </div>
