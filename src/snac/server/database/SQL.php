@@ -3857,6 +3857,57 @@ class SQL
         $this->sdb->deallocate($qq);
         return array($resourceID, $resourceVersion);
     }
+    
+    
+    /**
+     * Update resource
+     *
+     * @param  int|null $resourceID      Resource ID
+     * @param  int|null $resourceVersion Resource version
+     * @param  string $title           Title of the resource
+     * @param  string $abstract        Abstract of the resource
+     * @param  string $extent          Extent of the resource
+     * @param  int $repoICID        Repository ID for the holding repository of this resource
+     * @param  int $docTypeID       Document Type ID
+     * @param  int $entryTypeID     Entity Type ID
+     * @param  text|null $link            Link for this resource
+     * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
+     * @return string[]                  Array containing id, version
+     */
+    public function updateResource(        $resourceID,
+                                           $resourceVersion,
+                                           $title,
+                                           $abstract,
+                                           $extent,
+                                           $repoICID,
+                                           $docTypeID,
+                                           $entryTypeID,
+                                           $link,
+                                           $objectXMLWrap) {
+
+        $newResourceVersion = $this->selectResourceVersion();
+        $qq = 'insert_resource';
+        $this->sdb->prepare($qq,
+                            'update resource_cache set
+                            version = $2, title = $3, abstract = $4, extent = $5, repo_ic_id = $6, type = $7, entry_type = $8, href = $9, object_xml_wrap = $10
+                            where id = $1');
+        /*
+         * Combine vhInfo and the remaining args into a big array for execute().
+         */
+        $execList = array($resourceID,            // 1
+                          $newResourceVersion,    // 2
+                          $title,                 // 3
+                          $abstract,              // 4
+                          $extent,                // 5
+                          $repoICID,              // 6
+                          $docTypeID,             // 7
+                          $entryTypeID,           // 8
+                          $link,                  // 9
+                          $objectXMLWrap);        // 10  
+        $this->sdb->execute($qq, $execList);  
+        $this->sdb->deallocate($qq);
+        return array($resourceID, $newResourceVersion);
+    }
 
     /**
      * Insert Resource Language
