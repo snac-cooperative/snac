@@ -97,7 +97,7 @@ class Rest implements \snac\interfaces\ServerInterface {
                 "commands" => $commands
             ], JSON_PRETTY_PRINT);
 
-            $this->responseCode = $connect->getResponseCode();
+            $this->responseCode = 200;
         } else {
             throw new \snac\exceptions\SNACInputException("Unknown Command. Use 'help' command for available options.", 400);
         } 

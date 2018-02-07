@@ -31,8 +31,34 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/javascript/javascript.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/addon/edit/matchbrackets.js"></script>
 <script>
+var codeMirror = null;
+function loadExample(ex) {
+    if (codeMirror == null)
+        return;
+
+    var json = "";
+    switch(ex) {
+        case "help":
+            json = "{\n    \"command\": \"help\"\n}";
+            break;
+        case "read":
+            json = "{\n    \"command\": \"read\",\n    \"constellationid\": 16715425\n}";
+            break;
+        case "downloadxml":
+            json = "{\n    \"command\": \"download_constellation\",\n    \"constellationid\": 16715425,\n    \"type\": \"eac-cpf\"\n}";
+            break;
+        case "search":
+            json = "{\n    \"command\": \"search\",\n    \"term\": \"Washington\",\n    \"count\": 10,\n    \"start\": 0,\n    \"entity_type\": \"person\"\n}";
+            break;
+    }
+
+    codeMirror.setValue(json);
+
+
+}
+
 $(document).ready(function() {
-    var codeMirror = CodeMirror.fromTextArea(document.getElementById("api_query"), {
+        codeMirror = CodeMirror.fromTextArea(document.getElementById("api_query"), {
         lineNumbers: true,
         lineWrapping: true,
         matchBrackets: true,
@@ -78,6 +104,14 @@ $(document).ready(function() {
             <p>Use the following box to send test queries to the SNAC Rest API.  To get started, check out the Rest API Commands page or use one of the pre-built queries below.</p>
 
             <h3>Query</h3>
+                <div class="well well-sm">
+                    Examples: <div class="btn-group" role="group" aria-label="Example Queries">
+                        <button type="button" class="btn btn-default" onClick="loadExample('help');">Help</button>
+                        <button type="button" class="btn btn-default" onClick="loadExample('search');">Search Constellations</button>
+                        <button type="button" class="btn btn-default" onClick="loadExample('read');">Read Constellation</button>
+                        <button type="button" class="btn btn-default" onClick="loadExample('downloadxml');">Download EAC-CPF</button>
+                    </div>
+                </div>
             <div class="panel panel-default">
                 <div class="panel-body">
                     <textarea id='api_query' class='form-control' style='width: 100%;'>
