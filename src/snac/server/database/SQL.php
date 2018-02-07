@@ -3874,26 +3874,25 @@ class SQL
      * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
      * @return string[]                  Array containing id, version
      */
-    public function updateResource(        $resourceID,
-                                           $resourceVersion,
-                                           $title,
-                                           $abstract,
-                                           $extent,
-                                           $repoICID,
-                                           $docTypeID,
-                                           $entryTypeID,
-                                           $link,
-                                           $objectXMLWrap) {
+    public function updateResource($resourceID,
+                                   $resourceVersion,
+                                   $title,
+                                   $abstract,
+                                   $extent,
+                                   $repoICID,
+                                   $docTypeID,
+                                   $entryTypeID,
+                                   $link,
+                                   $objectXMLWrap) {
 
         $newResourceVersion = $this->selectResourceVersion();
         $qq = 'insert_resource';
         $this->sdb->prepare($qq,
                             'update resource_cache set
-                            version = $2, title = $3, abstract = $4, extent = $5, repo_ic_id = $6, type = $7, entry_type = $8, href = $9, object_xml_wrap = $10
-                            where id = $1');
-        /*
-         * Combine vhInfo and the remaining args into a big array for execute().
-         */
+                             version = $2, title = $3, abstract = $4, extent = $5, repo_ic_id = $6,
+                             type = $7, entry_type = $8, href = $9, object_xml_wrap = $10
+                             where id = $1');
+
         $execList = array($resourceID,            // 1
                           $newResourceVersion,    // 2
                           $title,                 // 3
