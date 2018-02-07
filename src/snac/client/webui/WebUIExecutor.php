@@ -2201,8 +2201,8 @@ class WebUIExecutor {
     /**
      * Save Resource
      *
-     * Maps the resoource given on input to a Resource object, passes that to the server with an
-     * update_resource call.
+     * Maps the resource given on input to a Resource object, passes that to the server with an
+     * update_resource or insert_resource call.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @return string[] The web ui's response to the client (array ready for json_encode)
@@ -2216,8 +2216,9 @@ class WebUIExecutor {
         $this->logger->addDebug("writing resource", $resource->toArray());
 
         // Build a data structure to send to the server
-        $request = array("command"=>"update_resource");
-
+        $command = $resource->getOperation() === "insert" ? "insert_resource" : "update_resource";
+        $request = array("command" => $command);
+        
         // Send the query to the server
         $request["resource"] = $resource->toArray();
         $serverResponse = $this->connect->query($request);
