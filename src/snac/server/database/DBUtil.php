@@ -2902,10 +2902,6 @@ class DBUtil
         $op = $resource->getOperation();
         if ($op == \snac\data\AbstractData::$OPERATION_INSERT)
         {
-            /*
-             * Right now, only do an insert. We need to add functionality to
-             * edit in the NEAR future
-             */
             $rid = null;
             $version = null;
             $repoID = null;
@@ -2921,6 +2917,30 @@ class DBUtil
                                                       $this->thingID($resource->getEntryType()), // relationEntry@localType
                                                       $resource->getLink(), // xlink:href
                                                       $resource->getSource()); // objectXMLWrap
+            $resource->setID($rid);
+            $resource->setVersion($version);
+            $this->saveOriginationNames($resource);
+            $this->saveResourceLanguages($resource);
+            // Return the full resource
+            return $this->populateResource($rid, $version);
+        }
+        if ($op == \snac\data\AbstractData::$OPERATION_UPDATE) { 
+            $repoID = null;
+            
+            if ($resource->getRepository() != null)
+                $repoID = $resource->getRepository()->getID();
+                
+            list($rid, $version) = $this->sql->updateResource($resource->getID(),
+                                                    $resource->getVersion(),
+                                                    $resource->getTitle(),
+                                                    $resource->getAbstract(),
+                                                    $resource->getExtent(),
+                                                    $repoID,
+                                                    $this->thingID($resource->getDocumentType()), // xlink:role
+                                                    $this->thingID($resource->getEntryType()), // relationEntry@localType
+                                                    $resource->getLink(), // xlink:href
+                                                    $resource->getSource()); // objectXMLWrap
+                                                      
             $resource->setID($rid);
             $resource->setVersion($version);
             $this->saveOriginationNames($resource);
