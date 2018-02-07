@@ -6,11 +6,10 @@
         <div class="form-horizontal">
 
                 <!-- HIDDEN VALUES-->
-                <input  name="resource_operation_0" type="hidden" value="insert">
+                <input  name="resource_operation_0" type="hidden" value="{{ operation }}">
                 <!-- <input  name="resource_documentType_vocabtype_0" type="hidden" value="document_type"> -->
-                <input  name="resource_version_0" type="hidden" value="">
-                <!-- <input  name="resource_repo_0" type="hidden" value=""> -->
                 <input  name="resource_id_0" type="hidden" value="{{data.resource.id}}"/>     
+                <input  name="resource_version_0" type="hidden" value="{{data.resource.version}}">
 
             <div class="form-group">
                 <label class="control-label col-xs-4">Title</label>

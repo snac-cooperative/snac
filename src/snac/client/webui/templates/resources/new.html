@@ -83,9 +83,10 @@ $('.selectpicker').selectpicker();
     </ol>
 
     <div class="well well-lg">
-        <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit and save the resource.</p>
+        <p><span style="font-weight: bold;">Instructions: </span> Use the form below to create a new resource.</p>
     </div>
 
+    {% set operation = 'insert' %}
     {% include "resources/_resource_form.html" %}
     
 </div>
