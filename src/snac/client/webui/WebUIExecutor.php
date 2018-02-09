@@ -1821,8 +1821,7 @@ class WebUIExecutor {
             case "edit_resource":
                 // id passed is actually resourceID, 
                 $resourceID = $input["constellationid"];
-                $version = $input["version"];
-                $resource = $this->connect->lookupResource($resourceID, $version);
+                $resource = $this->connect->lookupResource($resourceID);
                 
                 $display->setData(array("title"=> "Edit a Resource",
                                         "resource" => $resource));

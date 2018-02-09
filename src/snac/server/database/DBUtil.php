@@ -2897,63 +2897,37 @@ class DBUtil
      * @param  \snac\data\Resource $resource Resource object to save
      * @return \snac\data\Resource|boolean           The resource object saved with ID and version or false if not written
      */
-    public function writeResource($resource)
-    {
-        $op = $resource->getOperation();
-        if ($op == \snac\data\AbstractData::$OPERATION_INSERT)
-        {
-            $rid = null;
-            $version = null;
-            $repoID = null;
-            if ($resource->getRepository() != null)
-                $repoID = $resource->getRepository()->getID();
-            list($rid, $version) = $this->sql->insertResource($rid,
-                                                      $version,
-                                                      $resource->getTitle(),
-                                                      $resource->getAbstract(),
-                                                      $resource->getExtent(),
-                                                      $repoID,
-                                                      $this->thingID($resource->getDocumentType()), // xlink:role
-                                                      $this->thingID($resource->getEntryType()), // relationEntry@localType
-                                                      $resource->getLink(), // xlink:href
-                                                      $resource->getSource(), // objectXMLWrap
-                                                      $resource->getDate(),
-                                                      $resource->getDisplayEntry());
-            $resource->setID($rid);
-            $resource->setVersion($version);
-            $this->saveOriginationNames($resource);
-            $this->saveResourceLanguages($resource);
-            // Return the full resource
-            return $this->populateResource($rid, $version);
-        }
-        if ($op == \snac\data\AbstractData::$OPERATION_UPDATE) { 
-            $repoID = null;
-            
-            if ($resource->getRepository() != null)
-                $repoID = $resource->getRepository()->getID();
-                
-            list($rid, $version) = $this->sql->updateResource($resource->getID(),
-                                                    $resource->getVersion(),
-                                                    $resource->getTitle(),
-                                                    $resource->getAbstract(),
-                                                    $resource->getExtent(),
-                                                    $repoID,
-                                                    $this->thingID($resource->getDocumentType()), // xlink:role
-                                                    $this->thingID($resource->getEntryType()), // relationEntry@localType
-                                                    $resource->getLink(), // xlink:href
-                                                    $resource->getSource(), // objectXMLWrap
-                                                    $resource->getDate(),
-                                                    $resource->getDisplayEntry());
-                                                      
-            $resource->setID($rid);
-            $resource->setVersion($version);
-            $this->saveOriginationNames($resource);
-            $this->saveResourceLanguages($resource);
-            // Return the full resource
-            return $this->populateResource($rid, $version);
-        }
-        return false;
-    }
+     public function writeResource($resource) {
+         $op = $resource->getOperation();
+         if ($op == \snac\data\AbstractData::$OPERATION_INSERT) {
+             $rid = null;     
+         } elseif ($op == \snac\data\AbstractData::$OPERATION_UPDATE) {
+             $rid = $resource->getID();
+         }
+         $version = null;
+         $repoID = null;
+             
+         if ($resource->getRepository() != null)
+             $repoID = $resource->getRepository()->getID();
+         list($rid, $version) = $this->sql->insertResource($rid, 
+                                                   $version,
+                                                   $resource->getTitle(),
+                                                   $resource->getAbstract(),
+                                                   $resource->getExtent(),
+                                                   $repoID,
+                                                   $this->thingID($resource->getDocumentType()), // xlink:role
+                                                   $this->thingID($resource->getEntryType()), // relationEntry@localType
+                                                   $resource->getLink(), // xlink:href
+                                                   $resource->getSource(), // objectXMLWrap
+                                                   $resource->getDate(),
+                                                   $resource->getDisplayEntry());
+         $resource->setID($rid);
+         $resource->setVersion($version);
+         $this->saveOriginationNames($resource);
+         $this->saveResourceLanguages($resource);
+         // Return the full current resource or false if not written
+         return $this->readResource($rid) || false; 
+     }
 
     /**
      * Read Resource By Data
