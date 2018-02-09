@@ -29,6 +29,7 @@ $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE,
 $automate = false;
 $ingest_all = false;
 $datamerge = "/data/merge/";
+$datamergesample = "/data/merge-sample/";
 
 if ($argc == 2 && $argv[1] == "automate")
     $automate = true;
@@ -384,12 +385,12 @@ else
     echo "yes\n";
 
 if ($response == "yes") {
-    echo "  What is the full path to the SNAC merged CPF? [default: $datamerge]\n  :";
+    echo "  What is the full path to the SNAC merged CPF? [default: $datamergesample]\n  :";
     $dir = null;
     if (!$automate)
         $dir = trim(fgets(STDIN));
     if ($dir == null || $dir == "")
-        $dir = $datamerge;
+        $dir = $datamergesample;
     $retval = 0;
     echo "  Attempting to ingest sample records from $dir.\n";
     /* 
