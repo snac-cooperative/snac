@@ -2943,7 +2943,10 @@ class DBUtil
         if ($resource === null)
             false;
         // check if resource exists in database
-        $result = $this->sql->selectResourceByData($resource->getTitle(), $resource->getLink(), $resource->getDocumentType()->getID());
+        $documentType = null;
+        if ($resource->getDocumentType() != null)
+            $documentType = $resource->getDocumentType()->getID();
+        $result = $this->sql->selectResourceByData($resource->getTitle(), $resource->getLink(), $documentType);
         
         if ($result === false)
             return false;
