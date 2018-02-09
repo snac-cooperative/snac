@@ -109,6 +109,10 @@ $(document).ready(function() {
                             <td>
                                 <p>Initial ingest from EAC-CPF</p>
                             </td>
+                        {% elseif history.data and history.status == 'merge split' %}
+                            <td>
+                                <p>{{ history.data.action == 'merge' ? "Merged" : "Split"}} Constellation</p>
+                            </td>
                         {% else %}
                             <td><p>{{ history.note }}</p></td>
                         {% endif %}
@@ -140,6 +144,31 @@ $(document).ready(function() {
                                                     <p style="margin-left: 20px;">{{otherid.uri}}<br>
                                                         <em>{{otherid.type.term}}</em>
                                                     </p>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elseif history.data and history.status == 'merge split' %}
+                                <p><a href="#" class='btn btn-sm btn-warning' data-toggle="modal" data-target="#modal{{i}}">More Information</a></p>
+
+                                <div class="modal fade" id="modal{{i}}" tabindex="-1" role="dialog" aria-labelledby="AdditionalDetails">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                <h4 class="modal-title" id="modal{{i}}_label">Additional Details - {{history.date|date('Y-m-d h:m:s a')}}</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>This Constellation was {{ history.data.action == 'merge' ? "merged" : "split"}} from the following Constellation(s):</p>
+                                                {% if history.data.arks %}
+                                                <h5 style="font-weight: bold;">Previous ARK Identifiers</h5>
+                                                {% for ark in history.data.arks %}
+                                                <p style="margin-left: 20px;">{{ark}}</p>
                                                 {% endfor %}
                                                 {% endif %}
                                             </div>

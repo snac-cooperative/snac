@@ -876,7 +876,7 @@ class DBUtil
                 'status' => $h['status'],
                 'note' => $h['note']
             ];
-            if ($event['status'] == 'ingest cpf') {
+            if ($event['status'] == 'ingest cpf' || $event['status'] == 'merge split') {
                 $event['data'] = json_decode($event['note'], true);
                 $event['note'] = "";
             }
