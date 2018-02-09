@@ -34,7 +34,7 @@ run_test:
 run_test_coverage:
   script:
     - vendor/bin/phpunit -v --coverage-html coverage/ --coverage-text 
-    - rsync -av coverage /lv2/snac/docs/
+    - rsync -avO coverage /lv2/snac/docs/
   stage: test
   only:
     - development
