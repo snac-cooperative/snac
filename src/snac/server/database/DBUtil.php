@@ -2916,7 +2916,9 @@ class DBUtil
                                                       $this->thingID($resource->getDocumentType()), // xlink:role
                                                       $this->thingID($resource->getEntryType()), // relationEntry@localType
                                                       $resource->getLink(), // xlink:href
-                                                      $resource->getSource()); // objectXMLWrap
+                                                      $resource->getSource(), // objectXMLWrap
+                                                      $resource->getDate(),
+                                                      $resource->getDisplayEntry());
             $resource->setID($rid);
             $resource->setVersion($version);
             $this->saveOriginationNames($resource);
@@ -2939,7 +2941,9 @@ class DBUtil
                                                     $this->thingID($resource->getDocumentType()), // xlink:role
                                                     $this->thingID($resource->getEntryType()), // relationEntry@localType
                                                     $resource->getLink(), // xlink:href
-                                                    $resource->getSource()); // objectXMLWrap
+                                                    $resource->getSource(), // objectXMLWrap
+                                                    $resource->getDate(),
+                                                    $resource->getDisplayEntry());
                                                       
             $resource->setID($rid);
             $resource->setVersion($version);
@@ -3298,6 +3302,8 @@ class DBUtil
                 $rObj->setTitle($oneRes['title']);
                 $rObj->setExtent($oneRes['extent']);
                 $rObj->setAbstract($oneRes['abstract']);
+                $rObj->setDate($oneRes['date']);
+                $rObj->setDisplayEntry($oneRes['display_entry']);  
                 if (isset($oneRes['repo_ic_id']) && $oneRes['repo_ic_id'] !== null && $oneRes['repo_ic_id'] !== '') {
                     if (!isset($repoCache[$oneRes['repo_ic_id']])) {
                         $repoCache[$oneRes['repo_ic_id']] = $this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY);
@@ -3372,6 +3378,8 @@ class DBUtil
             $rObj->setTitle($oneRes['title']);
             $rObj->setExtent($oneRes['extent']);
             $rObj->setAbstract($oneRes['abstract']);
+            $rObj->setDate($oneRes['date']);
+            $rObj->setDisplayEntry($oneRes['display_entry']);
             $rObj->setRepository($this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
             $rObj->setDBInfo($oneRes['version'], $oneRes['id']);
             $this->populateOriginationNames($rObj);
@@ -4520,6 +4528,8 @@ class DBUtil
             $resource->setTitle($result['title']);
             $resource->setExtent($result['extent']);
             $resource->setAbstract($result['abstract']);
+            $resource->setDate($result['date']);
+            $resource->setDisplayEntry($result['displayEntry']);
             $resource->setRepository($this->readPublishedConstellationByID($result['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
 
             array_push($return, $resource);

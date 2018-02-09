@@ -786,16 +786,18 @@ create index related_resource_idx3 on related_resource(resource_id, resource_ver
 
 -- Resources are cached directly, but also versioned
 create table resource_cache (
-        id         int default nextval('resource_id_seq'),
-        version    int default nextval('resource_version_id_seq'),
-        is_deleted boolean default false,
-        href       text,
-        type       int,
-        entry_type int,
-        title      text,
-        abstract   text,
-        extent     text,
-        repo_ic_id int,
+        id            int default nextval('resource_id_seq'),
+        version       int default nextval('resource_version_id_seq'),
+        is_deleted    boolean default false,
+        href          text,
+        type          int,
+        entry_type    int,
+        title         text,
+        abstract      text,
+        date          text,
+        display_entry text,
+        extent        text,
+        repo_ic_id    int,
         object_xml_wrap text,
         primary key (id, version)
         );

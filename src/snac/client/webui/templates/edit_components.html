@@ -676,12 +676,30 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="resource_displayEntry_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceDisplayEntry.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_resource_displayEntry_{{i}}">
+                            <input id="resource_displayEntry_{{i}}" name="resource_displayEntry_{{i}}" type="hidden" class="form-control" value="{{ resource.displayEntry }}"/>
+                            <p class="form-control-static" id="resource_displayEntryText_{{i}}">{{ resource.displayEntry }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="resource_title_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceTitle.display }}
                         </label>
                         <div class="col-xs-8" id="text_resource_title_{{i}}">
                             <input id="resource_title_{{i}}" name="resource_title_{{i}}" type="hidden" class="form-control" value="{{ resource.title }}"/>
                             <p class="form-control-static" id="resource_titleText_{{i}}">{{ resource.title }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="resource_date_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceDate.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_resource_date_{{i}}">
+                            <input id="resource_date_{{i}}" name="resource_date_{{i}}" type="hidden" class="form-control" value="{{ resource.date }}"/>
+                            <p class="form-control-static" id="resource_dateText_{{i}}">{{ resource.date }}</p>
                         </div>
                     </div>
                     <div class="form-group">

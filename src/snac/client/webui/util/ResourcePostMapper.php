@@ -194,6 +194,8 @@ class ResourcePostMapper {
             $this->resource->setTitle($data["title"]);
             $this->resource->setAbstract($data["abstract"]);
             $this->resource->setExtent($data["extent"]);
+            $this->resource->setDate($data["date"]);
+            $this->resource->setDisplayEntry($data["displayEntry"]);
             $this->resource->setLink($data["link"]);
 
             $this->resource->setDocumentType($this->parseTerm($data["documentType"]));

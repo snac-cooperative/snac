@@ -312,6 +312,14 @@
         "display" : "Abstract",
         "tooltip" : "The abstract of this resource"
     },
+    "resourceDisplayEntry" : {
+        "display" : "Display Entry",
+        "tooltip" : "The descriptive display name of this resource"
+    },
+    "resourceDate" : {
+        "display" : "Date",
+        "tooltip" : "The date of this resource"
+    },
     "resourceExtent" : {
         "display" : "Extent",
         "tooltip" : "The extent of this resource"

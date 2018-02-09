@@ -1,122 +1,130 @@
 <form id="resource-form">
-<div class="row">
-    <div class="col-md-8">
-    
+    <div class="row">
+        <div class="col-md-8">
 
-        <div class="form-horizontal">
+            <div class="form-horizontal">
 
                 <!-- HIDDEN VALUES-->
-                <input  name="resource_operation_0" type="hidden" value="{{ operation }}">
-                <!-- <input  name="resource_documentType_vocabtype_0" type="hidden" value="document_type"> -->
-                <input  name="resource_id_0" type="hidden" value="{{data.resource.id}}"/>     
-                <input  name="resource_version_0" type="hidden" value="{{data.resource.version}}">
+                <input name="resource_operation_0" type="hidden" value="{{ operation }}">
+                <!-- <input name="resource_documentType_vocabtype_0" type="hidden" value="document_type"> -->
+                <input name="resource_id_0" type="hidden" value="{{data.resource.id}}"/>
+                <input name="resource_version_0" type="hidden" value="{{data.resource.version}}">
 
-            <div class="form-group">
-                <label class="control-label col-xs-4">Title</label>
-                <div class="col-xs-8">
-                    <input type="text" name="resource_title_0" class="form-control" value="{{data.resource.title}}" required>
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Resource Type</label>
+                    <div class="col-xs-8" id="typeDiv">
+                        <select id="type" name="resource_documentType_id_0" class="form-control" required="required">
+                            <option value="{{data.resource.documentType.id}}" selected="selected">
+                                {{data.resource.documentType.term}}</option>
+                            <!-- TODO: select2 with vocab type document_type minleng 0 -->
+                            <option value="696">ArchivalResource</option>
+                            <option value="697">BibliographicResource</option>
+                            <option value="400479">DigitalArchivalResource</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="control-label col-xs-4">Relation Entry</label>
-                <div class="col-xs-8">
-                    <input type="text" name="relation_entry_0" class="form-control" value="{{data.resource.relationEntry}}" required>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="control-label col-xs-4">Date</label>
-                <div class="col-xs-8">
-                    <input type="text" name="resource_date_0" class="form-control" value="{{data.resource.date}}" required>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="control-label col-xs-4">Language</label>
-                <div class="col-xs-8">
-                    <!-- TODO: language as select values -->
-                    {{data.resource.language.toArray()}}
-                    <input type="text" name="" class="form-control" value="{{data.resource.language.toArray()}}" required>
-                </div>
-            </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4">Resource Type</label>
-                <div class="col-xs-8" id="typeDiv">
-                    <select id="type" name="resource_documentType_id_0" class="form-control" required>
-                        <option value="{{data.resource.documentType.id}}"> {{data.resource.documentType.term}}</option>
-                        <option value="696">ArchivalResource</option>
-                        <option value="697">BibliographicResource</option>
-                        <option value="400479">DigitalArchivalResource</option>
-                    </select>
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Display Entry</label>
+                    <div class="col-xs-8">
+                        <input type="text" name="resource_displayEntry_0" class="form-control" value="{{data.resource.displayEntry}}" required="required">
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4">HREF</label>
-                <div class="col-xs-8">
-                    <input type="text" name="resource_link_0" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Title</label>
+                    <div class="col-xs-8">
+                        <input type="text" name="resource_title_0" class="form-control" value="{{data.resource.title}}" required="required">
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4">Abstract</label>
-                <div class="col-xs-8">
-                    <textarea  name="resource_abstract_0" class="form-control" rows="3">{{data.resource.abstract}}</textarea>
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Date</label>
+                    <div class="col-xs-8">
+                        <input type="text" name="resource_date_0" class="form-control" value="{{data.resource.date}}">
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4">Holding Institution</label>
-                <div class="col-xs-8">                    
-                    <div class="control-label">
-                        <a href="{{data.resource.repository.ark}}" target="_blank">
-                            {{data.resource.repository.nameEntries[0].original}}
-                        </a>
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Language</label>
+                    <div class="col-xs-8">
+                        <!-- TODO: language as select values, multiple -->
+                        {{data.resource.language.toArray()}}
+                        <input type="text" name="" class="form-control" value="{{data.resource.language.toArray()}}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">HREF</label>
+                    <div class="col-xs-8">
+                        <input type="text" name="resource_link_0" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Abstract</label>
+                    <div class="col-xs-8">
+                        <textarea name="resource_abstract_0" class="form-control" rows="3">{{data.resource.abstract}}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Holding Institution</label>
+                    <div class="col-xs-8">
+                        <div class="control-label">
+                            <a href="{{data.resource.repository.ark}}" target="_blank">
+                                {{data.resource.repository.nameEntries[0].original}}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Repository ID</label>
+                    <div class="col-xs-8">
+                        <input type="number" name="resource_repo_0" class="form-control" value="{{data.resource.repository.id}}" placeholder="(SNAC ID)" disabled="disabled"/>
+                        <div class="col-xs-8">
+                            <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            
-            <div class="form-group">
-               <label class="control-label col-xs-4">Repository ID</label>
-               <div class="col-xs-8">
-                   <input type="number" name="resource_repo_0" class="form-control" value="{{data.resource.repository.id}}" placeholder="(SNAC ID)" disabled/>
-                   <div class="col-xs-8">
-                       <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
-                   </div>
-               </div>
-           </div>
-
-
-    </div>
-
-</div>
-<div class="col-md-4">
-    <!-- Right Column -->
-
-    <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
-        <p>Saving Resource...</p>
-    </div><!-- end alert -->
-    <div class="alert alert-01 alert-success" id="success-message" style="display: none">
-        <p>Successfully saved!</p>
-    </div><!-- end alert -->
-    <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
-        <p>An error occured while saving</p>
-    </div><!-- end alert -->
-
-    <div class="panel panel-primary">
-        <div class="panel-heading">
-            <h3 class="panel-title">Actions</h3>
         </div>
-        <div class="panel-body">
-            <div class="list-group">
-                <button type="submit" class="list-group-item list-group-item-info" id="save-resource-btn"><i class="fa fa-fw fa-floppy-o"></i> Save Resource </button>
-                <a href="#" class="list-group-item list-group-item-danger" id="vocab_dashboard_cancel"><i class="fa fa-fw fa-times-circle"></i> Cancel </a>
+
+        <div class="col-md-4">
+            <!-- Right Column -->
+
+            <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+                <p>Saving Resource...</p>
             </div>
+            <!-- end alert -->
+            <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+                <p>Successfully saved!</p>
+            </div>
+            <!-- end alert -->
+            <div class="alert alert-01 alert-danger" id="error-message" style="display: none">
+                <p>An error occured while saving</p>
+            </div>
+            <!-- end alert -->
 
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Actions</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="list-group">
+                        <button type="submit" class="list-group-item list-group-item-info" id="save-resource-btn">
+                            <i class="fa fa-fw fa-floppy-o"></i>
+                            Save Resource
+                        </button>
+                        <a href="#" class="list-group-item list-group-item-danger" id="vocab_dashboard_cancel">
+                            <i class="fa fa-fw fa-times-circle"></i>
+                            Cancel
+                        </a>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
-</div>
 </form>

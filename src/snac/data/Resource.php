@@ -123,6 +123,21 @@ class Resource extends AbstractData {
 
 
     /**
+     * Date of the resource
+     *
+     * @var string Date of resource
+     */
+    private $date = null;
+    
+    /**
+     * Display Entry, a descriptive summary name of the resource
+     *
+     * @var string Display Entry
+     */
+    private $displayEntry = null;
+
+
+    /**
      * Origination (creator) of the resource
      * @var string[] List of origination names (names of the creators) of this resource.
      */
@@ -206,6 +221,42 @@ class Resource extends AbstractData {
     public function setExtent($extent) {
         $this->extent = $extent;
     }
+
+    /**
+     * Get date of the archival resource
+     *
+     * @return string Date of the resource
+     */
+    public function getDate() {
+        return $this->date;
+    }
+
+    /**
+     * Set date of the archival resource
+     *
+     * @param string Date describing the resource
+     */
+    public function setDate($date) {
+        $this->date = $date;
+    }
+
+    /**
+     * Get display entry of the resource
+     *
+     * @return string Display Entry
+     */
+     public function getDisplayEntry() {
+         return $this->displayEntry;
+     }
+     
+     /**
+      * Set display entry of the resource
+      *
+      * @param string Display Entry
+      */
+     public function setDisplayEntry($displayEntry) {
+         $this->displayEntry = $displayEntry;
+     }
 
     /**
      * Get repository
@@ -386,6 +437,8 @@ class Resource extends AbstractData {
             "title" => $this->title,
             "abstract" => $this->abstract,
             "extent" => $this->extent,
+            "date" => $this->date,
+            "displayEntry" => $this->displayEntry,
             "originationNames" => array(),
             "languages" => array(),
             "repository" => $this->repository == null ? null : $this->repository->toArray($shorten)
@@ -481,6 +534,16 @@ class Resource extends AbstractData {
             $this->extent = $data["extent"];
         else
             $this->extent = null;
+
+        if (isset($data["date"]))
+            $this->date = $data["date"];
+        else
+            $this->date = null;
+
+        if (isset($data["displayEntry"]))
+            $this->displayEntry = $data["displayEntry"];
+        else
+            $this->displayEntry = null;
 
         if (isset($data["repository"]) && $data["repository"] != null)
             $this->repository = new \snac\data\Constellation($data["repository"]);

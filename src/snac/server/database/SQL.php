@@ -3143,7 +3143,7 @@ class SQL
     }
 
     /**
-     * Get laguages for list of resources
+     * Get languages for list of resources
      *
      * Returns the list of all languages for a given array of resource ids.
      *
@@ -3814,6 +3814,8 @@ class SQL
      * @param  int $entryTypeID     Entity Type ID
      * @param  text|null $link            Link for this resource
      * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
+     * @param  text|null $date            Text entry date of this resource
+     * @param  text|null $displayEntry    Display Entry of resource
      * @return string[]                  Array containing id, version
      */
     public function insertResource(        $resourceID,
@@ -3825,7 +3827,9 @@ class SQL
                                            $docTypeID,
                                            $entryTypeID,
                                            $link,
-                                           $objectXMLWrap)
+                                           $objectXMLWrap,
+                                           $date,
+                                           $displayEntry)
     {
         if (! $resourceID)
         {
@@ -3837,9 +3841,9 @@ class SQL
         $qq = 'insert_resource';
         $this->sdb->prepare($qq,
                             'insert into resource_cache
-                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap)
+                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
@@ -3852,17 +3856,20 @@ class SQL
                           $docTypeID,         // 7
                           $entryTypeID,       // 8
                           $link,              // 9
-                          $objectXMLWrap);    // 10
+                          $objectXMLWrap,     // 10  
+                          $date,              // 11
+                          $displayEntry);     // 12
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return array($resourceID, $resourceVersion);
     }
     
     
+    
     /**
      * Update resource
      *
-     * @param  int|null $resourceID      Resource ID
+     * @param  int $resourceID      Resource ID
      * @param  int|null $resourceVersion Resource version
      * @param  string $title           Title of the resource
      * @param  string $abstract        Abstract of the resource
@@ -3872,6 +3879,8 @@ class SQL
      * @param  int $entryTypeID     Entity Type ID
      * @param  text|null $link            Link for this resource
      * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
+     * @param  text|null $date            Text entry date of this resource
+     * @param  text|null $displayEntry    Display Entry of resource
      * @return string[]                  Array containing id, version
      */
     public function updateResource($resourceID,
@@ -3883,14 +3892,16 @@ class SQL
                                    $docTypeID,
                                    $entryTypeID,
                                    $link,
-                                   $objectXMLWrap) {
-
+                                   $objectXMLWrap,
+                                   $date,
+                                   $displayEntry) {
+    
         $newResourceVersion = $this->selectResourceVersion();
-        $qq = 'insert_resource';
+        $qq = 'update_resource';
         $this->sdb->prepare($qq,
                             'update resource_cache set
                              version = $2, title = $3, abstract = $4, extent = $5, repo_ic_id = $6,
-                             type = $7, entry_type = $8, href = $9, object_xml_wrap = $10
+                             type = $7, entry_type = $8, href = $9, object_xml_wrap = $10, date = $11, display_entry = $12
                              where id = $1');
 
         $execList = array($resourceID,            // 1
@@ -3902,7 +3913,9 @@ class SQL
                           $docTypeID,             // 7
                           $entryTypeID,           // 8
                           $link,                  // 9
-                          $objectXMLWrap);        // 10  
+                          $objectXMLWrap,         // 10  
+                          $date,                  // 11
+                          $displayEntry);         // 12
         $this->sdb->execute($qq, $execList);  
         $this->sdb->deallocate($qq);
         return array($resourceID, $newResourceVersion);
@@ -4658,7 +4671,7 @@ class SQL
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
             'select rr.*, r.type as document_type, r.href, r.object_xml_wrap, r.title, r.extent,
-                    r.abstract, r.repo_ic_id from
+                    r.abstract, r.date, r.display_entry, r.repo_ic_id from
                 (select aa.id, aa.version, aa.ic_id,
                         aa.relation_entry, aa.descriptive_note, aa.arcrole,
                         aa.resource_id, aa.resource_version
@@ -4697,7 +4710,7 @@ class SQL
        $this->sdb->prepare($qq,
                            'select
                            aa.id, aa.version, aa.title, aa.href, aa.abstract, aa.extent, aa.repo_ic_id,
-                           aa.object_xml_wrap, aa.type
+                           aa.object_xml_wrap, aa.type, aa.date, aa.display_entry
                            from resource_cache as aa,
                            (select max(version) as version from resource_cache where version<=$1 and id=$2) as bb
                            where not aa.is_deleted and
@@ -5505,12 +5518,12 @@ class SQL
     public function searchResources($query, $urlOnly = false)
     {
         $queryStr =
-                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id, date, display_entry
                   from resource_cache
                   where href = $1 or title ilike $1 order by title asc';
         if ($urlOnly) {
             $queryStr =
-                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id, date, display_entry
                   from resource_cache
                   where href = $1 order by title asc';
         }
