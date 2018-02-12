@@ -243,7 +243,7 @@ create table privilege (
 
 create table privilege_role_link (
         pid        int,                -- fk to privilege.id
-        rid        int                -- fk to role.id
+        rid        int,                -- fk to role.id
         constraint pr_link_unique unique (pid, rid)
     );
 
@@ -786,19 +786,21 @@ create index related_resource_idx3 on related_resource(resource_id, resource_ver
 
 -- Resources are cached directly, but also versioned
 create table resource_cache (
-        id            int default nextval('resource_id_seq'),
-        version       int default nextval('resource_version_id_seq'),
-        is_deleted    boolean default false,
-        href          text,
-        type          int,
-        entry_type    int,
-        title         text,
-        abstract      text,
-        date          text,
-        display_entry text,
-        extent        text,
-        repo_ic_id    int,
-        object_xml_wrap text,
+        id               int default nextval('resource_id_seq'),
+        version          int default nextval('resource_version_id_seq'),
+        is_deleted       boolean default false,
+        href             text,
+        type             int,
+        entry_type       int,
+        title            text,
+        abstract         text,
+        date             text,
+        display_entry    text,
+        extent           text,
+        repo_ic_id       int,
+        object_xml_wrap  text,
+        user_id          int,
+        timestamp        timestamp default(now()),
         primary key (id, version)
         );
 

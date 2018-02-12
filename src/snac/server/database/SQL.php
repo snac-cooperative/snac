@@ -3816,6 +3816,7 @@ class SQL
      * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
      * @param  text|null $date            Text entry date of this resource
      * @param  text|null $displayEntry    Display Entry of resource
+     * @param  int $userid               The userid of the user
      * @return string[]                  Array containing id, version
      */
     public function insertResource(        $resourceID,
@@ -3829,7 +3830,8 @@ class SQL
                                            $link,
                                            $objectXMLWrap,
                                            $date,
-                                           $displayEntry)
+                                           $displayEntry,
+                                           $userID)
     {
         if (! $resourceID)
         {
@@ -3841,9 +3843,9 @@ class SQL
         $qq = 'insert_resource';
         $this->sdb->prepare($qq,
                             'insert into resource_cache
-                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry)
+                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry, user_id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
@@ -3858,7 +3860,8 @@ class SQL
                           $link,              // 9
                           $objectXMLWrap,     // 10  
                           $date,              // 11
-                          $displayEntry);     // 12
+                          $displayEntry,      // 12
+                          $userID);          // 13
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return array($resourceID, $resourceVersion);

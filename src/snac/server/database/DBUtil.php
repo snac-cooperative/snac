@@ -2894,16 +2894,22 @@ class DBUtil
      *
      * Save a resource
      *
+     * @param \snac\data\User $user The user writing the resource 
      * @param  \snac\data\Resource $resource Resource object to save
      * @return \snac\data\Resource|boolean           The resource object saved with ID and version or false if not written
      */
-     public function writeResource($resource) {
+     public function writeResource($user, $resource) {
+         
+         if ($user == null || $user->getUserID() == null)
+             return false;
+    
          $op = $resource->getOperation();
          if ($op == \snac\data\AbstractData::$OPERATION_INSERT) {
              $rid = null;     
          } elseif ($op == \snac\data\AbstractData::$OPERATION_UPDATE) {
              $rid = $resource->getID();
          }
+         
          $version = null;
          $repoID = null;
              
@@ -2920,7 +2926,8 @@ class DBUtil
                                                    $resource->getLink(), // xlink:href
                                                    $resource->getSource(), // objectXMLWrap
                                                    $resource->getDate(),
-                                                   $resource->getDisplayEntry());
+                                                   $resource->getDisplayEntry(),
+                                                   $user->getUserID());
          $resource->setID($rid);
          $resource->setVersion($version);
          $this->saveOriginationNames($resource);

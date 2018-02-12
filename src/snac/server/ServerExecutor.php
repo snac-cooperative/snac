@@ -1347,7 +1347,7 @@ class ServerExecutor {
             }
 
             try {
-                $result = $this->cStore->writeResource($resource);
+                $result = $this->cStore->writeResource($this->user, $resource);
                 if (isset($result) && $result != false) {
                     $this->elasticSearch->writeToResourceIndices($resource);
                     $this->neo4J->updateResourceIndex($resource);
