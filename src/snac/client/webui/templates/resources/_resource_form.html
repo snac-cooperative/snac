@@ -9,17 +9,14 @@
                 <!-- <input name="resource_documentType_vocabtype_0" type="hidden" value="document_type"> -->
                 <input name="resource_id_0" type="hidden" value="{{data.resource.id}}"/>
                 <input name="resource_version_0" type="hidden" value="{{data.resource.version}}">
+                <input name="resource_extent_0" type="hidden" value="">
 
                 <div class="form-group">
                     <label class="control-label col-xs-4">Resource Type</label>
                     <div class="col-xs-8" id="typeDiv">
-                        <select id="type" name="resource_documentType_id_0" class="form-control" required="required">
+                        <select id="resource-type-select" name="resource_documentType_id_0" class="form-control" required>
                             <option value="{{data.resource.documentType.id}}" selected="selected">
                                 {{data.resource.documentType.term}}</option>
-                            <!-- TODO: select2 with vocab type document_type minleng 0 -->
-                            <option value="696">ArchivalResource</option>
-                            <option value="697">BibliographicResource</option>
-                            <option value="400479">DigitalArchivalResource</option>
                         </select>
                     </div>
                 </div>
@@ -27,14 +24,14 @@
                 <div class="form-group">
                     <label class="control-label col-xs-4">Display Entry</label>
                     <div class="col-xs-8">
-                        <input type="text" name="resource_displayEntry_0" class="form-control" value="{{data.resource.displayEntry}}" required="required">
+                        <input type="text" name="resource_displayEntry_0" class="form-control" value="{{data.resource.displayEntry}}" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label col-xs-4">Title</label>
                     <div class="col-xs-8">
-                        <input type="text" name="resource_title_0" class="form-control" value="{{data.resource.title}}" required="required">
+                        <input type="text" name="resource_title_0" class="form-control" value="{{data.resource.title}}" required>
                     </div>
                 </div>
 
@@ -42,15 +39,6 @@
                     <label class="control-label col-xs-4">Date</label>
                     <div class="col-xs-8">
                         <input type="text" name="resource_date_0" class="form-control" value="{{data.resource.date}}">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="control-label col-xs-4">Language</label>
-                    <div class="col-xs-8">
-                        <!-- TODO: language as select values, multiple -->
-                        {{data.resource.language.toArray()}}
-                        <input type="text" name="" class="form-control" value="{{data.resource.language.toArray()}}">
                     </div>
                 </div>
 
@@ -65,6 +53,15 @@
                     <label class="control-label col-xs-4">Abstract</label>
                     <div class="col-xs-8">
                         <textarea name="resource_abstract_0" class="form-control" rows="3">{{data.resource.abstract}}</textarea>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-4">Language</label>
+                    <div class="col-xs-8">
+                        <!-- TODO: language as select values, multiple -->
+                        {{data.resource.language.toArray()}}
+                        <input type="text" name="" class="form-control" value="{{data.resource.language.toArray()}}">
                     </div>
                 </div>
 

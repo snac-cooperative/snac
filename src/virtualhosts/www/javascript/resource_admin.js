@@ -64,4 +64,7 @@ $(document).ready(function() {
         });
     }
 
+    loadVocabSelectOptions($('#resource-type-select'), "document_type");
+    // loadVocabSelectOptions($('#select_language_code_0'), "language_code")
+    // loadVocabSelectOptions($('#select_language_script_0'), "script_code")  
 });
