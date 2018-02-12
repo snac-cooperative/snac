@@ -2926,7 +2926,7 @@ class DBUtil
          $this->saveOriginationNames($resource);
          $this->saveResourceLanguages($resource);
          // Return the full current resource or false if not written
-         return $this->readResource($rid) || false; 
+         return $this->readResource($rid) ?? false; 
      }
 
     /**

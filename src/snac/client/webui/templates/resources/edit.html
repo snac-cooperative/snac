@@ -36,44 +36,23 @@ $('.selectpicker').selectpicker();
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="{{control.snacURL}}/javascript/vocab_admin.js{{control.noCache}}"></script>
-<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/resource_admin.js{{control.noCache}}"></script>
 
 <script>
     $(document).ready(function() {
 
-        var $resourceForm = $('#resource-form');
-
-        $resourceForm.on('submit', function(e) {
-            e.preventDefault();
-            $('#notification-message').html("<p>Saving Resource... Please wait.</p>");
-            $('#notification-message').slideDown();
-
-            $.post(snacUrl+"/save_resource", $resourceForm.serialize(), function(data) {
-                // resourceResult = data;
-                // $('body').append(resourceResult);
-            })
-            .success(function(){
-                $('#success-message').html("<p>Resource successfully saved. Going to resource search.</p>");
-                $('#success-message').slideDown();
-                setTimeout(function(){
-                    // Go to search
-                    window.location.href = snacUrl+"/vocab_administrator/resources";
-                }, 1500);
-            })
-        });
-        
         function markEdited() {
              $( "input, select, textarea" ).on("change", function(e) {
-                 $(e.target).addClass('edited-field')
+                 $(e.target).addClass('edited-field');
             });
         }
-        markEdited()
+        markEdited();
     });
 </script>
+
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
