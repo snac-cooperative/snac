@@ -176,7 +176,9 @@
                     {% endif %}
                   </span>
                </h1>
+               {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
                <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
+               {% endif %}
 
 
             </div>
@@ -525,12 +527,23 @@
                               <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
                            </div>
                            <div title="alternative forms of name" class="extra-names modal-body">
-                              {% for nameEntry in data.new.nameEntries %}
-                                <div class="updated">{{nameEntry.original}}</div>
-                              {% endfor %}
-                              {% for nameEntry in data.nameEntries %}
-                                <div>{{nameEntry.original}}</div>
-                              {% endfor %}
+                              {# ignore the preferred name #}
+                              {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
+                                  {% for nameEntry in data.new.nameEntries|slice(1) %}
+                                    <div class="updated">{{nameEntry.original}}</div>
+                                  {% endfor %}
+                                  {% for nameEntry in data.nameEntries %}
+                                    <div>{{nameEntry.original}}</div>
+                                  {% endfor %}
+                              {% else %}
+                                  {% for nameEntry in data.new.nameEntries %}
+                                    <div class="updated">{{nameEntry.original}}</div>
+                                  {% endfor %}
+                                  {% for nameEntry in data.nameEntries|slice(1) %}
+                                    <div>{{nameEntry.original}}</div>
+                                  {% endfor %}
+                              {% endif %}
+                              
                               {% for nameEntry in data.old.nameEntries %}
                                 <div class="older">{{nameEntry.original}}</div>
                               {% endfor %}
