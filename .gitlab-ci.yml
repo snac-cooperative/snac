@@ -22,6 +22,7 @@ update_database:
     - cd install && php install.php automate
   stage: database_create
   only:
+    - never_run_this
 
 refresh_database:
   script:
