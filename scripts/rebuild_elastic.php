@@ -29,6 +29,14 @@ $db = new \snac\server\database\DatabaseConnector();
 // SNAC Wiki Util
 $wikiUtil = new \snac\server\util\WikipediaUtil();
 
+// Check input parameters
+$useWiki = true;
+if ($argc > 1) {
+    // Check whether to use wiki lookup
+    if ($argv[1] == "nowiki")
+        $useWiki = false;
+}
+
 // ElasticSearch Handler
 $eSearch = null;
 
@@ -370,13 +378,13 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
 
 function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
-    global $eSearch, $primaryBody, $primaryStart, $primaryCount, $wikiURLs, $wikiUtil, $counts;
+    global $eSearch, $primaryBody, $primaryStart, $primaryCount, $wikiURLs, $wikiUtil, $useWiki, $counts;
 
     // When adding to the main index, also ask Wikipedia for the image if they have one and add it.
     $hasImage = false;
     $imgURL = null;
     $imgMeta = null;
-    if (isset($wikiURLs[$icid])) {
+    if ($useWiki && isset($wikiURLs[$icid])) {
         list($hasImage, $imgURL, $imgMeta) = $wikiUtil->getWikiImage($ark);
     }
 
