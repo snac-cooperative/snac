@@ -27,9 +27,12 @@ use \Monolog\Handler\StreamHandler;
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
 $automate = false;
+$sqlfile = "backup.sql";
 
-if ($argc == 2 && $argv[1] == "automate")
+if ($argc > 1 && $argv[1] == "automate")
     $automate = true;
+if ($argc > 2)
+    $sqlfile = $argv[2];
 
 // Read the configuration file
 echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
@@ -130,12 +133,12 @@ else
     echo "yes\n";
 
 if ($response == "yes") {
-    echo "  What is the path to the user file to import? [default: backup.sql]\n  :";
+    echo "  What is the path to the user file to import? [default: $sqlfile]\n  :";
     $filename = null;
     if (!$automate)
         $filename = trim(fgets(STDIN));
     if ($filename == null || $filename == "")
-        $filename = "backup.sql";
+        $filename = $sqlfile;
     echo "  Running the SQL initialization script\n";
     $res = pg_query($dbHandle, file_get_contents($filename));
 
@@ -161,49 +164,24 @@ else
 if ($response == "yes" && \snac\Config::$USE_ELASTIC_SEARCH) {
     echo "  Emptying the Elastic Search Indices\n";
 
-    $eSearch = \Elasticsearch\ClientBuilder::create()
-            ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
-            ->setRetries(0)
-            ->build();
-
-    if ($eSearch != null) {
-        echo "   - connected to Elastic Search\n";
-        try {
-            $params = array("index" => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX);
-            $response = $eSearch->indices()->delete($params);
-            echo "   - deleted search index\n";
-        } catch (\Exception $e) {
-            echo "   - could not delete search index. It did not exist.\n";
-        }
-        try {
-            $params = array("index" => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX);
-            $response = $eSearch->indices()->delete($params);
-            echo "   - deleted resource search index\n";
-        } catch (\Exception $e) {
-            echo "   - could not delete resource search index. It did not exist.\n";
-        }
-        
-        /* 
-         * Run a system shell command, that sudos bash, then su's to postgres user,
-         * then creates the user and database from the Config class.
-         *
-         * If you are looking for the string Parsing: that shows up in the output, you want ingest_sample.php,
-         * which is the shell command being run below.
-         */
-        system("php rebuild_elastic.php nowiki\n", $retval);
-        if ($retval != 0) {
-            echo "   - here was a problem rebuilding the elastic search index.\n\n";
-        }
-
-        system("php rebuild_resource_elastic.php\n", $retval);
-        if ($retval != 0) {
-            echo "   - here was a problem rebuilding the elastic search resource index.\n\n";
-        }
-
-        echo "  Successfully refreshed the Elastic Search Indices.\n\n";
-    } else {
-        echo "  ERR: Unable to connect or delete Elastic Search index.\n";
+    /* 
+     * Run a system shell command, that sudos bash, then su's to postgres user,
+     * then creates the user and database from the Config class.
+     *
+     * If you are looking for the string Parsing: that shows up in the output, you want ingest_sample.php,
+     * which is the shell command being run below.
+     */
+    system("php rebuild_elastic.php nowiki\n", $retval);
+    if ($retval != 0) {
+        echo "   - there was a problem rebuilding the elastic search index.\n\n";
     }
+
+    system("php rebuild_resource_elastic.php\n", $retval);
+    if ($retval != 0) {
+        echo "   - there was a problem rebuilding the elastic search resource index.\n\n";
+    }
+
+    echo "  Successfully refreshed the Elastic Search Indices.\n\n";
 } else {
     echo "  Not refreshing the Elastic Search Indices.\n\n";
 }

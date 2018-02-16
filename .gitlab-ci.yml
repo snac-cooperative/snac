@@ -11,7 +11,7 @@ before_script:
 
 
 stages:
-  - database
+  - database_refresh
   - test
   - documentation
   - deploy
@@ -19,10 +19,20 @@ stages:
 update_database:
   script:
     - cd install && php install.php automate
-  stage: database
+  stage: database_create
   only:
     - development
     - master
+
+refresh_database:
+  script:
+    - cd scripts && php refresh.php automate /home/gitlab-runner/testing.sql
+  stage: database_refresh
+  only:
+    - development
+    - master
+    - test_backup
+
 
 run_test:
   script:
