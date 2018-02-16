@@ -11,6 +11,7 @@ before_script:
 
 
 stages:
+  - database_create
   - database_refresh
   - test
   - documentation
