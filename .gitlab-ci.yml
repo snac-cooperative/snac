@@ -22,8 +22,6 @@ update_database:
     - cd install && php install.php automate
   stage: database_create
   only:
-    - development
-    - master
 
 refresh_database:
   script:
