@@ -95,7 +95,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                         </button>                        
                         {% if data.viewSetting == "inbox" %}
                         <button type="button" id="archive_message" class="btn btn-default disabled" disabled>
-                            <i class="fa fa-trash" aria-hidden="true"></i> Archive
+                            <i class="fa fa-archive" aria-hidden="true"></i> Archive
                         </button>
                         {% endif %}
                     </div>
@@ -105,7 +105,11 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                     <thead>
                         <tr>
                             <th><i class="fa fa-circle" aria-hidden="true"></i></th>
+                            {% if data.viewSetting == "sent"%}
+                            <th>To</th>
+                            {% else %}
                             <th>From</th>
+                            {% endif %}
                             <th>Subject</th>
                             <th>Sent</th>
                         </tr>
@@ -128,6 +132,13 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                                 <input type="hidden" name="messageid" class="messageid" value="{{message.id}}">
                             </p></td>
                             <td><p>
+                            {% if data.viewSetting == "sent" %}
+                                {% if message.toUser %}
+                                    {{message.toUser.fullName}}
+                                {% else %}
+                                    Unknown (ERROR)
+                                {% endif %}
+                            {% else %}
                                 {% if message.fromString %}
                                     {{message.fromString}}
                                 {% elseif message.fromUser %}
@@ -135,6 +146,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                                 {% else %}
                                     Unknown (ERROR)
                                 {% endif %}
+                            {% endif %}
                             </p></td>
                             <td><p>{{ message.subject }}</p></td>
                             <td data-order="{{message.timestamp}}"><p>{{ message.timestamp|date('Y-m-d h:ia') }}</p></td>
@@ -161,6 +173,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
 <div id="message_template" style="display:none;">
     <div class="message">
         <strong>MESSAGE_SUBJECT</strong><br>
+            <strong>To:</strong> MESSAGE_TO<br>
             <strong>From:</strong> MESSAGE_FROM<br>
             <strong>Sent:</strong> MESSAGE_TIMESTAMP<br><br>
         MESSAGE_BODY

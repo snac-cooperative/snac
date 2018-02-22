@@ -61,6 +61,8 @@ function showMessage(messageID) {
                 html = html.replace(/MESSAGE_FROM/g, data.message.fromUser.fullName + " ("
                                         + data.message.fromUser.userName +")");
             }
+            html = html.replace(/MESSAGE_TO/g, data.message.toUser.fullName + " ("
+                                    + data.message.toUser.userName +")");
             currentMessage = data.message;
             $('#message_view_pane').html(html);
 
