@@ -72,7 +72,7 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
 
          //$cfile = fopen('new_constellation_test.json', 'w');
          //fwrite($cfile, $identity->toJSON(false));
-         //fclose($cfile); 
+         //fclose($cfile);
 
         $this->assertEquals($jsonIn, $identity->toJSON(false));
     }
@@ -331,6 +331,97 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
     }
 
     /**
+     * Test that equals() can ignore metadata
+     */
+     public function testEqualsCanIgnoreMetadata() {
+         $id1 = new \snac\data\Constellation();
+         $id2 = new \snac\data\Constellation();
+         $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
+         $id1->fromJSON($jsonIn);
+         $id2->fromJSON($jsonIn);
+
+         $data = array("dataType"   => "SNACControlMetadata",
+                       "sourceData" => "University of Virginia",
+                       "language"   => "Spanish",
+                       "note"       => "This is a mocked metadata");
+
+         $metadata = new \snac\data\SNACControlMetadata($data);
+
+         $id1->addSNACControlMetadata($metadata);
+         $this->assertFalse($id1->equals($id2), "Equals failed to compare SNACControlMetadata by default");
+         $this->assertTrue($id1->equals($id2, false, false), "Equals failed to ignore SNACControlMetadata");
+     }
+
+     /**
+      * Test that equals() can ignore NameEntry contributors
+      */
+     public function testEqualsCanIgnoreContributors() {
+         $id1 = new \snac\data\Constellation();
+         $id2 = new \snac\data\Constellation();
+         $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
+         $id1->fromJSON($jsonIn);
+         $id2->fromJSON($jsonIn);
+         $name1 = new \snac\data\NameEntry();
+         $name2 = new \snac\data\NameEntry();
+
+         $nameData1 = array("dataType" => "NameEntry",
+                            "contributors" => [[ "dataType" => "Contributor", "name" => "Original"]]);
+
+         $nameData2 = array("dataType" => "NameEntry",
+                            "contributors" => [[ "dataType" => "Contributor", "name" => "Different"]]);
+
+        $name1->fromArray($nameData1);
+        $name2->fromArray($nameData2);
+        $id1->addNameEntry($name1);
+        $id2->addNameEntry($name2);
+
+        //should be inequal with $strict and $checkSubcomponents
+        $this->assertFalse($id1->equals($id2, true, true));
+        //should be inequal with $checkSubcomponents
+        $this->assertFalse($id1->equals($id2, false, true));
+
+        $this->assertTrue($id1->equals($id2, true, false));
+
+        //should be equal without $strict and $checkSubcomponents
+        $this->assertTrue($id1->equals($id2, false, false), "Equals failed to ignore contributors");
+     }
+
+     /**
+      * Test that equals() can ignore NameEntry components
+      */
+     public function testEqualsCanIgnoreComponents() {
+         $id1 = new \snac\data\Constellation();
+         $id2 = new \snac\data\Constellation();
+         $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
+         $id1->fromJSON($jsonIn);
+         $id2->fromJSON($jsonIn);
+         $name1 = new \snac\data\NameEntry();
+         $name2 = new \snac\data\NameEntry();
+
+         $nameData1 = array("dataType" => "NameEntry",
+                            "components" => [["dataType" => "NameComponent", "text" => "Original"]]);
+
+         $nameData2 = array("dataType" => "NameEntry",
+                            "components" => [["dataType" => "NameComponent", "text" => "Different"]]);
+
+        $name1->fromArray($nameData1);
+        $name2->fromArray($nameData2);
+        $id1->addNameEntry($name1);
+        $id2->addNameEntry($name2);
+
+        //should be inequal with $strict and $checkSubcomponents
+        $this->assertFalse($id1->equals($id2, true, true));
+        //should be inequal with $checkSubcomponents
+        $this->assertFalse($id1->equals($id2, false, true));
+
+        $this->assertTrue($id1->equals($id2, true, false));
+
+
+        //should be equal without $strict and $checkSubcomponents
+        $this->assertTrue($id1->equals($id2, false, false), "Equals failed to ignore components");
+     }
+
+    /**
      * Test that combining constellations removes all ids
      */
     public function testCombine() {
@@ -342,7 +433,7 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
         $c2->fromJSON($jsonIn);
         $c3->fromJSON($jsonIn);
         $this->assertTrue($c2->equals($c3));
-        
+
         $c1->combine($c2);
         // Combining has the side effect of wiping out $c2.
         $diff = $c2->diff($c1, true);

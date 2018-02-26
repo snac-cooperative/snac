@@ -876,7 +876,7 @@ class DBUtil
                 'status' => $h['status'],
                 'note' => $h['note']
             ];
-            if ($event['status'] == 'ingest cpf') {
+            if ($event['status'] == 'ingest cpf' || $event['status'] == 'merge split') {
                 $event['data'] = json_decode($event['note'], true);
                 $event['note'] = "";
             }
@@ -2929,6 +2929,41 @@ class DBUtil
             $this->saveResourceLanguages($resource);
             // Return the full resource
             return $this->populateResource($rid, $version);
+        }
+        return false;
+    }
+
+    /**
+     * Read Resource By Data
+     *
+     * Read a resource by title, href and type if it exists in database
+     *
+     * @param  \snac\data\Resource $resource Resource object to read
+     * @return \snac\data\Resource|boolean The resource object or false if not in database
+     */
+    public function readResourceByData($resource){
+        if ($resource === null)
+            false;
+        // check if resource exists in database
+        $documentType = null;
+        if ($resource->getDocumentType() != null)
+            $documentType = $resource->getDocumentType()->getID();
+        $result = $this->sql->selectResourceByData($resource->getTitle(), $resource->getLink(), $documentType);
+        
+        if ($result === false)
+            return false;
+
+        if (count($result) == 1) {
+            return $this->populateResource($result[0]['id'], $result[0]['version']);
+        } else { 
+        // check equality(not strict) and see if any other resources match
+        // if so, return that matching resource
+            foreach ($result as $pair) {
+                $other = $this->populateResource($pair['id'], $pair['version']);
+                if ($resource->equals($other, false)){
+                    return $other;
+                }
+            }
         }
         return false;
     }

@@ -55,6 +55,7 @@ function queryBrowse(position, term, entityType, icid) {
         }
         enableButtons();
         enableCompareboxes();
+        enableShiftSelectCheckboxes();
     });
     return false;
 }
@@ -261,6 +262,23 @@ function showCompareOption() {
         $("#addMaybeSameButton").prop("disabled", true);
         $('#addMaybeSameButton').off("click");
     }
+}
+
+function enableShiftSelectCheckboxes() {
+    var $checkboxes = $(".compare-checkbox")
+    var lastChecked = null;
+    $checkboxes.click(function(e) {
+        if(!lastChecked) {
+            lastChecked = this;
+            return;
+        }    
+        if(e.shiftKey) { 
+            var start = $checkboxes.index(this);
+            var end = $checkboxes.index(lastChecked);
+            $checkboxes.slice(Math.min(start,end), Math.max(start,end) + 1).prop('checked', lastChecked.checked);
+        }
+        lastChecked = this;
+    });
 }
 
 $(document).ready(function() {

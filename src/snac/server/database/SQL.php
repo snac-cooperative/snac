@@ -16,6 +16,8 @@
 
 namespace snac\server\database;
 
+use snac\exceptions\SNACDatabaseException;
+
 /**
  * SQL Class
  *
@@ -677,9 +679,14 @@ class SQL
      * @param integer $pID A privilege id.
      */
     public function insertPrivilegeRoleLink($rID, $pID)
-    {
+    {   
+        try { 
         $this->sdb->query("insert into privilege_role_link (rid, pid) values ($1, $2)",
                           array($rID, $pID));
+        }
+        catch ( \snac\exceptions\SNACDatabaseException $e) {
+            // This should only happen if privilege_role_link already exists
+        }
     }
 
 
@@ -4660,6 +4667,27 @@ class SQL
        return $all;
    }
 
+    /**
+     * Select Resource By Data
+     *
+     * Checks to see if a resource already exists in database
+     *
+     * @param int $Resource
+     * @param int $version Resource version
+     * @return string[] Returns associative array of resource data if found
+     */
+    public function selectResourceByData($title = null, $href = null, $type = null) {
+
+        $result = $this->sdb->query('select id, version from resource_cache 
+                                     where href = $1 and title = $2 
+                                     and type = $3 and not is_deleted 
+                                     and md5(title)::uuid = md5($2)::uuid', array($href,
+                                                                                  $title,
+                                                                                  $type));
+        
+        return $this->sdb->fetchAll($result);
+    }
+
 
     /**
      * Select all function records
@@ -6028,7 +6056,7 @@ class SQL
      * @return string[] An associative list with keys corresponding to the version_history table columns.
      */
     public function selectVersionHistory($vhInfo,$listAll = false) {
-        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstone\' or v.status=\'ingest cpf\')';
+        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstone\' or v.status=\'ingest cpf\' or v.status=\'merge split\')';
         if ($listAll === true)
             $limitHistory = "";
         $result = $this->sdb->query(
@@ -6073,15 +6101,15 @@ class SQL
     }
 
     /**
-     * Delete Message
+     * Archive Message
      *
-     * Sets the deleted flag for the given message ID, denoting that this message has been deleted
+     * Sets the deleted flag for the given message ID, denoting that this message has been archived
      * in the system.
      *
      * @param int $id The message ID to delete
      * @return boolean True on success, false otherwise
      */
-    public function deleteMessageByID($id) {
+    public function archiveMessageByID($id) {
         $result = $this->sdb->query(
             'update messages set deleted = true where id = $1 returning *',
             array($id));
@@ -6158,7 +6186,7 @@ class SQL
      * @param boolean $unreadOnly optional Whether to query only unread messages (default false)
      * @return string[] The list of message data for the user
      */
-    public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false) {
+    public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false, $archivedOnly=false) {
         $searchUser = 'to_user';
         if (!$toUser) {
             $searchUser = 'from_user';
@@ -6167,17 +6195,40 @@ class SQL
         if ($unreadOnly) {
             $readFilter = 'and not read';
         }
+        // select only deleted messages if $archivedOnly is true 
+        $archiveFilter= ($archivedOnly ? "deleted " : "not deleted");
+
         $result = $this->sdb->query(
-            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where not deleted and '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where ' 
+            .$archiveFilter.' and '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
             array($userid));
 
         $all = array();
-        while ($row = $this->sdb->fetchrow($result))
-        {
+        while ($row = $this->sdb->fetchrow($result)) {
             array_push($all, $row);
         }
         return $all;
+    }
 
+    /**
+     * Select Messages from User
+     *
+     * Selects all messages for the given userID. 
+     *
+     * @param int $userid The userid of the user
+     * @return string[] The list of message data for the user
+     */
+    public function selectMessagesFromUser($userid) {
+        $result = $this->sdb->query(
+            'select m.*, to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m
+             where from_user = $1 order by m.time_sent desc',
+            array($userid));
+
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)){
+            array_push($all, $row);
+        }
+        return $all;
     }
 
     /**

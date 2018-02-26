@@ -243,8 +243,9 @@ create table privilege (
 
 create table privilege_role_link (
         pid        int,                -- fk to privilege.id
-        rid        int                -- fk to role.id
-        );
+        rid        int,                -- fk to role.id
+        constraint pr_link_unique unique (pid, rid)
+    );
 
 -- There may be multiple active sessions per user, so we need a separate table for sessions.
 
@@ -803,6 +804,7 @@ create table resource_cache (
 create index resource_idx1 on resource_cache(href);
 create index resource_idx2 on resource_cache(id, version, is_deleted);
 create index resource_idx3 on resource_cache(repo_ic_id);
+create index resource_idx4 on resource_cache(cast(md5(title) as uuid));
 
 -- Languages relating to resources are stored identically to but separately
 -- from languages for constellations.  They have their own versioning based on

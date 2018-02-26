@@ -22,12 +22,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 -->
 
-<!-- Tiny MCE text editor
+<!-- Tiny MCE text editor -->
 <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
-<script>
+<!-- <script>
 //tinymce.init(X, {selector:'#biogHist', plugins:'code', min_height: 300});
-</script>
--->
+</script> -->
 
 <!-- CodeMirror XML editor -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
@@ -51,6 +50,7 @@
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/message_current_editor.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -77,7 +77,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 <div class="container snac" role="main">
 
-    <form class="form-horizontal" id="constellation_form">
+    <div class="form-horizontal" id="constellation_form">
     <h1>{{data.nameEntries.0.original}}</h1>
 
         <!-- Constellation Data -->
@@ -418,7 +418,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                     <i class="fa fa-fw fa-globe" aria-hidden="true"></i> Collection Locations<span class="pull-right fa fa-fw fa-question-circle" title="Help" data-content='This option is currently disabled. To enable the Collection Locations Map, open the Resource Relations tab.' data-toggle="popover" data-placement="top" id="collection_locations_help"></span></a>
                                 <a class="list-group-item list-group-item-warning"
                                     href="{{control.snacURL}}/view/{{data.id}}/{{data.version}}">
-                                    <i class="fa fa-fw fa-eye" aria-hidden="true"></i> HRT View</a>
+                                    <i class="fa fa-fw fa-eye" aria-hidden="true"></i> Simplified View</a>
                                 {% if data.maybeSameCount > 0 %}
                                 <a href="{{control.snacURL}}/maybesame/{{data.id}}/{{data.version}}"
                                        class="list-group-item list-group-item-merge" id="merge">
@@ -470,11 +470,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                     {% if data.editingUser %}
                                         <div class="list-group-item">
                                             <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
-                                            <div class="list-group" style="margin-bottom: 0px;">
-                                                <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
-                                                    <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
-                                                </a>
-                                            </div>
+                                            {{ include("_message_current_editor.html")}}
                                         </div>
                                     {% endif %}
                                 {% endif %}
@@ -573,7 +569,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                 </div>
             </div>
-        </form>
+        </div>
 
 <div class="modal fade" id="geoPlaceInfoPane" tabindex="-1" role="dialog" aria-labelledby="geoPlaceInfoPane">
     <div class="modal-dialog" role="document">
