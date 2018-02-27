@@ -293,7 +293,7 @@
         "tooltip" : "How this Identity Constellation is related to the resource"
     },
     "resourceURI" : {
-        "display" : "Link",
+        "display" : "HREF",
         "tooltip" : "The permanent link (URI) to the external resource"
     },
     "resourceDocumentType" : {
@@ -323,6 +323,10 @@
     "resourceExtent" : {
         "display" : "Extent",
         "tooltip" : "The extent of this resource"
+    },
+    "resourceLanguages" : {
+        "display" : "Languages",
+        "tooltip" : "The ISO-standard languages and scripts of this resource"
     },
     "resourceOriginationName" : {
         "display" : "Origination Names",
