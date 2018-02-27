@@ -272,12 +272,13 @@ function select_replace_simple(selectItem) {
 /**
  * Load Vocab Select Options
  *
- * Replaces the select with a select2 object loaded with an array of options
+ * Replaces the select with a select2 object preloaded with an array of options
  *
  * @param  JQuery selectItem The JQuery item to replace
  * @param  string type       The type of the vocabulary term
+ * @param  string type       Text placeholder for select 
  */
-function loadVocabSelectOptions(selectItem, type) {
+function loadVocabSelectOptions(selectItem, type, placeholder) {
     $.get(snacUrl + "/vocabulary?type=" + type)
     .done(function(data) {
         var options = data.results;
@@ -285,7 +286,7 @@ function loadVocabSelectOptions(selectItem, type) {
             data: options,
             allowClear: false,
             theme: 'bootstrap',
-            placeholder: 'All Types'
+            placeholder: placeholder
         });
     });
 }

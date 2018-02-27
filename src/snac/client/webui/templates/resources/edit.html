@@ -5,6 +5,8 @@
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<link href="//code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<script type='text/javascript' src="//code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -36,20 +38,15 @@ $('.selectpicker').selectpicker();
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/edit_scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/resource_admin.js{{control.noCache}}"></script>
 
 <script>
     $(document).ready(function() {
-
-        function markEdited() {
-             $( "input, select, textarea" ).on("change", function(e) {
-                 $(e.target).addClass('edited-field');
-            });
-        }
-        markEdited();
+        markEditedResourceFields($('#resource-form'));
     });
 </script>
 
