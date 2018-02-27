@@ -138,59 +138,10 @@ class ResourcePostMapper {
 
         $this->resource = new \snac\data\Resource();
 
-        // Rework the input into arrays of sections
-        $nested = array ();
-        $nested["resource"] = array ();
-
-        foreach ($postData as $k => $v) {
-            // Try to split on underscore
-            $parts = explode("_", $k);
-
-            // Empty should be null
-            if ($v == "")
-                $v = null;
-
-             if (count($parts) == 3) {
-                // three parts: mulitple-vals repeating
-                // key_subkey_index => value ==> nested[key][index][subkey] = value
-                if (! isset($nested[$parts[0]][$parts[2]]))
-                    $nested[$parts[0]][$parts[2]] = array ();
-                $nested[$parts[0]][$parts[2]][$parts[1]] = $v;
-            } else if (count($parts) == 4) {
-                // four parts: controlled vocabulary repeating
-                // key_subkey_subsubkey_index => value ==> nested[key][index][subkey][subsubkey] = value
-                if (! isset($nested[$parts[0]][$parts[3]]))
-                    $nested[$parts[0]][$parts[3]] = array ();
-                if (! isset($nested[$parts[0]][$parts[3]][$parts[1]]))
-                    $nested[$parts[0]][$parts[3]][$parts[1]] = array ();
-                $nested[$parts[0]][$parts[3]][$parts[1]][$parts[2]] = $v;
-            } else if (count($parts) == 5) {
-                // five parts: non-scm repeating
-                // nameEntry_contributor_23_name_0
-                // nameEntry_contributor_{{j}}_id_{{i}}
-                // key, index = nameEntry, 0
-                // subkey, index = contributor, 23
-                // subsubkey = name
-                // 0___1______2_________3________4
-                // key_subkey_subindex_subsubkey_index => value ==>
-                //                      nested[key][index][subkey][subindex][subsubkey] = value
-                if (! isset($nested[$parts[0]][$parts[4]]))
-                    $nested[$parts[0]][$parts[4]] = array ();
-                if (! isset($nested[$parts[0]][$parts[4]][$parts[1]]))
-                    $nested[$parts[0]][$parts[4]][$parts[1]] = array ();
-                if (! isset($nested[$parts[0]][$parts[4]][$parts[1]][$parts[2]]))
-                    $nested[$parts[0]][$parts[4]][$parts[1]][$parts[2]] = array ();
-                $nested[$parts[0]][$parts[4]][$parts[1]][$parts[2]][$parts[3]] = $v;
-            }
-        }
-
-        $this->logger->addDebug("parsed values", $nested);
-
-        foreach ($nested["resource"] as $k => $data) {
+        foreach ($postData["resources"] as $k => $data) {
             $this->resource->setID($data["id"]);
             $this->resource->setVersion($data["version"]);
-            $this->resource->setOperation($this->getOperation($data));
-
+            $this->resource->setOperation($data["operation"]);
             $this->resource->setTitle($data["title"]);
             $this->resource->setAbstract($data["abstract"]);
             $this->resource->setExtent($data["extent"]);
@@ -205,7 +156,8 @@ class ResourcePostMapper {
                 $repo->setID($data["repo"]);
                 $this->resource->setRepository($repo);
             }
-
+            
+            // Not currently using originationName
             if (isset($data["originationName"])) {
                 foreach ($data["originationName"] as $l => $oData) {
                     $part = new \snac\data\OriginationName();
@@ -224,7 +176,29 @@ class ResourcePostMapper {
                 }
             }
 
-
+            if (isset($data["languages"])) {
+                foreach ($data["languages"] as $languages => $language) {
+                    $newLanguage = new \snac\data\Language();
+                    $lang = new \snac\data\Term();
+                    $script = new \snac\data\Term();
+                                        
+                    $newLanguage->setID($language["id"]);
+                    $newLanguage->setVersion($language["version"]);
+                    $newLanguage->setOperation($language["operation"]);
+                                        
+                    if (isset($language["language"]) || (isset($language["script"]))) {
+                        if (isset($language["language"]))
+                            $lang->setID($language["language"]);
+                            $newLanguage->setLanguage($lang);
+                            
+                        if (isset($language["script"]))
+                            $script->setID($language["script"]);
+                            $newLanguage->setScript($script);
+                        $this->resource->addLanguage($newLanguage);
+                        $this->logger->addError("Parsed Resource Language:" , $newLanguage->toArray());
+                    }
+                }
+            }
         }
 
         return $this->resource;
