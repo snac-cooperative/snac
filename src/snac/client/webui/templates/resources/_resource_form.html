@@ -1,21 +1,20 @@
 <form id="resource-form">
     <div class="row">
         <div class="col-md-8">
-
             <div class="form-horizontal">
 
                 <!-- HIDDEN VALUES-->
-                <input name="resource_operation_0" type="hidden" value="{{ operation }}">
-                <!-- <input name="resource_documentType_vocabtype_0" type="hidden" value="document_type"> -->
-                <input name="resource_id_0" type="hidden" value="{{data.resource.id}}"/>
-                <input name="resource_version_0" type="hidden" value="{{data.resource.version}}">
-                <input name="resource_extent_0" type="hidden" value="">
+                <input name="resources[0][operation]" type="hidden" value="{{ operation }}">
+                <!-- <input name="resources[0][documentType_vocabtype]" type="hidden" value="document_type"> -->
+                <input name="resources[0][id]" type="hidden" value="{{data.resource.id}}"/>
+                <input name="resources[0][version]" type="hidden" value="{{data.resource.version}}">
+                <input name="resources[0][extent]" type="hidden" value="">
 
                 <div class="form-group">
                     <label class="control-label col-xs-4">Resource Type</label>
                     <div class="col-xs-8" id="typeDiv">
-                        <select id="resource-type-select" name="resource_documentType_id_0" class="form-control" required>
-                            <option value="{{data.resource.documentType.id}}" selected="selected">
+                        <select id="resource-type-select" name="resources[0][documentType][id]" class="form-control" required>
+                            <option value="{{data.resource.documentType.id}}" selected>
                                 {{data.resource.documentType.term}}</option>
                         </select>
                     </div>
@@ -24,52 +23,93 @@
                 <div class="form-group">
                     <label class="control-label col-xs-4">Display Entry</label>
                     <div class="col-xs-8">
-                        <input type="text" name="resource_displayEntry_0" class="form-control" value="{{data.resource.displayEntry}}" required>
+                        <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{data.resource.displayEntry}}" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label col-xs-4">Title</label>
                     <div class="col-xs-8">
-                        <input type="text" name="resource_title_0" class="form-control" value="{{data.resource.title}}" required>
+                        <input type="text" name="resources[0][title]" class="form-control" value="{{data.resource.title}}" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label col-xs-4">Date</label>
                     <div class="col-xs-8">
-                        <input type="text" name="resource_date_0" class="form-control" value="{{data.resource.date}}">
+                        <input type="text" name="resources[0][date]" class="form-control" value="{{data.resource.date}}">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label col-xs-4">HREF</label>
                     <div class="col-xs-8">
-                        <input type="text" name="resource_link_0" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
+                        <input type="text" name="resources[0][link]" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label col-xs-4">Abstract</label>
                     <div class="col-xs-8">
-                        <textarea name="resource_abstract_0" class="form-control" rows="3">{{data.resource.abstract}}</textarea>
+                        <textarea name="resources[0][abstract]" class="form-control" rows="3">{{data.resource.abstract}}</textarea>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="control-label col-xs-4">Language</label>
-                    <div class="col-xs-8">
-                        <!-- TODO: language as select values, multiple -->
-                        {{data.resource.language.toArray()}}
-                        <input type="text" name="" class="form-control" value="{{data.resource.language.toArray()}}">
+
+                <!--  LANGUAGES -->
+                <div class="form-group" id="resource-languages">
+                    <label class="control-label col-xs-4" data-content="Languages this resource is written in" data-toggle="popover" data-placement="top" data-original-title="" title="">
+                        Languages
+                    </label>
+                    <div class="col-xs-8 well well-sm">
+                        
+                        <!-- Existing Languages   -->
+                        {% set lang_count = 0 %}
+                        {% for lang in data.resource.languages%} 
+                            <div class="col-xs-12 panel-default language" id="language_{{lang_count}}" style="padding-top: 5px; padding-bottom: 5px;">
+                                <input type="hidden" id="languages_{{lang_count}}[id]" name="resources[0][languages][{{lang_count}}][id]" value="{{lang.id}}">
+                                <input type="hidden" id="languages_{{lang_count}}[version]" name="resources[0][languages][{{lang_count}}][version]" value="{{lang.version}}">
+                                <input type="hidden" class="operation" id="languages_{{lang_count}}[operation]" name="resources[0][languages][{{lang_count}}][operation]" value=""=>
+                                <input type="hidden" name="resources[0][languages][{{lang_count}}][dataType]" value="Language">
+                                <div class="input-group">
+                                    <div style="width: 50%">
+                                        <select id="language_language_" name="resources[0][languages][{{lang_count}}][language]" data-placeholder="Language" tabindex="-1" >
+                                            <option value="{{lang.language.id}}" selected> {{lang.language.term}} </option>
+                                        </select>
+                                    </div>
+                                    <div style="width:50%; clear: none; float: left;">
+                                        <select id="language_script_" name="resources[0][languages][{{lang_count}}][script]" data-placeholder="Script" tabindex="-1">
+                                            <option value="{{lang.script.id}}" selected> {{lang.script.term}} </option>
+                                        </select>
+                                    </div>
+
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-danger" onclick="deleteOrUndoLanguage()">
+                                            <i class="fa fa-minus-circle"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                            {% set lang_count = lang_count + 1 %}
+                        {% endfor %}
+                        
+                        <div id="add-resource-language"></div>
+
+                        <div class="form-group">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="new-resource-language-btn">
+                                    <span class="glyphicon glyphicon-plus-sign"></span>
+                                    Add Language
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </div>                
 
                 <div class="form-group">
                     <label class="control-label col-xs-4">Holding Institution</label>
                     <div class="col-xs-8">
                         <div class="control-label">
-                            <a href="{{data.resource.repository.ark}}" target="_blank">
+                            <a href="{{control.snacURL}}/view/{{data.resource.repository.id}}" target="_blank">
                                 {{data.resource.repository.nameEntries[0].original}}
                             </a>
                         </div>
@@ -79,7 +119,7 @@
                 <div class="form-group">
                     <label class="control-label col-xs-4">Repository ID</label>
                     <div class="col-xs-8">
-                        <input type="number" name="resource_repo_0" class="form-control" value="{{data.resource.repository.id}}" placeholder="(SNAC ID)" disabled="disabled"/>
+                        <input type="number" name="resources[0][repo]" class="form-control" value="{{data.resource.repository.id}}" placeholder="(SNAC ID)"/>
                         <div class="col-xs-8">
                             <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
                         </div>
@@ -125,3 +165,29 @@
         </div>
     </div>
 </form>
+
+<!-- Language Template   -->
+<div id="language-template" data-language-count="{{lang_count}}" style="display: none;">
+    <div class="col-xs-12 panel-default language" style="padding-top: 5px; padding-bottom: 5px;">
+        <!-- <input type="hidden" name="resources[0][languages][ZZ][id]" value="">
+        <input type="hidden" name="resources[0][languages][ZZ][version]" value=""> -->
+        <input type="hidden" class="operation" name="resources[0][languages][ZZ][operation]" value="">                                
+        <input type="hidden" name="resources[0][languages][ZZ][dataType]" value="Language">
+        <div class="input-group">
+            <div style="width: 50%">
+                <select name="resources[0][languages][ZZ][language]" data-placeholder="Language" tabindex="-1" >
+                </select>
+            </div>
+            <div style="width:50%; clear: none; float: left;">
+                <select name="resources[0][languages][ZZ][script]" data-placeholder="Script" tabindex="-1">
+                </select>
+            </div>
+            
+            <span class="input-group-btn">
+                <button class="btn btn-danger" onclick="deleteOrUndoLanguage()">
+                    <i class="fa fa-minus-circle"></i>
+                </button>
+            </span>
+        </div>
+    </div>
+</div>
