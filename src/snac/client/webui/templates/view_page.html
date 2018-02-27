@@ -196,7 +196,7 @@
                {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
                    <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
                {% endif %}
-               {% if data.holdingRepository %}
+               {% if 'holdingRepository' in data.flags %}
                    <br><span class="label label-default"><i class="fa fa-archive" aria-hidden="true"></i> Holding Repository</span>
                {% endif %}
 
