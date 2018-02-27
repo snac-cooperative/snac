@@ -3938,9 +3938,10 @@ class SQL
      * @param int $scriptID The script ID from the vocabulary table
      * @param string $vocabularySource The source for this vocab term
      * @param string $note The descriptive note for this language
+     * @param boolean $is_deleted Whether Resource Language is deleted
      * @return int The ID for the language just written
      */
-    public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note)
+    public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note, $is_deleted)
     {
         if (! $id)
         {
@@ -3949,16 +3950,17 @@ class SQL
         $qq = 'insert_resource_language';
         $this->sdb->prepare($qq,
                             'insert into resource_language
-                            (resource_id, version, id, language_id, script_id, vocabulary_source, note)
+                            (resource_id, version, id, language_id, script_id, vocabulary_source, note, is_deleted)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
         $eArgs = array($resourceID,
                        $resourceVersion,
                        $id,
                        $languageID,
                        $scriptID,
                        $vocabularySource,
-                       $note);
+                       $note,
+                       $this->sdb->boolToPg($is_deleted));
         $result = $this->sdb->execute($qq, $eArgs);
         $this->sdb->deallocate($qq);
         return $id;

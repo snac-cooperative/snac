@@ -2975,25 +2975,26 @@ class DBUtil
      * @param  \snac\data\Resource $resource Resource with languages to save
      * @return [type]           [description]
      */
-    private function saveResourceLanguages($resource)
-    {
+    private function saveResourceLanguages($resource) {   
         $langList = $resource->getLanguages();
-
-        foreach ($langList as $lang)
-        {
-
+        foreach ($langList as $lang) {
             $rid = $lang->getID();
+            $is_deleted = $lang->getOperation() == \snac\data\Language::$OPERATION_DELETE;
+                        
             if ($lang->getOperation() == \snac\data\Language::$OPERATION_INSERT ||
-                $lang->getOperation() == \snac\data\Language::$OPERATION_UPDATE) {
-                    $rid = $this->sql->insertResourceLanguage($resource->getID(),
-                                                      $resource->getVersion(),
-                                                      $lang->getID(),
-                                                      $this->thingID($lang->getLanguage()),
-                                                      $this->thingID($lang->getScript()),
-                                                      $lang->getVocabularySource(),
-                                                      $lang->getNote());
-                    $lang->setID($rid);
-                    $lang->setVersion($resource->getVersion());
+                $lang->getOperation() == \snac\data\Language::$OPERATION_UPDATE || 
+                $lang->getOperation() == \snac\data\Language::$OPERATION_DELETE ) {
+
+                $rid = $this->sql->insertResourceLanguage($resource->getID(),
+                                                  $resource->getVersion(),
+                                                  $lang->getID(),
+                                                  $this->thingID($lang->getLanguage()),
+                                                  $this->thingID($lang->getScript()),
+                                                  $lang->getVocabularySource(),
+                                                  $lang->getNote(),
+                                                  $is_deleted);
+                $lang->setID($rid);
+                $lang->setVersion($resource->getVersion());
             }
         }
     }
