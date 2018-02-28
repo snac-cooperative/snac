@@ -4,13 +4,13 @@
             <div class="form-horizontal">
 
                 <!-- HIDDEN VALUES-->
-                <input name="resources[0][operation]" type="hidden" value="{{ operation }}">
+                <input name="resources[0][operation]" type="hidden" value="{{ resource_operation }}">
                 <!-- <input name="resources[0][documentType_vocabtype]" type="hidden" value="document_type"> -->
                 <input name="resources[0][id]" type="hidden" value="{{data.resource.id}}"/>
                 <input name="resources[0][version]" type="hidden" value="{{data.resource.version}}">
                 <input name="resources[0][extent]" type="hidden" value="">
 
-                <div class="form-group">
+                <div class="form-group required">
                     <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover" data-placement="top">{{X.resourceDocumentType.display}}</label>
                     <div class="col-xs-8" id="typeDiv">
                         <select id="resource-type-select" name="resources[0][documentType][id]" class="form-control" required>
@@ -20,14 +20,14 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group required">
                     <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover" data-placement="top">{{X.resourceDisplayEntry.display}}</label>
                     <div class="col-xs-8">
                         <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{data.resource.displayEntry}}" required>
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group required">
                     <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}"
                         data-toggle="popover" data-placement="top">{{X.resourceTitle.display}}</label>
                     <div class="col-xs-8">
@@ -39,7 +39,7 @@
                     <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}"
                         data-toggle="popover" data-placement="top">{{X.resourceDate.display}}</label>
                     <div class="col-xs-8">
-                        <input type="text" name="resources[0][date]" class="form-control" value="{{data.resourceURI.date}}">
+                        <input type="text" name="resources[0][date]" class="form-control" value="{{data.resource.date}}">
                     </div>
                 </div>
 

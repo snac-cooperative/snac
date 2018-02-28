@@ -421,6 +421,11 @@ td.rotate > div > span {
     word-wrap: break-word;
 }
 
+.form-group.required .control-label:after {
+  content:"*";
+  color:red;
+}
+
 .btn-sm, .btn-sm:hover, .btn-sm:active, .btn-sm:visited, .btn-sm:link {
     text-decoration: none;
 }

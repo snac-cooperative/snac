@@ -297,7 +297,7 @@
         "tooltip" : "The permanent link (URI) to the external resource"
     },
     "resourceDocumentType" : {
-        "display" : "Document Type",
+        "display" : "Resource Type",
         "tooltip" : "The type of this resource"
     },
     "resourceXML" : {
