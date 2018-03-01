@@ -556,6 +556,13 @@ class ServerExecutor {
             return $this->readVocabulary($input);
         } else {
             switch ($input["type"]) {
+                case "holding":
+                    $response["results"] = array();
+                    $count = 100;
+                    if (isset($input["count"]))
+                        $count = $input["count"];
+                    $response["results"] = $this->neo4J->searchHoldingInstitutions($input["query_string"], $count);
+                    break;
                 default:
                     $response["results"] = array();
                     $count = 100;
@@ -2882,7 +2889,9 @@ class ServerExecutor {
             }
             $this->elasticSearch->deleteFromNameIndices($c);
             $this->cStore->deleteFromNameIndex($c);
-            $this->neo4J->deleteConstellation($c);
+            // from c to written
+            $this->neo4J->redirectConstellation($c, $written);
+            //$this->neo4J->deleteConstellation($c);
         }
 
         // Remove maybe-same links between the originals, if they exist

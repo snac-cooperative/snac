@@ -332,6 +332,61 @@ class Neo4JUtil {
     }
 
     /**
+     * Redirect/Delete Constellation Node (and related data)
+     *
+     * Deletes the constellation data found in the given constellation from neo4j while redirecting some of the
+     * edges to the given target.
+     *
+     * @param \snac\data\Constellation $from The constellation object to delete/redirect from Neo4J
+     * @param \snac\data\Constellation $to The constellation object that is the target of any redirects
+     */
+    public function redirectConstellation(&$from, &$to) {
+
+        if ($this->connector != null) {
+            // Find all in-relations to the from constellation
+            $result = $this->connector->run("MATCH p=()-[]->(b:Identity {id: {icid}}) return p;", 
+                [
+                    'icid' => $from->getID()
+                ]
+            );
+
+            foreach ($result->getRecords() as $record) {
+                $path = $record->pathValue("p");
+
+                // Source of relation
+                $path->start()->value("id");
+
+                // Relationship id/version
+                if ($path->relationships()[0]->hasValue('id'))
+                    $path->relationships()[0]->value('id');
+                if ($path->relationships()[0]->hasValue('version'))
+                    $path->relationships()[0]->value('version');
+                // Relationship role
+                $path->relationships()[0]->value('arcrole');
+
+                // TODO
+                // Create a new relationship/edge to the "to" Constellation
+                //$this->connector->run("MATCH (a {id: {id1} }),(b:Resource {id: {id2} })
+                //    CREATE (b)-[r:HIRELATION]->(a);", 
+                //    [
+                //        'id1' => $resource->getRepository()->getID(),
+                //        'id2' => $resource->getID()
+                //    ]);
+            }
+
+            $this->logger->addDebug("Deleting Identity Node from Neo4J database"); 
+            $result = $this->connector->run("MATCH (a:Identity {id: {icid}}) detach delete a;", 
+                [
+                    'icid' => $from->getID()
+                ]
+            );
+            $this->logger->addDebug("Updated neo4j to remove constellation");
+        }
+
+    }
+
+
+    /**
      * List in-edges for constellation
      *
      * Lists the Constellation-Constellation relationships that point into the given constellation
@@ -388,6 +443,28 @@ class Neo4JUtil {
         return $rels;
     }
 
+    public function searchHoldingInstitutions($name, $count=0) {
+        $realCount = \snac\Config::$SQL_LIMIT;
+        if ($count > 0)
+            $realCount = $count;
+
+        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity) where a.name STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;", 
+            [
+                'name' => $name
+            ]
+        );
+        
+        // List out relations 
+        $matches = array();
+        foreach ($result->getRecords() as $record) {
+            array_push($matches, [
+                "id" => $record->get("a")->value("id"), 
+                "term" => $record->get("a")->value("name")
+            ]);
+        }
+
+        return $matches;
+    }
 
     public function checkHoldingInstitutionStatus(&$constellation) {
         $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;", 
