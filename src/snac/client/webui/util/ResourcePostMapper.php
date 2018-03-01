@@ -126,7 +126,7 @@ class ResourcePostMapper {
     }
 
     /**
-     * Serialize post data to Resource 
+     * Serialize post data to Resource
      *
      * Takes the POST data from a SAVE operation and generates
      * a Resource object to be used by the rest of the system
@@ -156,7 +156,7 @@ class ResourcePostMapper {
                 $repo->setID($data["repo"]);
                 $this->resource->setRepository($repo);
             }
-            
+
             // Not currently using originationName
             if (isset($data["originationName"])) {
                 foreach ($data["originationName"] as $l => $oData) {
@@ -181,21 +181,23 @@ class ResourcePostMapper {
                     $newLanguage = new \snac\data\Language();
                     $lang = new \snac\data\Term();
                     $script = new \snac\data\Term();
-                                        
-                    $newLanguage->setID($language["id"]);
-                    $newLanguage->setVersion($language["version"]);
+
+                    if (isset($language['id']))
+                        $newLanguage->setID($language["id"]);
+                    if (isset($language['version']))
+                        $newLanguage->setVersion($language["version"]);
+                        
                     $newLanguage->setOperation($language["operation"]);
-                                        
+
                     if (isset($language["language"]) || (isset($language["script"]))) {
                         if (isset($language["language"]))
                             $lang->setID($language["language"]);
                             $newLanguage->setLanguage($lang);
-                            
+
                         if (isset($language["script"]))
                             $script->setID($language["script"]);
                             $newLanguage->setScript($script);
                         $this->resource->addLanguage($newLanguage);
-                        $this->logger->addError("Parsed Resource Language:" , $newLanguage->toArray());
                     }
                 }
             }
