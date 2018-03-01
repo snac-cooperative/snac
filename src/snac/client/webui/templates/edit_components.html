@@ -734,12 +734,12 @@
                         <label for="resource_repo_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceRepository.display }}
                         </label>
-                        <div class="col-xs-8" id="text_resource_repo_{{i}}">
-                            <input id="resource_repo_{{i}}" name="resource_repo_{{i}}" type="hidden" class="form-control" value="{{ resource.repoIcId }}"/>
-                            <p class="form-control-static" id="resource_repoText_{{i}}">{{ resource.repoIcId }}</p>
-                        </div>
-                        <div class="col-xs-8">
-                            <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
+                        <div class="col-xs-8" id="select_resource_repo_{{i}}">
+                            <input id="resource_repo_id_{{i}}" name="resource_repo_id_{{i}}" type="hidden" class="form-control" value="{{ resource.repository.id }}"/>
+                            <input id="resource_repo_term_{{i}}" name="resource_repo_term_{{i}}" type="hidden" class="form-control" value="{{ resource.repository.nameEntries[0].original }}"/>
+                            <input id="resource_repo_vocabtype_{{i}}" name="resource_repo_vocabtype_{{i}}" type="hidden" class="form-control" value="holding"/>
+                            <input id="resource_repo_minlength_{{i}}" name="resource_repo_minlength_{{i}}" type="hidden" class="form-control" value="3"/>
+                            <p class="form-control-static" id="resource_repoText_{{i}}">{{ resource.repository.nameEntries[0].original }}</p>
                         </div>
                     </div>
                 </div>
