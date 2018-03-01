@@ -22,8 +22,8 @@
         "tooltip" : "Dates associated with this data element"
     },
     "scm" : {
-        "display" : "SCM",
-        "tooltip" : "SNAC Control Metadata for this data element"
+        "display" : "Cite",
+        "tooltip" : "Citation information for this data element"
     },
 
     "_comment" : "%%% The following are global data elements",
@@ -324,8 +324,8 @@
     "_comment" : "%%% Source elements",
 
     "sourceDisplayName" : {
-        "display" : "Display Name",
-        "tooltip" : "The editor/human-readable name of this source, shown in the Citation box of the SCM entry box"
+        "display" : "Reference Name",
+        "tooltip" : "The editor/human-readable name of this source, displayed when choosing a Source from the Cite dialog box"
     },
     "sourceURI" : {
         "display" : "URI",
@@ -347,7 +347,7 @@
         "tooltip" : "The data for the described data element, as it appeared in the source"
     },
     "scmCitation" : {
-        "display" : "Citation (Source)",
+        "display" : "Reference Name",
         "tooltip" : "The source object from this Constellation where the information on this data element was found"
     },
     "scmSubCitation" : {
