@@ -44,6 +44,15 @@ $('.selectpicker').selectpicker();
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/resource_admin.js{{control.noCache}}"></script>
 
+<script>
+    $(document).ready(function() {
+        loadVocabSelectOptions($("#resource-type-select"), "document_type", "Resource Type");
+        $("#new-resource-language-btn").on("click", newResourceLanguage);
+        $('#vocab_dashboard_cancel').on("click", cancelResource);
+        $('#resource-form').on('submit', saveResource($('#resource-form')));  ///
+    });
+</script>
+
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
@@ -63,9 +72,9 @@ $('.selectpicker').selectpicker();
         <p><span style="font-weight: bold;">Instructions: </span> Use the form below to create a new resource.</p>
     </div>
 
-    {% set operation = 'insert' %}
+    {% set resource_operation = 'insert' %}
     {% include "resources/_resource_form.html" %}
-    
+
 </div>
 {{ footer(X, user, permissions, control) }}
 </body>

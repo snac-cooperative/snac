@@ -1,7 +1,7 @@
 /**
  * Resource Admin Actions
  *
- * Contains code that handles the resource editing under vocab dashboard
+ * Contains code that handles Resource creation and editing
  *
  * @author Joseph Glass
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
@@ -10,26 +10,25 @@
  */
 
 function saveResource() {
+    event.preventDefault();
+    var $form = $(event.target);
+
     $('#notification-message').slideDown().html("<p>Saving Resource... Please wait.</p>");
 
     // Remove leading and trailing whitespace
-    $("input, textarea").each(function() {
+    $form.find("input, textarea").each(function() {
         $(this).val($.trim($(this).val()));
     });
 
-    // Ignore deleted new languages, set deleted existing languages to delete
-    var $ignoredLanguages = $("#resource-languages .component-deleted").not(':has(input[id])');
-    var $deletedLanguages = $("#resource-languages .component-deleted").has('input[id]');
-    setOperations($ignoredLanguages, "");
-    setOperations($deletedLanguages, "delete");
+    setDeletedResourceLanguageOperations($form);
 
-    $.post(snacUrl + "/save_resource", $('#resource-form').serialize())
+    $.post(snacUrl + "/save_resource", $form.serialize())
         .done(function(data) {
             createdResource = data;
             $('#notification-message').slideUp();
             $('#success-message').slideDown();
             setTimeout(function() {
-                window.location.replace(snacUrl + "/vocab_administrator/resources");
+                // window.location.replace(snacUrl + "/vocab_administrator/resources");
             }, 1500);
         })
         .fail(function() {
@@ -38,40 +37,63 @@ function saveResource() {
     return false;
 }
 
+
+function setDeletedResourceLanguageOperations($form) {
+    // Set deleted new languages to null, set deleted existing languages to delete
+    var $deletedLanguages = $form.find("#resource-languages .component-deleted").has('input[id]');
+    var $ignoredLanguages = $form.find("#resource-languages .component-deleted.new-language");
+    setOperations($deletedLanguages, "delete");
+    setOperations($ignoredLanguages, "");
+}
+
+function cancelResource() {
+    if (!confirm('Are you sure you want to cancel?')) {
+        return;
+    }
+
+    $('#notification-message').html("<p>Cancelling...</p>");
+    $('#notification-message').slideDown();
+    setTimeout(function() {
+        window.location.href = snacUrl + "/vocab_administrator";
+    }, 1000);
+    return false;
+}
+
 /**
  * New Resource Language
  * Copies the resource template DIV on the page and attaches it correctly to the DOM.
  * Tracks language index using $('#language-template').data('languageCount')
- * 
+ *
  */
 function newResourceLanguage() {
     event.preventDefault();
-    var $newLanguage = $('#language-template').clone();
-    var langCount = $('#language-template').data('languageCount');
-    var newLanguageID = 'language_' + langCount;
+    var $newLanguage = $('#resource-language-template').find(".language").clone();
+    var data = $('#resource-language-template').data();
+    var newLanguageID = 'language_' + data.languageCount;
     $newLanguage.attr('id', newLanguageID);
     $newLanguage.find('.operation').val('insert');
+    $newLanguage.addClass('new-language');
 
-    //update input names with new langCount
+    //update input names with new data.languageCount
     $newLanguage.find('input, select').attr('name', function(i, name) {
-        return name.replace('ZZ', langCount);
+        return name.replace('YY', data.languageCount);
     });
 
     console.log('Adding new resource language with id: ', newLanguageID);
     $newLanguage.toggle();
-    $('#add-resource-language').before($newLanguage);
+    // selects last to avoid conflict on multiple clones
+    $('.add-resource-language:last').before($newLanguage);
     enableLanguageSelect($newLanguage);
-    
-    langCount++;
-    $('#language-template').data("languageCount", (langCount));
+
+    data.languageCount++;
 }
 
 /**
  * Delete or Undo Language
- * 
+ *
  * Toggles component-deleted class, and btn classes for delete and undo.
- * Does not change operations. 
- * 
+ * Does not change operations.
+ *
  */
 function deleteOrUndoLanguage() {
     event.preventDefault();
@@ -91,10 +113,10 @@ function setOperations($elements, operation) {
 
 /**
  * Mark Edited Resource Fields
- * 
- * Adds edited-field class to altered inputs. Sets altered resource language to update. 
+ *
+ * Adds edited-field class to altered inputs. Sets altered resource language to update.
  * @param jqueryObject $resourceForm jQuery object to modify
- * 
+ *
  */
 function markEditedResourceFields($resourceForm) {
     $resourceForm.find("input, select, textarea").on("change", function(e) {
@@ -137,28 +159,3 @@ function enableLanguageSelect($language) {
     enableVocabularySelect($language.find("select:first"), 'language_code');
     enableVocabularySelect($language.find("select:last"), 'script_code');
 }
-
-$(document).ready(function() {
-    if ($('#vocab_dashboard_cancel').exists()) {
-        $('#vocab_dashboard_cancel').click(function() {
-
-            if (!confirm('Are you sure you want to cancel?')) {
-                return;
-            }
-
-            $('#notification-message').html("<p>Cancelling...</p>");
-            $('#notification-message').slideDown();
-            setTimeout(function() {
-                window.location.href = snacUrl + "/vocab_administrator";
-            }, 1500);
-            return false;
-        });
-    }
-
-    loadVocabSelectOptions($("#resource-type-select"), "document_type", "Resource Type");
-    $('#resource-form').on('submit', saveResource);
-    $("#new-resource-language-btn").on("click", newResourceLanguage);
-    $('#resource-form').find(".language").each(function() {
-        enableLanguageSelect($(this));
-    });
-});
