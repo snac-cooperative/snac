@@ -422,8 +422,8 @@ td.rotate > div > span {
 }
 
 .form-group.required .control-label:after {
-  content:"*";
-  color:red;
+  content:" *";
+  color: #b40404;
 }
 
 .btn-sm, .btn-sm:hover, .btn-sm:active, .btn-sm:visited, .btn-sm:link {

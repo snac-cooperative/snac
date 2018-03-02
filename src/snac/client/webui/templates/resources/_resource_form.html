@@ -6,14 +6,16 @@
                 <!-- HIDDEN VALUES-->
                 <input name="resources[0][operation]" type="hidden" value="{{ resource_operation }}">
                 <!-- <input name="resources[0][documentType_vocabtype]" type="hidden" value="document_type"> -->
-                <input name="resources[0][id]" type="hidden" value="{{data.resource.id}}"/>
+                <input name="resources[0][id]" type="hidden" value="{{data.resource.id}}" />
                 <input name="resources[0][version]" type="hidden" value="{{data.resource.version}}">
                 <input name="resources[0][extent]" type="hidden" value="">
 
                 <div class="form-group required">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover" data-placement="top">{{X.resourceDocumentType.display}}</label>
-                    <div class="col-xs-8" id="typeDiv">
-                        <select id="resource-type-select" name="resources[0][documentType][id]" class="form-control" required>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover"
+                        data-placement="top"> {{X.resourceDocumentType.display}} </label>
+                    <div class="col-xs-8">
+                        <select id="resource-type-select" name="resources[0][documentType][id]" class="form-control" style="width: 100%;"
+                            required>
                             <option value="{{data.resource.documentType.id}}" selected>
                                 {{data.resource.documentType.term}}</option>
                         </select>
@@ -21,47 +23,49 @@
                 </div>
 
                 <div class="form-group required">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover" data-placement="top">{{X.resourceDisplayEntry.display}}</label>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
+                        data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
                     <div class="col-xs-8">
-                        <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{data.resource.displayEntry}}" required>
+                        <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{data.resource.displayEntry}}"
+                            placeholder="Proper name. Title. Date." required>
                     </div>
                 </div>
 
                 <div class="form-group required">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}"
-                        data-toggle="popover" data-placement="top">{{X.resourceTitle.display}}</label>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
+                        data-placement="top"> {{X.resourceTitle.display}} </label>
                     <div class="col-xs-8">
-                        <input type="text" name="resources[0][title]" class="form-control" value="{{data.resource.title}}" required>
+                        <input type="text" name="resources[0][title]" class="form-control" value="{{data.resource.title}}" pattern="^((?![hH][tT][tT][pP][sS]?:).)*$" required>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}"
-                        data-toggle="popover" data-placement="top">{{X.resourceDate.display}}</label>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}" data-toggle="popover"
+                        data-placement="top"> {{X.resourceDate.display}} </label>
                     <div class="col-xs-8">
-                        <input type="text" name="resources[0][date]" class="form-control" value="{{data.resource.date}}">
+                        <input type="text" name="resources[0][date]" class="form-control" value="{{data.resource.date}}" placeholder="YYYY or YYYY-YYYY">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}"
-                        data-toggle="popover" data-placement="top">{{X.resourceURI.display}}</label>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
+                        data-placement="top"> {{X.resourceURI.display}} </label>
                     <div class="col-xs-8">
-                        <input type="text" name="resources[0][link]" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
+                        <input type="url" name="resources[0][link]" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}"
-                        data-toggle="popover" data-placement="top">{{X.resourceAbstract.display}}</label>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover"
+                        data-placement="top"> {{X.resourceAbstract.display}} </label>
                     <div class="col-xs-8">
-                        <textarea name="resources[0][abstract]" class="form-control" rows="3">{{data.resource.abstract}}</textarea>
+                        <textarea name="resources[0][abstract]" class="form-control" rows="3"> {{data.resource.abstract}}</textarea>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}"
-                        data-toggle="popover" data-placement="top">{{X.resourceExtent.display}}</label>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover"
+                        data-placement="top"> {{X.resourceExtent.display}} </label>
                     <div class="col-xs-8">
                         <input type="text" name="resources[0][extent]" class="form-control" value="{{data.resource.extent}}">
                     </div>
@@ -69,26 +73,31 @@
 
                 <!--  LANGUAGES -->
                 <div class="form-group" id="resource-languages">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceLanguages.tooltip}}" data-toggle="popover" data-placement="top">
-                        {{X.resourceLanguages.display}}</label>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceLanguages.tooltip}}" data-toggle="popover"
+                        data-placement="top">
+                        {{X.resourceLanguages.display}} </label>
                     <div class="col-xs-8 well well-sm">
 
                         <!-- Existing Languages   -->
-                        {% set lang_count = 0 %}
-                        {% for lang in data.resource.languages%}
+                        {% set lang_count = 0 %} {% for lang in data.resource.languages%}
                             <div class="col-xs-12 panel-default language" id="language_{{lang_count}}" style="padding-top: 5px; padding-bottom: 5px;">
-                                <input type="hidden" id="languages_{{lang_count}}[id]" name="resources[0][languages][{{lang_count}}][id]" value="{{lang.id}}">
-                                <input type="hidden" id="languages_{{lang_count}}[version]" name="resources[0][languages][{{lang_count}}][version]" value="{{lang.version}}">
-                                <input type="hidden" class="operation" id="languages_{{lang_count}}[operation]" name="resources[0][languages][{{lang_count}}][operation]" value=""=>
+                                <input type="hidden" id="languages_{{lang_count}}[id]" name="resources[0][languages][{{lang_count}}][id]"
+                                    value="{{lang.id}}">
+                                <input type="hidden" id="languages_{{lang_count}}[version]" name="resources[0][languages][{{lang_count}}][version]"
+                                    value="{{lang.version}}">
+                                <input type="hidden" class="operation" id="languages_{{lang_count}}[operation]" name="resources[0][languages][{{lang_count}}][operation]"
+                                    value="">
                                 <input type="hidden" name="resources[0][languages][{{lang_count}}][dataType]" value="Language">
                                 <div class="input-group">
                                     <div style="width: 50%">
-                                        <select id="language_language_" name="resources[0][languages][{{lang_count}}][language]" data-placeholder="Language" tabindex="-1" >
-                                            <option value="{{lang.language.id}}" selected> {{lang.language.term}} </option>
+                                        <select id="language_language_" name="resources[0][languages][{{lang_count}}][language]" data-placeholder="Language"
+                                            tabindex="-1">
+                                                <option value="{{lang.language.id}}" selected> {{lang.language.term}} </option>
                                         </select>
                                     </div>
                                     <div style="width:50%; clear: none; float: left;">
-                                        <select id="language_script_" name="resources[0][languages][{{lang_count}}][script]" data-placeholder="Script" tabindex="-1">
+                                        <select id="language_script_" name="resources[0][languages][{{lang_count}}][script]" data-placeholder="Script"
+                                            tabindex="-1">
                                             <option value="{{lang.script.id}}" selected> {{lang.script.term}} </option>
                                         </select>
                                     </div>
@@ -103,7 +112,7 @@
                             {% set lang_count = lang_count + 1 %}
                         {% endfor %}
 
-                        <div id="add-resource-language"></div>
+                        <div class="add-resource-language"></div>
 
                         <div class="form-group">
                             <div class="col-xs-12 text-center">
@@ -128,9 +137,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover" data-placement="top">{{X.resourceRepository.display}}</label>
+                    <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover"
+                        data-placement="top"> {{X.resourceRepository.display}} </label>
                     <div class="col-xs-8">
-                        <input type="number" name="resources[0][repo]" class="form-control" value="{{data.resource.repository.id}}" placeholder="(SNAC ID)"/>
+                        <input type="number" name="resources[0][repo]" class="form-control" value="{{data.resource.repository.id}}"
+                            placeholder="(SNAC ID)" />
                         <div class="col-xs-8">
                             <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
                         </div>
@@ -139,7 +150,7 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-4" id="resource-actions">
             <!-- Right Column -->
 
             <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
@@ -174,20 +185,18 @@
 </form>
 
 <!-- Language Template   -->
-<div id="language-template" data-language-count="{{lang_count}}" style="display: none;">
+<div id="resource-language-template" data-language-count="{{lang_count}}" data-resource-count="0" style="display: none;">
     <div class="col-xs-12 panel-default language" style="padding-top: 5px; padding-bottom: 5px;">
-        <!-- <input type="hidden" name="resources[0][languages][ZZ][id]" value="">
-        <input type="hidden" name="resources[0][languages][ZZ][version]" value=""> -->
-        <input type="hidden" class="operation" name="resources[0][languages][ZZ][operation]" value="">
-        <input type="hidden" name="resources[0][languages][ZZ][dataType]" value="Language">
+        <!-- <input type="hidden" name="resources[0][languages][YY][id]" value="">
+        <input type="hidden" name="resources[0][languages][YY][version]" value=""> -->
+        <input type="hidden" class="operation" name="resources[0][languages][YY][operation]" value="">
+        <input type="hidden" name="resources[0][languages][YY][dataType]" value="Language">
         <div class="input-group">
             <div style="width: 50%">
-                <select name="resources[0][languages][ZZ][language]" data-placeholder="Language" tabindex="-1" >
-                </select>
+                <select name="resources[0][languages][YY][language]" data-placeholder="Language" tabindex="-1"></select>
             </div>
             <div style="width:50%; clear: none; float: left;">
-                <select name="resources[0][languages][ZZ][script]" data-placeholder="Script" tabindex="-1">
-                </select>
+                <select name="resources[0][languages][YY][script]" data-placeholder="Script" tabindex="-1"></select>
             </div>
 
             <span class="input-group-btn">
