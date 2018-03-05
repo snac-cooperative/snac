@@ -36,6 +36,21 @@ function queryBrowse(position, term, entityType, icid) {
             lastID = data.results[data.results.length -1].ic_id;
             for (var key in data.results) {
                 result = data.results[key];
+                var entityType = "<span class=\"fa-stack fa-sm\" style=\"margin-top: -2px;\" title=\"Entity Type: "+result.entity_type+"\">";
+                if (result.entity_type == "person") {
+                     entityType += "<i class=\"fa fa-square fa-stack-2x\" style=\"color: #5CB9A6;\"></i>"
+                          +   "<i class=\"fa fa-user fa-stack-1x fa-inverse\"></i>";
+                } else if (result.entity_type == "corporateBody") {
+                     entityType += "<i class=\"fa fa-square fa-stack-2x\" style=\"color: #7E72B5;\"></i>"
+                          +   "<i class=\"fa fa-university fa-stack-1x fa-inverse\"></i>";
+                } else if (result.entity_type == "family") {
+                     entityType += "<i class=\"fa fa-square fa-stack-2x\" style=\"color: #EA6820;\"></i>"
+                          +   "<i class=\"fa fa-users fa-stack-1x fa-inverse\"></i>";
+                } else if (result.entity_type == "holdingRepository") {
+                     entityType += "<i class=\"fa fa-square fa-stack-2x\" style=\"color: #888;\"></i>"
+                          +   "<i class=\"fa fa-archive fa-stack-1x fa-inverse\"></i>";
+                }
+                entityType += "</span>";
                 var link = "<a target=\"_blank\" href=\""+snacUrl+"/view/"+result.ic_id+"\">"+result.name_entry+"</a>";
                 var checkbox = "<input class=\"compare-checkbox\" type=\"checkbox\" value=\""+result.ic_id+"\"";
                 var checked = false;
@@ -46,7 +61,7 @@ function queryBrowse(position, term, entityType, icid) {
                 if (checked)
                     checkbox += " checked";
                 checkbox += ">";
-                var row = new Array(checkbox, link, result.entity_type, result.resources, result.degree);
+                var row = new Array(checkbox, entityType + " " + link, result.resources, result.degree);
                 var node = datatable.row.add(row).draw().node();
 
                 if (position == "middle" && key == 10)

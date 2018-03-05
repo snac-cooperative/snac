@@ -70,8 +70,11 @@ function setAjaxResultsIntoPage(data) {
             var html = "<h4><a href=\""+snacUrl+"/view/"+result.id+"\">"+result.nameEntries[0].original+"</a></h4>"
                     + "<p class=\"identity-info\">"
                     + "    <span>"+result.ark+"</span>"
-                    + "    <span>("+result.entityType.term+")</span>"
-                    + "</p>";
+            if ($.inArray("holdingRepository", result.flags))
+                html += "    <span>(Holding Repository)</span>";
+            else
+                html += "    <span>("+result.entityType.term+")</span>";
+            html += "</p>";
             if (typeof result.biogHists == "undefined" || typeof result.biogHists[0] == "undefined" || typeof result.biogHists[0].text == "undefined")
                 html += "<p class=\"missing\">No biographical history available for this identity.</p>";
             else 

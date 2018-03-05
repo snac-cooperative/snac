@@ -388,6 +388,23 @@ class Neo4JUtil {
         return $rels;
     }
 
+
+    public function checkHoldingInstitutionStatus(&$constellation) {
+        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;", 
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
+
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $constellation->setFlag("holdingRepository");
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * List out-edges for constellation
      *
@@ -453,7 +470,7 @@ class Neo4JUtil {
     public function updateResourceIndex(&$resource) {
         if ($this->connector != null) {
             
-            // STEP 1: Update or insert this identity as a node:
+            // STEP 1: Update or insert this resource as a node:
             $this->logger->addDebug("Updating/Inserting Node into Neo4J database"); 
             $result = $this->connector->run("MATCH (a:Resource {id: {id} }) SET a.title = {title}, a.version = {version}, a.href = {href}
                 return a;", 
@@ -479,6 +496,34 @@ class Neo4JUtil {
                         ]
                     ]
                 );
+            }
+
+            // STEP 2: Update or insert the resource's link to holding repository
+            $result = $this->connector->run("MATCH (a:Resource {id: {id} })-[r:HIRELATION]->() 
+                return r;", 
+                [
+                    'id' => $resource->getID(),
+                ]
+            );
+            $records = $result->getRecords(); 
+            if (!empty($records)) {
+                // delete the one there so that we can add the correct one (just in case)
+                $result = $this->connector->run("MATCH (a:Resource {id: {id}})-[r:HIRELATION]->() delete r;", 
+                    [
+                        'id' => $resource->getID()
+                    ]
+                );
+
+            }
+
+            // If resource has a repository, then add a link
+            if ($resource->getRepository() != null && $resource->getRepository()->getID() != null) {
+                $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
+                    CREATE (b)-[r:HIRELATION]->(a);", 
+                    [
+                        'id1' => $resource->getRepository()->getID(),
+                        'id2' => $resource->getID()
+                    ]);
             }
         }    
     }
