@@ -20,10 +20,6 @@
 <!-- Helper Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-<script language="javascript">
-$('.selectpicker').selectpicker();
-</script>
-
 <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 
@@ -51,6 +47,7 @@ $('.selectpicker').selectpicker();
             enableLanguageSelect($(this));
         });
         $("#new-resource-language-btn").on("click", newResourceLanguage);
+        $("#magic-resource-language-btn").on("click", magicNewResourceLanguage);
         $('#vocab_dashboard_cancel').on("click", cancelResource);
         $('#resource-form').on('submit', saveResource);
         markEditedResourceFields($('#resource-form'));
@@ -59,26 +56,25 @@ $('.selectpicker').selectpicker();
 
 </head>
 <body role="document">
-{% from 'page_navigation.html' import topNavigation,footer %}
-{{ topNavigation(X, user, permissions, control) }}
+    {% from 'page_navigation.html' import topNavigation,footer %}
+    {{ topNavigation(X, user, permissions, control) }}
 
 
-<div class="container snac" role="main">
-    <h1>Vocabulary: {{ data.title }}</h1>
+    <div class="container snac" role="main">
+        <h1>Vocabulary: {{ data.title }}</h1>
+        <ol class="breadcrumb">
+            <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
+            <li><a href="{{control.snacURL}}/vocab_administrator/resources">Resource Management</a></li>
+            <li>{{data.title}}</li>
+        </ol>
+        <div class="well well-lg">
+            <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit and save the resource.</p>
+        </div>
 
-    <ol class="breadcrumb">
-        <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
-        <li><a href="{{control.snacURL}}/vocab_administrator/resources">Resource Management</a></li>
-        <li>{{data.title}}</li>
-    </ol>
-    <div class="well well-lg">
-        <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit and save the resource.</p>
+        {% set resource_operation = 'update' %}
+        {% include "resources/_resource_form.html" %}
+
     </div>
-
-    {% set resource_operation = 'update' %}
-    {% include "resources/_resource_form.html" %}
-
-</div>
 {{ footer(X, user, permissions, control) }}
 </body>
 </html>

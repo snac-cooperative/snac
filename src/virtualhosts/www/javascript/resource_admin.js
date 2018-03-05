@@ -86,6 +86,7 @@ function newResourceLanguage() {
     enableLanguageSelect($newLanguage);
 
     data.languageCount++;
+    return $newLanguage;
 }
 
 /**
@@ -158,4 +159,14 @@ function enableVocabularySelect(selectItem, type) {
 function enableLanguageSelect($language) {
     enableVocabularySelect($language.find("select:first"), 'language_code');
     enableVocabularySelect($language.find("select:last"), 'script_code');
+}
+
+
+function magicNewResourceLanguage() {
+    event.preventDefault();
+    var $newLanguage = newResourceLanguage();
+    var defaultLanguage = new Option(defaults.language.term, defaults.language.id, false, true);
+    var defaultScript = new Option(defaults.script.term, defaults.script.id, false, true);
+    $newLanguage.find("select:first").append(defaultLanguage).trigger('change');
+    $newLanguage.find("select:last").append(defaultScript).trigger('change');
 }
