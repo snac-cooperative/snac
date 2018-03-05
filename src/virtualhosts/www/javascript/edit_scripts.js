@@ -1709,8 +1709,8 @@ function updatePlaceHeading(shortName, i, newValue) {
 }
 
 function magicDefaultFill(selectID, vocabType) {
-   if (typeof(defaults[vocabType]) !== undefined) { 
-       
+   if (typeof(defaults[vocabType]) !== undefined) {
+
        var data = {
            id: defaults[vocabType].id,
            text: defaults[vocabType].term
@@ -2049,27 +2049,19 @@ $(document).ready(function() {
                         var text = $('#resource_template').clone();
                         var html = text.html().replace(/ZZ/g, 0);
                         $('#resource-create-box').html(html);
+                        // Copy the search contents to title or href
                         if ($("#resource-searchbox").val().indexOf("http:") == -1)
-                            $("#resource_title_0").val($("#resource-searchbox").val());
+                            $("#resource_create_form #resource-title").val($("#resource-searchbox").val());
                         else
-                            $("#resource_link_0").val($("#resource-searchbox").val());
+                            $("#resource_create_form #resource-url").val($("#resource-searchbox").val());
 
-                        // Make the new resource editable
-                        turnOnButtons("resource", 0);
-                        turnOnTooltips("resource", 0);
-                        makeEditable("resource", 0);
-
-                        // Turn on validation
-                        $("#resource_create_form").validate({
-                            rules: {
-                                resource_documentType_id_0: "required",
-                                resource_title_0: "required"
-                            },
-                            errorPlacement: function(error, element) {
-                                error.appendTo( element.parent() );
-                            }
-
+                        $('#resource_create_form [data-toggle="popover"]').popover({
+                              trigger: 'hover',
+                              container: 'body'
                         });
+                        loadVocabSelectOptions($("#resource_create_form #resource-type-select"), "document_type", "Resource Type");
+                        $("#resource_create_form #new-resource-language-btn").on("click", newResourceLanguage);
+                        $("#resource_create_form #magic-resource-language-btn").on("click", magicNewResourceLanguage);
 
                         // Remove the search results from the other modal
                         $("#resource-results-box").html("");
@@ -2078,8 +2070,13 @@ $(document).ready(function() {
                 }
 
                 if ($('#btn_create_resource').exists()){
-                    $('#btn_create_resource').click(function(){
-                        if ($("#resource_create_form").valid()) {
+                    $('#resource_create_form').on("submit", function(){
+                            // Remove leading and trailing whitespace
+                            $("#resource_create_form input, textarea").each(function() {
+                                $(this).val($.trim($(this).val()));
+                            });
+                            setDeletedResourceLanguageOperations($("#resource_create_form"));
+
                             $.post(snacUrl+"/save_resource", $("#resource_create_form").serialize(), function (data) {
                                 if (typeof data.result !== 'undefined' && data.result !== 'false') {
                                     somethingHasBeenEdited = true;
@@ -2119,7 +2116,6 @@ $(document).ready(function() {
                                     return false;
                                 }
                             });
-                        }
                         return false;
                     });
                 }

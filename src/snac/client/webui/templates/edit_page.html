@@ -65,6 +65,7 @@
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/resource_admin.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -684,7 +685,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
-                <button type="button" class="btn btn-primary" id="btn_create_resource" data-dismiss="modal">Continue</button>
+                <button type="submit" form="resource_create_form" class="btn btn-primary" id="btn_create_resource">Continue</button>
             </div>
         </div>
     </div>

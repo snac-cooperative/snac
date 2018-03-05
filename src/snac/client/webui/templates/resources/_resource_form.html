@@ -35,7 +35,7 @@
                     <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
                         data-placement="top"> {{X.resourceTitle.display}} </label>
                     <div class="col-xs-8">
-                        <input type="text" name="resources[0][title]" class="form-control" value="{{data.resource.title}}" pattern="^((?![hH][tT][tT][pP][sS]?:).)*$" required>
+                        <input id="resource-title" type="text" name="resources[0][title]" class="form-control" value="{{data.resource.title}}" pattern="^((?![hH][tT][tT][pP][sS]?:).)*$" required>
                     </div>
                 </div>
 
@@ -51,7 +51,7 @@
                     <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
                         data-placement="top"> {{X.resourceURI.display}} </label>
                     <div class="col-xs-8">
-                        <input type="url" name="resources[0][link]" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
+                        <input id="resource-url" type="url" name="resources[0][link]" class="form-control" value="{{data.resource.link}}" placeholder="http://full/URL/path"/>
                     </div>
                 </div>
 
