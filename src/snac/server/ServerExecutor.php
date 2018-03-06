@@ -556,6 +556,13 @@ class ServerExecutor {
             return $this->readVocabulary($input);
         } else {
             switch ($input["type"]) {
+                case "holding":
+                    $response["results"] = array();
+                    $count = 100;
+                    if (isset($input["count"]))
+                        $count = $input["count"];
+                    $response["results"] = $this->neo4J->searchHoldingInstitutions($input["query_string"], $count);
+                    break;
                 default:
                     $response["results"] = array();
                     $count = 100;
@@ -2118,6 +2125,10 @@ class ServerExecutor {
 
                 $constellation = $constellations[0];
 
+                if (\snac\Config::$USE_NEO4J) {
+                    $this->neo4J->checkHoldingInstitutionStatus($constellation);
+                }
+
                 $editable = false;
                 $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
                 if ($this->user != null) {
@@ -2884,7 +2895,9 @@ class ServerExecutor {
             }
             $this->elasticSearch->deleteFromNameIndices($c);
             $this->cStore->deleteFromNameIndex($c);
-            $this->neo4J->deleteConstellation($c);
+            // from c to written
+            $this->neo4J->redirectConstellation($c, $written);
+            //$this->neo4J->deleteConstellation($c);
         }
 
         // Remove maybe-same links between the originals, if they exist
@@ -3450,6 +3463,16 @@ class ServerExecutor {
             $icid = $input["icid"];
 
         $results = $this->cStore->browseNameIndex($term, $position, $entityType, $icid);
+        
+        foreach ($results as &$result) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($result["ic_id"]);
+            if (\snac\Config::$USE_NEO4J) {
+                $this->neo4J->checkHoldingInstitutionStatus($constellation);
+            }
+            if ($constellation->hasFlag("holdingRepository"))
+                $result["entity_type"] = "holdingRepository";
+        }
 
         $response["results"] = $results;
         $response["result"] = "success";
@@ -3510,6 +3533,9 @@ class ServerExecutor {
             // Update the ES search results to include information from the constellation
             foreach ($response["results"] as $k => $result) {
                 $constellation = $this->cStore->readPublishedConstellationByID($result["id"], DBUtil::$READ_SHORT_SUMMARY);
+                if (\snac\Config::$USE_NEO4J) {
+                    $this->neo4J->checkHoldingInstitutionStatus($constellation);
+                }
                 array_push($searchResults, $constellation->toArray());
             }
             $response["results"] = $searchResults;

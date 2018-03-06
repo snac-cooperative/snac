@@ -29,17 +29,21 @@ $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE,
 $automate = false;
 $ingest_all = false;
 $datamerge = "/data/merge/";
+$datamergesample = "/data/merge-sample/";
 
 if ($argc == 2 && $argv[1] == "automate")
     $automate = true;
-if ($argc == 3 && $argv[1] == "automate")
+if ($argc >= 3 && $argv[1] == "automate")
     $automate = true;
-if ($argc == 3 && $argv[2] == "full")
+if ($argc >= 3 && $argv[2] == "full")
     $ingest_all = true;
-else if ($argc == 3)
+else if ($argc >= 3)
     $datamerge = $argv[2];
+if ($argc >= 4)
+    $datamergesample = $argv[3];
 
 // Read the configuration file
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Reading the configuration file in src/snac/Config.php.\n";
 
 $host = Config::$DATABASE["host"];
@@ -50,6 +54,7 @@ $user = Config::$DATABASE["user"];
 
 // Try to create the database
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to try creating the PostgreSQL database?\n  ('yes' or 'no'): ";
 $response = "no";
 if (!$automate)
@@ -93,6 +98,7 @@ EOF'
 
 
 // Try to connect to the database
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Attempting to make a database connection.\n\n";
 
 $dbHandle = pg_connect("host=$host port=$port dbname=$database user=$user password=$password");
@@ -103,6 +109,7 @@ if ($dbHandle === false) {
 
 
 $siteoffline = false;
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to take the site offline during this process?\n ('yes' or 'no'): "; 
 $response = "yes";
 if (!$automate)
@@ -125,6 +132,7 @@ if ($response == "yes") {
 }
 
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the schema (tables, indicies, roles, privileges) into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -156,6 +164,7 @@ if ($response == "yes") {
     echo "  Not loading the schema, roles, or privileges. The schema can be found in sql_files/schema.sql.\n\n";
 } 
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the vocabulary schema (and drop the existing tables)?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -178,6 +187,7 @@ if ($response == "yes") {
     echo "  Not updating the vocabulary schema.  The schema can be found in sql_files/vocabulary_init.sql.\n\n";
 } 
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the place vocabulary schema (and drop the existing tables)?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -202,6 +212,7 @@ if ($response == "yes") {
 
 
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the initial users into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -225,6 +236,7 @@ if ($response == "yes") {
     echo "  Not loading the users. They can be found in sql_files/initialize_users.sql.\n\n";
 }
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the language codes into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -248,6 +260,7 @@ if ($response == "yes") {
     echo "  Not loading the language codes. They can be found in sql_files/languages.sql.\n\n";
 }
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the script codes into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -273,6 +286,7 @@ if ($response == "yes") {
 
 
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the controlled vocabulary into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -297,6 +311,7 @@ if ($response == "yes") {
 }
 
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the controlled place vocabulary into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -320,6 +335,7 @@ if ($response == "yes") {
     echo "  Not loading the controlled place vocabulary. They can be found in sql_files/places_vocabulary.sql.\n\n";
 }
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to empty the Elastic Search Indices?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -376,6 +392,7 @@ if ($response == "yes" && \snac\Config::$USE_ELASTIC_SEARCH) {
 }
 
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load a small sampling of records (100) into the database?\n ('yes' or 'no'): "; 
 $response = "yes";
 if (!$automate)
@@ -390,8 +407,14 @@ if ($response == "yes") {
         $dir = trim(fgets(STDIN));
     if ($dir == null || $dir == "")
         $dir = $datamerge;
+    echo "  What is the full path to the sampled SNAC merged CPF? [default: $datamergesample]\n  :";
+    $dir2 = null;
+    if (!$automate)
+        $dir2 = trim(fgets(STDIN));
+    if ($dir2 == null || $dir2 == "")
+        $dir2 = $datamergesample;
     $retval = 0;
-    echo "  Attempting to ingest sample records from $dir.\n";
+    echo "  Attempting to ingest sample records from $dir and $dir2.\n";
     /* 
      * Run a system shell command, that sudos bash, then su's to postgres user,
      * then creates the user and database from the Config class.
@@ -399,7 +422,7 @@ if ($response == "yes") {
      * If you are looking for the string Parsing: that shows up in the output, you want ingest_sample.php,
      * which is the shell command being run below.
      */
-    system("cd ../scripts && ./ingest_sample.php $dir\n", $retval);
+    system("cd ../scripts && ./ingest_sample.php $dir $dir2\n", $retval);
     
     if ($retval != 0) {
         echo "  There was a problem ingesting the sample records.\n\n";
@@ -409,6 +432,7 @@ if ($response == "yes") {
 }
 
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the May 2016 sample set of records into the database?\n";
 echo "This will take a SIGNIFICANT amount of time!\n ('yes' or 'no'): "; 
 $response = "no";
@@ -440,6 +464,7 @@ if ($response == "yes") {
     echo "  Not ingesting May 2016 sample records.\n\n";
 }
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load the set of institution records into the database?\n";
 echo "These include most instutitions participating in the SNAC cooperative, and are needed for SNAC Users\n  ('yes' or 'no'): "; 
 $response = "yes";
@@ -466,6 +491,7 @@ if ($response == "yes") {
     echo "  Not ingesting institution records.\n\n";
 }
 
+echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
 echo "Would you like to load a set of users into the database?\n See setup_files/users_dist.csv for the file format\n ('yes' or 'no'): "; 
 $response = "yes";
 if (!$automate) {

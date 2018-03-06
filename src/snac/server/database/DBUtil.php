@@ -876,7 +876,7 @@ class DBUtil
                 'status' => $h['status'],
                 'note' => $h['note']
             ];
-            if ($event['status'] == 'ingest cpf') {
+            if ($event['status'] == 'ingest cpf' || $event['status'] == 'merge split') {
                 $event['data'] = json_decode($event['note'], true);
                 $event['note'] = "";
             }
@@ -2948,7 +2948,10 @@ class DBUtil
         if ($resource === null)
             false;
         // check if resource exists in database
-        $result = $this->sql->selectResourceByData($resource->getTitle(), $resource->getLink(), $resource->getDocumentType()->getID());
+        $documentType = null;
+        if ($resource->getDocumentType() != null)
+            $documentType = $resource->getDocumentType()->getID();
+        $result = $this->sql->selectResourceByData($resource->getTitle(), $resource->getLink(), $documentType);
         
         if ($result === false)
             return false;
