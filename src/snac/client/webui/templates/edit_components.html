@@ -646,15 +646,13 @@
 {% endmacro %}
 
 {% macro displayResource(X, inEdit, showSubElements, resource, i) %}
-    {% import 'widgets.html' as widgets %}
-    {% import _self as components %}
     <div class="panel alert-info edited-component" >
         <div class="panel-body">
-            {% set resource_operation = 'insert' %}
-            {% include "resources/_resource_form.html" %}
+            {% import "resources/_resource_form.html" as resources %}
+            {{ resources.resourceForm(X, null) }}
+            {{ resources.displayResourceLanguageTemplate(X) }}
         </div>
     </div>
-
 {% endmacro %}
 
 

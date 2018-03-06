@@ -56,6 +56,7 @@
 
 </head>
 <body role="document">
+    {% import "resources/_resource_form.html" as resources %}
     {% from 'page_navigation.html' import topNavigation,footer %}
     {{ topNavigation(X, user, permissions, control) }}
 
@@ -71,9 +72,17 @@
             <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit and save the resource.</p>
         </div>
 
-        {% set resource_operation = 'update' %}
-        {% include "resources/_resource_form.html" %}
-
+        <form id="resource-form">
+            <div class="row">
+                <div class="col-md-8">
+                    {{ resources.resourceForm(X, data.resource) }}
+                </div>
+                <div class="col-md-4">
+                {{ resources.displayResourceActions() }}
+            </div>
+            </div>
+        </form>
+        {{ resources.displayResourceLanguageTemplate(X, data.resource.languages|length) }}
     </div>
 {{ footer(X, user, permissions, control) }}
 </body>

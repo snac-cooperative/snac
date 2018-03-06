@@ -28,8 +28,8 @@ function saveResource() {
             $('#notification-message').slideUp();
             $('#success-message').slideDown();
             setTimeout(function() {
-                // window.location.replace(snacUrl + "/vocab_administrator/resources");
-            }, 1500);
+                window.location.replace(snacUrl + "/vocab_administrator/resources");
+            }, 1000);
         })
         .fail(function() {
             $('#error-message').slideDown();
