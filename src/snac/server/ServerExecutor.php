@@ -3522,6 +3522,38 @@ class ServerExecutor {
     }
 
     /**
+     * Search the Elastic Search Index 
+     *
+     * Passes an ElasticSearch query directly to elastic search, but uses only the SEARCH
+     * interface.  This should allow an outside user to query elastic search for results
+     * without allowing access to update the indexes.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function elasticSearchQuery(&$input) {
+        $response = array();
+
+        if (isset($input["query"]) && !empty($input["query"])) {
+            $esQuery = [
+                "query" => $input["query"]
+            ];
+            if (isset($input["size"]) && is_numeric($input["size"]))
+                $esQuery["size"] = $input["size"];
+            if (isset($input["from"]) && is_numeric($input["from"]))
+                $esQuery["from"] = $input["from"];
+
+
+            $response["results"] = $this->elasticSearch->passthrough($esQuery);
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+        
+        return $response;
+    }
+
+    /**
      * Get Public User
      *
      * Gets the default public user, which only has permission to view and no dashboard permissions
