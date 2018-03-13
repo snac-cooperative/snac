@@ -175,7 +175,7 @@ class Server implements \snac\interfaces\ServerInterface {
             case "send_message":
                 $this->response = $executor->sendMessage($this->input);
                 break;
-            
+
             case "archive_message":
                 $this->response = $executor->archiveMessage($this->input);
                 break;
@@ -337,14 +337,14 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 $this->response = $executor->autoMergeConstellations($this->input);
                 break;
-            
+
             case "constellation_assert":
                 if (!($executor->hasPermission("Maybe Same Assertion") && $executor->hasPermission("Not Same Assertion"))) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to make Constellation assertions.", 403);
                 }
                 $this->response = $executor->makeAssertion($this->input);
                 break;
-            
+
             case "constellation_add_maybesame":
                 if (!$executor->hasPermission("Maybe Same Assertion")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to add maybe-same links.", 403);

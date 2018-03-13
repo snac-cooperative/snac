@@ -358,7 +358,7 @@ class WebUIExecutor {
         if (isset($input["q"])) {
             $input["term"] = $input["q"];
         }
-        
+
         if (!isset($input["biog_hist"]))
             $input["biog_hist"] = null;
 
@@ -411,7 +411,7 @@ class WebUIExecutor {
         if (isset($input["q"])) {
             $input["term"] = $input["q"];
         }
-        
+
         if (!isset($input["biog_hist"]))
             $input["biog_hist"] = null;
 
@@ -435,7 +435,7 @@ class WebUIExecutor {
             $results["facets"] = $input["facets"];
             $results["aggregations"] = $results["aggregations"];
             $results["biog_hist"] = $input["biog_hist"];
-        } 
+        }
 
         return $results;
     }
@@ -1140,7 +1140,7 @@ class WebUIExecutor {
         }
         return true;
     }
-    
+
     /**
      * Display Status Page
      *
@@ -1158,7 +1158,7 @@ class WebUIExecutor {
         $display->setTemplate("stats");
         return true;
     }
-    
+
     /**
      * Display Upload Page
      *
@@ -1171,7 +1171,7 @@ class WebUIExecutor {
         $display->setTemplate("upload");
         return true;
     }
-    
+
     /**
      * Display Preview Page
      *
@@ -1390,7 +1390,7 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($ask);
         if (!isset($serverResponse["result"]) || $serverResponse["result"] !== "success")
             return $this->drawErrorPage($serverResponse, $display);
-        
+
         $data = $serverResponse + ["viewSetting" => "archived"];
         $display->setData($data);
         $display->setTemplate("message_list");
@@ -1405,7 +1405,7 @@ class WebUIExecutor {
      *
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displaySentMessages(&$display) { 
+    public function displaySentMessages(&$display) {
         $ask = array("command" => "sent_messages");
         $serverResponse = $this->connect->query($ask);
         if (!isset($serverResponse["result"]) || $serverResponse["result"] !== "success")
@@ -1827,10 +1827,10 @@ class WebUIExecutor {
                 $display->setTemplate("resources/search");
                 break;
             case "edit_resource":
-                // id passed is actually resourceID, 
+                // id passed is actually resourceID,
                 $resourceID = $input["constellationid"];
                 $resource = $this->connect->lookupResource($resourceID);
-                
+
                 $display->setData(array("title"=> "Edit a Resource",
                                         "resource" => $resource));
                 $display->setTemplate("resources/edit");
@@ -1966,7 +1966,7 @@ class WebUIExecutor {
             "commands" => $commands
         ]);
     }
-    
+
     /**
      * Display Contact Us Page
      *
@@ -2242,7 +2242,7 @@ class WebUIExecutor {
         // Build a data structure to send to the server
         $command = $resource->getOperation() === "insert" ? "insert_resource" : "update_resource";
         $request = array("command" => $command);
-        
+
         // Send the query to the server
         $request["resource"] = $resource->toArray();
         $serverResponse = $this->connect->query($request);
@@ -3071,14 +3071,14 @@ class WebUIExecutor {
         $request = array();
         $request["command"] = "resource_search";
         $request["term"] = $input["term"];
-        
+
         if (isset($input["type"]))
             $request["type"] = $input["type"];
         if (isset($input["count"]))
             $request["count"] = $input["count"];
         if (isset($input["filters"]))
             $request["filters"] = $input["filters"];
-        
+
         $serverResponse = $this->connect->query($request);
         return $serverResponse;
 

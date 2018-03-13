@@ -178,7 +178,7 @@
                           <i class="fa fa-users fa-stack-1x fa-inverse"></i>
                       </span>
                       {% endif %}
-                      <!-- 
+                      <!--
                       <span class="fa-stack fa-sm">
                           <i class="fa fa-square fa-stack-2x" style="color: #888;"></i>
                           <i class="fa fa-archive fa-stack-1x fa-inverse"></i>
@@ -281,32 +281,32 @@
                   {% if data.new.biogHists.0.text %}
                       <div class="biogHist updated">
                           {{ data.new.biogHists.0.text|replace({
-                             '<citation ':"<p class='source' ", 
-                             '</citation>':"</p>", 
-                             'chronList':"ul class='chronlist'", 
-                             'chronItem':"li", 
-                             '<date':"<span class='date'", 
-                             '</date>':"</span>: ", 
-                             '</fromDate>':"</fromDate> -", 
-                             '<dateRange': "<span class='date'", 
+                             '<citation ':"<p class='source' ",
+                             '</citation>':"</p>",
+                             'chronList':"ul class='chronlist'",
+                             'chronItem':"li",
+                             '<date':"<span class='date'",
+                             '</date>':"</span>: ",
+                             '</fromDate>':"</fromDate> -",
+                             '<dateRange': "<span class='date'",
                              '</dateRange>':"</span>: ",
-                             '<daterange':"<span class='date'", 
+                             '<daterange':"<span class='date'",
                              '</daterange>':"</span>: "
                           })|raw }}
                       </div>
                   {% elseif data.old.biogHists.0.text %}
                       <div class="biogHist older">
                       {{ data.old.biogHists.0.text|replace({
-                             '<citation ':"<p class='source' ", 
-                             '</citation>':"</p>", 
-                             'chronList':"ul class='chronlist'", 
-                             'chronItem':"li", 
-                             '<date':"<span class='date'", 
-                             '</date>':"</span>: ", 
-                             '</fromDate>':"</fromDate> -", 
-                             '<dateRange': "<span class='date'", 
+                             '<citation ':"<p class='source' ",
+                             '</citation>':"</p>",
+                             'chronList':"ul class='chronlist'",
+                             'chronItem':"li",
+                             '<date':"<span class='date'",
+                             '</date>':"</span>: ",
+                             '</fromDate>':"</fromDate> -",
+                             '<dateRange': "<span class='date'",
                              '</dateRange>':"</span>: ",
-                             '<daterange':"<span class='date'", 
+                             '<daterange':"<span class='date'",
                              '</daterange>':"</span>: "
                           })|raw }}
                       </div>
@@ -314,16 +314,16 @@
                       <div class="biogHist">
                       {% if data.biogHists.0.text %}
                         {{ data.biogHists.0.text|replace({
-                             '<citation ':"<p class='source' ", 
-                             '</citation>':"</p>", 
-                             'chronList':"ul class='chronlist'", 
-                             'chronItem':"li", 
-                             '<date':"<span class='date'", 
-                             '</date>':"</span>: ", 
-                             '</fromDate>':"</fromDate> -", 
-                             '<dateRange': "<span class='date'", 
+                             '<citation ':"<p class='source' ",
+                             '</citation>':"</p>",
+                             'chronList':"ul class='chronlist'",
+                             'chronItem':"li",
+                             '<date':"<span class='date'",
+                             '</date>':"</span>: ",
+                             '</fromDate>':"</fromDate> -",
+                             '<dateRange': "<span class='date'",
                              '</dateRange>':"</span>: ",
-                             '<daterange':"<span class='date'", 
+                             '<daterange':"<span class='date'",
                              '</daterange>':"</span>: "
                           })|raw }}
                       {% else %}
@@ -423,7 +423,7 @@
                                     {% if data.editingUser %}
                                         <div class="list-group-item">
                                             <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
-                                            {{ include('_message_current_editor.html')}}                            
+                                            {{ include('_message_current_editor.html')}}
                                         </div>
                                     {% endif %}
                                 {% endif %}
@@ -489,7 +489,7 @@
                   {% else %}
                     <div class="alert alert-info">not available for this record</div>
                   {% endif %}
-                  
+
                   {% if data.entityType.term == 'corporateBody' %}
                       <h4>Functions:</h4>
                       {% if data.functions|length > 0 or data.new.functions|length > 0 or data.old.functions|length > 0 %}
@@ -567,7 +567,7 @@
                                     <div>{{nameEntry.original}}</div>
                                   {% endfor %}
                               {% endif %}
-                              
+
                               {% for nameEntry in data.old.nameEntries %}
                                 <div class="older">{{nameEntry.original}}</div>
                               {% endfor %}

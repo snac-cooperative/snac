@@ -258,7 +258,7 @@ class ServerExecutor {
             } else if ($this->user !== false && $this->user->getToken() != null) {
                 // Remove all old sessions for this user
                 $this->uStore->clearAllSessions($this->user);
-                
+
                 // Try to add the session (check google first)
                 if (isset($this->user->getToken()["authority"]) &&
                     $this->user->getToken()["authority"] == "snac") {
@@ -656,7 +656,7 @@ class ServerExecutor {
         $start = $input["start"] ?? null;
         $count = $input["count"] ?? null;
         $filters = $input["filters"] ?? null;
-        
+
         if (isset($input["term"])) {
             $response = $this->elasticSearch->searchResourceIndex($input["term"], $start, $count, $filters);
             // If there are results from the search, then replace them with full
@@ -965,7 +965,7 @@ class ServerExecutor {
                         throw new \snac\exceptions\SNACUserException("Recipient User does not exist.", 400);
                     }
                     $message->setToUser($toUser);
-                    
+
                     // Send the message through the system
                     $this->uStore->writeMessage($message);
                 } else {
@@ -1145,7 +1145,7 @@ class ServerExecutor {
                 }
             }
         }
-        
+
         return $response;
     }
 
@@ -1339,9 +1339,9 @@ class ServerExecutor {
         $response = array();
         if (isset($input["resource"])) {
             $resource = new \snac\data\Resource($input["resource"]);
-            
+
             if ($resource->getOperation() === \snac\data\AbstractData::$OPERATION_INSERT) {
-                //check if resource is already in database, if so, return it 
+                //check if resource is already in database, if so, return it
                 $resourceCheck = $this->cStore->readResourceByData($resource);
                 if ($resourceCheck !== false) {
                     $response['resource'] = $resourceCheck->toArray();
@@ -3260,7 +3260,7 @@ class ServerExecutor {
 
             $results = $this->neo4J->listConstellationInEdges($constellation);
             foreach ($results as $result) {
-                array_push($return["in"], 
+                array_push($return["in"],
                     array(
                         "constellation" => $this->cStore->readPublishedConstellationByID(
                             $result["constellation"]->getID(),
@@ -3272,7 +3272,7 @@ class ServerExecutor {
 
             $results = $this->neo4J->listConstellationOutEdges($constellation);
             foreach ($results as $result) {
-                array_push($return["out"], 
+                array_push($return["out"],
                     array(
                         "constellation" => $this->cStore->readPublishedConstellationByID(
                             $result["constellation"]->getID(),
@@ -3463,7 +3463,7 @@ class ServerExecutor {
             $icid = $input["icid"];
 
         $results = $this->cStore->browseNameIndex($term, $position, $entityType, $icid);
-        
+
         foreach ($results as &$result) {
             $constellation = new \snac\data\Constellation();
             $constellation->setID($result["ic_id"]);
@@ -3554,7 +3554,7 @@ class ServerExecutor {
     }
 
     /**
-     * Search the Elastic Search Index 
+     * Search the Elastic Search Index
      *
      * Passes an ElasticSearch query directly to elastic search, but uses only the SEARCH
      * interface.  This should allow an outside user to query elastic search for results
@@ -3581,7 +3581,7 @@ class ServerExecutor {
         } else {
             $response["result"] = "failure";
         }
-        
+
         return $response;
     }
 

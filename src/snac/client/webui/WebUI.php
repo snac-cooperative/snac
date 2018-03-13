@@ -638,7 +638,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "stats":
                 $response = $executor->displayStatsPage($this->input, $display);
                 break;
-            
+
             case "upload":
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;
