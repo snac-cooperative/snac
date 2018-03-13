@@ -2967,5 +2967,118 @@
                 }
             }
         ]
+    },
+    "elastic" : {
+        "category": "discover",
+        "title" : "Elastic Search Query",
+        "description" : "Search through the Constellation indexes using Elastic Search syntax.",
+        "parameters" : {
+            "query" : {
+                "type" : "Object",
+                "description": "JSON-formatted Elastic Search query.  This would be the \"query\" portion of an Elastic Search API call.  We will automatically include the index and type for Elastic Search." 
+            },
+            "size" : {
+                "type" : "Integer",
+                "description": "Number of results to return",
+                "optional": true 
+            },
+            "from" : {
+                "type" : "Integer",
+                "description": "Starting point in the results, 0-based",
+                "optional": true 
+            }
+        },
+        "returns" : {
+            "results" : {
+                "type": "Array of Objects", 
+                "description": "Full results directly from Elastic Search"
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Basic Elastic Search Query",
+                "description": "A basic search for \"poets\".",
+                "query": {
+                    "command": "elastic",
+                    "query": {
+                        "simple_query_string" : {
+                            "query" : "poets",
+                            "default_operator" : "and"
+                        }
+                    },
+                    "size": 2,
+                    "from": 0
+                },
+                "response": {
+                    "results": {
+                        "took": 3,
+                        "timed_out": false,
+                        "hits": {
+                            "total": 4714,
+                            "max_score": 2.8193178,
+                            "hits": [
+                                {
+                                    "_id": "36683640",
+                                    "_score": 2.8193178,
+                                    "_source": {
+                                        "nameEntry": "Grano, Paul, 1894-1975",
+                                        "entityType": "person",
+                                        "arkID": "http://n2t.net/ark:/99166/w6cv522g",
+                                        "id": 36683640,
+                                        "degree": 5,
+                                        "resources": 15,
+                                        "subject": [
+                                            "Poets, Australian--20th century",
+                                            "Australian poetry"
+                                        ],
+                                        "occupation": [
+                                            "Poets",
+                                            "Poets."
+                                        ],
+                                        "function": [],
+                                        "biogHist": [],
+                                        "hasImage": false,
+                                        "imageURL": null,
+                                        "imageMeta": null,
+                                        "timestamp": "2017-11-01T19:15:51-04:00"
+                                    }
+                                },
+                                {
+                                    "_id": "50543201",
+                                    "_score": 2.794444,
+                                    "_source": {
+                                        "nameEntry": "O'Hara, John Bernard, 1862-1927",
+                                        "entityType": "person",
+                                        "arkID": "http://n2t.net/ark:/99166/w6wq071g",
+                                        "id": 50543201,
+                                        "degree": 7,
+                                        "resources": 5,
+                                        "subject": [
+                                            "Poets, Australian--20th century"
+                                        ],
+                                        "occupation": [
+                                            "Poets",
+                                            "Poets."
+                                        ],
+                                        "function": [],
+                                        "biogHist": [],
+                                        "hasImage": false,
+                                        "imageURL": null,
+                                        "imageMeta": null,
+                                        "timestamp": "2017-11-01T20:03:33-04:00"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "result": "success",
+                    "timing": 18.34
+                }
+            }
+        ]
     }
 }

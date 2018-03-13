@@ -1159,6 +1159,14 @@ class WebUIExecutor {
         return true;
     }
     
+    /**
+     * Display Upload Page
+     *
+     * Displays a page that will eventually house a file upload to parse and ingest.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
     public function displayUploadPage(&$input, &$display) {
         $display->setTemplate("upload");
         return true;
@@ -1925,6 +1933,23 @@ class WebUIExecutor {
         ]);
     }
 
+    /**
+     * Display API Test Page
+     *
+     * Fills the display with the API test interface to allow the user to test out the API
+     * calls in-browser.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayAPITestPage(&$display) {
+        $commands = json_decode(file_get_contents(\snac\Config::$REST_COMMAND_FILE), true);
+        $display->setTemplate("api_test_page");
+        $display->setData([
+            "restURL" => \snac\Config::$REST_URL,
+            "commands" => $commands
+        ]);
+    }
+    
     /**
      * Display Contact Us Page
      *
