@@ -1395,10 +1395,11 @@ class DBUser
     /**
      * List Messages to the given user
      *
-     * @param  \snac\data\User  $user        User in the To field
-     * @param  boolean $subjectOnly Whether or not to only return the subjects
-     * @param  boolean $unreadOnly    Whether or not to only return those that have been read
-     * @return \snac\data\Message[]               List of messages
+     * @param  \snac\data\User $user User in the To field
+     * @param  boolean $subjectOnly optional Whether or not to only return the subjects
+     * @param  boolean $unreadOnly optional Whether or not to only return those that have been read
+     * @param  boolean $archivedOnly optional Whether or not to only return those that have been archived
+     * @return \snac\data\Message[] List of messages
      */
     public function listMessagesToUser($user, $subjectOnly=true, $unreadOnly=false, $archivedOnly=false) {
         $messageData = $this->sql->selectMessagesForUserID($user->getUserID(), true, $unreadOnly, $archivedOnly);
@@ -1412,10 +1413,9 @@ class DBUser
     /**
      * List Messages from the given user
      *
-     * @param  \snac\data\User  $user        User in the from field
-     * @param  boolean $subjectOnly Whether or not to only return the subjects
-     * @param  boolean $unreadOnly    Whether or not to only return those that have been read
-     * @return \snac\data\Message[]               List of messages
+     * @param  \snac\data\User $user User in the from field
+     * @param  boolean $subjectOnly optional Whether or not to only return the subjects
+     * @return \snac\data\Message[] List of messages
      */
     public function listMessagesFromUser($user, $subjectOnly=true) {
         $messageData = $this->sql->selectMessagesFromUser($user->getUserID());
