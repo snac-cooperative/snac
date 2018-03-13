@@ -186,10 +186,10 @@ class ResourcePostMapper {
                         $newLanguage->setID($language["id"]);
                     if (isset($language['version']))
                         $newLanguage->setVersion($language["version"]);
-                        
+
                     $newLanguage->setOperation($language["operation"]);
 
-                    if (isset($language["language"]) || (isset($language["script"]))) {
+                    if (!empty($language["language"]) || (!empty($language["script"]))) {
                         if (isset($language["language"]))
                             $lang->setID($language["language"]);
                             $newLanguage->setLanguage($lang);
