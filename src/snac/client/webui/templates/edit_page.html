@@ -682,7 +682,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 	                    <div id="resource-create-box">
 	                    </div>
                         {% import "resources/_resource_form.html" as resources %}
-                        {{ resources.expandedResourceRepositorySearch() }}
+                        <div class="panel panel-body">
+                            {{ resources.expandedResourceRepositorySearch() }}
+                        </div>
                     </div>
                 </form>
             </div>

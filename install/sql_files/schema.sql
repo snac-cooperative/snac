@@ -800,7 +800,7 @@ create table resource_cache (
         repo_ic_id       int,
         object_xml_wrap  text,
         user_id          int,
-        timestamp        timestamp default(now()),
+        updated_at       timestamp default(now()),
         primary key (id, version)
         );
 

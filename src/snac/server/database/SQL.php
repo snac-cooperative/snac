@@ -679,8 +679,8 @@ class SQL
      * @param integer $pID A privilege id.
      */
     public function insertPrivilegeRoleLink($rID, $pID)
-    {   
-        try { 
+    {
+        try {
         $this->sdb->query("insert into privilege_role_link (rid, pid) values ($1, $2)",
                           array($rID, $pID));
         }
@@ -1039,7 +1039,7 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['note'];
     }
-    
+
 
     /**
      * Select Constellations User Recently Edited
@@ -1051,7 +1051,7 @@ class SQL
      * @param integer $limit The maximum number of results to return
      * @param integer $offset Where in the list of results to start
      * @return string[][] The list of ic_id and version numbers recently edited
-     */ 
+     */
     public function selectConstellationsUserEdited($appUserID, $limit, $offset)
     {
         $limitStr = '';
@@ -1060,10 +1060,10 @@ class SQL
         $offsetStr = $this->doLOValue('offset', $offset);
 
         $queryString = sprintf(
-            'select id as ic_id, max(version) as latest_version from 
-                (select distinct id, version from version_history where user_id = $1) as a 
+            'select id as ic_id, max(version) as latest_version from
+                (select distinct id, version from version_history where user_id = $1) as a
                 group by id order by latest_version desc %s %s;', $limitStr, $offsetStr);
-    
+
 
         $this->logger->addDebug("Sending the following SQL request: " . $queryString);
 
@@ -1329,7 +1329,7 @@ class SQL
         }
         return $all;
     }
-    
+
     /**
      * select Current IC_IDs by otherID
      *
@@ -1485,9 +1485,9 @@ class SQL
     }
 
     /**
-     * Add Not-Same Assertion 
+     * Add Not-Same Assertion
      *
-     * Add a not-same assertion between icid1 and icid2, made by the given user and 
+     * Add a not-same assertion between icid1 and icid2, made by the given user and
      * having the given assertion statement.
      *
      * @param int $icid1 The first ICID
@@ -1497,8 +1497,8 @@ class SQL
      * @return boolean True if successful
      */
     public function addNotSameAssertion($icid1, $icid2, $userid, $assertion) {
-        $result = $this->sdb->query("insert into not_same 
-                (ic_id1, ic_id2, user_id, assertion) 
+        $result = $this->sdb->query("insert into not_same
+                (ic_id1, ic_id2, user_id, assertion)
                 values ($1, $2, $3, $4) returning *;",
             array($icid1, $icid2, $userid, $assertion));
         return true;
@@ -1567,9 +1567,9 @@ class SQL
     }
 
     /**
-     * Add Maybe-Same Link 
+     * Add Maybe-Same Link
      *
-     * Add a maybe-same link between icid1 and icid2, made by the given user and 
+     * Add a maybe-same link between icid1 and icid2, made by the given user and
      * having the given assertion statement.
      *
      * @param int $icid1 The first ICID
@@ -1579,8 +1579,8 @@ class SQL
      * @return boolean True if successful
      */
     public function addMaybeSameLink($icid1, $icid2, $userid, $assertion) {
-        $result = $this->sdb->query("insert into maybe_same 
-                (ic_id1, ic_id2, user_id, note) 
+        $result = $this->sdb->query("insert into maybe_same
+                (ic_id1, ic_id2, user_id, note)
                 values ($1, $2, $3, $4) returning *;",
             array($icid1, $icid2, $userid, $assertion));
         return true;
@@ -3816,7 +3816,7 @@ class SQL
      * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
      * @param  text|null $date            Text entry date of this resource
      * @param  text|null $displayEntry    Display Entry of resource
-     * @param  int $userid               The userid of the user
+     * @param  int $userID               The userid of the user
      * @return string[]                  Array containing id, version
      */
     public function insertResource(        $resourceID,
@@ -3858,7 +3858,7 @@ class SQL
                           $docTypeID,         // 7
                           $entryTypeID,       // 8
                           $link,              // 9
-                          $objectXMLWrap,     // 10  
+                          $objectXMLWrap,     // 10
                           $date,              // 11
                           $displayEntry,      // 12
                           $userID);          // 13
@@ -3866,14 +3866,14 @@ class SQL
         $this->sdb->deallocate($qq);
         return array($resourceID, $resourceVersion);
     }
-    
-    
-    
+
+
+
     // /**
     //  * Update resource
     //  *
-    //  * @deprecated This method does not keep previous versions. Editing resources currently uses insertResource in 
-    //  * order to keep version history. If we remove resource versioning, this method may be used. 
+    //  * @deprecated This method does not keep previous versions. Editing resources currently uses insertResource in
+    //  * order to keep version history. If we remove resource versioning, this method may be used.
     //  * @param  int $resourceID      Resource ID
     //  * @param  int|null $resourceVersion Resource version
     //  * @param  string $title           Title of the resource
@@ -3900,7 +3900,7 @@ class SQL
     //                                $objectXMLWrap,
     //                                $date,
     //                                $displayEntry) {
-    // 
+    //
     //     $newResourceVersion = $this->selectResourceVersion();
     //     $qq = 'update_resource';
     //     $this->sdb->prepare($qq,
@@ -3908,7 +3908,7 @@ class SQL
     //                          version = $2, title = $3, abstract = $4, extent = $5, repo_ic_id = $6,
     //                          type = $7, entry_type = $8, href = $9, object_xml_wrap = $10, date = $11, display_entry = $12
     //                          where id = $1');
-    // 
+    //
     //     $execList = array($resourceID,            // 1
     //                       $newResourceVersion,    // 2
     //                       $title,                 // 3
@@ -3918,10 +3918,10 @@ class SQL
     //                       $docTypeID,             // 7
     //                       $entryTypeID,           // 8
     //                       $link,                  // 9
-    //                       $objectXMLWrap,         // 10  
+    //                       $objectXMLWrap,         // 10
     //                       $date,                  // 11
     //                       $displayEntry);         // 12
-    //     $this->sdb->execute($qq, $execList);  
+    //     $this->sdb->execute($qq, $execList);
     //     $this->sdb->deallocate($qq);
     //     return array($resourceID, $newResourceVersion);
     // }
@@ -4748,13 +4748,13 @@ class SQL
      */
     public function selectResourceByData($title = null, $href = null, $type = null) {
 
-        $result = $this->sdb->query('select id, version from resource_cache 
-                                     where href = $1 and title = $2 
-                                     and type = $3 and not is_deleted 
+        $result = $this->sdb->query('select id, version from resource_cache
+                                     where href = $1 and title = $2
+                                     and type = $3 and not is_deleted
                                      and md5(title)::uuid = md5($2)::uuid', array($href,
                                                                                   $title,
                                                                                   $type));
-        
+
         return $this->sdb->fetchAll($result);
     }
 
@@ -5547,7 +5547,7 @@ class SQL
     }
 
     /**
-     * Search Users 
+     * Search Users
      *
      * Search the users in the appuser table of the database.  Returns only the userid and
      * full name of the query.  Searches the string in the full name, user name, and email
@@ -6266,11 +6266,11 @@ class SQL
         if ($unreadOnly) {
             $readFilter = 'and not read';
         }
-        // select only deleted messages if $archivedOnly is true 
+        // select only deleted messages if $archivedOnly is true
         $archiveFilter= ($archivedOnly ? "deleted " : "not deleted");
 
         $result = $this->sdb->query(
-            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where ' 
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where '
             .$archiveFilter.' and '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
             array($userid));
 
@@ -6284,7 +6284,7 @@ class SQL
     /**
      * Select Messages from User
      *
-     * Selects all messages for the given userID. 
+     * Selects all messages for the given userID.
      *
      * @param int $userid The userid of the user
      * @return string[] The list of message data for the user

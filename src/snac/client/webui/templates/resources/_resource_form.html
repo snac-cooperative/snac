@@ -117,22 +117,21 @@
 
 
 {% macro expandedResourceRepositorySearch() %}
-    <div class="form-group" id="search_form" onsubmit="return false;" style="display:none;">
-        <div class="row">
+    <div class="form-horizontal">
+        <div class="form-group" id="search_form" onsubmit="return false;" style="display:none;">
             <label class="control-label col-xs-4"> Expanded Search </label>
-
-        <div class="well well-lg text-center col-xs-8">
-            <input type="hidden" id="count" name="count" value="10">
-            <input type="hidden" id="start" name="start" value="0">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search for..." id="searchbox" name="term">
-                <span class="input-group-btn">
-                     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
-                </span>
+            <div class="well well-lg text-center col-xs-8">
+                <input type="hidden" id="count" name="count" value="10">
+                <input type="hidden" id="start" name="start" value="0">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for..." id="searchbox" name="term">
+                    <span class="input-group-btn">
+                         <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+                    </span>
+                </div>
+                <div id="search-results-box"></div>
             </div>
-            <div id="search-results-box"></div>
         </div>
-    </div>
     </div>
 {% endmacro %}
 

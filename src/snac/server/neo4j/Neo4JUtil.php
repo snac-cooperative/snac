@@ -82,11 +82,11 @@ class Neo4JUtil {
     public function updateIdentityIndex(&$constellation) {
 
         if ($this->connector != null) {
-            
+
             // STEP 1: Update or insert this identity as a node:
-            $this->logger->addDebug("Updating/Inserting Node into Neo4J database"); 
+            $this->logger->addDebug("Updating/Inserting Node into Neo4J database");
             $result = $this->connector->run("MATCH (a:Identity {id: {icid} }) SET a.name = {name}, a.version = {version}, a.ark = {ark},
-                a.entity_type = {entityType} return a;", 
+                a.entity_type = {entityType} return a;",
                 [
                     'icid' => $constellation->getID(),
                     'version' => $constellation->getVersion(),
@@ -97,10 +97,10 @@ class Neo4JUtil {
             );
 
             // Check to see if anything was added
-            $records = $result->getRecords(); 
+            $records = $result->getRecords();
             if (empty($records)) {
                 // Must create this record instead
-                $result = $this->connector->run("CREATE (n:Identity) SET n += {infos};", 
+                $result = $this->connector->run("CREATE (n:Identity) SET n += {infos};",
                     [
                         "infos" => [
                             'id' => $constellation->getID(),
@@ -115,15 +115,15 @@ class Neo4JUtil {
 
             // ************************************
             // STEP 2: Check all the constellation relations. Update, insert, or delete as appropriate
-            $this->logger->addDebug("Reading relationships from Neo4J"); 
-            
-            $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:ICRELATION]->(b:Identity) return p;", 
+            $this->logger->addDebug("Reading relationships from Neo4J");
+
+            $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:ICRELATION]->(b:Identity) return p;",
                 [
                     'icid' => $constellation->getID()
                 ]
             );
 
-            // List out relations 
+            // List out relations
             $rels = array();
             foreach ($result->getRecords() as $record) {
                 $path = $record->pathValue("p");
@@ -137,7 +137,7 @@ class Neo4JUtil {
                 );
             }
 
-            $this->logger->addDebug("Reconciling Relationships to Current IC"); 
+            $this->logger->addDebug("Reconciling Relationships to Current IC");
             $relsToDelete = array();
             $relsToModify = array();
             foreach($constellation->getRelations() as $relation) {
@@ -157,7 +157,7 @@ class Neo4JUtil {
                         break;
                     }
                 }
-                if ($add) 
+                if ($add)
                     array_push($rels, [
                         "target" => $relation->getTargetConstellation(),
                         "id" => $relation->getID(),
@@ -166,14 +166,14 @@ class Neo4JUtil {
                         "operation" => "insert"
                     ]);
             }
-            $this->logger->addDebug("List of related identity paths", $rels); 
+            $this->logger->addDebug("List of related identity paths", $rels);
 
             // Make the relationship changes
             foreach ($rels as $rel) {
                 switch($rel["operation"]) {
                     case "insert":
                         $result = $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Identity {id: {id2} })
-                                                            CREATE (a)-[r:ICRELATION {infos}]->(b)", 
+                                                            CREATE (a)-[r:ICRELATION {infos}]->(b)",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -185,8 +185,8 @@ class Neo4JUtil {
                         ]);
                         break;
                     case "delete":
-                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:ICRELATION {arcrole:{arcrole}}]->(n2:Identity {id:{id2}}) 
-                                                          delete r;", 
+                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:ICRELATION {arcrole:{arcrole}}]->(n2:Identity {id:{id2}})
+                                                          delete r;",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -196,8 +196,8 @@ class Neo4JUtil {
                         ]);
                         break;
                     case "update":
-                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:ICRELATION]->(n2:Identity {id:{id2}}) 
-                            set r.arcrole = {arcrole}, r.id = {id}, r.version = {version} return p;", 
+                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:ICRELATION]->(n2:Identity {id:{id2}})
+                            set r.arcrole = {arcrole}, r.id = {id}, r.version = {version} return p;",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -206,20 +206,20 @@ class Neo4JUtil {
                             "arcrole" => $rel["arcrole"]
                         ]);
                         break;
-                }                
+                }
             }
-            
+
             // ************************************
             // STEP 3: Check all the resource relations. Update, insert, or delete as appropriate
-            $this->logger->addDebug("Reading resource relationships from Neo4J"); 
-            
-            $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:RRELATION]->(b:Resource) return p;", 
+            $this->logger->addDebug("Reading resource relationships from Neo4J");
+
+            $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:RRELATION]->(b:Resource) return p;",
                 [
                     'icid' => $constellation->getID()
                 ]
             );
 
-            // List out relations 
+            // List out relations
             $rels = array();
             foreach ($result->getRecords() as $record) {
                 $path = $record->pathValue("p");
@@ -233,7 +233,7 @@ class Neo4JUtil {
                 );
             }
 
-            $this->logger->addDebug("Reconciling Resource Relationships to Current IC"); 
+            $this->logger->addDebug("Reconciling Resource Relationships to Current IC");
             $relsToDelete = array();
             $relsToModify = array();
             foreach($constellation->getResourceRelations() as $relation) {
@@ -252,7 +252,7 @@ class Neo4JUtil {
                         break;
                     }
                 }
-                if ($add) 
+                if ($add)
                     array_push($rels, [
                         "target" => $relation->getResource()->getID(),
                         "role" => $relation->getRole() ? $relation->getRole()->getTerm() : "",
@@ -261,14 +261,14 @@ class Neo4JUtil {
                         "operation" => "insert"
                     ]);
             }
-            $this->logger->addDebug("List of related resource paths", $rels); 
-            
+            $this->logger->addDebug("List of related resource paths", $rels);
+
             // Make the relationship changes
             foreach ($rels as $rel) {
                 switch($rel["operation"]) {
                     case "insert":
                         $result = $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
-                                                            CREATE (a)-[r:RRELATION {infos}]->(b)", 
+                                                            CREATE (a)-[r:RRELATION {infos}]->(b)",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -280,8 +280,8 @@ class Neo4JUtil {
                         ]);
                         break;
                     case "delete":
-                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:RRELATION {id:{rid}}]->(n2:Resource {id:{id2}}) 
-                                                          delete r;", 
+                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:RRELATION {id:{rid}}]->(n2:Resource {id:{id2}})
+                                                          delete r;",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -289,8 +289,8 @@ class Neo4JUtil {
                         ]);
                         break;
                     case "update":
-                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:RRELATION]->(n2:Resource {id:{id2}}) 
-                                                          set r.role = {role}, r.id = {rid}, r.version = {rversion} return p;", 
+                        $result = $this->connector->run("match p=(n1:Identity {id:{id1}})-[r:RRELATION]->(n2:Resource {id:{id2}})
+                                                          set r.role = {role}, r.id = {rid}, r.version = {rversion} return p;",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -299,9 +299,9 @@ class Neo4JUtil {
                             "rversion" => $rel["version"]
                         ]);
                         break;
-                }                
+                }
             }
-            
+
 
 
             /** May want to include the other name entries as part of the node **/
@@ -320,8 +320,8 @@ class Neo4JUtil {
     public function deleteConstellation(&$constellation) {
 
         if ($this->connector != null) {
-            $this->logger->addDebug("Deleting Identity Node from Neo4J database"); 
-            $result = $this->connector->run("MATCH (a:Identity {id: {icid}}) detach delete a;", 
+            $this->logger->addDebug("Deleting Identity Node from Neo4J database");
+            $result = $this->connector->run("MATCH (a:Identity {id: {icid}}) detach delete a;",
                 [
                     'icid' => $constellation->getID()
                 ]
@@ -344,7 +344,7 @@ class Neo4JUtil {
 
         if ($this->connector != null) {
             // Find all in-relations to the from constellation
-            $result = $this->connector->run("MATCH p=()-[]->(b:Identity {id: {icid}}) return p;", 
+            $result = $this->connector->run("MATCH p=()-[]->(b:Identity {id: {icid}}) return p;",
                 [
                     'icid' => $from->getID()
                 ]
@@ -367,15 +367,15 @@ class Neo4JUtil {
                 // TODO
                 // Create a new relationship/edge to the "to" Constellation
                 //$this->connector->run("MATCH (a {id: {id1} }),(b:Resource {id: {id2} })
-                //    CREATE (b)-[r:HIRELATION]->(a);", 
+                //    CREATE (b)-[r:HIRELATION]->(a);",
                 //    [
                 //        'id1' => $resource->getRepository()->getID(),
                 //        'id2' => $resource->getID()
                 //    ]);
             }
 
-            $this->logger->addDebug("Deleting Identity Node from Neo4J database"); 
-            $result = $this->connector->run("MATCH (a:Identity {id: {icid}}) detach delete a;", 
+            $this->logger->addDebug("Deleting Identity Node from Neo4J database");
+            $result = $this->connector->run("MATCH (a:Identity {id: {icid}}) detach delete a;",
                 [
                     'icid' => $from->getID()
                 ]
@@ -396,15 +396,15 @@ class Neo4JUtil {
      */
     public function listConstellationInEdges(&$constellation) {
         $results = array();
-        $this->logger->addDebug("Reading relationships from Neo4J"); 
-        
-        $result = $this->connector->run("MATCH p=(a:Identity)-[r:ICRELATION]->(b:Identity {id: {icid}}) return p;", 
+        $this->logger->addDebug("Reading relationships from Neo4J");
+
+        $result = $this->connector->run("MATCH p=(a:Identity)-[r:ICRELATION]->(b:Identity {id: {icid}}) return p;",
             [
                 'icid' => $constellation->getID()
             ]
         );
 
-        // List out relations 
+        // List out relations
         $rels = array();
         foreach ($result->getRecords() as $record) {
             $path = $record->pathValue("p");
@@ -433,32 +433,42 @@ class Neo4JUtil {
                 "relation" => $relation
             ]);
         }
-        
+
         // Sort the in edges by preferred name
         usort($rels,
                 function ($a, $b) {
                     return $a['constellation']->getPreferredNameEntry()->getOriginal() <=> $b['constellation']->getPreferredNameEntry()->getOriginal();
                 });
-        
+
         return $rels;
     }
+
+    /**
+     * Search Holding Institutions
+     *
+     * Searches for a holding institution
+     *
+     * @param  string $name Beginning of constellation preferred name entry to search
+     * @param  integer $count optional Number of results to return
+     * @return string[]  Returns list of id-name pairs.
+     */
 
     public function searchHoldingInstitutions($name, $count=0) {
         $realCount = \snac\Config::$SQL_LIMIT;
         if ($count > 0)
             $realCount = $count;
 
-        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity) where a.name STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;", 
+        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity) where a.name STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;",
             [
                 'name' => $name
             ]
         );
-        
-        // List out relations 
+
+        // List out relations
         $matches = array();
         foreach ($result->getRecords() as $record) {
             array_push($matches, [
-                "id" => $record->get("a")->value("id"), 
+                "id" => $record->get("a")->value("id"),
                 "term" => $record->get("a")->value("name")
             ]);
         }
@@ -466,8 +476,17 @@ class Neo4JUtil {
         return $matches;
     }
 
+    /**
+     * Check Holding Institution Status
+     *
+     * Checks whether the given constellation is a holding institution and sets a constellation flag
+     *
+     * @param  \snac\data\Constellation $constellation Constellation to search
+     * @return boolean  Returns true if it's a holding repository, false otherwise
+     */
+
     public function checkHoldingInstitutionStatus(&$constellation) {
-        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;", 
+        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;",
             [
                 'icid' => $constellation->getID()
             ]
@@ -491,13 +510,13 @@ class Neo4JUtil {
      * @return string[]                 The list of results
      */
     public function listConstellationOutEdges(&$constellation) {
-        $result = $this->connector->run("MATCH p=(a:Identity {id: {icid}})-[r:ICRELATION]->(b:Identity) return p;", 
+        $result = $this->connector->run("MATCH p=(a:Identity {id: {icid}})-[r:ICRELATION]->(b:Identity) return p;",
             [
                 'icid' => $constellation->getID()
             ]
         );
 
-        // List out relations 
+        // List out relations
         $rels = array();
         foreach ($result->getRecords() as $record) {
             $path = $record->pathValue("p");
@@ -526,13 +545,13 @@ class Neo4JUtil {
                 "relation" => $relation
             ]);
         }
-        
+
         // Sort the in edges by preferred name
         usort($rels,
                 function ($a, $b) {
                     return $a['constellation']->getPreferredNameEntry()->getOriginal() <=> $b['constellation']->getPreferredNameEntry()->getOriginal();
                 });
-        
+
         return $rels;
     }
 
@@ -546,11 +565,11 @@ class Neo4JUtil {
      */
     public function updateResourceIndex(&$resource) {
         if ($this->connector != null) {
-            
+
             // STEP 1: Update or insert this resource as a node:
-            $this->logger->addDebug("Updating/Inserting Node into Neo4J database"); 
+            $this->logger->addDebug("Updating/Inserting Node into Neo4J database");
             $result = $this->connector->run("MATCH (a:Resource {id: {id} }) SET a.title = {title}, a.version = {version}, a.href = {href}
-                return a;", 
+                return a;",
                 [
                     'id' => $resource->getID(),
                     'version' => $resource->getVersion(),
@@ -560,10 +579,10 @@ class Neo4JUtil {
             );
 
             // Check to see if anything was added
-            $records = $result->getRecords(); 
+            $records = $result->getRecords();
             if (empty($records)) {
                 // Must create this record instead
-                $result = $this->connector->run("CREATE (n:Resource) SET n += {infos};", 
+                $result = $this->connector->run("CREATE (n:Resource) SET n += {infos};",
                     [
                         "infos" => [
                             'id' => $resource->getID(),
@@ -576,16 +595,16 @@ class Neo4JUtil {
             }
 
             // STEP 2: Update or insert the resource's link to holding repository
-            $result = $this->connector->run("MATCH (a:Resource {id: {id} })-[r:HIRELATION]->() 
-                return r;", 
+            $result = $this->connector->run("MATCH (a:Resource {id: {id} })-[r:HIRELATION]->()
+                return r;",
                 [
                     'id' => $resource->getID(),
                 ]
             );
-            $records = $result->getRecords(); 
+            $records = $result->getRecords();
             if (!empty($records)) {
                 // delete the one there so that we can add the correct one (just in case)
-                $result = $this->connector->run("MATCH (a:Resource {id: {id}})-[r:HIRELATION]->() delete r;", 
+                $result = $this->connector->run("MATCH (a:Resource {id: {id}})-[r:HIRELATION]->() delete r;",
                     [
                         'id' => $resource->getID()
                     ]
@@ -596,13 +615,13 @@ class Neo4JUtil {
             // If resource has a repository, then add a link
             if ($resource->getRepository() != null && $resource->getRepository()->getID() != null) {
                 $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
-                    CREATE (b)-[r:HIRELATION]->(a);", 
+                    CREATE (b)-[r:HIRELATION]->(a);",
                     [
                         'id1' => $resource->getRepository()->getID(),
                         'id2' => $resource->getID()
                     ]);
             }
-        }    
+        }
     }
 
     /**
@@ -615,8 +634,8 @@ class Neo4JUtil {
     public function deleteResource(&$resource) {
 
         if ($this->connector != null) {
-            $this->logger->addDebug("Deleting Resource Node from Neo4J database"); 
-            $result = $this->connector->run("MATCH (a:Resource {id: {id}}) detach delete a;", 
+            $this->logger->addDebug("Deleting Resource Node from Neo4J database");
+            $result = $this->connector->run("MATCH (a:Resource {id: {id}}) detach delete a;",
                 [
                     'id' => $resource->getID()
                 ]
