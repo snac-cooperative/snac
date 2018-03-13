@@ -106,7 +106,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                     // build the CSV line to print
                     $output = array(
                         "name" => $result["identity"]["nameEntries"][0]["original"],
-                        "id" => $result["identity"]["ark"],
+                        "id" => $result["identity"]["id"],
                         "type" => [ 
                             $result["identity"]["entityType"]["term"] 
                         ],
@@ -180,7 +180,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                     ]
                 ],
                 "view" => [
-                    "url" => "http://snaccooperative.org/view/{{id}}"
+                    "url" => \snac\Config::$WEBUI_URL . "/view/{{id}}"
                 ],
                 "identifierSpace" => \snac\Config::$WEBUI_URL,
                 "name" => "SNAC Reconciliation for OpenRefine",
