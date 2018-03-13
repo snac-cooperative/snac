@@ -39,12 +39,15 @@
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/resource_admin.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
 
 <script>
     $(document).ready(function() {
         loadVocabSelectOptions($("#resource-type-select"), "document_type", "Resource Type");
+        vocab_select_replace($("#resource-repo"), "", "holding", 3);
         $("#new-resource-language-btn").on("click", newResourceLanguage);
         $("#magic-resource-language-btn").on("click", magicNewResourceLanguage);
+        $('#search-results-box').on("click", "a.list-group-item", selectHoldingRepository);
         $('#vocab_dashboard_cancel').on("click", cancelResource);
         $('#resource-form').on('submit', saveResource);
     });
@@ -72,6 +75,7 @@
             <div class="row">
                 <div class="col-md-8">
                     {{ resources.resourceForm(X, null) }}
+                    {{ resources.expandedResourceRepositorySearch() }}
                 </div>
                 <div class="col-md-4">
                     {{ resources.displayResourceActions() }}

@@ -9,10 +9,15 @@
  *            the Regents of the University of California
  */
 
-function saveResource() {
+function saveResource(event) {
     event.preventDefault();
     var $form = $(event.target);
 
+    if ($form.find("#resource-url").val() == "") {
+        if (!confirm('Are you sure you want to save without an HREF?')) {
+            return;
+        }
+    }
     $('#notification-message').slideDown().html("<p>Saving Resource... Please wait.</p>");
 
     // Remove leading and trailing whitespace
@@ -65,7 +70,7 @@ function cancelResource() {
  * Tracks language index using $('#language-template').data('languageCount')
  *
  */
-function newResourceLanguage() {
+function newResourceLanguage(event) {
     event.preventDefault();
     var $newLanguage = $('#resource-language-template').find(".language").clone();
     var data = $('#resource-language-template').data();
@@ -96,12 +101,12 @@ function newResourceLanguage() {
  * Does not change operations.
  *
  */
-function deleteOrUndoLanguage() {
+function deleteOrUndoLanguage(event) {
     event.preventDefault();
-    var btn = event.currentTarget;
-    $(btn).toggleClass('btn-danger btn-warning');
-    $(btn).find(':only-child').toggleClass('fa-minus-circle fa-undo');
-    var $language = $(btn).closest('.language');
+    var $btn = $(event.currentTarget);
+    $btn.toggleClass('btn-danger btn-warning');
+    $btn.find(':only-child').toggleClass('fa-minus-circle fa-undo');
+    var $language = $btn.closest('.language');
     $language.toggleClass('alert-danger component-deleted');
 }
 
@@ -162,11 +167,22 @@ function enableLanguageSelect($language) {
 }
 
 
-function magicNewResourceLanguage() {
-    event.preventDefault();
-    var $newLanguage = newResourceLanguage();
+function magicNewResourceLanguage(event) {
+    var $newLanguage = newResourceLanguage(event);
     var defaultLanguage = new Option(defaults.language.term, defaults.language.id, false, true);
     var defaultScript = new Option(defaults.script.term, defaults.script.id, false, true);
     $newLanguage.find("select:first").append(defaultLanguage).trigger('change');
     $newLanguage.find("select:last").append(defaultScript).trigger('change');
+}
+
+function selectHoldingRepository(event) {
+    console.log(event);
+    event.preventDefault();
+    var name = event.target.innerHTML;
+    var id = event.target.href.split('/').pop();
+    var selectedRepo = new Option(name, id, false, true);
+    $(".resource-repo:last").append(selectedRepo).trigger('change');
+    $("#search_form").slideToggle();
+    $("#search-results-box").html("");
+    $("#searchbox").val("");
 }

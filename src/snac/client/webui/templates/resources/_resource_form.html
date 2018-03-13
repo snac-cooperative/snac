@@ -88,11 +88,11 @@
                     <div class="add-resource-language"></div>
                     <div class="form-group">
                         <div class="col-xs-12 text-center">
-                            <button class="btn btn-success" id="new-resource-language-btn">
+                            <button type="button" class="btn btn-success" id="new-resource-language-btn">
                                 <span class="glyphicon glyphicon-plus-sign"></span>
                                 Add Language
                             </button>
-                            <button class="btn btn-primary" id="magic-resource-language-btn">
+                            <button type="button" class="btn btn-primary" id="magic-resource-language-btn">
                                 <span class="fa fa-magic"></span>
                             </button>
                         </div>
@@ -101,28 +101,39 @@
             </div>
 
             <div class="form-group">
-                <label class="control-label col-xs-4">Holding Institution</label>
-                <div class="col-xs-8">
-                    <div class="control-label">
-                        <a href="{{control.snacURL}}/view/{{resource.repository.id}}" target="_blank">
-                            {{resource.repository.nameEntries[0].original}}
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
                 <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover"
                     data-placement="top"> {{X.resourceRepository.display}} </label>
                 <div class="col-xs-8">
-                    <input type="number" name="resources[0][repo]" class="form-control" value="{{resource.repository.id}}"
-                        placeholder="(SNAC ID)" />
-                    <div class="col-xs-8">
-                        <a href="{{control.snacURL}}/search" target="_blank">Open a SNAC Search Window</a>
-                    </div>
+
+                    <select class="resource-repo" id="resource-repo" name="resources[0][repo]">
+                        <option  value="{{resource.repository.id}}" selected>
+                            {{resource.repository.nameEntries[0].original }}</option>
+                    </select>
+                    <p><a href="#0" onclick="$('#search_form').slideToggle()">Can't Find the Holding Repository?</a></p>
                 </div>
             </div>
         </div>
+{% endmacro %}
+
+
+{% macro expandedResourceRepositorySearch() %}
+    <div class="form-group" id="search_form" onsubmit="return false;" style="display:none;">
+        <div class="row">
+            <label class="control-label col-xs-4"> Expanded Search </label>
+
+        <div class="well well-lg text-center col-xs-8">
+            <input type="hidden" id="count" name="count" value="10">
+            <input type="hidden" id="start" name="start" value="0">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search for..." id="searchbox" name="term">
+                <span class="input-group-btn">
+                     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+                </span>
+            </div>
+            <div id="search-results-box"></div>
+        </div>
+    </div>
+    </div>
 {% endmacro %}
 
 {% macro displayResourceActions() %}
@@ -181,7 +192,7 @@
             </div>
 
             <span class="input-group-btn">
-                <button class="btn btn-danger" onclick="deleteOrUndoLanguage()">
+                <button type="button" class="btn btn-danger" onclick="deleteOrUndoLanguage(event)">
                     <i class="fa fa-minus-circle"></i>
                 </button>
             </span>
