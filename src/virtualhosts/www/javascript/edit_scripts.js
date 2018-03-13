@@ -2049,19 +2049,28 @@ $(document).ready(function() {
                         var text = $('#resource_template').clone();
                         var html = text.html().replace(/ZZ/g, 0);
                         $('#resource-create-box').html(html);
+                        var $resourceForm = $("#resource_create_form");
                         // Copy the search contents to title or href
                         if ($("#resource-searchbox").val().indexOf("http:") == -1)
-                            $("#resource_create_form #resource-title").val($("#resource-searchbox").val());
+                            $resourceForm.find("#resource-title").val($("#resource-searchbox").val());
                         else
-                            $("#resource_create_form #resource-url").val($("#resource-searchbox").val());
+                            $resourceForm.find("#resource-url").val($("#resource-searchbox").val());
 
-                        $('#resource_create_form [data-toggle="popover"]').popover({
+                        $resourceForm.find('[data-toggle="popover"]').popover({
                               trigger: 'hover',
                               container: 'body'
                         });
-                        loadVocabSelectOptions($("#resource_create_form #resource-type-select"), "document_type", "Resource Type");
-                        $("#resource_create_form #new-resource-language-btn").on("click", newResourceLanguage);
-                        $("#resource_create_form #magic-resource-language-btn").on("click", magicNewResourceLanguage);
+                        loadVocabSelectOptions($resourceForm.find("#resource-type-select"), "document_type", "Resource Type");
+                        vocab_select_replace($resourceForm.find("#resource-repo"), "", "holding", 3);
+                        $resourceForm.find("#new-resource-language-btn").on("click", newResourceLanguage);
+                        $resourceForm.find("#magic-resource-language-btn").on("click", magicNewResourceLanguage);
+
+                        $('#search-results-box').on("click", "a.list-group-item", selectHoldingRepository);
+                        var timeoutID = null;
+                        $resourceForm.find('#searchbox').keyup(function() {
+                            clearTimeout(timeoutID);
+                            timeoutID = setTimeout(function() { setSearchPosition(0); searchAndUpdate(); }, 500);
+                        });
 
                         // Remove the search results from the other modal
                         $("#resource-results-box").html("");
@@ -2072,6 +2081,11 @@ $(document).ready(function() {
                 if ($('#btn_create_resource').exists()){
                     $('#resource_create_form').on("submit", function(){
                             // Remove leading and trailing whitespace
+                            if ($("#resource_create_form #resource-url").val() == "") {
+                                if (!confirm('Are you sure you want to save without an HREF?')) {
+                                    return;
+                                }
+                            }
                             $("#resource_create_form input, textarea").each(function() {
                                 $(this).val($.trim($(this).val()));
                             });

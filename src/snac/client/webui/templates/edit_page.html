@@ -57,6 +57,7 @@
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/name_heading_punctuator.js{{control.noCache}}"></script>
@@ -680,6 +681,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <p>Use the form below to create a new resource and then press "Continue" to continue creating a new resource relation.</p>
 	                    <div id="resource-create-box">
 	                    </div>
+                        {% import "resources/_resource_form.html" as resources %}
+                        {{ resources.expandedResourceRepositorySearch() }}
                     </div>
                 </form>
             </div>
