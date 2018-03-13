@@ -691,7 +691,6 @@
                             <p class="relation-icon-caption" id="resourceRelation_relationPictureArrow_{{i}}">
                                 {{relation.role.term}}
                             </p>
-
                         </div>
                         <div class="col-xs-4 text-center">
                             <p class="relation-icon" id="resourceRelation_relationPictureIcon_{{i}}">
@@ -699,6 +698,16 @@
                             </p>
                             <p class="relation-icon-caption" id="resourceRelation_relationPictureTitle_{{i}}">
                                 {{relation.resource.title}}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceDisplayEntry.display }}
+                        </label>
+                        <div class="col-xs-8 form-control-static">
+                            <p>
+                                <span id="resourceRelation_displayEntryText_{{i}}">{{ relation.resource.displayEntry ? relation.resource.displayEntry : 'Display Entry Unknown' }}</span><br>
                             </p>
                         </div>
                     </div>
@@ -711,6 +720,10 @@
                                 <span style="font-weight: bold" id="resourceRelation_titleText_{{i}}">{{ relation.resource.title ? relation.resource.title : 'Title Unknown' }}</span><br>
                                 <span id="resourceRelation_abstractText_{{i}}">{{relation.resource.abstract}}</span>
                             </p>
+                            <!-- <p>
+                                <span>{{ X.resourceDate.display }}</span>:
+                                <span id="resourceRelation_dateText_{{i}}">{{ relation.resource.date ? relation.resource.displayEntry : 'No Date' }}</span><br>
+                            </p> -->
                             <p>
                                 <span id="resourceRelation_documentTypeText_{{i}}">{{relation.resource.documentType.term}}</span>:
                                 <span id="resourceRelation_extentText_{{i}}">{{relation.resource.extent ? relation.resource.extent : 'Extent Unknown'}}</span>
@@ -721,15 +734,6 @@
                                     <a class="label label-info" target="_blank" href="{{relation.resource.link}}">View</a>
                                 {% endif %}
                             </p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceText.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceText.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_resourceRelation_content_{{i}}">
-                            <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="hidden" class="form-control" value="{{ relation.content }}"/>
-                            <p class="form-control-static">{{ relation.content }}</p>
                         </div>
                     </div>
                     <div class="form-group">

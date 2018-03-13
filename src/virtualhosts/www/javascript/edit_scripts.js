@@ -2015,6 +2015,8 @@ $(document).ready(function() {
 
                             if (typeof resourceResults[rid].link !== 'undefined')
                                 $('#resourceRelation_linkText_'+resourceRelationid).html(resourceResults[rid].link + " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
+                            if (typeof resourceResults[rid].displayEntry !== 'undefined')
+                                $('#resourceRelation_displayEntryText_'+resourceRelationid).text(resourceResults[rid].displayEntry);
                             if (typeof resourceResults[rid].title !== 'undefined') {
                                 $('#resourceRelation_titleText_'+resourceRelationid).text(resourceResults[rid].title);
                                 updatePictureTitle('resourceRelation', resourceRelationid, resourceResults[rid].title);
@@ -2023,6 +2025,8 @@ $(document).ready(function() {
                                 $('#resourceRelation_abstractText_'+resourceRelationid).text(resourceResults[rid].abstract);
                             if (typeof resourceResults[rid].extent !== 'undefined')
                                 $('#resourceRelation_extentText_'+resourceRelationid).text(resourceResults[rid].extent);
+                            // if (typeof resourceResults[rid].date !== 'undefined')
+                            //     $('#resourceRelation_dateText_'+resourceRelationid).text(resourceResults[rid].date);
                             if (typeof resourceResults[rid].documentType !== 'undefined' && typeof resourceResults[rid].documentType.term !== 'undefined')
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
 
