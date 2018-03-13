@@ -4741,8 +4741,9 @@ class SQL
      *
      * Checks to see if a resource already exists in database
      *
-     * @param int $Resource
-     * @param int $version Resource version
+     * @param string $title optional The title of the resource to find
+     * @param string $href optional The link of the resource to find
+     * @param int $type optional The type of the resource to find
      * @return string[] Returns associative array of resource data if found
      */
     public function selectResourceByData($title = null, $href = null, $type = null) {
@@ -6253,6 +6254,7 @@ class SQL
      * @param int $userid The userid of the user
      * @param boolean $toUser optional Whether or not to select messages to this user (or from this user)
      * @param boolean $unreadOnly optional Whether to query only unread messages (default false)
+     * @param boolean $archivedOnly optional Whether to query only archived messages (default false)
      * @return string[] The list of message data for the user
      */
     public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false, $archivedOnly=false) {

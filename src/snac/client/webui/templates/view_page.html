@@ -271,7 +271,11 @@
                         {% endif %}
                      </div>
                   </div>
-                  <h2>Biographical notes:</h2>
+                  {% if data.entityType.term == 'corporateBody' %}
+                      <h2>History notes:</h2>
+                  {% else %}
+                      <h2>Biographical notes:</h2>
+                  {% endif %}
                   <div class="wikipedia_thumbnail" id="wikipediaImage">
                   </div>
                   {% if data.new.biogHists.0.text %}

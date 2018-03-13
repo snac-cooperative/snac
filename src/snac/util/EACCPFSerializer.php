@@ -138,7 +138,7 @@ class EACCPFSerializer {
                 $data['relations'] = array();
             }
             foreach($data['otherRecordIDs'] as $oId) {
-                if ($oId['type']['term'] == 'sameAs') {
+                if (isset($oId['type']) && $oId['type']['term'] == 'sameAs') {
                     $cpfRel = array();
                     $cpfRel['dataType'] = "ConstellationRelation";
                     $cpfRel['targetArkID'] = $oId['uri']; // xlink:href

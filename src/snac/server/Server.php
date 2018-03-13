@@ -387,6 +387,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->browseConstellations($this->input);
                 break;
 
+            case "elastic":
+                $this->response = $executor->elasticSearchQuery($this->input);
+                break;
+
             // Resource Management
             case "insert_resource":
                 if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
