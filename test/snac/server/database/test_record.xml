@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<eac-cpf xmlns="urn:isbn:1-931666-33-4" 
-         xmlns:owl="http://www.w3.org/2002/07/owl#" 
-         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
-         xmlns:snac="http://socialarchive.iath.virginia.edu/" 
+<eac-cpf xmlns="urn:isbn:1-931666-33-4"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:snac="http://socialarchive.iath.virginia.edu/"
          xmlns:xlink="http://www.w3.org/1999/xlink">
     <control>
         <recordId>http://snac/test/record-1</recordId>
@@ -114,13 +114,13 @@
                     <dateRange>
                         <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth"
                                   standardDate="2016-02-23">2016-02-23</fromDate>
-                        <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" 
+                        <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death"
                                 standardDate="2016-02-24">2016-02-24</toDate>
                     </dateRange>
                     <dateRange>
                         <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth"
                                   standardDate="1912">1912</fromDate>
-                        <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" 
+                        <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death"
                                 standardDate="1992">1992</toDate>
                     </dateRange>
                 </dateSet>

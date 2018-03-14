@@ -176,7 +176,6 @@ function magicNewResourceLanguage(event) {
 }
 
 function selectHoldingRepository(event) {
-    console.log(event);
     event.preventDefault();
     var name = event.target.innerHTML;
     var id = event.target.href.split('/').pop();

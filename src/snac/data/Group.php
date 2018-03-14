@@ -22,7 +22,7 @@ namespace snac\data;
  * notification to all members of the group.
  *
  * @author Tom Laudeman
- *        
+ *
  */
 class Group extends AbstractGrouping {
 
@@ -30,7 +30,7 @@ class Group extends AbstractGrouping {
      * Constructor
      *
      * @param string[][] $data The data for this object in an associative array
-     */ 
+     */
     public function __construct($data=null)
     {
         parent::__construct($data);

@@ -128,7 +128,7 @@ class Resource extends AbstractData {
      * @var string Date of resource
      */
     private $date = null;
-    
+
     /**
      * Display Entry, a descriptive summary name of the resource
      *
@@ -248,7 +248,7 @@ class Resource extends AbstractData {
      public function getDisplayEntry() {
          return $this->displayEntry;
      }
-     
+
      /**
       * Set display entry of the resource
       *

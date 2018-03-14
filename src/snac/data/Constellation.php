@@ -793,7 +793,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get flags 
+     * Get flags
      *
      * Returns the list of flags associated with this Constellation
      *

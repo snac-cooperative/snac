@@ -1,118 +1,120 @@
 {% macro resourceForm(X, resource)%}
     {% import _self as resources %}
-        <div class="form-horizontal">
-            <!-- HIDDEN VALUES-->
-            <input name="resources[0][operation]" type="hidden" value="{{ resource ? "update" : "insert" }}">
-            <!-- <input name="resources[0][documentType_vocabtype]" type="hidden" value="document_type"> -->
-            <input name="resources[0][id]" type="hidden" value="{{resource.id}}" />
-            <input name="resources[0][version]" type="hidden" value="{{resource.version}}">
-            <input name="resources[0][extent]" type="hidden" value="">
+    <div class="form-horizontal">
+        <!-- HIDDEN VALUES-->
+        <input name="resources[0][operation]" type="hidden" value="{{ resource ? "update" : "insert" }}">
+        <!-- <input name="resources[0][documentType_vocabtype]" type="hidden" value="document_type"> -->
+        <input name="resources[0][id]" type="hidden" value="{{resource.id}}" />
+        <input name="resources[0][version]" type="hidden" value="{{resource.version}}">
+        <input name="resources[0][extent]" type="hidden" value="">
 
-            <div class="form-group required">
-                <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover"
-                    data-placement="top"> {{X.resourceDocumentType.display}} </label>
-                <div class="col-xs-8">
-                    <select id="resource-type-select" name="resources[0][documentType][id]" class="form-control" style="width: 100%;"
-                        required>
-                        <option value="{{resource.documentType.id}}" selected>
-                            {{resource.documentType.term}}</option>
-                    </select>
-                </div>
+        <div class="form-group required">
+            <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceDocumentType.display}} </label>
+            <div class="col-xs-8">
+                <select id="resource-type-select" name="resources[0][documentType][id]" class="form-control" style="width: 100%;"
+                    required>
+                    <option value="{{resource.documentType.id}}" selected>
+                        {{resource.documentType.term}}</option>
+                </select>
             </div>
+        </div>
 
-            <div class="form-group required">
-                <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
-                    data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
-                <div class="col-xs-8">
-                    <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{resource.displayEntry}}"
-                        placeholder="Proper name. Title. Date." required>
-                </div>
+        <div class="form-group required">
+            <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
+            <div class="col-xs-8">
+                <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{resource.displayEntry}}"
+                    placeholder="Proper name. Title. Date." required>
             </div>
+        </div>
 
-            <div class="form-group required">
-                <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
-                    data-placement="top"> {{X.resourceTitle.display}} </label>
-                <div class="col-xs-8">
-                    <input id="resource-title" type="text" name="resources[0][title]" class="form-control" value="{{resource.title}}" pattern="^((?![hH][tT][tT][pP][sS]?:).)*$" required>
-                </div>
+        <div class="form-group required">
+            <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceTitle.display}} </label>
+            <div class="col-xs-8">
+                <input id="resource-title" type="text" name="resources[0][title]" class="form-control" value="{{resource.title}}"
+                    pattern="^((?![hH][tT][tT][pP][sS]?:).)*$" required>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}" data-toggle="popover"
-                    data-placement="top"> {{X.resourceDate.display}} </label>
-                <div class="col-xs-8">
-                    <input type="text" name="resources[0][date]" class="form-control" value="{{resource.date}}" placeholder="YYYY or YYYY-YYYY">
-                </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceDate.display}} </label>
+            <div class="col-xs-8">
+                <input type="text" name="resources[0][date]" class="form-control" value="{{resource.date}}" placeholder="YYYY or YYYY-YYYY">
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
-                    data-placement="top"> {{X.resourceURI.display}} </label>
-                <div class="col-xs-8">
-                    <input id="resource-url" type="url" name="resources[0][link]" class="form-control" value="{{resource.link}}" placeholder="http://full/URL/path"/>
-                </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceURI.display}} </label>
+            <div class="col-xs-8">
+                <input id="resource-url" type="url" name="resources[0][link]" class="form-control" value="{{resource.link}}"
+                    placeholder="http://full/URL/path"/>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover"
-                    data-placement="top"> {{X.resourceAbstract.display}} </label>
-                <div class="col-xs-8">
-                    <textarea name="resources[0][abstract]" class="form-control" rows="3"> {{resource.abstract}}</textarea>
-                </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceAbstract.display}} </label>
+            <div class="col-xs-8">
+                <textarea name="resources[0][abstract]" class="form-control" rows="3"> {{resource.abstract}}</textarea>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover"
-                    data-placement="top"> {{X.resourceExtent.display}} </label>
-                <div class="col-xs-8">
-                    <input type="text" name="resources[0][extent]" class="form-control" value="{{resource.extent}}">
-                </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceExtent.display}} </label>
+            <div class="col-xs-8">
+                <input type="text" name="resources[0][extent]" class="form-control" value="{{resource.extent}}">
             </div>
+        </div>
 
-            <!--  LANGUAGES -->
-            <div class="form-group" id="resource-languages">
-                <label class="control-label col-xs-4" data-content="{{X.resourceLanguages.tooltip}}" data-toggle="popover"
-                    data-placement="top">
-                    {{X.resourceLanguages.display}} </label>
-                <div class="col-xs-8 well well-sm">
+        <!--  LANGUAGES -->
+        <div class="form-group" id="resource-languages">
+            <label class="control-label col-xs-4" data-content="{{X.resourceLanguages.tooltip}}" data-toggle="popover"
+                data-placement="top">
+                {{X.resourceLanguages.display}} </label>
+            <div class="col-xs-8 well well-sm">
 
-                    <!-- Existing Languages   -->
-                    {% if resource %}
-                        {% set lang_count = 0 %}
-                        {% for lang in resource.languages %}
-                            {{ resources.displayResourceLanguage(X, lang_count, lang) }}
-                            {% set lang_count = lang_count + 1 %}
-                        {% endfor %}
-                    {% endif %}
+                <!-- Existing Languages   -->
+                {% if resource %}
+                    {% set lang_count = 0 %}
+                    {% for lang in resource.languages %}
+                        {{ resources.displayResourceLanguage(X, lang_count, lang) }}
+                        {% set lang_count = lang_count + 1 %}
+                    {% endfor %}
+                {% endif %}
 
-                    <div class="add-resource-language"></div>
-                    <div class="form-group">
-                        <div class="col-xs-12 text-center">
-                            <button type="button" class="btn btn-success" id="new-resource-language-btn">
-                                <span class="glyphicon glyphicon-plus-sign"></span>
-                                Add Language
-                            </button>
-                            <button type="button" class="btn btn-primary" id="magic-resource-language-btn">
-                                <span class="fa fa-magic"></span>
-                            </button>
-                        </div>
+                <div class="add-resource-language"></div>
+                <div class="form-group">
+                    <div class="col-xs-12 text-center">
+                        <button type="button" class="btn btn-success" id="new-resource-language-btn">
+                            <span class="glyphicon glyphicon-plus-sign"></span>
+                            Add Language
+                        </button>
+                        <button type="button" class="btn btn-primary" id="magic-resource-language-btn">
+                            <span class="fa fa-magic"></span>
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover"
-                    data-placement="top"> {{X.resourceRepository.display}} </label>
-                <div class="col-xs-8">
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceRepository.display}} </label>
+            <div class="col-xs-8">
 
-                    <select class="resource-repo" id="resource-repo" name="resources[0][repo]">
-                        <option  value="{{resource.repository.id}}" selected>
-                            {{resource.repository.nameEntries[0].original }}</option>
-                    </select>
-                    <p><a href="#0" onclick="$('#search_form').slideToggle()">Can't Find the Holding Repository?</a></p>
-                </div>
+                <select class="resource-repo" id="resource-repo" name="resources[0][repo]">
+                    <option  value="{{resource.repository.id}}" selected>
+                        {{resource.repository.nameEntries[0].original }}</option>
+                </select>
+                <p><a href="#0" onclick="$('#search_form').slideToggle()">Can't Find the Holding Repository?</a></p>
             </div>
         </div>
+    </div>
 {% endmacro %}
 
 
@@ -201,7 +203,7 @@
 
 <!-- Language Template   -->
 {% macro displayResourceLanguageTemplate(X, lang_count) %}
-{% import _self as resources%}
+{% import _self as resources %}
     <div id="resource-language-template" data-language-count="{{lang_count|default("0")}}" style="display: none;">
         {{ resources.displayResourceLanguage(X, "YY", null) }}
     </div>
