@@ -74,6 +74,7 @@ $(document).ready(function() {
             type: "PUT",
             url: "{{data.restURL}}",
             contentType: "application/json",
+            crossDomain: true,
             data: $("#api_query").val(),
             success: function(result) {
                 $("#api_response").val(JSON.stringify(result, null, '\t'));
