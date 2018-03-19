@@ -18,9 +18,6 @@
 <!-- Helper Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-<script language="javascript">
-$('.selectpicker').selectpicker();
-</script>
 
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
@@ -34,7 +31,7 @@ $('.selectpicker').selectpicker();
 
 <!-- SNAC Javascript -->
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
-      
+
 <script language="javascript" type="text/javascript" src="{{control.snacURL}}/javascript/radial-jit.js"></script>
 <script language="javascript" type="text/javascript" src="{{control.snacURL}}/javascript/radial-snac-jit.js"></script>
 <script>
@@ -47,7 +44,7 @@ $(document).ready(function() {
 
 </script>
 <style>
-#infovis { 
+#infovis {
     height: 800px; width: 100%;
     margin-bottom: auto;
     margin-left: auto;
@@ -61,11 +58,11 @@ $(document).ready(function() {
      background-color: #1A1A1A;
  }
 
- #panZoomControl { 
-     z-index: 2; 
-     position: absolute; 
-     top: 0; 
-     left: 0; 
+ #panZoomControl {
+     z-index: 2;
+     position: absolute;
+     top: 0;
+     left: 0;
      width: 6em;
      text-align: center;
  }
@@ -82,16 +79,16 @@ $(document).ready(function() {
 
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
-    
+
     <div class="container snac" role="main">
-    
+
     <h1>{{data.nameEntries.0.original}}</h1>
     <ol class="breadcrumb">
         <li><a href="{{control.snacURL}}/view/{{data.id}}">{{data.nameEntries.0.original}}</a></li>
         <li>Radial Graph</li>
     </ol>
-   
-    
+
+
       <div id="center-container" style="height: 100%;">
          <div id="infovis" style="heith: 100%;">
             <div id="panZoomControl">

@@ -29,9 +29,6 @@ div#graph_controls { margin: 18px 0px 0px 24px; }
 <!-- Helper Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-<script language="javascript">
-$('.selectpicker').selectpicker();
-</script>
 
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
@@ -52,9 +49,9 @@ $('.selectpicker').selectpicker();
 
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
-    
+
     <div class="container snac" role="main">
-    
+
     <h1>{{data.nameEntries.0.original}}</h1>
     <ol class="breadcrumb">
         <li><a href="{{control.snacURL}}/view/{{data.id}}">{{data.nameEntries.0.original}}</a></li>
@@ -64,12 +61,12 @@ $('.selectpicker').selectpicker();
     <div id="alchemy_box">
     <div id="alchemy" class="alchemy"></div>
     </div>
-    
+
     <form id="graph_form" name="graph_form" action="?" method="GET">
     <div id="graph_controls">
     <input type="hidden" id="constellationid" name="constellationid" value="{{ data.id }}">
     <input type="checkbox" id="captions" name="captions" onchange="toggle_captions(this)"> <label for="captions">Captions</label>
-    &nbsp; &nbsp; 
+    &nbsp; &nbsp;
     <input type="radio" id="degree_1" name="degree" value="1"> <label for="degree_1">1</label>
     <input type="radio" checked id="degree_2" name="degree" value="2"> <label for="degree_2">2</label>
     <input type="radio" id="degree_3" name="degree" value="3"> <label for="degree_3">3 Degrees</label>
@@ -78,32 +75,32 @@ $('.selectpicker').selectpicker();
     &nbsp; &nbsp; <input type="checkbox" checked id="force" name="force" onchange="toggle_force(this)"> <label for="force">Force</label>
     </div>
     </form>
-        
+
 	<script type="text/javascript">
     <!--
-	
+
     function lookup(dbid)
     {
         var the_url = '{{control.snacURL}}/view/' + dbid;
         window.open(the_url, '_blank');
     }
-		
+
 	function toggle_force(e)
     {
         if(!e.checked) { alchemy.force.stop(); alchemy.conf.forceLocked = true; }
         if(e.checked) { alchemy.conf.forceLocked = false; alchemy.force.start(); }
     }
-	
+
 	function toggle_captions(e)
     {
         if(e.checked) { d3.selectAll(".alchemy text").style("display", "block"); alchemy.conf.nodeCaptionsOnByDefault = true; }
         if(!e.checked) { d3.selectAll(".alchemy text").style("display", "none"); alchemy.conf.nodeCaptionsOnByDefault = false; }
     }
-	
+
 	function load_data() {
-	
+
 		$("#graph_button").prop("disabled", "true").val("Loading...");
-		
+
 		$.get("{{control.snacURL}}/visualize/connection_data", $("#graph_form").serialize(), function (data) {
 			$("#alchemy").html("");
 			alchemy = null;
@@ -112,7 +109,7 @@ $('.selectpicker').selectpicker();
             if (typeof data == 'string') {
                 $("#alchemy").html(data);
             } else {
-          
+
                 var config = {
                 dataSource: data,
                 forceLocked: false,
@@ -129,25 +126,25 @@ $('.selectpicker').selectpicker();
                 },
                 edgeStyle: { "all": { width: 2 } },
                 nodeClick: function(n) { lookup(n.getProperties().dbid); },
-                initialScale: 1.0, 
+                initialScale: 1.0,
                 initialTranslate: [0,0]
                 };
-                
+
                 alchemy.begin(config);
-                
+
                 $("#force").prop("checked", "true");
-                
+
                 $("#graph_button").prop("disabled", false).val("Re-Graph");
             }
 		});
-		
+
 		return false;
 	}
-	
+
     $(document).ready(function() {
 		load_data();
 	});
-	
+
     //-->
     </script>
 
