@@ -1656,16 +1656,25 @@ class DBUtil
      *
      * @param integer $termID A unique integer record id from the database table vocabulary.
      *
+     * @param string $value optional The value of a vocabulary term
+     *
+     * @param string $type optional The type of a vocabulary term
+     *
      * @return \snac\data\Term The populated term object
      *
      */
-    public function populateTerm($termID)
+    public function populateTerm($termID, $value=null, $type=null, $uri=null)
     {
         // If in the cache, then don't re-query
         if (isset($this->termCache[$termID]))
             return $this->termCache[$termID];
 
-        $row = $this->sql->selectTerm($termID);
+        if (isset($termID)) {
+            $row = $this->sql->selectTerm($termID);
+        } elseif (isset($value) && isset($type)) {
+            $row = $this->sql->selectTermByValueAndType($value, $type);
+        }
+
         if ($row == null || empty($row))
             return null;
         $newObj = new \snac\data\Term();
@@ -2947,13 +2956,13 @@ class DBUtil
         if ($resource->getDocumentType() != null)
             $documentType = $resource->getDocumentType()->getID();
         $result = $this->sql->selectResourceByData($resource->getTitle(), $resource->getLink(), $documentType);
-        
+
         if ($result === false)
             return false;
 
         if (count($result) == 1) {
             return $this->populateResource($result[0]['id'], $result[0]['version']);
-        } else { 
+        } else {
         // check equality(not strict) and see if any other resources match
         // if so, return that matching resource
             foreach ($result as $pair) {

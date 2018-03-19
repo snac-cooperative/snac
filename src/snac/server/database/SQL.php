@@ -679,8 +679,8 @@ class SQL
      * @param integer $pID A privilege id.
      */
     public function insertPrivilegeRoleLink($rID, $pID)
-    {   
-        try { 
+    {
+        try {
         $this->sdb->query("insert into privilege_role_link (rid, pid) values ($1, $2)",
                           array($rID, $pID));
         }
@@ -1039,7 +1039,7 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['note'];
     }
-    
+
 
     /**
      * Select Constellations User Recently Edited
@@ -1051,7 +1051,7 @@ class SQL
      * @param integer $limit The maximum number of results to return
      * @param integer $offset Where in the list of results to start
      * @return string[][] The list of ic_id and version numbers recently edited
-     */ 
+     */
     public function selectConstellationsUserEdited($appUserID, $limit, $offset)
     {
         $limitStr = '';
@@ -1060,10 +1060,10 @@ class SQL
         $offsetStr = $this->doLOValue('offset', $offset);
 
         $queryString = sprintf(
-            'select id as ic_id, max(version) as latest_version from 
-                (select distinct id, version from version_history where user_id = $1) as a 
+            'select id as ic_id, max(version) as latest_version from
+                (select distinct id, version from version_history where user_id = $1) as a
                 group by id order by latest_version desc %s %s;', $limitStr, $offsetStr);
-    
+
 
         $this->logger->addDebug("Sending the following SQL request: " . $queryString);
 
@@ -1329,7 +1329,7 @@ class SQL
         }
         return $all;
     }
-    
+
     /**
      * select Current IC_IDs by otherID
      *
@@ -1485,9 +1485,9 @@ class SQL
     }
 
     /**
-     * Add Not-Same Assertion 
+     * Add Not-Same Assertion
      *
-     * Add a not-same assertion between icid1 and icid2, made by the given user and 
+     * Add a not-same assertion between icid1 and icid2, made by the given user and
      * having the given assertion statement.
      *
      * @param int $icid1 The first ICID
@@ -1497,8 +1497,8 @@ class SQL
      * @return boolean True if successful
      */
     public function addNotSameAssertion($icid1, $icid2, $userid, $assertion) {
-        $result = $this->sdb->query("insert into not_same 
-                (ic_id1, ic_id2, user_id, assertion) 
+        $result = $this->sdb->query("insert into not_same
+                (ic_id1, ic_id2, user_id, assertion)
                 values ($1, $2, $3, $4) returning *;",
             array($icid1, $icid2, $userid, $assertion));
         return true;
@@ -1567,9 +1567,9 @@ class SQL
     }
 
     /**
-     * Add Maybe-Same Link 
+     * Add Maybe-Same Link
      *
-     * Add a maybe-same link between icid1 and icid2, made by the given user and 
+     * Add a maybe-same link between icid1 and icid2, made by the given user and
      * having the given assertion statement.
      *
      * @param int $icid1 The first ICID
@@ -1579,8 +1579,8 @@ class SQL
      * @return boolean True if successful
      */
     public function addMaybeSameLink($icid1, $icid2, $userid, $assertion) {
-        $result = $this->sdb->query("insert into maybe_same 
-                (ic_id1, ic_id2, user_id, note) 
+        $result = $this->sdb->query("insert into maybe_same
+                (ic_id1, ic_id2, user_id, note)
                 values ($1, $2, $3, $4) returning *;",
             array($icid1, $icid2, $userid, $assertion));
         return true;
@@ -4035,6 +4035,31 @@ class SQL
 
 
     /**
+     * Get a single vocabulary record by Type and Value
+     *
+     * @param string $value The value of a vocabulary term
+     *
+     * @param string $type The type of a vocabulary term
+     *
+     * @return string[] A list with keys: id, type, value, uri, description
+     *
+     */
+    public function selectTermByValueAndType($value, $type)
+    {
+        $qq = 'sc';
+        $this->sdb->prepare($qq,
+                            'select
+                            id, type, value, uri, description
+                            from vocabulary where $1=value and $2=type');
+        $result = $this->sdb->execute($qq, array($value, $type));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+
+
+    /**
      *
      * Select from table nrd
      *
@@ -4678,13 +4703,13 @@ class SQL
      */
     public function selectResourceByData($title = null, $href = null, $type = null) {
 
-        $result = $this->sdb->query('select id, version from resource_cache 
-                                     where href = $1 and title = $2 
-                                     and type = $3 and not is_deleted 
+        $result = $this->sdb->query('select id, version from resource_cache
+                                     where href = $1 and title = $2
+                                     and type = $3 and not is_deleted
                                      and md5(title)::uuid = md5($2)::uuid', array($href,
                                                                                   $title,
                                                                                   $type));
-        
+
         return $this->sdb->fetchAll($result);
     }
 
@@ -5477,7 +5502,7 @@ class SQL
     }
 
     /**
-     * Search Users 
+     * Search Users
      *
      * Search the users in the appuser table of the database.  Returns only the userid and
      * full name of the query.  Searches the string in the full name, user name, and email
@@ -6196,11 +6221,11 @@ class SQL
         if ($unreadOnly) {
             $readFilter = 'and not read';
         }
-        // select only deleted messages if $archivedOnly is true 
+        // select only deleted messages if $archivedOnly is true
         $archiveFilter= ($archivedOnly ? "deleted " : "not deleted");
 
         $result = $this->sdb->query(
-            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where ' 
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where '
             .$archiveFilter.' and '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
             array($userid));
 
@@ -6214,7 +6239,7 @@ class SQL
     /**
      * Select Messages from User
      *
-     * Selects all messages for the given userID. 
+     * Selects all messages for the given userID.
      *
      * @param int $userid The userid of the user
      * @return string[] The list of message data for the user
