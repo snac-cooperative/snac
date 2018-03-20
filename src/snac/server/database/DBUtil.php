@@ -920,7 +920,7 @@ class DBUtil
      * Safely call object getID method
      *
      * Call this so we don't have to sprinkle ternary ops throughout our code. The alternative to using this
-     * is for every call to getID() from a Language, Term, or Source to be made in the same ternary that is
+     * is for every call to getID() from a Language or Source to be made in the same ternary that is
      * inside this.  Works for any class that has a getID() method. Intended to use with Language, Term,
      * Source,
      *
@@ -931,11 +931,42 @@ class DBUtil
     private function thingID($thing)
     {
         return $thing==null?null:$thing->getID();
+    }
 
-        // if thing is null, throw db exception
-        // if $thing->getId is numeric, return it.
-        // else, read by value, type, or uri.
-        // if nothing found, throw db exception.
+
+
+    /**
+     * Safely call term getID method
+     *
+     * Attempts to lookup term ID, first directly and then by checking the database for term's value,
+     * type, or uri.
+     *
+     * @param object $term \snac\data\Term object.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
+     * @return integer The record id of the term
+     */
+    private function termID($term) {
+        if (!isset($term) || !($term instanceof \snac\data\Term))
+            throw new \snac\exceptions\SNACDatabaseException("Term is null", 400);
+
+        // try to find and return ID
+        if (is_numeric($term->getID())) {
+            $id = $term->getID();
+        } elseif ($term->getTerm() && $term->getType()) {
+            $termData = $this->sql->selectTermByValueAndType($term->getTerm(), $term->getType());
+            $id = $termData['id'];
+        } elseif ($term->getURI()) {
+            $termData = $this->sql->selectTermByUri($term->getURI());
+            $id = $termData['id'];
+        }
+
+        if (isset($id)) {
+            return $id;
+        } else {
+            throw new \snac\exceptions\SNACDatabaseException("Term not found", 400);
+        }
     }
 
 
@@ -1684,7 +1715,7 @@ class DBUtil
             $row = $this->sql->selectTermByUri($uri);
         }
 
-        if ($row == null || empty($row))
+        if (!isset($row) || empty($row))
             return null;
         $newObj = new \snac\data\Term();
         $newObj->setID($row['id']);
@@ -1964,7 +1995,7 @@ class DBUtil
                 {
                     $rid = $this->sql->insertNationality($vhInfo,
                                                          $item->getID(),
-                                                         $this->thingID($item->getTerm()));
+                                                         $this->termID($item->getTerm()));
                     $item->setID($rid);
                     $item->setVersion($vhInfo['version']);
                 }
@@ -2228,7 +2259,7 @@ class DBUtil
              */
             $this->sql->insertNrd($vhInfo,
                                   $cObj->getArk(),
-                                  $this->thingID($cObj->getEntityType()),
+                                  $this->termID($cObj->getEntityType()),
                                   $cObj->getID());
         }
         /*
@@ -2339,7 +2370,7 @@ class DBUtil
             {
                 $rid = $this->sql->insertGender($vhInfo,
                                                 $fdata->getID(),
-                                                $this->thingID($fdata->getTerm()));
+                                                $this->termID($fdata->getTerm()));
                 $fdata->setID($rid);
                 $fdata->setVersion($vhInfo['version']);
             }
@@ -2397,13 +2428,13 @@ class DBUtil
                                           $date->getID(),
                                           $this->db->boolToPg($date->getIsRange()),
                                           $date->getFromDate(),
-                                          $this->thingID($date->getFromType()),
+                                          $this->termID($date->getFromType()),
                                           $this->db->boolToPg($date->getFromBc()),
                                           $date->getFromRange()['notBefore'],
                                           $date->getFromRange()['notAfter'],
                                           $date->getFromDateOriginal(),
                                           $date->getToDate(),
-                                          $this->thingID($date->getToType()),
+                                          $this->termID($date->getToType()),
                                           $this->db->boolToPg($date->getToBc()),
                                           $date->getToRange()['notBefore'],
                                           $date->getToRange()['notAfter'],
@@ -2474,8 +2505,8 @@ class DBUtil
             {
                 $rid = $this->sql->insertLanguage($vhInfo,
                                                   $lang->getID(),
-                                                  $this->thingID($lang->getLanguage()),
-                                                  $this->thingID($lang->getScript()),
+                                                  $this->termID($lang->getLanguage()),
+                                                  $this->termID($lang->getScript()),
                                                   $lang->getVocabularySource(),
                                                   $lang->getNote(),
                                                   $table,
@@ -2513,7 +2544,7 @@ class DBUtil
                 $rid = $this->sql->insertOtherID($vhInfo,
                                                  $otherID->getID(),
                                                  $otherID->getText(),
-                                                 $this->thingID($otherID->getType()),
+                                                 $this->termID($otherID->getType()),
                                                  $otherID->getURI());
                 $otherID->setID($rid);
                 $otherID->setVersion($vhInfo['version']);
@@ -2542,7 +2573,7 @@ class DBUtil
                 $rid = $this->sql->insertEntityID($vhInfo,
                     $otherID->getID(),
                     $otherID->getText(),
-                    $this->thingID($otherID->getType()),
+                    $this->termID($otherID->getType()),
                     $otherID->getURI());
                     $otherID->setID($rid);
                     $otherID->setVersion($vhInfo['version']);
@@ -2590,7 +2621,7 @@ class DBUtil
             {
                 $rid = $this->sql->insertLegalStatus($vhInfo,
                                                      $fdata->getID(),
-                                                     $this->thingID($fdata->getTerm()));
+                                                     $this->termID($fdata->getTerm()));
                 $fdata->setID($rid);
                 $fdata->setVersion($vhInfo['version']);
             }
@@ -2619,7 +2650,7 @@ class DBUtil
             {
                 $occID = $this->sql->insertOccupation($vhInfo,
                                                       $fdata->getID(),
-                                                      $this->thingID($fdata->getTerm()),
+                                                      $this->termID($fdata->getTerm()),
                                                       $fdata->getVocabularySource(),
                                                       $fdata->getNote());
                 $fdata->setID($occID);
@@ -2672,10 +2703,10 @@ class DBUtil
             {
                 $funID = $this->sql->insertFunction($vhInfo,
                                                     $fdata->getID(), // record id
-                                                    $this->thingID($fdata->getType()), // function type, aka localType, Term object
+                                                    $this->termID($fdata->getType()), // function type, aka localType, Term object
                                                     $fdata->getVocabularySource(),
                                                     $fdata->getNote(),
-                                                    $this->thingID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
+                                                    $this->termID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
                 $fdata->setID($funID);
                 $fdata->setVersion($vhInfo['version']);
             }
@@ -2700,7 +2731,7 @@ class DBUtil
      *
      * getID() is the subject object record id.
      *
-     * $this->thingID($term->getTerm()) more robust form of $term->getTerm()->getID() is the vocabulary id
+     * $this->termID($term->getTerm()) more robust form of $term->getTerm()->getID() is the vocabulary id
      * of the Term object inside subject.
      *
      * @param integer[] $vhInfo list with keys version, ic_id.
@@ -2716,7 +2747,7 @@ class DBUtil
             {
                 $rid = $this->sql->insertSubject($vhInfo,
                                                  $term->getID(),
-                                                 $this->thingID($term->getTerm()));
+                                                 $this->termID($term->getTerm()));
                 $term->setID($rid);
                 $term->setVersion($vhInfo['version']);
             }
@@ -2780,9 +2811,9 @@ class DBUtil
                 $relID = $this->sql->insertRelation($vhInfo,
                                                     $fdata->getTargetConstellation(),
                                                     $fdata->getTargetArkID(),
-                                                    $this->thingID($fdata->getTargetEntityType()),
-                                                    $this->thingID($fdata->getType()),
-                                                    $this->thingID($fdata->getcpfRelationType()), // $cpfRelTypeID,
+                                                    $this->termID($fdata->getTargetEntityType()),
+                                                    $this->termID($fdata->getType()),
+                                                    $this->termID($fdata->getcpfRelationType()), // $cpfRelTypeID,
                                                     $fdata->getContent(),
                                                     $fdata->getNote(),
                                                     $fdata->getID());
@@ -2839,7 +2870,7 @@ class DBUtil
                 $rid = $this->sql->insertResourceRelation($vhInfo,
                                                           $fdata->getResource()->getID(),
                                                           $fdata->getResource()->getVersion(),
-                                                          $this->thingID($fdata->getRole()), // xlink:arcrole
+                                                          $this->termID($fdata->getRole()), // xlink:arcrole
                                                           $fdata->getContent(), // relationEntry
                                                           $fdata->getNote(), // descriptiveNote
                                                           $fdata->getID());
@@ -2935,8 +2966,8 @@ class DBUtil
                                                       $resource->getAbstract(),
                                                       $resource->getExtent(),
                                                       $repoID,
-                                                      $this->thingID($resource->getDocumentType()), // xlink:role
-                                                      $this->thingID($resource->getEntryType()), // relationEntry@localType
+                                                      $this->termID($resource->getDocumentType()), // xlink:role
+                                                      $this->termID($resource->getEntryType()), // relationEntry@localType
                                                       $resource->getLink(), // xlink:href
                                                       $resource->getSource()); // objectXMLWrap
             $resource->setID($rid);
@@ -3004,8 +3035,8 @@ class DBUtil
                     $rid = $this->sql->insertResourceLanguage($resource->getID(),
                                                       $resource->getVersion(),
                                                       $lang->getID(),
-                                                      $this->thingID($lang->getLanguage()),
-                                                      $this->thingID($lang->getScript()),
+                                                      $this->termID($lang->getLanguage()),
+                                                      $this->termID($lang->getScript()),
                                                       $lang->getVocabularySource(),
                                                       $lang->getNote());
                     $lang->setID($rid);
@@ -4257,9 +4288,9 @@ class DBUtil
                                                    $gObj->getID(),
                                                    $this->db->boolToPg($gObj->getConfirmed()),
                                                    $gObj->getOriginal(),
-                                                   $this->thingID($gObj->getGeoTerm()),
-                                                   $this->thingID($gObj->getType()),
-                                                   $this->thingID($gObj->getRole()),
+                                                   $this->termID($gObj->getGeoTerm()),
+                                                   $this->termID($gObj->getType()),
+                                                   $this->termID($gObj->getRole()),
                                                    $gObj->getNote(),
                                                    $gObj->getScore(),
                                                    $relatedTable,
@@ -4295,7 +4326,7 @@ class DBUtil
                                                                $addr->getID(),
                                                                $pid,
                                                                $addr->getText(),
-                                                               $this->thingID($addr->getType()),
+                                                               $this->termID($addr->getType()),
                                                                $addr->getOrder());
                             $addr->setID($rid);
                             $addr->setVersion($vhInfo['version']);
@@ -4350,7 +4381,7 @@ class DBUtil
                                                  $citationID,
                                                  $metaObj->getSubCitation(),
                                                  $metaObj->getSourceData(),
-                                                 $this->thingID($metaObj->getDescriptiveRule()),
+                                                 $this->termID($metaObj->getDescriptiveRule()),
                                                  $metaObj->getNote(),
                                                  $fkTable,
                                                  $fkID);
@@ -4712,7 +4743,7 @@ class DBUtil
                                                            $cp->getID(),
                                                            $nameID,
                                                            $cp->getText(),
-                                                           $this->thingID($cp->getType()),
+                                                           $this->termID($cp->getType()),
                                                            $cp->getOrder());
                         $cp->setID($rid);
                         $cp->setVersion($vhInfo['version']);
@@ -4741,8 +4772,8 @@ class DBUtil
                                                              $cb->getID(),
                                                              $nameID,
                                                              $cb->getName(),
-                                                             $this->thingID($cb->getType()),
-                                                             $this->thingID($cb->getRule()));
+                                                             $this->termID($cb->getType()),
+                                                             $this->termID($cb->getRule()));
                         $cb->setID($rid);
                         $cb->setVersion($vhInfo['version']);
                     }
