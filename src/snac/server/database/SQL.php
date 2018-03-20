@@ -4046,17 +4046,37 @@ class SQL
      */
     public function selectTermByValueAndType($value, $type)
     {
-        $qq = 'sc';
+        $qq = 's_term_by_value';
         $this->sdb->prepare($qq,
                             'select
                             id, type, value, uri, description
-                            from vocabulary where $1=value and $2=type');
+                            from vocabulary where value=$1 and type=$2');
         $result = $this->sdb->execute($qq, array($value, $type));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
     }
 
+    /**
+     * Get a single vocabulary record by URI
+     *
+     * @param string $uri The uri of a vocabulary term
+     *
+     * @return string[] A list with keys: id, type, value, uri, description
+     *
+     */
+    public function selectTermByUri($uri)
+    {
+        $qq = 's_term_by_uri';
+        $this->sdb->prepare($qq,
+                            'select
+                            id, type, value, uri, description
+                            from vocabulary where uri=$1');
+        $result = $this->sdb->execute($qq, array($uri));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
 
 
     /**

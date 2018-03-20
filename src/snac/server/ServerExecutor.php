@@ -522,22 +522,21 @@ class ServerExecutor {
      */
     public function readVocabulary(&$input) {
         $response = array();
+        $term = null;
         if (isset($input["term_id"])) {
-            $term = null;
             if (isset($input["type"]) && $input["type"] == "geoPlace") {
                 $term = $this->cStore->buildGeoTerm($input["term_id"]);
             } else {
                 $term = $this->cStore->populateTerm($input["term_id"]);
             }
-        } elseif ($input["term_value"] && $input["type"]) {
+        } elseif (isset($input["term_value"]) && isset($input["type"])) {
             $term = $this->cStore->populateTerm(null, $input["term_value"], $input["type"]);
-            if ($term != null) {
-                $response["term"] = $term->toArray();
-                $response["result"] = "success";
-            }
+        } elseif (isset($input["uri"])) {
+            $term = $this->cStore->populateTerm(null, null, null, $input["uri"]);
         }
 
-        if ($term != null) {
+
+        if ($term !== null) {
             $response["term"] = $term->toArray();
             $response["result"] = "success";
         } else {

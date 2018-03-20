@@ -931,6 +931,11 @@ class DBUtil
     private function thingID($thing)
     {
         return $thing==null?null:$thing->getID();
+
+        // if thing is null, throw db exception
+        // if $thing->getId is numeric, return it.
+        // else, read by value, type, or uri.
+        // if nothing found, throw db exception.
     }
 
 
@@ -1660,6 +1665,8 @@ class DBUtil
      *
      * @param string $type optional The type of a vocabulary term
      *
+     * @param string $uri optional The uri of a vocabulary term
+     *
      * @return \snac\data\Term The populated term object
      *
      */
@@ -1673,6 +1680,8 @@ class DBUtil
             $row = $this->sql->selectTerm($termID);
         } elseif (isset($value) && isset($type)) {
             $row = $this->sql->selectTermByValueAndType($value, $type);
+        } elseif (isset($uri)) {
+            $row = $this->sql->selectTermByUri($uri);
         }
 
         if ($row == null || empty($row))
