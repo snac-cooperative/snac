@@ -96,8 +96,18 @@
             "type" : {
                 "optional": true,
                 "type": "String", 
-                "description" : "Type of the vocabulary to search. Currently only uses if geoPlace."
-            }
+                "description" : "Type of the vocabulary to search."
+            },
+            "term_value" : {
+                "optional": true,
+                "type": "String", 
+                "description" : "The value of the vocabulary to search."
+            },
+            "uri" : {
+                "optional": true,
+                "type": "String", 
+                "description" : "The unique URI of the vocabulary to search."
+            },
         },
         "returns" : {
             "term" : {
