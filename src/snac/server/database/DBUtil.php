@@ -948,8 +948,8 @@ class DBUtil
      * @return integer The record id of the term
      */
     private function termID($term) {
-        if (!isset($term) || !($term instanceof \snac\data\Term))
-            throw new \snac\exceptions\SNACDatabaseException("Term is null", 400);
+        if (!isset($term) || $term->isEmpty())
+            return null;
 
         // try to find and return ID
         if (is_numeric($term->getID())) {

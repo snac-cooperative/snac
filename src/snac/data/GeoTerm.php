@@ -355,6 +355,24 @@ class GeoTerm {
         return $this->id;
     }
 
+    /**
+     * Is Empty
+     *
+     * Check whether or not this Geoterm object is empty (all null values).
+     *
+     * @return boolean True if the term is empty, false otherwise.
+     */
+    public function isEmpty() {
+        if ($this->name == null &&
+            $this->id == null &&
+            $this->latitude == null &&
+            $this->longitude == null &&
+            $this->administrationCode == null &&
+            $this->countryCode == null)
+            return true;
+        return false;
+    }
+
 
     /**
      * is Equal
