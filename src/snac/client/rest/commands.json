@@ -107,7 +107,7 @@
                 "optional": true,
                 "type": "String", 
                 "description" : "The unique URI of the vocabulary to search."
-            },
+            }
         },
         "returns" : {
             "term" : {
