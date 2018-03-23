@@ -339,49 +339,81 @@ class Neo4JUtil {
      *
      * @param \snac\data\Constellation $from The constellation object to delete/redirect from Neo4J
      * @param \snac\data\Constellation $to The constellation object that is the target of any redirects
+     * @return boolean True if successful, false otherwise
      */
     public function redirectConstellation(&$from, &$to) {
+        if ($from == null || $from->getID() == null || $to == null || $to->getID() == null) {
+            return false;
+        }
 
         if ($this->connector != null) {
             // Find all in-relations to the from constellation
             $result = $this->connector->run("MATCH p=()-[]->(b:Identity {id: {icid}}) return p;",
                 [
-                    'icid' => $from->getID()
+                    'icid' => "{$from->getID()}"
                 ]
             );
-
+            
             foreach ($result->getRecords() as $record) {
                 $path = $record->pathValue("p");
 
                 // Source of relation
-                $path->start()->value("id");
+                $startID = $path->start()->value("id");
+                $startLabels = $path->start()->labels();
+                $startType = $startLabels[0] ?? null;
 
+                if ($startType == null) {
+                    throw new \snac\exceptions\SNACDatabaseException("Neo4J Node did not have a type");
+                }
+
+                if (count($path->relationships()) > 1) {
+                    $this->logger->addWarning("Redirected a Constellation, {$from->getID()}, which had two in-relations from the same source.");
+                }
                 // Relationship id/version
-                if ($path->relationships()[0]->hasValue('id'))
-                    $path->relationships()[0]->value('id');
-                if ($path->relationships()[0]->hasValue('version'))
-                    $path->relationships()[0]->value('version');
-                // Relationship role
-                $path->relationships()[0]->value('arcrole');
+                foreach ($path->relationships() as $relation) {
+                    // Need to know Relation type (ICRELATION, RRELATION, HIRELATION)
+                    $type = $relation->type();
 
-                // TODO
-                // Create a new relationship/edge to the "to" Constellation
-                //$this->connector->run("MATCH (a {id: {id1} }),(b:Resource {id: {id2} })
-                //    CREATE (b)-[r:HIRELATION]->(a);",
-                //    [
-                //        'id1' => $resource->getRepository()->getID(),
-                //        'id2' => $resource->getID()
-                //    ]);
+                    $data = [];
+                    
+                    // Resource Relations have id/version
+                    if ($relation->hasValue('id'))
+                        $data["id"] = $relation->value('id');
+                    if ($relation->hasValue('version'))
+                        $data["version"] = $relation->value('version');
+
+                    // Constellation Relations have arcrole
+                    if ($relation->hasValue('arcrole'))
+                        $data["arcrole"] = $relation->value('arcrole');
+
+                    // Add the relation to the other Constellation
+                    // Note: matches the two nodes, and if a relation already exists of this type (ICRELATION,
+                    //       RRELATION, HIRELATION) then it will just update that relation and overwrite any
+                    //       values in Neo4J.  If the relation doesn't exist, it will instead create the
+                    //       relation with the information.
+                    $result = $this->connector->run("MATCH (a:$startType {id: {id1} }),(b:Identity {id: {id2} })
+                                                        MERGE (a)-[r:$type]->(b) SET r += {infos}",
+                    [
+                        'id1' => $startID,
+                        'id2' => "{$to->getID()}",
+                        'infos' => $data
+                    ]);
+                }
+
             }
 
             $this->logger->addDebug("Deleting Identity Node from Neo4J database");
             $result = $this->connector->run("MATCH (a:Identity {id: {icid}}) detach delete a;",
                 [
-                    'icid' => $from->getID()
+                    'icid' => "{$from->getID()}"
                 ]
             );
             $this->logger->addDebug("Updated neo4j to remove constellation");
+
+            return true;
         }
+
+        return false;
 
     }
 
