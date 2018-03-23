@@ -3868,64 +3868,6 @@ class SQL
     }
 
 
-
-    // /**
-    //  * Update resource
-    //  *
-    //  * @deprecated This method does not keep previous versions. Editing resources currently uses insertResource in
-    //  * order to keep version history. If we remove resource versioning, this method may be used.
-    //  * @param  int $resourceID      Resource ID
-    //  * @param  int|null $resourceVersion Resource version
-    //  * @param  string $title           Title of the resource
-    //  * @param  string $abstract        Abstract of the resource
-    //  * @param  string $extent          Extent of the resource
-    //  * @param  int $repoICID        Repository ID for the holding repository of this resource
-    //  * @param  int $docTypeID       Document Type ID
-    //  * @param  int $entryTypeID     Entity Type ID
-    //  * @param  text|null $link            Link for this resource
-    //  * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
-    //  * @param  text|null $date            Text entry date of this resource
-    //  * @param  text|null $displayEntry    Display Entry of resource
-    //  * @return string[]                  Array containing id, version
-    //  */
-    // public function updateResource($resourceID,
-    //                                $resourceVersion,
-    //                                $title,
-    //                                $abstract,
-    //                                $extent,
-    //                                $repoICID,
-    //                                $docTypeID,
-    //                                $entryTypeID,
-    //                                $link,
-    //                                $objectXMLWrap,
-    //                                $date,
-    //                                $displayEntry) {
-    //
-    //     $newResourceVersion = $this->selectResourceVersion();
-    //     $qq = 'update_resource';
-    //     $this->sdb->prepare($qq,
-    //                         'update resource_cache set
-    //                          version = $2, title = $3, abstract = $4, extent = $5, repo_ic_id = $6,
-    //                          type = $7, entry_type = $8, href = $9, object_xml_wrap = $10, date = $11, display_entry = $12
-    //                          where id = $1');
-    //
-    //     $execList = array($resourceID,            // 1
-    //                       $newResourceVersion,    // 2
-    //                       $title,                 // 3
-    //                       $abstract,              // 4
-    //                       $extent,                // 5
-    //                       $repoICID,              // 6
-    //                       $docTypeID,             // 7
-    //                       $entryTypeID,           // 8
-    //                       $link,                  // 9
-    //                       $objectXMLWrap,         // 10
-    //                       $date,                  // 11
-    //                       $displayEntry);         // 12
-    //     $this->sdb->execute($qq, $execList);
-    //     $this->sdb->deallocate($qq);
-    //     return array($resourceID, $newResourceVersion);
-    // }
-
     /**
      * Insert Resource Language
      *
