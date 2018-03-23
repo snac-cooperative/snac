@@ -386,18 +386,20 @@ class Neo4JUtil {
                     if ($relation->hasValue('arcrole'))
                         $data["arcrole"] = $relation->value('arcrole');
 
-                    // Add the relation to the other Constellation
-                    // Note: matches the two nodes, and if a relation already exists of this type (ICRELATION,
-                    //       RRELATION, HIRELATION) then it will just update that relation and overwrite any
-                    //       values in Neo4J.  If the relation doesn't exist, it will instead create the
-                    //       relation with the information.
-                    $result = $this->connector->run("MATCH (a:$startType {id: {id1} }),(b:Identity {id: {id2} })
-                                                        MERGE (a)-[r:$type]->(b) SET r += {infos}",
-                    [
-                        'id1' => $startID,
-                        'id2' => "{$to->getID()}",
-                        'infos' => $data
-                    ]);
+                    // Add the relation to the other Constellation if the ids are different
+                    if ($startID != $to->getID()) {
+                        // Note: matches the two nodes, and if a relation already exists of this type (ICRELATION,
+                        //       RRELATION, HIRELATION) then it will just update that relation and overwrite any
+                        //       values in Neo4J.  If the relation doesn't exist, it will instead create the
+                        //       relation with the information.
+                        $result = $this->connector->run("MATCH (a:$startType {id: {id1} }),(b:Identity {id: {id2} })
+                                                            MERGE (a)-[r:$type]->(b) SET r += {infos}",
+                        [
+                            'id1' => $startID,
+                            'id2' => "{$to->getID()}", // need a string for neo4j
+                            'infos' => $data
+                        ]);
+                    }
                 }
 
             }

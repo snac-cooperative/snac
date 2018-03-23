@@ -2895,9 +2895,8 @@ class ServerExecutor {
             }
             $this->elasticSearch->deleteFromNameIndices($c);
             $this->cStore->deleteFromNameIndex($c);
-            // from c to written
+            // redirect from c to written and delete c from the index
             $this->neo4J->redirectConstellation($c, $written);
-            //$this->neo4J->deleteConstellation($c);
         }
 
         // Remove maybe-same links between the originals, if they exist
