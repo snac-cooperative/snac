@@ -707,7 +707,7 @@
                         </label>
                         <div class="col-xs-8 form-control-static">
                             <p>
-                                <span id="resourceRelation_displayEntryText_{{i}}">{{ relation.resource.displayEntry ? relation.resource.displayEntry : 'Display Entry Unknown' }}</span><br>
+                                <span id="resourceRelation_displayEntryText_{{i}}">{{ relation.resource.displayEntry ? relation.resource.displayEntry : '' }}</span><br>
                             </p>
                         </div>
                     </div>
@@ -717,7 +717,7 @@
                         </label>
                         <div class="col-xs-8 form-control-static">
                             <p>
-                                <span style="font-weight: bold" id="resourceRelation_titleText_{{i}}">{{ relation.resource.title ? relation.resource.title : 'Title Unknown' }}</span><br>
+                                <span style="font-weight: bold" id="resourceRelation_titleText_{{i}}">{{ relation.resource.title ? relation.resource.title : '' }}</span><br>
                                 <span id="resourceRelation_abstractText_{{i}}">{{relation.resource.abstract}}</span>
                             </p>
                             <!-- <p>
@@ -726,7 +726,7 @@
                             </p> -->
                             <p>
                                 <span id="resourceRelation_documentTypeText_{{i}}">{{relation.resource.documentType.term}}</span>:
-                                <span id="resourceRelation_extentText_{{i}}">{{relation.resource.extent ? relation.resource.extent : 'Extent Unknown'}}</span>
+                                <span id="resourceRelation_extentText_{{i}}">{{relation.resource.extent ? relation.resource.extent : ''}}</span>
                             </p>
                             <p id="resourceRelation_LinkText_{{i}}">
                                 <span id="resourceRelation_linkText_{{i}}">{{relation.resource.link}}
