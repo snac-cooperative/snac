@@ -404,13 +404,7 @@ class Neo4JUtil {
 
             }
 
-            $this->logger->addDebug("Deleting Identity Node from Neo4J database");
-            $result = $this->connector->run("MATCH (a:Identity {id: {icid}}) detach delete a;",
-                [
-                    'icid' => "{$from->getID()}"
-                ]
-            );
-            $this->logger->addDebug("Updated neo4j to remove constellation");
+            $this->deleteConstellation($from);
 
             return true;
         }
