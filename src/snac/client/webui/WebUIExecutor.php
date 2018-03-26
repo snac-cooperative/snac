@@ -1800,40 +1800,65 @@ class WebUIExecutor {
                 }
                 break;
             case "add_term":
-                $display->setData(array(
-                    "title"=> "Add New Vocabulary Term"
-                ));
-                $display->setTemplate("vocab_edit_term");
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $display->setData(array(
+                        "title"=> "Add New Vocabulary Term"
+                    ));
+                    $display->setTemplate("vocab_edit_term");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
                 break;
             case "add_term_post":
-                return $this->saveVocabularyTerm($input, $user);
+                if (isset($this->permissions["EditVocabulary"])) {
+                    return $this->saveVocabularyTerm($input, $user);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
                 break;
             case "add_geoterm":
-                $display->setData(array(
-                    "title"=> "Add New Geopgraphic Vocabulary Term"
-                ));
-                $display->setTemplate("vocab_edit_geoterm");
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $display->setData(array(
+                        "title"=> "Add New Geographic Vocabulary Term"
+                    ));
+                    $display->setTemplate("vocab_edit_geoterm");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+
                 break;
             case "add_geoterm_post":
-                // maybe reuse the same save function?
-                return $this->saveVocabularyTerm($input, $user);
+                if (isset($this->permissions["EditVocabulary"])) {
+                    // maybe reuse the same save function?
+                    return $this->saveVocabularyTerm($input, $user);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
                 break;
             case "add_resource":
-                $display->setData(array("title"=> "Add a Resource"));
-                $display->setTemplate("resources/new");
+                if (isset($this->permissions["EditResources"])) {
+                    $display->setData(array("title"=> "Add a Resource"));
+                    $display->setTemplate("resources/new");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
                 break;
             case "resources":
-                $display->setData(array("title"=> "Edit a Resource"));
+                $display->setData(array("title"=> "Search for a Resource"));
                 $display->setTemplate("resources/search");
                 break;
             case "edit_resource":
-                // id passed is actually resourceID,
-                $resourceID = $input["constellationid"];
-                $resource = $this->connect->lookupResource($resourceID);
+                if (isset($this->permissions["EditResources"])) {
+                    // id passed is actually resourceID,
+                    $resourceID = $input["constellationid"];
+                    $resource = $this->connect->lookupResource($resourceID);
 
-                $display->setData(array("title"=> "Edit a Resource",
-                                        "resource" => $resource));
-                $display->setTemplate("resources/edit");
+                    $display->setData(array("title"=> "Edit a Resource",
+                                            "resource" => $resource));
+                    $display->setTemplate("resources/edit");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
                 break;
             case "dashboard":
                 if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
