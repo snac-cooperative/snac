@@ -3,7 +3,7 @@
  * Contributor File
  *
  * Contains the data class for the contributors to names
- * 
+ *
  * License:
  *
  *
@@ -19,7 +19,7 @@ namespace snac\data;
  * Contributor Class
  *
  * Stores the contributor name (string) and type (a Term object)
- * 
+ *
  * @author Tom Laudeman
  * @author Robbie Hott
  *
@@ -28,7 +28,7 @@ class Contributor extends AbstractData {
 
     /**
      * @var \snac\data\Term Type of the contributor
-     * 
+     *
      *
      * From EAC-CPF tag(s):
      * vocabulary id for strings:
@@ -39,21 +39,21 @@ class Contributor extends AbstractData {
     private $type = null;
 
     /**
-     * @var \snac\data\Term Rule the contributor used to define this name entry 
+     * @var \snac\data\Term Rule the contributor used to define this name entry
      *
      */
     private $rule = null;
-    
+
     /**
      * @var string Name of the contributor.
-     * 
+     *
      * A simple string.
      */
     private $name = null;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param string[] $data optional An array of data to pre-fill this object
      */
     public function __construct($data = null) {
@@ -65,8 +65,8 @@ class Contributor extends AbstractData {
      * Get the type controlled vocab
      *
      * @return \snac\data\Term Type controlled vocabulary term
-     * 
-     */ 
+     *
+     */
     public function getType()
     {
         return $this->type;
@@ -76,8 +76,8 @@ class Contributor extends AbstractData {
      * Set the type controlled vocab
      *
      * @param \snac\data\Term $type Type controlled vocabulary term
-     * 
-     */ 
+     *
+     */
     public function setType($type)
     {
         $this->type = $type;
@@ -87,8 +87,8 @@ class Contributor extends AbstractData {
      * Get the rule controlled vocab
      *
      * @return \snac\data\Term Rule controlled vocabulary term
-     * 
-     */ 
+     *
+     */
     public function getRule()
     {
         return $this->rule;
@@ -98,8 +98,8 @@ class Contributor extends AbstractData {
      * Set the rule controlled vocab
      *
      * @param \snac\data\Term $rule Rule controlled vocabulary term
-     * 
-     */ 
+     *
+     */
     public function setRule($rule)
     {
         $this->rule = $rule;
@@ -141,7 +141,7 @@ class Contributor extends AbstractData {
             "rule" => $this->rule == null ? null : $this->rule->toArray($shorten),
             "name" => $this->name
         );
-            
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -193,25 +193,26 @@ class Contributor extends AbstractData {
      *
      * @param \snac\data\Contributor $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
-    public function equals($other, $strict = true) {
+    public function equals($other, $strict = true, $checkSubcomponents = true) {
 
         if ($other == null || !($other instanceof \snac\data\Contributor))
             return false;
-        
-        if (!parent::equals($other, $strict))
+
+        if (!parent::equals($other, $strict, $checkSubcomponents))
             return false;
-        
+
         if ($this->getName() != $other->getName())
             return false;
-        
+
         if (($this->getType() != null && !($this->getType()->equals($other->getType()))) ||
                 ($this->getType() == null && $other->getType() != null))
             return false;
-        
+
         return true;
     }
 }

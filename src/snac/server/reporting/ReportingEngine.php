@@ -48,7 +48,7 @@ class ReportingEngine {
     public function __construct() {
         global $log;
         // create a log channel
-        $this->logger = new \Monolog\Logger('Server');
+        $this->logger = new \Monolog\Logger('ReportingEngine');
         $this->logger->pushHandler($log);
         
         $this->reports = array();

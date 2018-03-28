@@ -61,12 +61,14 @@ function showMessage(messageID) {
                 html = html.replace(/MESSAGE_FROM/g, data.message.fromUser.fullName + " ("
                                         + data.message.fromUser.userName +")");
             }
+            html = html.replace(/MESSAGE_TO/g, data.message.toUser.fullName + " ("
+                                    + data.message.toUser.userName +")");
             currentMessage = data.message;
             $('#message_view_pane').html(html);
 
             $("#reply_message").removeAttr("disabled").removeClass("disabled");
             $("#forward_message").removeAttr("disabled").removeClass("disabled");
-            $("#delete_message").removeAttr("disabled").removeClass("disabled");
+            $("#archive_message").removeAttr("disabled").removeClass("disabled");
         }
     });
 }
@@ -163,26 +165,26 @@ function cancelMessage() {
     recipient_select_replace();
 }
 
-function deleteMessage() {
+function archiveMessage() {
     var messageID = currentMessage.id;
     bootbox.confirm({
-        title: "Confirm Deletion",
-        message: "Are you sure you want to delete this message?",
+        title: "Confirm Archive",
+        message: "Are you sure you want to archive this message?",
         buttons: {
             cancel: {
                 label: '<i class="fa fa-times"></i> Cancel'
             },
             confirm: {
-                label: '<i class="fa fa-trash-o"></i> Delete'
+                label: '<i class="fa fa-trash-o"></i> Archive'
             }
         },
         callback: function (result) {
             if (result) {
-                $.post(snacUrl+"/message_delete", { messageid: messageID }, function (data) {
+                $.post(snacUrl+"/message_archive", { messageid: messageID }, function (data) {
                     if (data.result == "success") {
                         $("#reply_message").attr("disabled", true).addClass("disabled");
                         $("#forward_message").attr("disabled", true).addClass("disabled");
-                        $("#delete_message").attr("disabled", true).addClass("disabled");
+                        $("#archive_message").attr("disabled", true).addClass("disabled");
                         $("#message_view_pane").text("No Message selected");
                         messageList
                             .row($("#message_list_"+messageID))
@@ -245,12 +247,16 @@ $(document).ready(function() {
         showMessage(messageID);
     });
 
+    // Mark Active Tab
+    var pathname = window.location.href;
+    $('#message_nav > li > a[href="'+pathname + '"]').parent().addClass('active')
+
     $("#send_message").click(sendMessage);
     $("#cancel_message").click(cancelMessage);
     $("#cancel_message_close").click(cancelMessage);
     $("#reply_message").click(replyMessage);
     $("#forward_message").click(forwardMessage);
-    $("#delete_message").click(deleteMessage);
+    $("#archive_message").click(archiveMessage);
     recipient_select_replace();
 
 });

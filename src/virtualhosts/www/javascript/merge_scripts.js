@@ -13,6 +13,16 @@ jQuery.fn.exists = function(){return this.length>0;}
 
 var pieceCache = new Array();
 
+var userMovedPiece = false;
+
+function minimumConstellationChosen() {
+    var set = false;
+    $(".merge-panel div[id^='nameEntry_panel_']").each(function() {
+        set = true;
+    });
+    return set;
+}
+
 // Scripts to run when the page finishes loading...
 $(document).ready(function() {
     console.log(pieceCache);
@@ -74,10 +84,10 @@ $(document).ready(function() {
         return false;
     });
 
-    $("#hrt_preview_button").click(function() {
+    $("#simplified_preview_button").click(function() {
         bootbox.confirm({
-            title: "HRT Preview Notice",
-            message: "The HRT does not evidence all portions of the Identity Constellation.  Some data, such as places, sources, SCMs, and more, are not currently visible on the HRT.  This preview should only be used for aesthetic purposes.  Use the main \"Preview\" button to see the full potential-merged Constellation.",
+            title: "Simplified View Preview Notice",
+            message: "The Simplified View does not evidence all portions of the Identity Constellation.  Some data, such as places, sources, SCMs, and more, are not currently visible on the HRT.  This preview should only be used for aesthetic purposes.  Use the main \"Preview\" button to see the full potential-merged Constellation.",
             buttons: {
                 cancel: {
                     label: '<i class="fa fa-times"></i> Cancel'
@@ -109,40 +119,52 @@ $(document).ready(function() {
 
 
     $("#merge_button").click(function() {
-        bootbox.confirm({
-            title: "Merge Constellation",
-            message: "A new \"merged\" Constellation will be created from the elements in the \"Merge Area\" sections.  Any elements not moved to those sections will not be considered as part of the \"merged\" Constellation and will be tombstoned with the original Constellations.  This operation can not be undone.  Are you sure you want to continue?",
-            buttons: {
-                cancel: {
-                    label: '<i class="fa fa-times"></i> Cancel'
+        if (!userMovedPiece) {
+            bootbox.alert({
+                title: "Error",
+                message: "You must create a merged Constellation in the \"Merge Area\" sections before merging."
+            });
+        } else if (!minimumConstellationChosen()) {
+            bootbox.alert({
+                title: "Error",
+                message: "Merged Constellations in the \"Merge Area\" sections must have at least one Name Entry."
+            });
+        } else {
+            bootbox.confirm({
+                title: "Merge Constellation",
+                message: "A new \"merged\" Constellation will be created from the elements in the \"Merge Area\" sections.  Any elements not moved to those sections will not be considered as part of the \"merged\" Constellation and will be tombstoned with the original Constellations.  This operation can not be undone.  Are you sure you want to continue?",
+                buttons: {
+                    cancel: {
+                        label: '<i class="fa fa-times"></i> Cancel'
+                    },
+                    confirm: {
+                        label: '<i class="fa fa-check"></i> Confirm'
+                    }
                 },
-                confirm: {
-                    label: '<i class="fa fa-check"></i> Confirm'
-                }
-            },
-            callback: function (result) {
-                if (result) {
-                    $("#please_wait_modal").modal("show");
+                callback: function (result) {
+                    if (result) {
+                        $("#please_wait_modal").modal("show");
 
-                    var form = $("#merged_identity");
-                    // empty out the form
-                    form.html("");
+                        var form = $("#merged_identity");
+                        // empty out the form
+                        form.html("");
 
-                    // for each "both" pane, copy it into the form and then submit the form!
-                    $(".content-both").each(function() {
-                        var copy = $(this).html();
+                        // for each "both" pane, copy it into the form and then submit the form!
+                        $(".content-both").each(function() {
+                            var copy = $(this).html();
+                            form.append(copy);
+                        });
+
+                        // Put the other constellation data into the form
+                        var copy = $("#constellation_data").html();
                         form.append(copy);
-                    });
 
-                    // Put the other constellation data into the form
-                    var copy = $("#constellation_data").html();
-                    form.append(copy);
-
-                    form.attr('action', snacUrl+'/merge').attr('method', 'post').attr('target', '_self');
-                    form.submit();
+                        form.attr('action', snacUrl+'/merge').attr('method', 'post').attr('target', '_self');
+                        form.submit();
+                    }
                 }
-            }
-        });
+            });
+        }
 
         return false;
     });
@@ -230,7 +252,7 @@ $(document).ready(function() {
             thisPreview.html($("#data_" + i).html());
             obj.closest(".diff-content-panel").find(".move-button-div").removeClass("move-button-div-disabled");
             obj.closest(".diff-content-panel").find(".move-button").on("click", function() {
-
+                userMovedPiece = true;
 
                 $(this).closest(".diff-content-panel").find(".data-component").each(function() {
                     $(this).removeClass("data-component-selected").removeClass("disabled");
@@ -254,6 +276,7 @@ $(document).ready(function() {
             });
 
             obj.closest(".diff-content-panel").find(".split-button").on("click", function() {
+                userMovedPiece = true;
                 var innerObj = $(this);
                 var move = null;
                 if (innerObj.hasClass("split-button-left"))
@@ -289,6 +312,7 @@ $(document).ready(function() {
     $(".move-all-button").each(function() {
         var button = $(this);
         button.on("click", function() {
+            userMovedPiece = true;
             var button = $(this);
             button.closest(".diff-content-panel").find(".data-component").each(function() {
                 var both = $(this).closest(".tab-pane").find(".merge-panel").find(".data-components");

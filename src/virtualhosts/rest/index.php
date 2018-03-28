@@ -10,6 +10,11 @@
  *            the Regents of the University of California
  */
 
+// Quick exit if options
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+     die();
+}
+
 /**
  * Load and instantiate the rest api
  */
@@ -32,13 +37,13 @@ try {
     $input = file_get_contents("php://input");
     
     if ($input == null) {
-        throw new \snac\exceptions\SNACInputException("No input given to the server");
+        throw new \snac\exceptions\SNACInputException("No input given to the server", 400);
     }
     
     // Parse the JSON input
     $jsonInput = json_decode($input, true);
     if ($jsonInput == null) {
-        throw new \snac\exceptions\SNACInputException("Could not parse input");
+        throw new \snac\exceptions\SNACInputException("Could not parse input", 400);
     }
     
     // Instantiate and run the server
@@ -48,9 +53,13 @@ try {
     // Return the content type and output of the server
     foreach ($server->getResponseHeaders() as $header)
         header($header);
+    if ($server->getResponseCode() != 200)
+        http_response_code($server->getResponseCode());
     echo $server->getResponse();
 } catch (Exception $e) {
     header("Content-Type: application/json");
+    if ($e->getCode() > 0)
+        http_response_code($e->getCode());
     die($e);
 }
 

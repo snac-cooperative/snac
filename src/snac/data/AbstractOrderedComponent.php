@@ -24,7 +24,7 @@ abstract class AbstractOrderedComponent extends AbstractData {
 
     /**
      * @var string $dataType The data type of this object.
-     * 
+     *
      * This should be overwritten by any inheriting/child class
      */
     protected $dataType;
@@ -50,7 +50,7 @@ abstract class AbstractOrderedComponent extends AbstractData {
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
-     * 
+     *
      */
     public function __construct($data = null) {
         parent::__construct($data);
@@ -67,7 +67,7 @@ abstract class AbstractOrderedComponent extends AbstractData {
     {
         return $this->dataType;
     }
-    
+
     /**
      * Set the data type for this object
      *
@@ -91,7 +91,7 @@ abstract class AbstractOrderedComponent extends AbstractData {
     /**
      * Get Component Type
      *
-     * Get type of this component, i.e. what it part it is 
+     * Get type of this component, i.e. what it part it is
      *
      * @return \snac\data\Term The part this component describes
      */
@@ -124,9 +124,9 @@ abstract class AbstractOrderedComponent extends AbstractData {
     /**
      * Set Component Type
      *
-     * Set the type of component 
+     * Set the type of component
      *
-     * @param \snac\data\Term $type The type of component 
+     * @param \snac\data\Term $type The type of component
      */
     public function setType($type) {
         $this->type = $type;
@@ -144,8 +144,8 @@ abstract class AbstractOrderedComponent extends AbstractData {
     }
 
     /**
-     * Returns this object's data as an associative array. 
-     * 
+     * Returns this object's data as an associative array.
+     *
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
@@ -156,7 +156,7 @@ abstract class AbstractOrderedComponent extends AbstractData {
             "order" => $this->order,
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
         );
-        
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -180,9 +180,9 @@ abstract class AbstractOrderedComponent extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != $this->dataType)
             return false;
-       
+
         parent::fromArray($data);
-            
+
         if (isset($data["text"]))
             $this->text = $data["text"];
         else
@@ -192,9 +192,9 @@ abstract class AbstractOrderedComponent extends AbstractData {
             $this->order = $data["order"];
         else
             $this->order = null;
-        
-                
-        if (isset($data["type"]) && $data["type"] != null) 
+
+
+        if (isset($data["type"]) && $data["type"] != null)
             $this->type = new Term($data["type"]);
         else
             $this->type = null;
@@ -209,30 +209,30 @@ abstract class AbstractOrderedComponent extends AbstractData {
      *
      * @param \snac\data\AbstractOrderedComponent $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
-    public function equals($other, $strict = true) {
+    public function equals($other, $strict = true, $checkSubcomponents = true) {
 
         if ($other == null || !($other instanceof \snac\data\AbstractOrderedComponent))
             return false;
-        
+
         if ($other->getDataType() != $this->getDataType())
             return false;
-        
-        if (! parent::equals($other, $strict))
+
+        if (! parent::equals($other, $strict, $checkSubcomponents))
             return false;
-        
+
         if ($this->getText() != $other->getText())
             return false;
         if ($this->getOrder() != $other->getOrder())
             return false;
-        
-        if (($this->getType() != null && ! $this->getType()->equals($other->getType(), $strict)) ||
+
+        if (($this->getType() != null && ! $this->getType()->equals($other->getType(), $strict, $checkSubcomponents)) ||
                  ($this->getType() == null && $other->getType() != null))
             return false;
         return true;
     }
 }
-

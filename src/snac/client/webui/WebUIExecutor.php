@@ -1159,6 +1159,14 @@ class WebUIExecutor {
         return true;
     }
     
+    /**
+     * Display Upload Page
+     *
+     * Displays a page that will eventually house a file upload to parse and ingest.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
     public function displayUploadPage(&$input, &$display) {
         $display->setTemplate("upload");
         return true;
@@ -1364,7 +1372,47 @@ class WebUIExecutor {
         if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
             return $this->drawErrorPage($serverResponse, $display);
 
-        $display->setData($serverResponse);
+        $data = $serverResponse + ["viewSetting" => "inbox"];
+        $display->setData($data);
+        $display->setTemplate("message_list");
+    }
+
+    /**
+     * Display Archived Messages
+     *
+     * Asks the server for user's archived messages, then loads the display with the message
+     * center (message list) template and sets the message center viewSetting
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayArchivedMessages(&$display) {
+        $ask = array("command" => "archived_messages");
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] !== "success")
+            return $this->drawErrorPage($serverResponse, $display);
+        
+        $data = $serverResponse + ["viewSetting" => "archived"];
+        $display->setData($data);
+        $display->setTemplate("message_list");
+    }
+
+
+    /**
+     * Display Sent Messages
+     *
+     * Asks the server for user's sent messages, then loads the display with the message
+     * center (message list) template and sets the message center viewSetting
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySentMessages(&$display) { 
+        $ask = array("command" => "sent_messages");
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] !== "success")
+            return $this->drawErrorPage($serverResponse, $display);
+
+        $data = $serverResponse + ["viewSetting" => "sent"];
+        $display->setData($data);
         $display->setTemplate("message_list");
     }
 
@@ -1386,16 +1434,16 @@ class WebUIExecutor {
     }
 
     /**
-     * Delete Message
+     * Archive Message
      *
-     * Asks the server to delete the message given as input by ID.  The user must have
-     * permission to delete the message or the server will return an error.
+     * Asks the server to archive the message given as input by ID.  The user must have
+     * permission to archive the message or the server will return an error.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @return string The response to the client
      */
-    public function deleteMessage(&$input) {
-        $ask = array("command"=>"delete_message",
+    public function archiveMessage(&$input) {
+        $ask = array("command"=>"archive_message",
                     "messageid"=>$input["messageid"]);
         $serverResponse = $this->connect->query($ask);
 
@@ -1502,7 +1550,7 @@ class WebUIExecutor {
                 $serverResponse = $this->connect->query($ask);
 
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
-                    array_push($errors, trim($toUserName));
+                    array_push($errors, trim($toUserID));
                 }
             }
 
@@ -1884,10 +1932,28 @@ class WebUIExecutor {
         $commands = json_decode(file_get_contents(\snac\Config::$REST_COMMAND_FILE), true);
         $display->setTemplate("api_help_page");
         $display->setData([
+            "restURL" => \snac\Config::$REST_URL,
             "commands" => $commands
         ]);
     }
 
+    /**
+     * Display API Test Page
+     *
+     * Fills the display with the API test interface to allow the user to test out the API
+     * calls in-browser.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayAPITestPage(&$display) {
+        $commands = json_decode(file_get_contents(\snac\Config::$REST_COMMAND_FILE), true);
+        $display->setTemplate("api_test_page");
+        $display->setData([
+            "restURL" => \snac\Config::$REST_URL,
+            "commands" => $commands
+        ]);
+    }
+    
     /**
      * Display Contact Us Page
      *

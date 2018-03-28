@@ -11,7 +11,8 @@ before_script:
 
 
 stages:
-  - database
+  - database_create
+  - database_refresh
   - test
   - documentation
   - deploy
@@ -19,10 +20,19 @@ stages:
 update_database:
   script:
     - cd install && php install.php automate
-  stage: database
+  stage: database_create
+  only:
+    - never_run_this
+
+refresh_database:
+  script:
+    - cd scripts && php refresh.php automate /home/gitlab-runner/testing.sql
+  stage: database_refresh
   only:
     - development
     - master
+    - test_backup
+
 
 run_test:
   script:
@@ -34,7 +44,7 @@ run_test:
 run_test_coverage:
   script:
     - vendor/bin/phpunit -v --coverage-html coverage/ --coverage-text 
-    - rsync -av coverage /lv2/snac/docs/
+    - rsync -avO coverage /lv2/snac/docs/
   stage: test
   only:
     - development
@@ -55,3 +65,16 @@ deployment:
   only:
     - master
 
+dev_deployment:
+  script:
+    - ssh snac-dev "cd /lv2/snac && composer update && git fetch origin && git merge"
+  stage: deploy
+  only:
+    - development
+
+alpha_deployment:
+  script:
+    - ssh snac-dev "cd /lv2/snac_alpha && composer update && git fetch origin && git merge"
+  stage: deploy
+  only:
+    - alpha

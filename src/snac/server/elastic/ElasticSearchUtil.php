@@ -838,4 +838,40 @@ class ElasticSearchUtil {
         );
     }
 
+    /**
+     * Elastic Search Passthrough 
+     *
+     * Pass a search query directly to Elastic Search
+     *
+     * @param string|string[] $query An elastic search query either in JSON or array form
+     * @return string[] raw elastic search results
+     */
+    public function passthrough($query) {
+        if (empty($query))
+            return [];
+
+        $params = [
+            'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+            'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+            'body' => $query 
+        ];
+        $this->logger->addDebug("Defined parameters for search", $params);
+        $results = $this->connector->search($params);
+        $this->logger->addDebug("Completed Elastic Search", $results);
+
+        if (isset($results["_shards"]))
+            unset($results["_shards"]);
+
+
+        if (isset($results["hits"]) && is_array($results["hits"]) && isset($results["hits"]["hits"]) && is_array($results["hits"]["hits"])) {
+            foreach ($results["hits"]["hits"] as &$hit) {
+                if (isset($hit["_index"]))
+                    unset($hit["_index"]);
+                if (isset($hit["_type"]))
+                    unset($hit["_type"]);
+            }
+        }
+
+        return $results;
+    }
 }

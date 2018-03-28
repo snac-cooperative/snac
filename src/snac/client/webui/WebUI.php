@@ -120,6 +120,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "history_diff",
                 "static",
                 "api_help",
+                "api_test",
                 "contact",
                 "stats",
                 "feedback"
@@ -450,6 +451,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "api_help":
                 $executor->displayAPIHelpPage($display, $user);
                 break;
+            case "api_test":
+                $executor->displayAPITestPage($display, $user);
+                break;
             case "messages":
                 $executor->displayMessageListPage($display);
                 break;
@@ -459,8 +463,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "message_send":
                 $response = $executor->sendMessage($this->input);
                 break;
-            case "message_delete":
-                $response = $executor->deleteMessage($this->input);
+            case "message_archive":
+                $response = $executor->archiveMessage($this->input);
+                break;
+            case "archived_messages":
+                $response = $executor->displayArchivedMessages($display);
+                break;
+            case "sent_messages":
+                $response = $executor->displaySentMessages($display);
                 break;
             case "feedback":
                 $response = $executor->sendFeedbackMessage($this->input);
