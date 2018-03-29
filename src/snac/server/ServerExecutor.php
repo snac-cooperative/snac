@@ -943,7 +943,7 @@ class ServerExecutor {
         }
 
 
-        if (isset(\snac\Config::$FEEDBACK_OSTICKET_ONLY) {
+        if (isset(\snac\Config::$FEEDBACK_OSTICKET_ONLY) && \snac\Config::$FEEDBACK_OSTICKET_ONLY) {
             // Only send to OS Ticket
             $osticket = new \snac\server\support\OSTicket();
             $osticket->submitMessageAsTicket($message);
