@@ -942,7 +942,14 @@ class ServerExecutor {
             throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent from a user if they are not logged in.", 403);
         }
 
-        if (isset(\snac\Config::$FEEDBACK_RECIPIENTS) && is_array(\snac\Config::$FEEDBACK_RECIPIENTS)) {
+
+        if (isset(\snac\Config::$FEEDBACK_OSTICKET_ONLY) {
+            // Only send to OS Ticket
+            $osticket = new \snac\server\support\OSTicket();
+            $osticket->submitMessageAsTicket($message);
+            $response["result"] = "success";
+
+        } else if (isset(\snac\Config::$FEEDBACK_RECIPIENTS) && is_array(\snac\Config::$FEEDBACK_RECIPIENTS)) {
             foreach (\snac\Config::$FEEDBACK_RECIPIENTS as $recipient) {
                 $tmpUser = new \snac\data\User();
                 $tmpUser->setUserName($recipient);
@@ -962,10 +969,8 @@ class ServerExecutor {
                 }
 
                 // Send the message via email
-                //$this->mailer->sendUserMessage($message);
+                $this->mailer->sendUserMessage($message);
 
-                $osticket = new \snac\server\support\OSTicket();
-                $osticket->submitMessageAsTicket($message);
             }
             $response["result"] = "success";
         }
