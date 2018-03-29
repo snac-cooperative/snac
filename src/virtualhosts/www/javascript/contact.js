@@ -9,7 +9,7 @@
 
 function sendContactForm() {
     var feedbackBody = {
-        "subject" : "SNAC Web Contact",
+        "subject" : $("#subject").val() ? $("#subject").val() : "Contact Form Submission",
         "name" : $("#name").val(),
         "email" : $("#email").val(),
         "body" : "<p>" + tinymce.get("message").getContent() + "</p>" +

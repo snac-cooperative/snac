@@ -35,7 +35,14 @@ var feedbackPaneHTML = "<div class=\"modal fade\" id=\"feedback_pane\" tabindex=
 	+ "                <form id=\"feedback_form\">"
 	+ "                    <div class=\"form-horizontal\">"
 	+ "                        <div class=\"form-group\">"
-	+ "                            <div class=\"col-xs-12\">"
+	+ "                            <label class=\"control-label col-xs-3\">Subject</label>"
+	+ "                            <div class=\"col-xs-9\">"
+	+ "                                <input type=\"text\" placeholder=\"Subject (required)\" class=\"form-control\" id=\"feedback_subject\"></p>"
+	+ "                            </div>"
+	+ "                        </div>"
+	+ "                        <div class=\"form-group\">"
+	+ "                            <label class=\"control-label col-xs-3\">Message</label>"
+	+ "                            <div class=\"col-xs-9\">"
 	+ "                                <textarea id=\"feedback_body\" class=\"form-control\" placeholder=\"Compose your feedback here... (required)\"></textarea>"
 	+ "                            </div>"
 	+ "                        </div>"
@@ -134,14 +141,13 @@ function sendFeedback() {
 
 
     var feedbackBody = {
-        "subject" : "SNAC Feedback",
+        "subject" : $("#feedback_subject").val() ? $("#feedback_subject").val() : "Feedback Form Submission",
         "name" : $("#feedback_name").val(),
         "email" : $("#feedback_email").val(),
         "body" : "<p>" + $("#feedback_body").val() + "</p>" +
                     "<p><strong>Page:</strong> " + $(document).find("title").text() + "<br>" +
                     "<strong>URL:</strong> " + $("#feedback_page_url").val() + "<br>" +
-                    "<strong>Referer</strong>:" + $("#feedback_page_referrer").val() + "</p>" +
-                    "<p><strong>Contact Information:</strong> " + $("#feedback_name").val() + " (" + $("#feedback_email").val() + ")</p>",
+                    "<strong>Referer</strong>:" + $("#feedback_page_referrer").val() + "</p>",
         "screenshot" : $("#feedback_screenshot").val(),
         "token" : $("#g-recaptcha-response").val()
     };

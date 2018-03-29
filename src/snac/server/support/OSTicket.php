@@ -54,10 +54,13 @@ class OSTicket {
 
         $this->logger->addDebug('Trying to submit message', $message->toArray());
         if ($message->getFromString() !== null) {
-            $payload["email"] = $message->getFromString();
-            $payload["name"] = $message->getFromString();
+            list($name, $email, $junk) = explode("|", $message->getFromString());
+            if ($email == null)
+                $email = "unknown";
+            $payload["email"] = $email;
+            $payload["name"] = $name;
         } else {
-            $payload["email"] = $message->getFromUser()->getFullName();
+            $payload["email"] = $message->getFromUser()->getEmail();
             $payload["name"] = $message->getFromUser()->getFullName();
         }
         $payload["subject"] = $message->getSubject();

@@ -1490,9 +1490,9 @@ class WebUIExecutor {
                 } else {
                     // set this message from the IP address:
                     if (isset($input["email"]) && isset($input["name"])) {
-                        $message->setFromString($input["email"]);
+                        $message->setFromString($input["name"] . "|" . $input["email"]);
                     } else {
-                        $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+                        $message->setFromString("Unknown User|anonymous_user@".$_SERVER['REMOTE_ADDR']);
                     }
                 }
 
