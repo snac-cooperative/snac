@@ -26,17 +26,17 @@ namespace snac\data;
 class Assertion extends AbstractData {
 
     /**
-     * @var \snac\data\User The User who made the assertion 
+     * @var \snac\data\User The User who made the assertion
      */
     private $user;
 
     /**
-     * @var string The Assertion type 
+     * @var string The Assertion type
      */
     private $type;
 
     /**
-     * @var string The Assertion string 
+     * @var string The Assertion string
      */
     private $text;
 
@@ -197,7 +197,7 @@ class Assertion extends AbstractData {
      * @return boolean true on success, false on failure
      */
     public function fromArray($data) {
-        
+
         parent::fromArray($data);
 
         foreach ($this->constellations as $i => $v)
@@ -234,7 +234,7 @@ class Assertion extends AbstractData {
 
         return true;
     }
-    
+
     /**
      * Serialization Method
      *
@@ -262,4 +262,3 @@ class Assertion extends AbstractData {
     }
 
 }
-

@@ -1,6 +1,6 @@
 <?php
 /**
- * Resource Validator Test Class File 
+ * Resource Validator Test Class File
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
@@ -14,19 +14,19 @@ use \snac\server\validation\validators\ResourceValidator;
 
 
 /**
- * ResourceValidator Test Suite 
- * 
+ * ResourceValidator Test Suite
+ *
  * @author Robbie Hott
  *
  */
 class ResourceValidatorTest extends \PHPUnit\Framework\TestCase {
-    
+
     /**
-     * 
+     *
      * @var \snac\server\validation\ValidationEngine The validation engine
      */
     private $ve;
-    
+
     /**
      * {@inheritDoc}
      * @see PHPUnit_Framework_TestCase::setUp()
@@ -35,23 +35,23 @@ class ResourceValidatorTest extends \PHPUnit\Framework\TestCase {
         $this->ve = new ValidationEngine();
         $validator = new ResourceValidator();
         $this->ve->addValidator($validator);
-        
+
     }
 
     /**
      * Test validating an empty constellation
      */
     public function testValidateEmptyConstellation() {
-        $this->assertTrue($this->ve->validateConstellation(new \snac\data\Constellation()), 
+        $this->assertTrue($this->ve->validateConstellation(new \snac\data\Constellation()),
                 "Could not validate an empty constellation");
     }
-    
+
     /**
      * Test validating a constellation with nothing in it, but an operation
      */
     public function testValidateConstellationNoComponentsNoID() {
         $constellation = new \snac\data\Constellation();
-        $this->assertTrue($this->ve->validateConstellation($constellation), 
+        $this->assertTrue($this->ve->validateConstellation($constellation),
                 "Could not validate an empty constellation with no IDs");
     }
 
@@ -64,7 +64,7 @@ class ResourceValidatorTest extends \PHPUnit\Framework\TestCase {
         $resourceRelation = new \snac\data\ResourceRelation();
         $constellation->addResourceRelation($resourceRelation);
         try {
-            $this->assertFalse($this->ve->validateConstellation($constellation), 
+            $this->assertFalse($this->ve->validateConstellation($constellation),
             "Constellation with null resource validated when it shouldn't have");
         } catch (\Exception $e) {
             // catching an exception is good
@@ -82,7 +82,7 @@ class ResourceValidatorTest extends \PHPUnit\Framework\TestCase {
         $resourceRelation->setResource($resource);
         $constellation->addResourceRelation($resourceRelation);
         try {
-            $this->assertFalse($this->ve->validateConstellation($constellation), 
+            $this->assertFalse($this->ve->validateConstellation($constellation),
                 "Constellation with empty resource validated when it shouldn't have");
         } catch (\Exception $e) {
             // catching an exception is good
@@ -101,8 +101,7 @@ class ResourceValidatorTest extends \PHPUnit\Framework\TestCase {
         $resourceRelation = new \snac\data\ResourceRelation();
         $resourceRelation->setResource($resource);
         $constellation->addResourceRelation($resourceRelation);
-        $this->assertTrue($this->ve->validateConstellation($constellation), 
+        $this->assertTrue($this->ve->validateConstellation($constellation),
                 "Couldn't validate constellation with resource containing id and version");
     }
 }
-

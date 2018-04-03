@@ -358,7 +358,7 @@ class WebUIExecutor {
         if (isset($input["q"])) {
             $input["term"] = $input["q"];
         }
-        
+
         if (!isset($input["biog_hist"]))
             $input["biog_hist"] = null;
 
@@ -411,7 +411,7 @@ class WebUIExecutor {
         if (isset($input["q"])) {
             $input["term"] = $input["q"];
         }
-        
+
         if (!isset($input["biog_hist"]))
             $input["biog_hist"] = null;
 
@@ -435,7 +435,7 @@ class WebUIExecutor {
             $results["facets"] = $input["facets"];
             $results["aggregations"] = $results["aggregations"];
             $results["biog_hist"] = $input["biog_hist"];
-        } 
+        }
 
         return $results;
     }
@@ -1140,7 +1140,7 @@ class WebUIExecutor {
         }
         return true;
     }
-    
+
     /**
      * Display Status Page
      *
@@ -1158,7 +1158,7 @@ class WebUIExecutor {
         $display->setTemplate("stats");
         return true;
     }
-    
+
     /**
      * Display Upload Page
      *
@@ -1171,7 +1171,7 @@ class WebUIExecutor {
         $display->setTemplate("upload");
         return true;
     }
-    
+
     /**
      * Display Preview Page
      *
@@ -1390,7 +1390,7 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($ask);
         if (!isset($serverResponse["result"]) || $serverResponse["result"] !== "success")
             return $this->drawErrorPage($serverResponse, $display);
-        
+
         $data = $serverResponse + ["viewSetting" => "archived"];
         $display->setData($data);
         $display->setTemplate("message_list");
@@ -1405,7 +1405,7 @@ class WebUIExecutor {
      *
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displaySentMessages(&$display) { 
+    public function displaySentMessages(&$display) {
         $ask = array("command" => "sent_messages");
         $serverResponse = $this->connect->query($ask);
         if (!isset($serverResponse["result"]) || $serverResponse["result"] !== "success")
@@ -1800,23 +1800,65 @@ class WebUIExecutor {
                 }
                 break;
             case "add_term":
-                $display->setData(array(
-                    "title"=> "Add New Vocabulary Term"
-                ));
-                $display->setTemplate("vocab_edit_term");
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $display->setData(array(
+                        "title"=> "Add New Vocabulary Term"
+                    ));
+                    $display->setTemplate("vocab_edit_term");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
                 break;
             case "add_term_post":
-                return $this->saveVocabularyTerm($input, $user);
+                if (isset($this->permissions["EditVocabulary"])) {
+                    return $this->saveVocabularyTerm($input, $user);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
                 break;
             case "add_geoterm":
-                $display->setData(array(
-                    "title"=> "Add New Geopgraphic Vocabulary Term"
-                ));
-                $display->setTemplate("vocab_edit_geoterm");
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $display->setData(array(
+                        "title"=> "Add New Geographic Vocabulary Term"
+                    ));
+                    $display->setTemplate("vocab_edit_geoterm");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+
                 break;
             case "add_geoterm_post":
-                // maybe reuse the same save function?
-                return $this->saveVocabularyTerm($input, $user);
+                if (isset($this->permissions["EditVocabulary"])) {
+                    // maybe reuse the same save function?
+                    return $this->saveVocabularyTerm($input, $user);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "add_resource":
+                if (isset($this->permissions["EditResources"])) {
+                    $display->setData(array("title"=> "Add a Resource"));
+                    $display->setTemplate("resources/new");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "resources":
+                $display->setData(array("title"=> "Search for a Resource"));
+                $display->setTemplate("resources/search");
+                break;
+            case "edit_resource":
+                if (isset($this->permissions["EditResources"])) {
+                    // id passed is actually resourceID,
+                    $resourceID = $input["constellationid"];
+                    $resource = $this->connect->lookupResource($resourceID);
+
+                    $display->setData(array("title"=> "Edit a Resource",
+                                            "resource" => $resource));
+                    $display->setTemplate("resources/edit");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
                 break;
             case "dashboard":
                 if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
@@ -1949,7 +1991,7 @@ class WebUIExecutor {
             "commands" => $commands
         ]);
     }
-    
+
     /**
      * Display Contact Us Page
      *
@@ -2208,8 +2250,8 @@ class WebUIExecutor {
     /**
      * Save Resource
      *
-     * Maps the resoource given on input to a Resource object, passes that to the server with an
-     * update_resource call.
+     * Maps the resource given on input to a Resource object, passes that to the server with an
+     * update_resource or insert_resource call.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @return string[] The web ui's response to the client (array ready for json_encode)
@@ -2223,7 +2265,8 @@ class WebUIExecutor {
         $this->logger->addDebug("writing resource", $resource->toArray());
 
         // Build a data structure to send to the server
-        $request = array("command"=>"update_resource");
+        $command = $resource->getOperation() === "insert" ? "insert_resource" : "update_resource";
+        $request = array("command" => $command);
 
         // Send the query to the server
         $request["resource"] = $resource->toArray();
@@ -3050,11 +3093,18 @@ class WebUIExecutor {
         }
 
         // Query the server for the elastic search results
-        $serverResponse = $this->connect->query(array(
-            "command" => "resource_search",
-            "term" => $input["term"]
-        ));
+        $request = array();
+        $request["command"] = "resource_search";
+        $request["term"] = $input["term"];
 
+        if (isset($input["type"]))
+            $request["type"] = $input["type"];
+        if (isset($input["count"]))
+            $request["count"] = $input["count"];
+        if (isset($input["filters"]))
+            $request["filters"] = $input["filters"];
+
+        $serverResponse = $this->connect->query($request);
         return $serverResponse;
 
     }

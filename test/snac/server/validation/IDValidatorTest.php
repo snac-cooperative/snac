@@ -1,6 +1,6 @@
 <?php
 /**
- * ID Validator Test Class File 
+ * ID Validator Test Class File
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
@@ -14,19 +14,19 @@ use snac\server\validation\validators\IDValidator;
 
 
 /**
- * IDValidator Test Suite 
- * 
+ * IDValidator Test Suite
+ *
  * @author Robbie Hott
  *
  */
 class IDValidatorTest extends \PHPUnit\Framework\TestCase {
-    
+
     /**
-     * 
+     *
      * @var \snac\server\validation\ValidationEngine The validation engine
      */
     private $ve;
-    
+
     /**
      * {@inheritDoc}
      * @see PHPUnit_Framework_TestCase::setUp()
@@ -35,25 +35,25 @@ class IDValidatorTest extends \PHPUnit\Framework\TestCase {
         $this->ve = new ValidationEngine();
         $idValidator = new IDValidator();
         $this->ve->addValidator($idValidator);
-        
+
     }
 
     /**
      * Test validating an empty constellation
      */
     public function testValidateEmptyConstellation() {
-        $this->assertTrue($this->ve->validateConstellation(new \snac\data\Constellation()), 
+        $this->assertTrue($this->ve->validateConstellation(new \snac\data\Constellation()),
                 "Could not validate an empty constellation");
     }
-    
+
     /**
      * Test validating a constellation with nothing in it, but an operation
      */
     public function testValidateConstellationNoComponentsNoID() {
         $constellation = new \snac\data\Constellation();
-        $this->assertTrue($this->ve->validateConstellation($constellation), 
+        $this->assertTrue($this->ve->validateConstellation($constellation),
                 "Could not validate an empty constellation with no IDs");
-        
+
     }
-    
+
 }

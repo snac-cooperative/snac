@@ -20,7 +20,7 @@ namespace snac\exceptions;
  * Exception for handling errors with validating Identity Constellations
  *
  * @author Robbie Hott
- *        
+ *
  */
 class SNACValidationException extends SNACException {
 

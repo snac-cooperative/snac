@@ -115,7 +115,7 @@ class DBUserTest extends \PHPUnit\Framework\TestCase
     {
         /*
          * In retrospect, leaving old users in the db after testing was a bad idea. If you need to do
-         * diagnostics on the db, comment out some user cleaning code elsewhere. 
+         * diagnostics on the db, comment out some user cleaning code elsewhere.
          *
          * Start by deleting the test account, if it exists. It should only be hanging around if an assertion
          * failed, causing the script to exit.
@@ -417,13 +417,13 @@ class DBUserTest extends \PHPUnit\Framework\TestCase
 
         /*
          * Using toJSON() did not reveal the bug. Must use toArray() and the constructor.
-         */ 
+         */
         $dArray = $demoRole->toArray();
         $checkRole = new \snac\data\Role($dArray);
         $this->assertEquals($checkRole->getID(), $demoRole->getID());
         $this->assertEquals($checkRole->getLabel(), $demoRole->getLabel());
         $this->assertEquals($checkRole->getDescription(), $demoRole->getDescription());
-        
+
         $this->dbu->addRoleToUser($newUser, $demoRole);
 
         $newUser->setRoleList(array()); // zero the role list
@@ -574,14 +574,14 @@ class DBUserTest extends \PHPUnit\Framework\TestCase
         /*
          * Check that listUsers for everyone includes the disabled (inactive) user. And that disableUser makes
          * the user inactive.
-         */ 
+         */
         $firstUserList = $this->dbu->listUsers();
         $this->dbu->disableUser($cleanUpUser);
         $secondUserList = $this->dbu->listUsers();
         $thirdUserList = $this->dbu->listUsers(true);
         $this->assertEquals(count($firstUserList), count($thirdUserList));
         $this->assertEquals(count($firstUserList), count($secondUserList)+1);
-        
+
         /*
          * When things are normally successful, we might want to clean up.
          */

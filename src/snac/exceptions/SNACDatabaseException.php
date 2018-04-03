@@ -20,7 +20,7 @@ namespace snac\exceptions;
  * Exception for handling errors with SNAC back-end database connection.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class SNACDatabaseException extends SNACException {
 

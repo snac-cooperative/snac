@@ -28,7 +28,7 @@ function searchAndUpdate() {
     if ($("#searchbox").val() == "" || $("#searchbox").val().length < 2) {
         $("#search-results-box").html("");
     } else {
-        $.post(snacUrl+"/quicksearch", $("#search_form").serialize(), function (data) {
+        $.post(snacUrl+"/quicksearch", $("#search_form").find("input").serialize(), function (data) {
             //var previewWindow = window.open("", "Preview");
             //previewWindow.document.write(data);
 

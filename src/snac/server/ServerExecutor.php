@@ -258,7 +258,7 @@ class ServerExecutor {
             } else if ($this->user !== false && $this->user->getToken() != null) {
                 // Remove all old sessions for this user
                 $this->uStore->clearAllSessions($this->user);
-                
+
                 // Try to add the session (check google first)
                 if (isset($this->user->getToken()["authority"]) &&
                     $this->user->getToken()["authority"] == "snac") {
@@ -556,6 +556,13 @@ class ServerExecutor {
             return $this->readVocabulary($input);
         } else {
             switch ($input["type"]) {
+                case "holding":
+                    $response["results"] = array();
+                    $count = 100;
+                    if (isset($input["count"]))
+                        $count = $input["count"];
+                    $response["results"] = $this->neo4J->searchHoldingInstitutions($input["query_string"], $count);
+                    break;
                 default:
                     $response["results"] = array();
                     $count = 100;
@@ -646,8 +653,12 @@ class ServerExecutor {
      */
     public function searchResources(&$input) {
         $response = array();
+        $start = $input["start"] ?? null;
+        $count = $input["count"] ?? null;
+        $filters = $input["filters"] ?? null;
+
         if (isset($input["term"])) {
-            $response = $this->elasticSearch->searchResourceIndex($input["term"]);
+            $response = $this->elasticSearch->searchResourceIndex($input["term"], $start, $count, $filters);
             // If there are results from the search, then replace them with full
             // resources from the database (rather than from ES results)
             $this->logger->addDebug("Got the following ES result", $response);
@@ -954,7 +965,7 @@ class ServerExecutor {
                         throw new \snac\exceptions\SNACUserException("Recipient User does not exist.", 400);
                     }
                     $message->setToUser($toUser);
-                    
+
                     // Send the message through the system
                     $this->uStore->writeMessage($message);
                 } else {
@@ -1134,7 +1145,7 @@ class ServerExecutor {
                 }
             }
         }
-        
+
         return $response;
     }
 
@@ -1328,20 +1339,22 @@ class ServerExecutor {
         $response = array();
         if (isset($input["resource"])) {
             $resource = new \snac\data\Resource($input["resource"]);
-            
-            //check if resource is already in database, if so, return it 
-            $resourceCheck = $this->cStore->readResourceByData($resource);
-            if ($resourceCheck !== false) {
-                $response['resource'] = $resourceCheck->toArray();
-                $response["result"] = "success-notice";
-                $response["message"] = [
-                    "text" => "This resource already exists.",
-                ];
-                return $response;
+
+            if ($resource->getOperation() === \snac\data\AbstractData::$OPERATION_INSERT) {
+                //check if resource is already in database, if so, return it
+                $resourceCheck = $this->cStore->readResourceByData($resource);
+                if ($resourceCheck !== false) {
+                    $response['resource'] = $resourceCheck->toArray();
+                    $response["result"] = "success-notice";
+                    $response["message"] = [
+                        "text" => "This resource already exists.",
+                    ];
+                    return $response;
+                }
             }
 
             try {
-                $result = $this->cStore->writeResource($resource);
+                $result = $this->cStore->writeResource($this->user, $resource);
                 if (isset($result) && $result != false) {
                     $this->elasticSearch->writeToResourceIndices($resource);
                     $this->neo4J->updateResourceIndex($resource);
@@ -2112,6 +2125,10 @@ class ServerExecutor {
 
                 $constellation = $constellations[0];
 
+                if (\snac\Config::$USE_NEO4J) {
+                    $this->neo4J->checkHoldingInstitutionStatus($constellation);
+                }
+
                 $editable = false;
                 $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
                 if ($this->user != null) {
@@ -2878,7 +2895,8 @@ class ServerExecutor {
             }
             $this->elasticSearch->deleteFromNameIndices($c);
             $this->cStore->deleteFromNameIndex($c);
-            $this->neo4J->deleteConstellation($c);
+            // redirect from c to written and delete c from the index
+            $this->neo4J->redirectConstellation($c, $written);
         }
 
         // Remove maybe-same links between the originals, if they exist
@@ -3241,7 +3259,7 @@ class ServerExecutor {
 
             $results = $this->neo4J->listConstellationInEdges($constellation);
             foreach ($results as $result) {
-                array_push($return["in"], 
+                array_push($return["in"],
                     array(
                         "constellation" => $this->cStore->readPublishedConstellationByID(
                             $result["constellation"]->getID(),
@@ -3253,7 +3271,7 @@ class ServerExecutor {
 
             $results = $this->neo4J->listConstellationOutEdges($constellation);
             foreach ($results as $result) {
-                array_push($return["out"], 
+                array_push($return["out"],
                     array(
                         "constellation" => $this->cStore->readPublishedConstellationByID(
                             $result["constellation"]->getID(),
@@ -3445,6 +3463,16 @@ class ServerExecutor {
 
         $results = $this->cStore->browseNameIndex($term, $position, $entityType, $icid);
 
+        foreach ($results as &$result) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($result["ic_id"]);
+            if (\snac\Config::$USE_NEO4J) {
+                $this->neo4J->checkHoldingInstitutionStatus($constellation);
+            }
+            if ($constellation->hasFlag("holdingRepository"))
+                $result["entity_type"] = "holdingRepository";
+        }
+
         $response["results"] = $results;
         $response["result"] = "success";
 
@@ -3504,6 +3532,9 @@ class ServerExecutor {
             // Update the ES search results to include information from the constellation
             foreach ($response["results"] as $k => $result) {
                 $constellation = $this->cStore->readPublishedConstellationByID($result["id"], DBUtil::$READ_SHORT_SUMMARY);
+                if (\snac\Config::$USE_NEO4J) {
+                    $this->neo4J->checkHoldingInstitutionStatus($constellation);
+                }
                 array_push($searchResults, $constellation->toArray());
             }
             $response["results"] = $searchResults;
@@ -3522,7 +3553,7 @@ class ServerExecutor {
     }
 
     /**
-     * Search the Elastic Search Index 
+     * Search the Elastic Search Index
      *
      * Passes an ElasticSearch query directly to elastic search, but uses only the SEARCH
      * interface.  This should allow an outside user to query elastic search for results
@@ -3549,7 +3580,7 @@ class ServerExecutor {
         } else {
             $response["result"] = "failure";
         }
-        
+
         return $response;
     }
 

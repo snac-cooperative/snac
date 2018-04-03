@@ -1,0 +1,210 @@
+{% macro resourceForm(X, resource)%}
+    {% import _self as resources %}
+    <div class="form-horizontal">
+        <!-- HIDDEN VALUES-->
+        <input name="resources[0][operation]" type="hidden" value="{{ resource ? "update" : "insert" }}">
+        <!-- <input name="resources[0][documentType_vocabtype]" type="hidden" value="document_type"> -->
+        <input name="resources[0][id]" type="hidden" value="{{resource.id}}" />
+        <input name="resources[0][version]" type="hidden" value="{{resource.version}}">
+        <input name="resources[0][extent]" type="hidden" value="">
+
+        <div class="form-group required">
+            <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceDocumentType.display}} </label>
+            <div class="col-xs-8">
+                <select id="resource-type-select" name="resources[0][documentType][id]" class="form-control" style="width: 100%;"
+                    required>
+                    <option value="{{resource.documentType.id}}" selected>
+                        {{resource.documentType.term}}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group required">
+            <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
+            <div class="col-xs-8">
+                <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{resource.displayEntry}}"
+                    placeholder="Proper name. Title. Date." required>
+            </div>
+        </div>
+
+        <div class="form-group required">
+            <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceTitle.display}} </label>
+            <div class="col-xs-8">
+                <input id="resource-title" type="text" name="resources[0][title]" class="form-control" value="{{resource.title}}"
+                    pattern="^((?![hH][tT][tT][pP][sS]?:).)*$" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceDate.display}} </label>
+            <div class="col-xs-8">
+                <input type="text" name="resources[0][date]" class="form-control" value="{{resource.date}}" placeholder="YYYY or YYYY-YYYY">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceURI.display}} </label>
+            <div class="col-xs-8">
+                <input id="resource-url" type="url" name="resources[0][link]" class="form-control" value="{{resource.link}}"
+                    placeholder="http://full/URL/path"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceAbstract.display}} </label>
+            <div class="col-xs-8">
+                <textarea name="resources[0][abstract]" class="form-control" rows="3"> {{resource.abstract}}</textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceExtent.display}} </label>
+            <div class="col-xs-8">
+                <input type="text" name="resources[0][extent]" class="form-control" value="{{resource.extent}}">
+            </div>
+        </div>
+
+        <!--  LANGUAGES -->
+        <div class="form-group" id="resource-languages">
+            <label class="control-label col-xs-4" data-content="{{X.resourceLanguages.tooltip}}" data-toggle="popover"
+                data-placement="top">
+                {{X.resourceLanguages.display}} </label>
+            <div class="col-xs-8 well well-sm">
+
+                <!-- Existing Languages   -->
+                {% if resource %}
+                    {% set lang_count = 0 %}
+                    {% for lang in resource.languages %}
+                        {{ resources.displayResourceLanguage(X, lang_count, lang) }}
+                        {% set lang_count = lang_count + 1 %}
+                    {% endfor %}
+                {% endif %}
+
+                <div class="add-resource-language"></div>
+                <div class="form-group">
+                    <div class="col-xs-12 text-center">
+                        <button type="button" class="btn btn-success" id="new-resource-language-btn">
+                            <span class="glyphicon glyphicon-plus-sign"></span>
+                            Add Language
+                        </button>
+                        <button type="button" class="btn btn-primary" id="magic-resource-language-btn">
+                            <span class="fa fa-magic"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceRepository.display}} </label>
+            <div class="col-xs-8">
+
+                <select class="resource-repo" id="resource-repo" name="resources[0][repo]">
+                    <option  value="{{resource.repository.id}}" selected>
+                        {{resource.repository.nameEntries[0].original }}</option>
+                </select>
+                <p><a href="#0" onclick="$('#search_form').slideToggle()">Can't Find the Holding Repository?</a></p>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+
+{% macro expandedResourceRepositorySearch() %}
+    <div class="form-horizontal">
+        <div class="form-group" id="search_form" onsubmit="return false;" style="display:none;">
+            <label class="control-label col-xs-4"> Expanded Search </label>
+            <div class="well well-lg text-center col-xs-8">
+                <input type="hidden" id="count" name="count" value="10">
+                <input type="hidden" id="start" name="start" value="0">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for..." id="searchbox" name="term">
+                    <span class="input-group-btn">
+                         <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+                    </span>
+                </div>
+                <div id="search-results-box"></div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro displayResourceActions() %}
+    <div class="" id="resource-actions">
+        <!-- Right Column -->
+
+        <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+            <p>Saving Resource...</p>
+        </div>
+        <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+            <p>Successfully saved!</p>
+        </div>
+        <div class="alert alert-01 alert-danger" id="error-message" style="display: none">
+            <p>An error occured while saving</p>
+        </div>
+
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Actions</h3>
+            </div>
+            <div class="panel-body">
+                <div class="list-group">
+                    <button type="submit" class="list-group-item list-group-item-info" id="save-resource-btn">
+                        <i class="fa fa-fw fa-floppy-o"></i>
+                        Save Resource
+                    </button>
+                    <a href="#" class="list-group-item list-group-item-danger" id="vocab_dashboard_cancel">
+                        <i class="fa fa-fw fa-times-circle"></i>
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+
+{% macro displayResourceLanguage(X, lang_count, lang) %}
+    <div class="col-xs-12 panel-default language" id="{{ lang_count ? "language_{{lang_count}}" }}" style="padding-top: 5px; padding-bottom: 5px;">
+        {% if lang %}
+            <input type="hidden" id="languages_{{lang_count}}[id]" name="resources[0][languages][{{lang_count}}][id]" value="{{lang.id}}">
+            <input type="hidden" id="languages_{{lang_count}}[version]" name="resources[0][languages][{{lang_count}}][version]" value="{{lang.version}}">
+        {% endif %}
+        <input type="hidden" class="operation" id="languages_{{lang_count}}[operation]" name="resources[0][languages][{{lang_count}}][operation]" value=""=>
+        <input type="hidden" name="resources[0][languages][{{lang_count}}][dataType]" value="Language">
+        <div class="input-group">
+            <div style="width: 50%">
+                <select name="resources[0][languages][{{lang_count}}][language]" data-placeholder="Language" tabindex="-1" >
+                    <option value="{{lang.language.id}}" selected> {{lang.language.term}} </option>
+                </select>
+            </div>
+            <div style="width:50%; clear: none; float: left;">
+                <select name="resources[0][languages][{{lang_count}}][script]" data-placeholder="Script" tabindex="-1">
+                    <option value="{{lang.script.id}}" selected> {{lang.script.term}} </option>
+                </select>
+            </div>
+
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-danger" onclick="deleteOrUndoLanguage(event)">
+                    <i class="fa fa-minus-circle"></i>
+                </button>
+            </span>
+        </div>
+    </div>
+{% endmacro %}
+
+<!-- Language Template   -->
+{% macro displayResourceLanguageTemplate(X, lang_count) %}
+{% import _self as resources %}
+    <div id="resource-language-template" data-language-count="{{lang_count|default("0")}}" style="display: none;">
+        {{ resources.displayResourceLanguage(X, "YY", null) }}
+    </div>
+{% endmacro %}

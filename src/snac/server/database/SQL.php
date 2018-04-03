@@ -679,8 +679,8 @@ class SQL
      * @param integer $pID A privilege id.
      */
     public function insertPrivilegeRoleLink($rID, $pID)
-    {   
-        try { 
+    {
+        try {
         $this->sdb->query("insert into privilege_role_link (rid, pid) values ($1, $2)",
                           array($rID, $pID));
         }
@@ -1039,7 +1039,7 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['note'];
     }
-    
+
 
     /**
      * Select Constellations User Recently Edited
@@ -1051,7 +1051,7 @@ class SQL
      * @param integer $limit The maximum number of results to return
      * @param integer $offset Where in the list of results to start
      * @return string[][] The list of ic_id and version numbers recently edited
-     */ 
+     */
     public function selectConstellationsUserEdited($appUserID, $limit, $offset)
     {
         $limitStr = '';
@@ -1060,10 +1060,10 @@ class SQL
         $offsetStr = $this->doLOValue('offset', $offset);
 
         $queryString = sprintf(
-            'select id as ic_id, max(version) as latest_version from 
-                (select distinct id, version from version_history where user_id = $1) as a 
+            'select id as ic_id, max(version) as latest_version from
+                (select distinct id, version from version_history where user_id = $1) as a
                 group by id order by latest_version desc %s %s;', $limitStr, $offsetStr);
-    
+
 
         $this->logger->addDebug("Sending the following SQL request: " . $queryString);
 
@@ -1329,7 +1329,7 @@ class SQL
         }
         return $all;
     }
-    
+
     /**
      * select Current IC_IDs by otherID
      *
@@ -1485,9 +1485,9 @@ class SQL
     }
 
     /**
-     * Add Not-Same Assertion 
+     * Add Not-Same Assertion
      *
-     * Add a not-same assertion between icid1 and icid2, made by the given user and 
+     * Add a not-same assertion between icid1 and icid2, made by the given user and
      * having the given assertion statement.
      *
      * @param int $icid1 The first ICID
@@ -1497,8 +1497,8 @@ class SQL
      * @return boolean True if successful
      */
     public function addNotSameAssertion($icid1, $icid2, $userid, $assertion) {
-        $result = $this->sdb->query("insert into not_same 
-                (ic_id1, ic_id2, user_id, assertion) 
+        $result = $this->sdb->query("insert into not_same
+                (ic_id1, ic_id2, user_id, assertion)
                 values ($1, $2, $3, $4) returning *;",
             array($icid1, $icid2, $userid, $assertion));
         return true;
@@ -1567,9 +1567,9 @@ class SQL
     }
 
     /**
-     * Add Maybe-Same Link 
+     * Add Maybe-Same Link
      *
-     * Add a maybe-same link between icid1 and icid2, made by the given user and 
+     * Add a maybe-same link between icid1 and icid2, made by the given user and
      * having the given assertion statement.
      *
      * @param int $icid1 The first ICID
@@ -1579,8 +1579,8 @@ class SQL
      * @return boolean True if successful
      */
     public function addMaybeSameLink($icid1, $icid2, $userid, $assertion) {
-        $result = $this->sdb->query("insert into maybe_same 
-                (ic_id1, ic_id2, user_id, note) 
+        $result = $this->sdb->query("insert into maybe_same
+                (ic_id1, ic_id2, user_id, note)
                 values ($1, $2, $3, $4) returning *;",
             array($icid1, $icid2, $userid, $assertion));
         return true;
@@ -3143,7 +3143,7 @@ class SQL
     }
 
     /**
-     * Get laguages for list of resources
+     * Get languages for list of resources
      *
      * Returns the list of all languages for a given array of resource ids.
      *
@@ -3814,6 +3814,9 @@ class SQL
      * @param  int $entryTypeID     Entity Type ID
      * @param  text|null $link            Link for this resource
      * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
+     * @param  text|null $date            Text entry date of this resource
+     * @param  text|null $displayEntry    Display Entry of resource
+     * @param  int $userID               The userid of the user
      * @return string[]                  Array containing id, version
      */
     public function insertResource(        $resourceID,
@@ -3825,7 +3828,10 @@ class SQL
                                            $docTypeID,
                                            $entryTypeID,
                                            $link,
-                                           $objectXMLWrap)
+                                           $objectXMLWrap,
+                                           $date,
+                                           $displayEntry,
+                                           $userID)
     {
         if (! $resourceID)
         {
@@ -3837,9 +3843,9 @@ class SQL
         $qq = 'insert_resource';
         $this->sdb->prepare($qq,
                             'insert into resource_cache
-                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap)
+                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry, user_id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
@@ -3852,11 +3858,15 @@ class SQL
                           $docTypeID,         // 7
                           $entryTypeID,       // 8
                           $link,              // 9
-                          $objectXMLWrap);    // 10
+                          $objectXMLWrap,     // 10
+                          $date,              // 11
+                          $displayEntry,      // 12
+                          $userID);          // 13
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return array($resourceID, $resourceVersion);
     }
+
 
     /**
      * Insert Resource Language
@@ -3870,9 +3880,10 @@ class SQL
      * @param int $scriptID The script ID from the vocabulary table
      * @param string $vocabularySource The source for this vocab term
      * @param string $note The descriptive note for this language
+     * @param boolean $is_deleted Whether Resource Language is deleted
      * @return int The ID for the language just written
      */
-    public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note)
+    public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note, $is_deleted)
     {
         if (! $id)
         {
@@ -3881,16 +3892,17 @@ class SQL
         $qq = 'insert_resource_language';
         $this->sdb->prepare($qq,
                             'insert into resource_language
-                            (resource_id, version, id, language_id, script_id, vocabulary_source, note)
+                            (resource_id, version, id, language_id, script_id, vocabulary_source, note, is_deleted)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
         $eArgs = array($resourceID,
                        $resourceVersion,
                        $id,
                        $languageID,
                        $scriptID,
                        $vocabularySource,
-                       $note);
+                       $note,
+                       $this->sdb->boolToPg($is_deleted));
         $result = $this->sdb->execute($qq, $eArgs);
         $this->sdb->deallocate($qq);
         return $id;
@@ -4608,7 +4620,7 @@ class SQL
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
             'select rr.*, r.type as document_type, r.href, r.object_xml_wrap, r.title, r.extent,
-                    r.abstract, r.repo_ic_id from
+                    r.abstract, r.date, r.display_entry, r.repo_ic_id from
                 (select aa.id, aa.version, aa.ic_id,
                         aa.relation_entry, aa.descriptive_note, aa.arcrole,
                         aa.resource_id, aa.resource_version
@@ -4647,7 +4659,7 @@ class SQL
        $this->sdb->prepare($qq,
                            'select
                            aa.id, aa.version, aa.title, aa.href, aa.abstract, aa.extent, aa.repo_ic_id,
-                           aa.object_xml_wrap, aa.type
+                           aa.object_xml_wrap, aa.type, aa.date, aa.display_entry
                            from resource_cache as aa,
                            (select max(version) as version from resource_cache where version<=$1 and id=$2) as bb
                            where not aa.is_deleted and
@@ -4678,13 +4690,13 @@ class SQL
      */
     public function selectResourceByData($title = null, $href = null, $type = null) {
 
-        $result = $this->sdb->query('select id, version from resource_cache 
-                                     where href = $1 and title = $2 
-                                     and type = $3 and not is_deleted 
+        $result = $this->sdb->query('select id, version from resource_cache
+                                     where href = $1 and title = $2
+                                     and type = $3 and not is_deleted
                                      and md5(title)::uuid = md5($2)::uuid', array($href,
                                                                                   $title,
                                                                                   $type));
-        
+
         return $this->sdb->fetchAll($result);
     }
 
@@ -5456,12 +5468,12 @@ class SQL
     public function searchResources($query, $urlOnly = false)
     {
         $queryStr =
-                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id, date, display_entry
                   from resource_cache
                   where href = $1 or title ilike $1 order by title asc';
         if ($urlOnly) {
             $queryStr =
-                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id, date, display_entry
                   from resource_cache
                   where href = $1 order by title asc';
         }
@@ -5477,7 +5489,7 @@ class SQL
     }
 
     /**
-     * Search Users 
+     * Search Users
      *
      * Search the users in the appuser table of the database.  Returns only the userid and
      * full name of the query.  Searches the string in the full name, user name, and email
@@ -6196,11 +6208,11 @@ class SQL
         if ($unreadOnly) {
             $readFilter = 'and not read';
         }
-        // select only deleted messages if $archivedOnly is true 
+        // select only deleted messages if $archivedOnly is true
         $archiveFilter= ($archivedOnly ? "deleted " : "not deleted");
 
         $result = $this->sdb->query(
-            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where ' 
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where '
             .$archiveFilter.' and '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
             array($userid));
 
@@ -6214,7 +6226,7 @@ class SQL
     /**
      * Select Messages from User
      *
-     * Selects all messages for the given userID. 
+     * Selects all messages for the given userID.
      *
      * @param int $userid The userid of the user
      * @return string[] The list of message data for the user

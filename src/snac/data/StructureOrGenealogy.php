@@ -25,7 +25,7 @@ class StructureOrGenealogy extends AbstractTextData {
 
     /**
      * Constructor
-     * 
+     *
      * @param string[] $data optional Array of data to pre-fill this object
      */
     public function __construct($data = null) {
