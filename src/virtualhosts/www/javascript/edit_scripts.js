@@ -2109,6 +2109,8 @@ $(document).ready(function() {
 
                                     if (typeof data.resource.link !== 'undefined')
                                         $('#resourceRelation_linkText_'+resourceRelationid).html(data.resource.link + " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
+                                    if (typeof data.resource.displayEntry !== 'undefined')
+                                        $('#resourceRelation_displayEntryText_'+resourceRelationid).text(data.resource.displayEntry);
                                     if (typeof data.resource.title !== 'undefined') {
                                         $('#resourceRelation_titleText_'+resourceRelationid).text(data.resource.title);
                                         updatePictureTitle('resourceRelation', resourceRelationid, data.resource.title);
