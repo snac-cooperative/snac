@@ -85,12 +85,13 @@ class Neo4JUtil {
 
             // STEP 1: Update or insert this identity as a node:
             $this->logger->addDebug("Updating/Inserting Node into Neo4J database");
-            $result = $this->connector->run("MATCH (a:Identity {id: {icid} }) SET a.name = {name}, a.version = {version}, a.ark = {ark},
+            $result = $this->connector->run("MATCH (a:Identity {id: {icid} }) SET a.name = {name}, a.name_lower = {name_lower},  a.version = {version}, a.ark = {ark},
                 a.entity_type = {entityType} return a;",
                 [
                     'icid' => $constellation->getID(),
                     'version' => $constellation->getVersion(),
                     'name' => $constellation->getPreferredNameEntry()->getOriginal(),
+                    'name_lower' => strtolower($constellation->getPreferredNameEntry()->getOriginal()),
                     'ark' => $constellation->getArk(),
                     'entityType' => $constellation->getEntityType()->getTerm()
                 ]
@@ -106,6 +107,7 @@ class Neo4JUtil {
                             'id' => $constellation->getID(),
                             'version' => $constellation->getVersion(),
                             'name' => $constellation->getPreferredNameEntry()->getOriginal(),
+                            'name_lower' => strtolower($constellation->getPreferredNameEntry()->getOriginal()),
                             'ark' => $constellation->getArk(),
                             'entity_type' => $constellation->getEntityType()->getTerm()
                         ]
@@ -486,9 +488,9 @@ class Neo4JUtil {
         if ($count > 0)
             $realCount = $count;
 
-        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity) where a.name STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;",
+        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity) where a.name_lower STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;",
             [
-                'name' => $name
+                'name' => strtolower($name)
             ]
         );
 
