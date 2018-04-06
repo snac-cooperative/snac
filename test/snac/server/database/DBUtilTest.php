@@ -964,6 +964,22 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $this->assertTrue($origNCount == count($modObj->getNameEntries()));
     }
 
+    protected function insertResources(&$c) {
+        foreach ($c->getResourceRelations() as &$rel) {
+            $resource = $rel->getResource();
+            if ($resource->getID() == null) {
+                $resource->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+                $retObj = $this->dbu->writeResource($this->user, $resource);
+                if ($retObj !== false) {
+                    $resource->setID($retObj->getID());
+                    $resource->setVersion($retObj->getVersion());
+                    $resource->setOperation(null);
+                    $rel->setResource($resource);
+                }
+            }
+        }
+    }
+
     /**
      * Parse a file, and write to the db.
      * Get the just-inserted constellation back from the db.
@@ -979,6 +995,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation("insert");
         $constellationObj = $eParser->parseFile("test/snac/server/database/99166-w6f2061g.xml");
+        $this->insertResources($constellationObj);
         $retObj = $this->dbu->writeConstellation($this->user,
                                                  $constellationObj,
                                                  'machine ingest of hand-crafted, full CPF test record',
@@ -1057,6 +1074,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/util/eac-cpf/99166-w65k3tsm.xml");
+
+        $this->insertResources($cObj);
 
         $retObj = $this->dbu->writeConstellation($this->user,
                                                  $cObj,
