@@ -54,12 +54,12 @@ interface Stage {
      *
      * @param \snac\data\Constellation $search The identity to be evaluated.
      * @param \snac\data\ReconciliationResult[] $list A list of results to evaluate against.  This
-     * may be null.  
+     * may be null.
      * @return array An array of matches and strength pairs, ie an array of
      * `array("id":identity, "strength":float)`. On error, it must at least
      * return an empty array. It may not return null.
      *
      */
-    public function run($search, $list); 
+    public function run($search, $list);
 
 }

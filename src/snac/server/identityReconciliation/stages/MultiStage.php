@@ -56,7 +56,7 @@ class MultiStage implements helpers\Stage {
      * Get Name
      *
      * Returns the name of this stage.  It will combine the list of all
-     * stages run as its official name. 
+     * stages run as its official name.
      *
      * @return string Name of the stage.
      */
@@ -67,7 +67,7 @@ class MultiStage implements helpers\Stage {
         return $retval;
     }
 
-   
+
 
     /**
      * Run function
@@ -79,7 +79,7 @@ class MultiStage implements helpers\Stage {
      *
      * @param \snac\data\Constellation $search The constellation to be evaluated.
      * @param \snac\data\ReconciliationResult[] $list A list of results to evaluate against.  This
-     * may be null.  
+     * may be null.
      * @return array An array of results from the final stage that has been
      * run or an empty array.
      *
@@ -93,8 +93,8 @@ class MultiStage implements helpers\Stage {
 
             // Empty out the list of next ids
             $nextList = $results;
-        } 
-        
+        }
+
         return $results;
     }
 }

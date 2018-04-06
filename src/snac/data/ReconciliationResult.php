@@ -122,7 +122,7 @@ class ReconciliationResult extends AbstractData {
 
     /**
      * Get the score for one test
-     * 
+     *
      * @param string $test Test to check
      * @return float The score, or 0 if not run
      */
@@ -143,7 +143,7 @@ class ReconciliationResult extends AbstractData {
     /**
      * Set multiple properties for this result
      * @param string[][] $properties List of properties
-     * 
+     *
      */
     public function setMultipleProperties($properties) {
         $this->properties = array_merge($this->properties, $properties);
@@ -151,13 +151,13 @@ class ReconciliationResult extends AbstractData {
 
     /**
      * Get all properties for this result
-     * 
+     *
      * @return string[][] List of properties
      */
     public function getAllProperties() {
         return $this->properties;
     }
-    
+
     /**
      * Required method to convert this data object to an array
      *
@@ -169,7 +169,7 @@ class ReconciliationResult extends AbstractData {
         $array["strength"] = $this->strength;
         if ($this->identity != null)
             $array["identity"] = $this->identity->toArray();
-        else if (!$shorten) 
+        else if (!$shorten)
             $array["identity"] = null;
         if ($this->vector != null || !$shorten)
             $array["vector"] = $this->vector;
@@ -189,6 +189,6 @@ class ReconciliationResult extends AbstractData {
         $this->vector = $data["vector"];
         $this->properties = $data["properties"];
     }
-    
+
 
 }

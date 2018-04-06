@@ -57,6 +57,7 @@
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/name_heading_punctuator.js{{control.noCache}}"></script>
@@ -65,6 +66,7 @@
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/resource_admin.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -474,7 +476,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     {{ components.displayResourceRelation(X, true, true, null, 'ZZ', data.entityType.term, data.nameEntries.0.original) }}
     </div>
     <div id="constellationRelation_template" style="display:none">
-    {{ components.displayConstellationRelation(X, true, true, null, 'ZZ', data.entityType.term, data.nameEntries.0.original, false) }}
+    {{ components.displayConstellationRelation(X, true, true, null, 'ZZ', data.entityType.term, data.nameEntries.0.original, false, control) }}
     </div>
     <div id="language_template" style="display:none">
     {{ components.displayLanguageUsed(X, true, true, null, 'ZZ') }}
@@ -679,12 +681,16 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <p>Use the form below to create a new resource and then press "Continue" to continue creating a new resource relation.</p>
 	                    <div id="resource-create-box">
 	                    </div>
+                        {% import "resources/_resource_form.html" as resources %}
+                        <div class="panel panel-body">
+                            {{ resources.expandedResourceRepositorySearch() }}
+                        </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
-                <button type="button" class="btn btn-primary" id="btn_create_resource" data-dismiss="modal">Continue</button>
+                <button type="submit" form="resource_create_form" class="btn btn-primary" id="btn_create_resource">Continue</button>
             </div>
         </div>
     </div>

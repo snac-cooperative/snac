@@ -50,7 +50,7 @@ class ReportingEngine {
         // create a log channel
         $this->logger = new \Monolog\Logger('ReportingEngine');
         $this->logger->pushHandler($log);
-        
+
         $this->reports = array();
         return;
     }
@@ -65,7 +65,7 @@ class ReportingEngine {
     /**
      * Set Postgres Connector
      *
-     * A method to pass a postgres connector to the reporting engine for use in 
+     * A method to pass a postgres connector to the reporting engine for use in
      * analyzing the data.
      *
      * @param \snac\server\database\DatabaseConnector The connector to the postgres database

@@ -281,8 +281,8 @@
         "tooltip" : "The resource information"
     },
     "resourceRepository" : {
-        "display" : "Repository (SNAC ID)",
-        "tooltip" : "The numeric Identity Constellation ID (in SNAC) for the holding repository"
+        "display" : "Holding Repository",
+        "tooltip" : "The SNAC Identity Constellation of the holding repository"
     },
     "resourceText" : {
         "display" : "Relation Entry",
@@ -293,11 +293,11 @@
         "tooltip" : "How this Identity Constellation is related to the resource"
     },
     "resourceURI" : {
-        "display" : "Link",
+        "display" : "HREF",
         "tooltip" : "The permanent link (URI) to the external resource"
     },
     "resourceDocumentType" : {
-        "display" : "Document Type",
+        "display" : "Resource Type",
         "tooltip" : "The type of this resource"
     },
     "resourceXML" : {
@@ -312,9 +312,21 @@
         "display" : "Abstract",
         "tooltip" : "The abstract of this resource"
     },
+    "resourceDisplayEntry" : {
+        "display" : "Display Entry",
+        "tooltip" : "The descriptive display name of this resource"
+    },
+    "resourceDate" : {
+        "display" : "Date",
+        "tooltip" : "The date of this resource"
+    },
     "resourceExtent" : {
         "display" : "Extent",
         "tooltip" : "The extent of this resource"
+    },
+    "resourceLanguages" : {
+        "display" : "Languages",
+        "tooltip" : "The ISO-standard languages and scripts of this resource"
     },
     "resourceOriginationName" : {
         "display" : "Origination Names",

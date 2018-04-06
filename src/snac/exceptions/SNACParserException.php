@@ -20,7 +20,7 @@ namespace snac\exceptions;
  * Exception for handling errors with SNAC eac-cpf parsing
  *
  * @author Robbie Hott
- *        
+ *
  */
 class SNACParserException extends SNACException {
 

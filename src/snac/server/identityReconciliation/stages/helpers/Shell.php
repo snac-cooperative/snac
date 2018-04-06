@@ -66,7 +66,7 @@ abstract class Shell implements Stage {
      * object, comines the interested parts of the identity together, then
      * returns the resulting string.
      *
-     * @param \identity $identity The identity to parse.  
+     * @param \identity $identity The identity to parse.
      * @return string The combined string that will be sent to the shell script.
      */
     protected abstract function combineString($identity);
@@ -81,16 +81,16 @@ abstract class Shell implements Stage {
      *
      * @param \identity $search The identity to be evaluated.
      * @param \identity[] $list A list of identities to evaluate against.  This
-     * may be null.  
+     * may be null.
      * @return array An array of matches and strengths,
      * `{"id":identity, "strength":float}`.
      * the stage's definition
      *
      */
-    public function run($search, $list) { 
+    public function run($search, $list) {
 
         // Assume list is null.  We're not using it now
-        
+
         // Result list
         $results = array();
 
@@ -118,7 +118,7 @@ abstract class Shell implements Stage {
             list($value, $idstr) = explode(" ", $line, 2);
             //TODO: Update to new engine
             array_push($results, array( "id"=> new \reconciliation_engine\identity\identity($idstr),
-                "strength"=>floatval($value))); 
+                "strength"=>floatval($value)));
         }
 
         // Return the results
@@ -127,11 +127,10 @@ abstract class Shell implements Stage {
 
     /**
      * Return the name of the stage
-     * 
+     *
      * @return string Name of the stage
      */
     public function getName() {
         return $this->name;
     }
 }
-

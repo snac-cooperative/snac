@@ -20,7 +20,7 @@ namespace snac\server\identityReconciliation\weights;
  *
  * This is a simple weight calculation, which just sums up all entries in the
  * vector.  It is provided as an example weighting mechanism.
- * 
+ *
  * @author Robbie Hott
  */
 class StaticWeight implements helpers\Weight {
@@ -34,7 +34,7 @@ class StaticWeight implements helpers\Weight {
     public function compute($vector) {
         $sum = 0;
         foreach ($vector as $entry)
-            $sum = $sum + $entry; 
+            $sum = $sum + $entry;
         return $sum;
     }
 }

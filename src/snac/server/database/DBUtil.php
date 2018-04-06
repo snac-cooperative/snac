@@ -2894,42 +2894,47 @@ class DBUtil
      *
      * Save a resource
      *
+     * @param \snac\data\User $user The user writing the resource
      * @param  \snac\data\Resource $resource Resource object to save
      * @return \snac\data\Resource|boolean           The resource object saved with ID and version or false if not written
      */
-    public function writeResource($resource)
-    {
-        $op = $resource->getOperation();
-        if ($op == \snac\data\AbstractData::$OPERATION_INSERT)
-        {
-            /*
-             * Right now, only do an insert. We need to add functionality to
-             * edit in the NEAR future
-             */
-            $rid = null;
-            $version = null;
-            $repoID = null;
-            if ($resource->getRepository() != null)
-                $repoID = $resource->getRepository()->getID();
-            list($rid, $version) = $this->sql->insertResource($rid,
-                                                      $version,
-                                                      $resource->getTitle(),
-                                                      $resource->getAbstract(),
-                                                      $resource->getExtent(),
-                                                      $repoID,
-                                                      $this->thingID($resource->getDocumentType()), // xlink:role
-                                                      $this->thingID($resource->getEntryType()), // relationEntry@localType
-                                                      $resource->getLink(), // xlink:href
-                                                      $resource->getSource()); // objectXMLWrap
-            $resource->setID($rid);
-            $resource->setVersion($version);
-            $this->saveOriginationNames($resource);
-            $this->saveResourceLanguages($resource);
-            // Return the full resource
-            return $this->populateResource($rid, $version);
-        }
-        return false;
-    }
+     public function writeResource($user, $resource) {
+
+         if ($user == null || $user->getUserID() == null)
+             return false;
+
+         $op = $resource->getOperation();
+         if ($op == \snac\data\AbstractData::$OPERATION_INSERT) {
+             $rid = null;
+         } elseif ($op == \snac\data\AbstractData::$OPERATION_UPDATE) {
+             $rid = $resource->getID();
+         }
+
+         $version = null;
+         $repoID = null;
+
+         if ($resource->getRepository() != null)
+             $repoID = $resource->getRepository()->getID();
+         list($rid, $version) = $this->sql->insertResource($rid,
+                                                   $version,
+                                                   $resource->getTitle(),
+                                                   $resource->getAbstract(),
+                                                   $resource->getExtent(),
+                                                   $repoID,
+                                                   $this->thingID($resource->getDocumentType()), // xlink:role
+                                                   $this->thingID($resource->getEntryType()), // relationEntry@localType
+                                                   $resource->getLink(), // xlink:href
+                                                   $resource->getSource(), // objectXMLWrap
+                                                   $resource->getDate(),
+                                                   $resource->getDisplayEntry(),
+                                                   $user->getUserID());
+         $resource->setID($rid);
+         $resource->setVersion($version);
+         $this->saveOriginationNames($resource);
+         $this->saveResourceLanguages($resource);
+         // Return the full current resource or false if not written
+         return $this->readResource($rid) ?? false;
+     }
 
     /**
      * Read Resource By Data
@@ -2947,13 +2952,13 @@ class DBUtil
         if ($resource->getDocumentType() != null)
             $documentType = $resource->getDocumentType()->getID();
         $result = $this->sql->selectResourceByData($resource->getTitle(), $resource->getLink(), $documentType);
-        
+
         if ($result === false)
             return false;
 
         if (count($result) == 1) {
             return $this->populateResource($result[0]['id'], $result[0]['version']);
-        } else { 
+        } else {
         // check equality(not strict) and see if any other resources match
         // if so, return that matching resource
             foreach ($result as $pair) {
@@ -2973,25 +2978,26 @@ class DBUtil
      * @param  \snac\data\Resource $resource Resource with languages to save
      * @return [type]           [description]
      */
-    private function saveResourceLanguages($resource)
-    {
+    private function saveResourceLanguages($resource) {
         $langList = $resource->getLanguages();
-
-        foreach ($langList as $lang)
-        {
-
+        foreach ($langList as $lang) {
             $rid = $lang->getID();
+            $is_deleted = $lang->getOperation() == \snac\data\Language::$OPERATION_DELETE;
+
             if ($lang->getOperation() == \snac\data\Language::$OPERATION_INSERT ||
-                $lang->getOperation() == \snac\data\Language::$OPERATION_UPDATE) {
-                    $rid = $this->sql->insertResourceLanguage($resource->getID(),
-                                                      $resource->getVersion(),
-                                                      $lang->getID(),
-                                                      $this->thingID($lang->getLanguage()),
-                                                      $this->thingID($lang->getScript()),
-                                                      $lang->getVocabularySource(),
-                                                      $lang->getNote());
-                    $lang->setID($rid);
-                    $lang->setVersion($resource->getVersion());
+                $lang->getOperation() == \snac\data\Language::$OPERATION_UPDATE ||
+                $lang->getOperation() == \snac\data\Language::$OPERATION_DELETE ) {
+
+                $rid = $this->sql->insertResourceLanguage($resource->getID(),
+                                                  $resource->getVersion(),
+                                                  $lang->getID(),
+                                                  $this->thingID($lang->getLanguage()),
+                                                  $this->thingID($lang->getScript()),
+                                                  $lang->getVocabularySource(),
+                                                  $lang->getNote(),
+                                                  $is_deleted);
+                $lang->setID($rid);
+                $lang->setVersion($resource->getVersion());
             }
         }
     }
@@ -3281,6 +3287,8 @@ class DBUtil
                 $rObj->setTitle($oneRes['title']);
                 $rObj->setExtent($oneRes['extent']);
                 $rObj->setAbstract($oneRes['abstract']);
+                $rObj->setDate($oneRes['date']);
+                $rObj->setDisplayEntry($oneRes['display_entry']);
                 if (isset($oneRes['repo_ic_id']) && $oneRes['repo_ic_id'] !== null && $oneRes['repo_ic_id'] !== '') {
                     if (!isset($repoCache[$oneRes['repo_ic_id']])) {
                         $repoCache[$oneRes['repo_ic_id']] = $this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY);
@@ -3355,6 +3363,8 @@ class DBUtil
             $rObj->setTitle($oneRes['title']);
             $rObj->setExtent($oneRes['extent']);
             $rObj->setAbstract($oneRes['abstract']);
+            $rObj->setDate($oneRes['date']);
+            $rObj->setDisplayEntry($oneRes['display_entry']);
             $rObj->setRepository($this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
             $rObj->setDBInfo($oneRes['version'], $oneRes['id']);
             $this->populateOriginationNames($rObj);
@@ -4503,6 +4513,8 @@ class DBUtil
             $resource->setTitle($result['title']);
             $resource->setExtent($result['extent']);
             $resource->setAbstract($result['abstract']);
+            $resource->setDate($result['date']);
+            $resource->setDisplayEntry($result['displayEntry']);
             $resource->setRepository($this->readPublishedConstellationByID($result['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
 
             array_push($return, $resource);

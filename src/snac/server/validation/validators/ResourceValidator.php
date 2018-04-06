@@ -347,4 +347,3 @@ class ResourceValidator extends Validator {
     }
 
 }
-
