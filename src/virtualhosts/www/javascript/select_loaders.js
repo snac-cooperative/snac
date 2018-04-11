@@ -178,10 +178,14 @@ function scm_source_select_replace(selectItem, idMatch) {
                     lastSourceSearchResults.forEach(function(source) {
                         if (source.id == sourceID) {
                             // Update the text of the source
-                            if (typeof source.text !== 'undefined')
+                            if (typeof source.text !== 'undefined') {
                                 $("#scm_" + shortName + "_source_text_" + j + "_" + i).html(addbr(source.text)).removeClass('hidden');
-                            else
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).closest(".panel-body").removeClass('hidden');
+                            } else {
                                 $("#scm_" + shortName + "_source_text_" + j + "_" + i).text("").addClass('hidden');
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).closest(".panel-body").addClass('hidden');
+                            
+                            }
                             // Update the URI of the source
                             if (typeof source.uri !== 'undefined')
                                 $("#scm_" + shortName + "_source_uri_" + j + "_" + i).html('<a href="'+source.uri+'" target="_blank">'+source.uri+'</a>');
