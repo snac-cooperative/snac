@@ -24,7 +24,7 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
     if (minLength === undefined) {
         minLength = 2;
     }
-
+        
         if(selectItem.attr('id').endsWith(idMatch)
             && !selectItem.attr('id').endsWith("ZZ")) {
                 selectItem.select2({
@@ -281,6 +281,30 @@ function select_replace_simple(selectItem) {
         width: '100%',
         allowClear: true,
         theme: 'bootstrap'
+    });
+}
+
+
+
+/**
+ * Load Vocab Select Options
+ *
+ * Replaces the select with a select2 object preloaded with an array of options
+ *
+ * @param  JQuery selectItem The JQuery item to replace
+ * @param  string type       The type of the vocabulary term
+ * @param  string type       Text placeholder for select 
+ */
+function loadVocabSelectOptions(selectItem, type, placeholder) {
+    $.get(snacUrl + "/vocabulary?type=" + type)
+    .done(function(data) {
+        var options = data.results;
+        selectItem.select2({
+            data: options,
+            allowClear: false,
+            theme: 'bootstrap',
+            placeholder: placeholder
+        });
     });
 }
 

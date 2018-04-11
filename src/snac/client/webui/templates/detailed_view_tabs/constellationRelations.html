@@ -12,7 +12,7 @@
     <div class="tab-pane active" id="directRelations">
         {% set i = 0 %}
         {% for relation in data.relations %}
-            {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original, false) }}
+            {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original, false, control) }}
             {% set i = i + 1 %}
         {% endfor %}
     </div>

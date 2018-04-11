@@ -1711,8 +1711,8 @@ function updatePlaceHeading(shortName, i, newValue) {
 }
 
 function magicDefaultFill(selectID, vocabType) {
-   if (typeof(defaults[vocabType]) !== undefined) { 
-       
+   if (typeof(defaults[vocabType]) !== undefined) {
+
        var data = {
            id: defaults[vocabType].id,
            text: defaults[vocabType].term
@@ -2017,6 +2017,8 @@ $(document).ready(function() {
 
                             if (typeof resourceResults[rid].link !== 'undefined')
                                 $('#resourceRelation_linkText_'+resourceRelationid).html(resourceResults[rid].link + " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
+                            if (typeof resourceResults[rid].displayEntry !== 'undefined')
+                                $('#resourceRelation_displayEntryText_'+resourceRelationid).text(resourceResults[rid].displayEntry);
                             if (typeof resourceResults[rid].title !== 'undefined') {
                                 $('#resourceRelation_titleText_'+resourceRelationid).text(resourceResults[rid].title);
                                 updatePictureTitle('resourceRelation', resourceRelationid, resourceResults[rid].title);
@@ -2025,6 +2027,8 @@ $(document).ready(function() {
                                 $('#resourceRelation_abstractText_'+resourceRelationid).text(resourceResults[rid].abstract);
                             if (typeof resourceResults[rid].extent !== 'undefined')
                                 $('#resourceRelation_extentText_'+resourceRelationid).text(resourceResults[rid].extent);
+                            // if (typeof resourceResults[rid].date !== 'undefined')
+                            //     $('#resourceRelation_dateText_'+resourceRelationid).text(resourceResults[rid].date);
                             if (typeof resourceResults[rid].documentType !== 'undefined' && typeof resourceResults[rid].documentType.term !== 'undefined')
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
 
@@ -2051,26 +2055,27 @@ $(document).ready(function() {
                         var text = $('#resource_template').clone();
                         var html = text.html().replace(/ZZ/g, 0);
                         $('#resource-create-box').html(html);
+                        var $resourceForm = $("#resource_create_form");
+                        // Copy the search contents to title or href
                         if ($("#resource-searchbox").val().indexOf("http:") == -1)
-                            $("#resource_title_0").val($("#resource-searchbox").val());
+                            $resourceForm.find("#resource-title").val($("#resource-searchbox").val());
                         else
-                            $("#resource_link_0").val($("#resource-searchbox").val());
+                            $resourceForm.find("#resource-url").val($("#resource-searchbox").val());
 
-                        // Make the new resource editable
-                        turnOnButtons("resource", 0);
-                        turnOnTooltips("resource", 0);
-                        makeEditable("resource", 0);
+                        $resourceForm.find('[data-toggle="popover"]').popover({
+                              trigger: 'hover',
+                              container: 'body'
+                        });
+                        loadVocabSelectOptions($resourceForm.find("#resource-type-select"), "document_type", "Resource Type");
+                        vocab_select_replace($resourceForm.find("#resource-repo"), "", "holding", 3);
+                        $resourceForm.find("#new-resource-language-btn").on("click", newResourceLanguage);
+                        $resourceForm.find("#magic-resource-language-btn").on("click", magicNewResourceLanguage);
 
-                        // Turn on validation
-                        $("#resource_create_form").validate({
-                            rules: {
-                                resource_documentType_id_0: "required",
-                                resource_title_0: "required"
-                            },
-                            errorPlacement: function(error, element) {
-                                error.appendTo( element.parent() );
-                            }
-
+                        $('#search-results-box').on("click", "a.list-group-item", selectHoldingRepository);
+                        var timeoutID = null;
+                        $resourceForm.find('#searchbox').keyup(function() {
+                            clearTimeout(timeoutID);
+                            timeoutID = setTimeout(function() { setSearchPosition(0); searchAndUpdate(); }, 500);
                         });
 
                         // Remove the search results from the other modal
@@ -2080,8 +2085,18 @@ $(document).ready(function() {
                 }
 
                 if ($('#btn_create_resource').exists()){
-                    $('#btn_create_resource').click(function(){
-                        if ($("#resource_create_form").valid()) {
+                    $('#resource_create_form').on("submit", function(){
+                            // Remove leading and trailing whitespace
+                            if ($("#resource_create_form #resource-url").val() == "") {
+                                if (!confirm('Are you sure you want to save without an HREF?')) {
+                                    return;
+                                }
+                            }
+                            $("#resource_create_form input, textarea").each(function() {
+                                $(this).val($.trim($(this).val()));
+                            });
+                            setDeletedResourceLanguageOperations($("#resource_create_form"));
+
                             $.post(snacUrl+"/save_resource", $("#resource_create_form").serialize(), function (data) {
                                 if (typeof data.result !== 'undefined' && data.result !== 'false') {
                                     somethingHasBeenEdited = true;
@@ -2096,6 +2111,8 @@ $(document).ready(function() {
 
                                     if (typeof data.resource.link !== 'undefined')
                                         $('#resourceRelation_linkText_'+resourceRelationid).html(data.resource.link + " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
+                                    if (typeof data.resource.displayEntry !== 'undefined')
+                                        $('#resourceRelation_displayEntryText_'+resourceRelationid).text(data.resource.displayEntry);
                                     if (typeof data.resource.title !== 'undefined') {
                                         $('#resourceRelation_titleText_'+resourceRelationid).text(data.resource.title);
                                         updatePictureTitle('resourceRelation', resourceRelationid, data.resource.title);
@@ -2121,7 +2138,6 @@ $(document).ready(function() {
                                     return false;
                                 }
                             });
-                        }
                         return false;
                     });
                 }

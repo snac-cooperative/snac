@@ -175,7 +175,7 @@ class Server implements \snac\interfaces\ServerInterface {
             case "send_message":
                 $this->response = $executor->sendMessage($this->input);
                 break;
-            
+
             case "archive_message":
                 $this->response = $executor->archiveMessage($this->input);
                 break;
@@ -337,14 +337,14 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 $this->response = $executor->autoMergeConstellations($this->input);
                 break;
-            
+
             case "constellation_assert":
                 if (!($executor->hasPermission("Maybe Same Assertion") && $executor->hasPermission("Not Same Assertion"))) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to make Constellation assertions.", 403);
                 }
                 $this->response = $executor->makeAssertion($this->input);
                 break;
-            
+
             case "constellation_add_maybesame":
                 if (!$executor->hasPermission("Maybe Same Assertion")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to add maybe-same links.", 403);
@@ -387,15 +387,19 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->browseConstellations($this->input);
                 break;
 
+            case "elastic":
+                $this->response = $executor->elasticSearchQuery($this->input);
+                break;
+
             // Resource Management
             case "insert_resource":
-                //if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
-                //    throw new \snac\exceptions\SNACPermissionException("User not authorized to insert resources.");
+                if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
+                   throw new \snac\exceptions\SNACPermissionException("User not authorized to insert resources.");
                 $this->response = $executor->writeResource($this->input);
                 break;
             case "update_resource":
-                //if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
-                //    throw new \snac\exceptions\SNACPermissionException("User not authorized to insert resources.");
+                if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
+                   throw new \snac\exceptions\SNACPermissionException("User not authorized to update resources.");
                 $this->response = $executor->writeResource($this->input);
                 break;
             case "read_resource":

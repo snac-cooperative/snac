@@ -18,9 +18,6 @@
 <!-- Helper Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-<script language="javascript">
-$('.selectpicker').selectpicker();
-</script>
 
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
@@ -56,11 +53,11 @@ $(document).ready(function() {
 <body role="document">
     {% from 'page_navigation.html' import topNavigation,footer %}
     {{ topNavigation(X, user, permissions, control) }}
-    
+
     <div class="container snac" role="main">
         {{ data.body | raw }}
     </div>
-    
+
     {{ footer(X, user, permissions, control) }}
 
     <!--
@@ -88,7 +85,7 @@ $(document).ready(function() {
                 ========
                 <div class="col-md-12">
                     <p>Sponsors: The Andrew W. Mellon Foundation, Institute of Museum and Library Services, National Endowment for the Humanities</p>
-                    <p>Collaborators: UVa IATH, UC Berkeley School of Information, California Digital Library, National Archives and Records Administration</p> 
+                    <p>Collaborators: UVa IATH, UC Berkeley School of Information, California Digital Library, National Archives and Records Administration</p>
                 </div>
                 =========
                 <div class="col-md-4">
@@ -111,12 +108,10 @@ $(document).ready(function() {
                         <a href="http://www.iath.virginia.edu" target="_blank">UVa IATH</a><br>
                         <a href="http://www.ischool.berkeley.edu" target="_blank">UC Berkeley School of Information</a><br>
                         <a href="http://www.cdlib.org" target="_blank">California Digital Library</a><br>
-                        <a href="http://www.archives.gov" target="_blank">National Archives and Records Administration</a></p> 
+                        <a href="http://www.archives.gov" target="_blank">National Archives and Records Administration</a></p>
                 </div>
         </div>
     </div>
     -->
 </body>
 </html>
-
-

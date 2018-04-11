@@ -33,7 +33,7 @@ CREATE SEQUENCE "vocabulary_id_seq";
 -- vocabulary.type='entity_type' rows.
 --
 -- Two name components apply to all entity types: NameAddition, Date. These two have entity_group set to null.
--- 
+--
 -- Name component vocabulary is at the end of install/sql_files/vocabulary.sql.
 
 create table if not exists vocabulary (
@@ -48,6 +48,7 @@ create table if not exists vocabulary (
 create unique index vocabulary_idx on vocabulary(id);
 create index vocabulary_type_idx on vocabulary(type);
 create index vocabulary_value_idx on vocabulary(value);
+create index vocabulary_uri_idx on vocabulary (uri);
 
 -- create unique index vocabulary_idx on vocabulary(id);
 -- create index vocabulary_type_idx on vocabulary(type);
@@ -76,4 +77,3 @@ create table if not exists vocabulary_use (
 --     db_table    text, -- table in this database, table is a Pg reserved word
 --     db_field    text  -- field in that table in this database
 -- );
-

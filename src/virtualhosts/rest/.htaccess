@@ -1,0 +1,5 @@
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "PUT, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</IfModule>

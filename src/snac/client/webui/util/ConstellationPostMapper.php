@@ -232,7 +232,7 @@ class ConstellationPostMapper {
             $scmObject->setSubCitation($scm["subCitation"]);
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
-            
+
             if (isset($scm["descriptiveRule"]))
                 $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
 
@@ -290,7 +290,7 @@ class ConstellationPostMapper {
         // If there is no language to parse, then just return null and don't do anything
         if (!isset($object["language"]))
             return null;
-        
+
         if ($object["language"]["id"] == "" &&
                 $object["language"]["version"] == "" &&
                 (!isset($object["languagelanguage"]) ||
@@ -1080,7 +1080,7 @@ class ConstellationPostMapper {
                     $nameEntry->addContributor($contributor);
                 }
             }
-            
+
             // right now, update rules if updating name entry TODO
             // TODO: use rule not contributor going forward! need to update
             if (isset($data["rule"])) {
@@ -1218,7 +1218,7 @@ class ConstellationPostMapper {
             }
             $relation->setResource($resource);
 
-            $relation->setContent($data["content"]);
+            // $relation->setContent($data["content"]);
             $relation->setNote($data["note"]);
 
             $relation->setRole($this->parseTerm($data["role"]));

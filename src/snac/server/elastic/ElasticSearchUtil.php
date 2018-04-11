@@ -72,7 +72,7 @@ class ElasticSearchUtil {
             foreach ($constellation->getSubjects() as $subject) {
                 array_push($subjects, $subject->getTerm()->getTerm());
             }
-            
+
             $occupations = [];
             foreach ($constellation->getOccupations() as $occupation) {
                 array_push($occupations, $occupation->getTerm()->getTerm());
@@ -271,7 +271,7 @@ class ElasticSearchUtil {
                     'from' => $start,
                     'size' => $count*/
 
-                    /* This query uses a full-phrase matching search 
+                    /* This query uses a full-phrase matching search
                     'query' => [
                         'match_phrase_prefix' => [
                             'nameEntry' => [
@@ -406,7 +406,7 @@ class ElasticSearchUtil {
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
      * @param string[][] $parameters optional The list of facets and other parameters to use when performing this search
-     * @param boolean $fullSearch optional Whether to search the full text (i.e. biogHist plus names). 
+     * @param boolean $fullSearch optional Whether to search the full text (i.e. biogHist plus names).
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
     public function searchMainIndexAdvanced($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=false) {
@@ -423,7 +423,7 @@ class ElasticSearchUtil {
                                    'query' => $query,
                                    'default_operator' => 'and'
                                ]
-                           ], 
+                           ],
                            "filter" => [
                            ]
                         ]
@@ -458,7 +458,7 @@ class ElasticSearchUtil {
                 ]
             ]);
         }
-        
+
         if ($parameters !== null && is_array($parameters) && !empty($parameters)) {
             // Allow an empty query that will just return whatever (as long as there are parameters
             if ($query == "" ) {
@@ -478,7 +478,7 @@ class ElasticSearchUtil {
                     array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                         'match' => [
                             $type.".untokenized" => [
-                                'query' => $value 
+                                'query' => $value
                             ]
                         ]
                     ]);
@@ -501,7 +501,7 @@ class ElasticSearchUtil {
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
      * @param string[][] $parameters optional The list of facets and other parameters to use when performing this search
-     * @param boolean $fullSearch optional Whether to search the full text (i.e. biogHist plus names). 
+     * @param boolean $fullSearch optional Whether to search the full text (i.e. biogHist plus names).
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
     public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10, $parameters=null, $fullSearch=false) {
@@ -588,7 +588,7 @@ class ElasticSearchUtil {
                     array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                         'match' => [
                             $type.".untokenized" => [
-                                'query' => $value 
+                                'query' => $value
                             ]
                         ]
                     ]);
@@ -759,9 +759,10 @@ class ElasticSearchUtil {
      * @param string $query The search query
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
+     * @param array $filters optional Array of term => value pairs to filter by (default null)
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchResourceIndex($query, $start=0, $count=10) {
+    public function searchResourceIndex($query, $start=0, $count=10, $filters=null) {
         $this->logger->addDebug("Searching for a Resource");
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
@@ -806,6 +807,15 @@ class ElasticSearchUtil {
                     'size' => $count*/
                 ]
             ];
+
+            if (isset($filters)){
+                // build an ES filter and append to $params
+                foreach ($filters as $field => $value) {
+                    $queryFilter['bool']['filter'][]['term'][$field] = $value;
+                }
+                $params['body']['filter'] = $queryFilter;
+            }
+
             $this->logger->addDebug("Defined parameters for search", $params);
 
             $results = $this->connector->search($params);
@@ -838,4 +848,40 @@ class ElasticSearchUtil {
         );
     }
 
+    /**
+     * Elastic Search Passthrough
+     *
+     * Pass a search query directly to Elastic Search
+     *
+     * @param string|string[] $query An elastic search query either in JSON or array form
+     * @return string[] raw elastic search results
+     */
+    public function passthrough($query) {
+        if (empty($query))
+            return [];
+
+        $params = [
+            'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+            'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+            'body' => $query
+        ];
+        $this->logger->addDebug("Defined parameters for search", $params);
+        $results = $this->connector->search($params);
+        $this->logger->addDebug("Completed Elastic Search", $results);
+
+        if (isset($results["_shards"]))
+            unset($results["_shards"]);
+
+
+        if (isset($results["hits"]) && is_array($results["hits"]) && isset($results["hits"]["hits"]) && is_array($results["hits"]["hits"])) {
+            foreach ($results["hits"]["hits"] as &$hit) {
+                if (isset($hit["_index"]))
+                    unset($hit["_index"]);
+                if (isset($hit["_type"]))
+                    unset($hit["_type"]);
+            }
+        }
+
+        return $results;
+    }
 }

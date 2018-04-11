@@ -246,31 +246,31 @@
                                                 {% if 'wikipedia' in sameas.uri %}
                                                    <div class="updated">
                                                      <div class="sprite-icons-wikipedia"></div>
-                                                     <a href="{{sameas.uri}}">Wikipedia</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">Wikipedia</a>
                                                   </div>
                                                 {% elseif 'loc.gov/authorities' in sameas.uri %}
                                                    <div class="updated">
                                                      <div class="sprite-icons-idlocgov"></div>
-                                                     <a href="{{sameas.uri}}">LC Name Authority File</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">LC Name Authority File</a>
                                                   </div>
                                                 {% elseif 'viaf.org' in sameas.uri %}
                                                    <div class="updated">
                                                      <div class="sprite-icons-viaf"></div>
-                                                     <a href="{{sameas.uri}}">Virtual International Authority File</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">Virtual International Authority File</a>
                                                   </div>
                                                 {% elseif 'worldcat.org/wcidentities' in sameas.uri %}
                                                    <div class="updated">
                                                      <div class="sprite-icons-worldcat"></div>
-                                                     <a href="{{sameas.uri}}">WorldCat Identities</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">WorldCat Identities</a>
                                                   </div>
                                                 {% elseif 'cbw.iath.virginia.edu' in sameas.uri %}
                                                    <div class="updated">
                                                      <div class="sprite-icons-cbw"></div>
-                                                     <a href="{{sameas.uri}}">Collective Biographies of Women</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
                                                   </div>
                                                 {% else %}
                                                     <div class="related updated">
-                                                        <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
+                                                        <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
                                                     </div>
                                                 {% endif %}
                                             {% endif %}
@@ -280,7 +280,7 @@
                                                 {% if 'wikipedia' in sameas.uri %}
                                                    <div>
                                                      <div class="sprite-icons-wikipedia"></div>
-                                                     <a href="{{sameas.uri}}">Wikipedia</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">Wikipedia</a>
                                                   </div>
                                                   <!-- For the sake of Wikipedia, we will only ask for a wikipedia image
                                                        if the Constellation has a wikipedia link from us. -->
@@ -288,25 +288,25 @@
                                                 {% elseif 'loc.gov/authorities' in sameas.uri %}
                                                    <div>
                                                      <div class="sprite-icons-idlocgov"></div>
-                                                     <a href="{{sameas.uri}}">LC Name Authority File</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">LC Name Authority File</a>
                                                   </div>
                                                 {% elseif 'viaf.org' in sameas.uri %}
                                                    <div>
                                                      <div class="sprite-icons-viaf"></div>
-                                                     <a href="{{sameas.uri}}">Virtual International Authority File</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">Virtual International Authority File</a>
                                                   </div>
                                                 {% elseif 'worldcat.org/wcidentities' in sameas.uri %}
                                                    <div>
                                                      <div class="sprite-icons-worldcat"></div>
-                                                     <a href="{{sameas.uri}}">WorldCat Identities</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">WorldCat Identities</a>
                                                   </div>
                                                 {% elseif 'cbw.iath.virginia.edu' in sameas.uri %}
                                                    <div>
-                                                     <div class="sprite-icons-cbw"></div> <a href="{{sameas.uri}}">Collective Biographies of Women</a>
+                                                     <div class="sprite-icons-cbw"></div> <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
                                                   </div>
                                                 {% else %}
                                                     <div class="related">
-                                                        <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
+                                                        <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
                                                     </div>
                                                 {% endif %}
                                             {% endif %}
@@ -316,31 +316,31 @@
                                                 {% if 'wikipedia' in sameas.uri %}
                                                    <div class="older">
                                                      <div class="sprite-icons-wikipedia"></div>
-                                                     <a href="{{sameas.uri}}">Wikipedia</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">Wikipedia</a>
                                                   </div>
                                                 {% elseif 'loc.gov/authorities' in sameas.uri %}
                                                    <div class="older">
                                                      <div class="sprite-icons-idlocgov"></div>
-                                                     <a href="{{sameas.uri}}">LC Name Authority File</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">LC Name Authority File</a>
                                                   </div>
                                                 {% elseif 'viaf.org' in sameas.uri %}
                                                    <div class="older">
                                                      <div class="sprite-icons-viaf"></div>
-                                                     <a href="{{sameas.uri}}">Virtual International Authority File</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">Virtual International Authority File</a>
                                                   </div>
                                                 {% elseif 'worldcat.org/wcidentities' in sameas.uri %}
                                                    <div class="older">
                                                      <div class="sprite-icons-worldcat"></div>
-                                                     <a href="{{sameas.uri}}">WorldCat Identities</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">WorldCat Identities</a>
                                                   </div>
                                                 {% elseif 'cbw.iath.virginia.edu' in sameas.uri %}
                                                    <div class="older">
                                                      <div class="sprite-icons-cbw"></div>
-                                                     <a href="{{sameas.uri}}">Collective Biographies of Women</a>
+                                                     <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
                                                   </div>
                                                 {% else %}
                                                     <div class="related older">
-                                                        <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
+                                                        <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
                                                     </div>
                                                 {% endif %}
                                             {% endif %}

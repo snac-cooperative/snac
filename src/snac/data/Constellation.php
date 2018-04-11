@@ -319,6 +319,15 @@ class Constellation extends AbstractData {
     private $status = null;
 
     /**
+     * Constellation Flags
+     *
+     * Additional information as part of the Constellation.
+     *
+     * @var string[] An array of flags
+     */
+    private $flags = null;
+
+    /**
      * Images for this constellation
      *
      * @var \snac\data\Image[] Images
@@ -360,6 +369,7 @@ class Constellation extends AbstractData {
             $this->mandates = array();
             $this->entityIDs = array();
             $this->images = array();
+            $this->flags = array();
         }
         // always call the parent constructor
         parent::__construct($data);
@@ -783,6 +793,41 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Get flags
+     *
+     * Returns the list of flags associated with this Constellation
+     *
+     * @return string[] List of Flags
+     */
+    public function getFlags() {
+        return $this->flags;
+    }
+
+    /**
+     * Has Flag Set
+     *
+     * Checks whether the flag is set and returns true/false.
+     *
+     * @param string $flag The flag to check
+     * @return boolean True if the flag is set, false otherwise
+     */
+    public function hasFlag($flag) {
+        return in_array($flag, $this->flags);
+    }
+
+    /**
+     * Set Flag
+     *
+     * Sets the given flag in the constellation, if it hasn't already been set
+     *
+     * @param string $flag The flag to set
+     */
+    public function setFlag($flag) {
+        if (!$this->hasFlag($flag))
+            array_push($this->flags, $flag);
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -817,7 +862,8 @@ class Constellation extends AbstractData {
             "generalContexts" => array(),
             "structureOrGenealogies" => array(),
             "mandates" => array(),
-            "images" => array()
+            "images" => array(),
+            "flags" => $this->flags
         );
 
         foreach ($this->mandates as $i => $v)
@@ -1105,6 +1151,11 @@ class Constellation extends AbstractData {
                 if ($entry != null)
                     $this->images[$i] = new Image($entry);
         }
+
+        unset($this->flags);
+        $this->flags = array();
+        if (isset($data["flags"]))
+            $this->flags = $data["flags"];
 
         return true;
     }

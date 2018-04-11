@@ -14,11 +14,11 @@ jQuery.fn.exists = function(){return this.length>0;}
 
 function searchFacet(facetName, value) {
     $("#faceted").bootstrapToggle('on');
-    var newOption = new Option(value, value, false, true);  
+    var newOption = new Option(value, value, false, true);
     $("#"+facetName).append(newOption).trigger('change');
     goSearchAjax(0);
     return false;
-} 
+}
 
 function goSearch(start) {
     return goSearchAjax(start);
@@ -35,7 +35,7 @@ function updateFacets(facet, facetName) {
         $("#faceted").bootstrapToggle('on');
         $("#facetedSearch").collapse("show");
         facet.forEach(function(term) {
-            var newOption = new Option(term, term, false, true);  
+            var newOption = new Option(term, term, false, true);
             $("#"+facetName).append(newOption);
         });
     }
@@ -70,16 +70,19 @@ function setAjaxResultsIntoPage(data) {
             var html = "<h4><a href=\""+snacUrl+"/view/"+result.id+"\">"+result.nameEntries[0].original+"</a></h4>"
                     + "<p class=\"identity-info\">"
                     + "    <span>"+result.ark+"</span>"
-                    + "    <span>("+result.entityType.term+")</span>"
-                    + "</p>";
+            if ($.inArray("holdingRepository", result.flags))
+                html += "    <span>(Holding Repository)</span>";
+            else
+                html += "    <span>("+result.entityType.term+")</span>";
+            html += "</p>";
             if (typeof result.biogHists == "undefined" || typeof result.biogHists[0] == "undefined" || typeof result.biogHists[0].text == "undefined")
                 html += "<p class=\"missing\">No biographical history available for this identity.</p>";
-            else 
+            else
                 html += "<p>"+(result.biogHists[0].text).replace('/<citation(.|\n)*?<\\/citation>/','').replace(/<\/?[^>]+(>|$)/g, "").substring(0, 500).split(" ").slice(0, -1).join(" ") + "..." +"</p>";
             html += "<p class=\"final\"><input class=\"compare-checkbox\" type=\"checkbox\" value=\""+result.id+"\"> Select this Identity Constellation to compare</p>";
 
             $("#search_results").append(html);
-            
+
         });
         $(".compare-checkbox").each(function() {
             $(this).on("change", function() {
@@ -120,7 +123,7 @@ function goSearchAjax(start) {
         if (data.total == 0) {
             $("#search_results").html("<p class=\"search-empty\">No Results Found.</p>");
             $("#search_sidebar").addClass("snac-hidden");
-            
+
             // set the hash to be empty
             document.location.hash = "";
 
@@ -138,7 +141,7 @@ function goSearchAjax(start) {
         if (('localStorage' in window) && window['localStorage'] !== null) {
             localStorage.setItem('snac_search', JSON.stringify(data));
         }
-        
+
         setAjaxResultsIntoPage(data);
     });
 
@@ -210,7 +213,7 @@ $(document).ready(function() {
             setAjaxResultsIntoPage(json);
         }
     }
-        
+
 
     $('.search-select').each(function() {
         $(this).select2({

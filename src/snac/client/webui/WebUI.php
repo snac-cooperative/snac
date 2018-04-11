@@ -120,6 +120,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "history_diff",
                 "static",
                 "api_help",
+                "api_test",
                 "contact",
                 "stats",
                 "feedback"
@@ -450,6 +451,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "api_help":
                 $executor->displayAPIHelpPage($display, $user);
                 break;
+            case "api_test":
+                $executor->displayAPITestPage($display, $user);
+                break;
             case "messages":
                 $executor->displayMessageListPage($display);
                 break;
@@ -634,7 +638,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "stats":
                 $response = $executor->displayStatsPage($this->input, $display);
                 break;
-            
+
             case "upload":
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;

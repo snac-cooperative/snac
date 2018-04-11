@@ -20,7 +20,7 @@ namespace snac\data;
  * These are the fundamental Privileges. A list of these is in class Role.
  *
  * @author Tom Laudeman
- *        
+ *
  */
 class Privilege extends AbstractGrouping {
 
@@ -28,7 +28,7 @@ class Privilege extends AbstractGrouping {
      * Constructor
      *
      * @param string[] $data optional An associative array representation of this object to create
-     */ 
+     */
     public function __construct($data=null)
     {
         parent::__construct($data);

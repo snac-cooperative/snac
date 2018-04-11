@@ -15,24 +15,24 @@ use \snac\server\database\DatabaseConnector;
 
 /**
  * Database Connector Test Suite
- * 
+ *
  * @author Robbie Hott
  *
  */
 class DatabaseConnectorTest extends \PHPUnit\Framework\TestCase {
-    
+
     /**
-     * Tests the generic connection (part of the constructor) 
+     * Tests the generic connection (part of the constructor)
      */
     public function testDatabaseConnection() {
-        
+
         try {
             $db = new \snac\server\database\DatabaseConnector();
         } catch (Exception $e) {
             $this->fail("Could not connect to database");
         }
     }
-    
+
     /**
      * Tests a simple prepare statement
      */
@@ -44,7 +44,7 @@ class DatabaseConnectorTest extends \PHPUnit\Framework\TestCase {
             $this->fail("Could not prepare no-op. " . $e->getMessage());
         }
     }
-    
+
     /**
      *  Tests a bad prepare statement
      */
@@ -57,9 +57,9 @@ class DatabaseConnectorTest extends \PHPUnit\Framework\TestCase {
             $message = $e->getMessage();
             $this->assertEquals("pg_prepare(): Query failed: ERROR:  syntax error at or near \"NOT\"\nLINE 1: NOT A POSTGRES STATEMENT;\n        ^", substr($message, 0));
         }
-        
+
     }
-    
+
     /**
      * Test an execute without a prepare
      */
@@ -73,7 +73,7 @@ class DatabaseConnectorTest extends \PHPUnit\Framework\TestCase {
             $this->assertEquals("pg_execute(): Query failed: ERROR:  prepared statement \"testStatement2\" does not exist", substr($message, 0));
         }
     }
-    
+
     /**
      * Tests an execute with a very simple prepare
      */
@@ -86,7 +86,7 @@ class DatabaseConnectorTest extends \PHPUnit\Framework\TestCase {
             $this->fail("Could not prepare and execute no-op. " . $e->getMessage());
         }
     }
-    
+
     /**
      * Tests a query with a bad statement
      */
@@ -99,9 +99,9 @@ class DatabaseConnectorTest extends \PHPUnit\Framework\TestCase {
             $message = $e->getMessage();
             $this->assertEquals("pg_prepare(): Query failed: ERROR:  syntax error at or near \"NOT\"\nLINE 1: NOT A POSTGRES STATEMENT;\n        ^", substr($message, 0));
         }
-        
+
     }
-    
+
     /**
      * Tests a query with a very simple statement
      */

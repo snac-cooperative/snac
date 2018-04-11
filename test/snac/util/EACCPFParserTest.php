@@ -14,14 +14,14 @@ namespace test\snac\util;
 
 /**
  * EAC-CPF Parser Test Suite
- * 
+ *
  * @author Robbie Hott
  *
  */
 class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
 
     /**
-     * Test that giving the parser a bad filename will throw the right exception. 
+     * Test that giving the parser a bad filename will throw the right exception.
      */
     public function testBadFilename() {
         $parser = new \snac\util\EACCPFParser();
@@ -31,7 +31,7 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
         } catch (\snac\exceptions\SNACParserException $e) {
             // Catching this exception passes
             $this->assertStringStartsWith(
-                "file_get_contents(Not-a-valid-filename): failed to open stream: No such file or directory", 
+                "file_get_contents(Not-a-valid-filename): failed to open stream: No such file or directory",
                 $e->getMessage(),
                 "The wrong exception was encountered in the code, but it still correctly throw the SNACParserException");
         } catch (\Exception $e) {
@@ -60,7 +60,7 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
             // Check that the language Used makes it through
             $this->assertNotEmpty($identity->getLanguagesUsed(), "Did not parse any languages used");
             $lang = $identity->getLanguagesUsed()[0];
-            
+
             $this->assertEquals("eng", $lang->getLanguage()->getTerm());
             $this->assertEquals("Latn", $lang->getScript()->getTerm());
 
@@ -70,7 +70,7 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
         }
 
     }
-    
+
 
 
     /**
@@ -84,22 +84,22 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
         try {
             // Parse the file into an identity
             $identity = $parser->parseFile("test/snac/server/database/test_record.xml");
-    
+
             $identity2 = new \snac\data\Constellation($identity->toArray());
-            
+
             $this->assertTrue($identity->equals($identity2), "The copy is not equal to the original");
             $this->assertTrue($identity2->equals($identity), "The original is not equal to the copy");
-    
+
         } catch (\snac\exceptions\SNACParserException $e) {
             $this->fail("Hit exception: " . $e->getMessage());
         }
-    
+
     }
 }
 
 /**
  * Test vocabulary for the parser tests
- * 
+ *
  * @author Robbie Hott
  *
  */
@@ -115,7 +115,7 @@ class TestVocabulary implements \snac\util\Vocabulary {
     public function getTermByValue($value, $type) {
         if ($value == null || $value == "")
             return null;
-        
+
         $term = new \snac\data\Term();
         $term->setTerm($value);
         $term->setURI($type);
@@ -132,7 +132,7 @@ class TestVocabulary implements \snac\util\Vocabulary {
     public function getTermByID($id, $type) {
         if ($id == null || $id == "")
             return null;
-        
+
         $term = new \snac\data\Term();
         $term->setID($id);
         $term->setURI($type);
@@ -150,7 +150,7 @@ class TestVocabulary implements \snac\util\Vocabulary {
         $geoterm->setURI($uri);
         return $geoterm;
     }
-    
+
     /**
      * Get a Resource by Resource object
      *

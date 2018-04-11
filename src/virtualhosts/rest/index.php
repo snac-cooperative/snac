@@ -10,6 +10,11 @@
  *            the Regents of the University of California
  */
 
+// Quick exit if options
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+     die();
+}
+
 /**
  * Load and instantiate the rest api
  */

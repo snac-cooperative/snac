@@ -15,7 +15,7 @@ function setRelationSearchPosition(start) {
      $('#relation-search-start').val(start);
 }
 
- function searchAndUpdate() {
+ function relationSearchAndUpdate() {
      if ($("#relation-searchbox").val() == "" || $("#relation-searchbox").val().length < 2) {
          $("#relation-results-box").html("");
      } else {
@@ -56,7 +56,7 @@ function setRelationSearchPosition(start) {
                  var next = (data.page + 1) * count;
                  html += "<nav><ul class='pagination'>";
                  var disabled = "";
-                 var goScript = " onClick='setRelationSearchPosition("+prev+");searchAndUpdate();'";
+                 var goScript = " onClick='setRelationSearchPosition("+prev+");relationSearchAndUpdate();'";
                  if (data.page == 0) {
                      disabled = " class='disabled'";
                      goScript = "";
@@ -64,7 +64,7 @@ function setRelationSearchPosition(start) {
                  html += "<li"+disabled+"><a href='#' aria-label='Previous'"+goScript+"><span aria-hidden='true'>&laquo;</span></a></li>";
                  for (var i = 0; i < data.pagination; i++) {
                      var active = '';
-                     var goScript = " onClick='setRelationSearchPosition("+(i * count)+");searchAndUpdate();'";
+                     var goScript = " onClick='setRelationSearchPosition("+(i * count)+");relationSearchAndUpdate();'";
                      if (i == data.page) {
                          active = " class='active'";
                          goScript = "";
@@ -72,7 +72,7 @@ function setRelationSearchPosition(start) {
                      html += "<li"+active+"><a href='#'"+goScript+">"+(i+1)+"</a></li>";
                  }
                  disabled = "";
-                 goScript = " onClick='setRelationSearchPosition("+next+");searchAndUpdate();'";
+                 goScript = " onClick='setRelationSearchPosition("+next+");relationSearchAndUpdate();'";
                  if (data.page == data.pagination - 1) {
                      disabled = " class='disabled'";
                      goScript = "";
@@ -154,7 +154,7 @@ function setRelationSearchPosition(start) {
     $('#relation-searchbox').keyup(function() {
       clearTimeout(timeoutID);
       var $target = $(this);
-      timeoutID = setTimeout(function() { setRelationSearchPosition(0); searchAndUpdate(); }, 500);
+      timeoutID = setTimeout(function() { setRelationSearchPosition(0); relationSearchAndUpdate(); }, 500);
     });
 
     $('#resource-searchbutton').click(function(){
