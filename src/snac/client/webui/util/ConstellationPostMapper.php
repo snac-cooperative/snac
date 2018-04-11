@@ -798,6 +798,7 @@ class ConstellationPostMapper {
 
             $source->setDisplayName($data["displayName"]);
             $source->setText($data["text"]);
+            $source->setCitation($data["citation"]);
             $source->setURI($data["uri"]);
             $source->setNote($data["note"]);
 
