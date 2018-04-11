@@ -370,10 +370,14 @@
                         {% endfor %}
 
                      <div class="panel panel-default" data-xsl="relatedPeople">
-                        <div class="panel-heading">
+                        <div class="panel-heading hrt-related-links">
                            <h4>
                               <a data-toggle="collapse" data-parent="#relations" href="#relatedPeople">
-                                 <span class="icon-ind"></span> People
+                                 <span class="fa-stack fa-sm" title="Entity Type: Person">
+                                     <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                                     <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+                                 </span>
+                                 People
                                  <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>
@@ -452,10 +456,14 @@
                         {% endfor %}
 
                      <div class="panel panel-default" data-xsl="relatedFamilies">
-                        <div class="panel-heading">
+                        <div class="panel-heading hrt-related-links">
                            <h4>
                               <a data-toggle="collapse" data-parent="#relations" href="#relatedFamilies">
-                                 <span class="icon-fam"></span> Families
+                                  <span class="fa-stack fa-sm" title="Entity Type: Family">
+                                      <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                                      <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+                                  </span>
+                                 Families
                                  <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>
@@ -536,10 +544,14 @@
                         {% endfor %}
 
                      <div class="panel panel-default" data-xsl="relatedOrganizations">
-                        <div class="panel-heading">
+                        <div class="panel-heading hrt-related-links">
                            <h4>
                               <a data-toggle="collapse" data-parent="#relations" href="#relatedOrganizations">
-                                 <span class="icon-org"></span> Organizations
+                                  <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                                      <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                                      <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+                                  </span>
+                                 Organizations
                                  <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>

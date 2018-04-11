@@ -9,6 +9,23 @@
     border-right-width:3px
 }
 
+.hrt-related-links {
+    padding-left:9px!important;
+    padding-right: 15px!important;
+    padding-top: 6px!important;
+    padding-bottom: 3px!important;
+}
+
+.hrt-related-links .badge {
+    margin-top: 4px!important;
+}
+
+.panel-heading a:hover, 
+.panel-heading a:active,
+.panel-heading a:focus {
+    text-decoration: none;
+}
+
 .snac-border-bottom {
     padding-left:15px;
     border-bottom:solid #e7e7e5 3px
@@ -6331,6 +6348,7 @@ div#identity .name a:hover {
 }
 
 div#identity .relations {
+    padding-bottom:20px;
     margin-bottom:20px;
     position:relative;
     min-height:1px;
@@ -6474,6 +6492,7 @@ div#identity div.biog {
     padding-right:15px;
     clear: both;
     display: inline-block;
+    margin-bottom: 20px;
 }
 
 @media (min-width: 768px) {
