@@ -3171,6 +3171,13 @@ class WebUIExecutor {
                         $response = array ();
                         $response["results"] = array ();
                         foreach ($constellation->getSources() as $source) {
+                            // If the user made a search query as well, then try to limit the results.
+                            // If the displayEntry of the source doesn't contain the query string, then don't
+                            // include it in the search results sent back to the client.
+                            if (isset($input["q"]) && $input["q"] != '' && 
+                                stripos($source->getDisplayName(), $input["q"]) === false) {
+                                continue;
+                            }
                             array_push($response["results"],
                                     $source->toArray());
                         }
