@@ -1790,14 +1790,14 @@ class WebUIExecutor {
 
         switch ($input["subcommand"]) {
             case "search":
-                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                if (isset($this->permissions["ViewVocabDashboard"]) && $this->permissions["ViewVocabDashboard"]) {
                     $display->setTemplate("vocab_search");
                 } else {
                     $this->displayPermissionDeniedPage("Vocabulary Search", $display);
                 }
                 break;
             case "geosearch":
-                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                if (isset($this->permissions["ViewVocabDashboard"]) && $this->permissions["ViewVocabDashboard"]) {
                     $display->setTemplate("vocab_geosearch");
                 } else {
                     $this->displayPermissionDeniedPage("Vocabulary Search", $display);
@@ -1865,7 +1865,7 @@ class WebUIExecutor {
                 }
                 break;
             case "dashboard":
-                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                if (isset($this->permissions["ViewVocabDashboard"]) && $this->permissions["ViewVocabDashboard"]) {
                     $display->setTemplate("vocab_dashboard");
                 } else {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
