@@ -74,7 +74,7 @@
         </div>
         <div class="col-md-4">
             <!-- Middle column -->
-            {% if permissions.AddUsers or permissions.ModifyUsers or permissions.AssignRoles %}
+            {% if permissions.EditVocabulary %}
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">Vocabulary Management</h3>
@@ -82,18 +82,12 @@
                 <div class="panel-body">
                     <p>Use the following links to administer controlled vocabularies.</p>
                     <div class="list-group">
-                        {% if permissions.AddUsers %}
                         <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Vocabulary Term</a>
-                        {% endif %}
 
-                        {% if permissions.ModifyUsers or permissions.AssignRoles %}
                         <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Vocabularies</a>
-                        {% endif %}
                     </div>
                 </div>
             </div>
-            {% endif %}
-            {% if permissions.ManageGroups %}
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Geographic Vocabulary Management</h3>
@@ -110,7 +104,7 @@
         </div>
         <div class="col-md-4">
             <!-- Right column -->
-            {% if permissions.ManageGroups %}
+            {% if permissions.EditResources %}
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Resource Cache Management</h3>
