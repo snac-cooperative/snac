@@ -4288,7 +4288,7 @@ class DBUtil
                                                    $gObj->getID(),
                                                    $this->db->boolToPg($gObj->getConfirmed()),
                                                    $gObj->getOriginal(),
-                                                   $this->termID($gObj->getGeoTerm()),
+                                                   $this->thingID($gObj->getGeoTerm()),
                                                    $this->termID($gObj->getType()),
                                                    $this->termID($gObj->getRole()),
                                                    $gObj->getNote(),
