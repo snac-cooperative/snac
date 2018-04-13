@@ -90,13 +90,24 @@
         "description" : "Read a particular controlled vocabulary term.",
         "parameters" : {
             "term_id" : {
+                "optional": true,
                 "type": "Integer",
                 "description" : "Term ID, if known.  If given a term id, that vocabulary term is directly returned."
             },
             "type" : {
                 "optional": true,
-                "type": "String",
-                "description" : "Type of the vocabulary to search. Currently only uses if geoPlace."
+                "type": "String", 
+                "description" : "Type of the vocabulary to search."
+            },
+            "term_value" : {
+                "optional": true,
+                "type": "String", 
+                "description" : "The value of the vocabulary to search."
+            },
+            "uri" : {
+                "optional": true,
+                "type": "String", 
+                "description" : "The unique URI of the vocabulary to search."
             }
         },
         "returns" : {
