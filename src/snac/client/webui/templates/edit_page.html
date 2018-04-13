@@ -67,6 +67,7 @@
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/resource_admin.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/name_parser.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -121,6 +122,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane active" id="nameEntries">
                         <h2>Core Data</h2>
 
+                        <button type="button" name="button" data-toggle="modal" data-target="#name-parser"> Parse Name </button>
                         <div class="panel panel-default">
                         	<div class="panel-heading">Constellation Information</div>
                             <div class="panel-body">
@@ -713,6 +715,40 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="name-parser" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title">Parse Name</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <h4>To-Parse Name: <span id="name-parser-original"><span></h4>
+                    <h4>Type: <span id="name-parser-type"><span></h4>
+                    <div id="name-parser-options" class="well">
+                        <!-- <div class='radio'>
+                            <label for='name-parser-option-1'> <input type='radio' name='parsed-names' id='name-parser-option-1' value='hello 1'>{{data.nameEntries[0]['original']}}</label>
+                        </div>
+                        <div class='radio'>
+                            <label for='name-parser-option-1'> <input type='radio' name='parsed-names' id='name-parser-option-2' value='hello 2'>{{data.nameEntries[0]['original']}}</label>
+                        </div> -->
+                    </div>
+                </div>
+
+                <!-- <h6>{{dump(data.nameEntries[0]['original'])}}</h6> -->
+                <!-- <h6>{{dump(data.entityType)}}</h6> -->
+                <!-- <h6>{{dump(data.entityType.term)}}</h6> -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Cancel"><span aria-hidden="true">Cancel</span></button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Accept"><span aria-hidden="true">Accept</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     </div>
     {{ footer(X, user, permissions, control) }}

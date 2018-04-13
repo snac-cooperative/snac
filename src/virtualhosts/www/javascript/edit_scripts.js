@@ -738,6 +738,10 @@ function subMakeEditable(short, i) {
         });
     }
 
+    // add parser btn if nameEntry is a computed name
+    if (short === 'nameEntry' && $("#nameEntry_component_0_panel_" + i).find('select:first').text() === "Name") {
+        $('#nameEntry_component_0_remove_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i + '"> Parse </button>');
+    }
 
 
     // Set this data's operation value appropriately
@@ -1728,11 +1732,139 @@ function magicDefaultFill(selectID, vocabType) {
 
 }
 
+function capitalize(word) {
+    return word[0].toUpperCase() + word.slice(1);
+}
+
+function parseName(e) {
+    // TODO: load the guesses (including first parse) into array. For each guess, make a radio option, attach the object to it
+    // then take user-selected button, grab the attached name object, and insert selects based on it.
+    // TODO: make parseFamily, parseCorp
+
+    $('#name-parser-options').text('');
+    $('#name-parser').modal('toggle');
+
+    // var $partType = $(e.target).parent().parent().find("select:last");
+    // var $partType = $(e.target).closest('[id^="nameEntry_reorderable_').find("select:last");
+    // var $textbox = $(e.target).closest('[id^="nameEntry_reorderable_').find("input[type='text']:first");
+
+    var $nameComponents = $(e.target).closest('.name-components');
+    var i = $nameComponents.attr('id').split('_')[2];
+    var $partType = $nameComponents.find("select:last");
+    var $textbox = $nameComponents.find('input[type="text"]:last');
+
+    var name = $textbox.val();
+    var $nameComponent = $nameComponents.find('.reorderable'); ///
+    $nameComponent.replaceWith('<div style="margin-left:10%; font-size: 14x; font-style:italic; color: #777777;"> Name: ' + name + '</div>');
+
+    var entityType = $('#entityType').text().trim();
+    $('#name-parser-type').text(capitalize(entityType));
+    $('#name-parser-original').text(name);
+
+    var parser = new NameParser(name);
+    var parsed;
+    var guess;
+    if (entityType === "person") {
+        parsed = parser.parsePerson();
+        parser.guessPerson();
+        guess = parser.displayPerson();
+    }
+    if (entityType === "corporation")
+        parsed = parser.parseCorp();
+    if (entityType === "family")
+        parsed = parser.parseFamily();
+
+    var parsedOption = '';
+
+    for (var key in parsed) {
+        if (parsed[key] && parsed[key].length != 0) {
+            parsedOption += "<li><span style='font-weight: bold;'>" + key + "</span>: " + parsed[key] + "</li>";
+        }
+    }
+
+    var counter = 0;
+    $('#name-parser-options').append("<div class='radio'>" +
+        "<label class='radio form-inline' for='name-parser-option-" + counter + "'>" +
+        "<input type='radio'name='parsed-names' id='name-parser-option-" + counter + "' value='PARSER??'>" +
+        "<ul class='list-unstyled'>" + parsedOption + "</ul></label> </div>");
+
+    parsedOption = '';
+
+    for (var key in guess) {
+        if (guess[key] && guess[key].length != 0) {
+            parsedOption += "<li><span style='font-weight: bold;'>" + key + "</span>: " + guess[key] + "</li>";
+        }
+    }
+
+    counter++;
+    $('#name-parser-options').append("<h4>Other Options</h3> <div class='radio'>" +
+        "<label class='radio form-inline' for='name-parser-option-" + counter + "'>" +
+        "<input type='radio'name='parsed-names' id='name-parser-option-" + counter + "' value='PARSER??'>" +
+        "<ul class='list-unstyled'>" + parsedOption + "</ul></label> </div>");
+
+
+    $('#name-parser-options').find('input[type=radio]:checked');
+
+    //
+    //  $('#name-parser-options').append(`
+    //     <div class='radio'>
+    //         <label for='name-parser-option-3'> <input type='radio' name='parsed-names' id='name-parser-option-3' value='hello 1'> Jimmy jimmy {{data.nameEntries[0]['original']}}</label>
+    //     </div>
+    // `);
+
+
+    // TODO: load from ajax call with entity type
+    var nameComponentMap = {
+        'Surname': 400223,
+        'Forename': 400224,
+        'NameAddition': 400236,
+        'Date': 400237,
+        'NameExpansion': 400226,
+        'Numeration': 400225
+    };
+
+    for (var key in parsed) {
+        if (key == 'NameAdditions') {
+            key = 'NameAddition';
+            // TODO: Extract doubled logic
+            for (var j = 0; j < parsed['NameAdditions'].length; j++) {
+                newNameEntryComponent(i);
+                var option = new Option(key, nameComponentMap[key], false, true);
+                //select new
+                $partType = $nameComponents.find("select:last");
+                $partType.append(option).trigger('change');
+                $textbox = $nameComponents.find("input[type='text']:last");
+                $textbox.val(parsed["NameAdditions"][j]);
+
+                $partType.append(option).trigger('change');
+            }
+        } else if (parsed[key] && nameComponentMap[key]) {
+            newNameEntryComponent(i);
+            var option = new Option(key, nameComponentMap[key], false, true);
+            //select new
+            $partType = $nameComponents.find("select:last");
+            $partType.append(option).trigger('change');
+            $textbox = $nameComponents.find("input[type='text']:last");
+            $textbox.val(parsed[key]);
+
+            $partType.append(option).trigger('change');
+        }
+    }
+
+    $(e.target).remove();
+    updateNameEntryHeading(i);
+    // $('#name-parser-options').text('');
+}
 
 /**
  * Things to do when the page finishes loading
  */
 $(document).ready(function() {
+    // listen for name-parsing
+    $('#nameEntries').on('click', '.name-parser', function(event) {
+        event.preventDefault();
+        parseName(event);
+    });
 
     // Load the place cache, if needed
     loadGeoPlaceResultCache();
