@@ -576,6 +576,7 @@ create table source (
     is_deleted   boolean default false,
     display_name text,    -- User entered display name to distinguish sources, esp in the UI
     text         text,    -- Text of this source
+    citation     text,    -- Text of this source
     note         text,    -- Note related to this source
     uri          text,    -- URI of this source
     language_id  integer, -- language, fk to vocabulary.id
@@ -786,17 +787,21 @@ create index related_resource_idx3 on related_resource(resource_id, resource_ver
 
 -- Resources are cached directly, but also versioned
 create table resource_cache (
-        id         int default nextval('resource_id_seq'),
-        version    int default nextval('resource_version_id_seq'),
-        is_deleted boolean default false,
-        href       text,
-        type       int,
-        entry_type int,
-        title      text,
-        abstract   text,
-        extent     text,
-        repo_ic_id int,
-        object_xml_wrap text,
+        id               int default nextval('resource_id_seq'),
+        version          int default nextval('resource_version_id_seq'),
+        is_deleted       boolean default false,
+        href             text,
+        type             int,
+        entry_type       int,
+        title            text,
+        abstract         text,
+        date             text,
+        display_entry    text,
+        extent           text,
+        repo_ic_id       int,
+        object_xml_wrap  text,
+        user_id          int,
+        updated_at       timestamp default(now()),
         primary key (id, version)
         );
 

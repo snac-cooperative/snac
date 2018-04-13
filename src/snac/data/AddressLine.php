@@ -27,7 +27,7 @@ class AddressLine extends AbstractOrderedComponent {
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
-     * 
+     *
      */
     public function __construct($data = null) {
         $this->setMaxDateCount(0);

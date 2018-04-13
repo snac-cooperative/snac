@@ -18,9 +18,6 @@
 <!-- Helper Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-<script language="javascript">
-$('.selectpicker').selectpicker();
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Tiny MCE text editor -->
@@ -92,7 +89,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = function() {};
                         {% endif %}
                         <button type="button" id="forward_message" class="btn btn-default disabled" disabled>
                             <i class="fa fa-share" aria-hidden="true"></i> Forward
-                        </button>                        
+                        </button>
                         {% if data.viewSetting == "inbox" %}
                         <button type="button" id="archive_message" class="btn btn-default disabled" disabled>
                             <i class="fa fa-archive" aria-hidden="true"></i> Archive

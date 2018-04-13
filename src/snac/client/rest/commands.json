@@ -1,25 +1,25 @@
 {
-    
+
     "vocabulary" : {
         "category": "vocabulary",
         "title" : "Search Vocabulary",
         "description" : "Search through the controlled vocabulary.",
         "parameters" : {
             "term_id" : {
-                "type": "Integer", 
+                "type": "Integer",
                 "description" : "Term ID, if known.  If given a term id, that vocabulary term is directly returned.",
                 "optional" : true
             },
             "query_string" : {
-                "type": "String", 
+                "type": "String",
                 "description" : "Search string to find in the vocabulary list"
             },
             "type" : {
-                "type": "String", 
+                "type": "String",
                 "description" : "Type of the vocabulary to search, ex: subject, function, occupation, geo_place, ..."
             },
             "entity_type" : {
-                "type": "Integer|Null", 
+                "type": "Integer|Null",
                 "description" : "Entity type ID to filter vocabulary, if known"
             }
         },
@@ -80,7 +80,7 @@
                         }
                     ],
                     "timing": 10.91
-                } 
+                }
             }
         ]
     },
@@ -90,7 +90,8 @@
         "description" : "Read a particular controlled vocabulary term.",
         "parameters" : {
             "term_id" : {
-                "type": "Integer", 
+                "optional": true,
+                "type": "Integer",
                 "description" : "Term ID, if known.  If given a term id, that vocabulary term is directly returned."
             },
             "type" : {
@@ -162,7 +163,7 @@
                     },
                     "result": "success",
                     "timing": 141.15
-                } 
+                }
             }
         ]
     },
@@ -172,13 +173,13 @@
         "description" : "Reconcile a given constellation against all constellations in SNAC, returning the top results.",
         "parameters" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Constellation object filled with as much information as known about the identity."
             }
         },
         "returns" : {
             "reconciliation" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "A list of reconciliation objects, including strength of the match, the Constellation matched, and a vector of individual scores that comprise the match strength."
             },
             "result": {
@@ -279,41 +280,41 @@
         "description" : "Returns the information for the given user, including information for Constellations locked to the user.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object"
             }
         },
         "returns" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full user object with name, affiliation Constellation, role and privilege list"
             },
             "groups" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "List of Group objects to which the user belongs"
             },
             "messages" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Unread messages sent to this user"
             },
             "editing" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified objects of {id, version, nameEntry} of the Constellations this user has checked out"
             },
             "editing_lock" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified objects of {id, version, nameEntry} of the Constellations this user is currently editing (locked)"
             },
             "review" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified objects of {id, version, nameEntry} of the Constellations sent for review to any reviewer"
             },
             "review_lock" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified objects of {id, version, nameEntry} of the Constellations sent for review (locked) to this user"
             },
             "recent" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified objects of {id, version, nameEntry} of the Constellations recently published by this user"
             },
             "timing": {
@@ -426,11 +427,11 @@
         "description" : "Insert a new Constellation into SNAC. The Constellation must have the operation flags set to \"insert\".",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object"
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object"
             },
             "message" : {
@@ -441,7 +442,7 @@
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object with current id and version numbers"
             },
             "result": {
@@ -539,11 +540,11 @@
         "description" : "Updates SNAC's copy of the given Constellation with this one.  Any components with operation flags set to \"update\" will be overwritten with the new version.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object"
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object, with current ids and versions (the result of calling edit)"
             },
             "message" : {
@@ -554,7 +555,7 @@
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object with current id and version numbers"
             },
             "result": {
@@ -631,11 +632,11 @@
         "description" : "Publishes the given Constellation in SNAC.  This does not make any updates to the Constellation data in SNAC.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object"
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object, with current ids and versions (the result of calling edit)"
             },
             "message" : {
@@ -646,7 +647,7 @@
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object with current id and version numbers"
             },
             "result": {
@@ -693,17 +694,17 @@
         "description" : "Drops the lock on the given Constellation from \"currently editing\" down to simply locked to the user.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object"
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Constellation object with current ID and Version number"
             }
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Unlocked Constellation object with current id and version numbers"
             },
             "result": {
@@ -749,16 +750,16 @@
         "description" : "Sends the given Constellation in SNAC for review.  This does not make any updates to the Constellation data in SNAC.  If a reviewer is specified, this query will put the Constellation in that user's review queue.  If no reviewer is specified, the Constellation will go for general review.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object"
             },
             "reviewer" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object of the intended reviewer",
                 "optional": true
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Constellation object with at least current ID and Version"
             },
             "message" : {
@@ -769,7 +770,7 @@
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object with current id and version numbers"
             },
             "result": {
@@ -817,17 +818,17 @@
         "description" : "Deletes the given Constellation from SNAC.  This does not make any updates to the Constellation data in SNAC before deleting.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object"
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Constellation object to delete with at least current ID and Version"
             }
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object deleted"
             },
             "result": {
@@ -873,21 +874,21 @@
         "description" : "Reassigns the given Constellation to a different user, i.e. changes which user to which the Constellation is locked.  This does not make any updates to the Constellation data in SNAC.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Acting user's User object"
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Constellation object to assign, with at least current ID and Version"
             },
             "to_user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object for the user to whom the Constellation should be assigned"
             }
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object with current id and version numbers"
             },
             "result": {
@@ -933,7 +934,7 @@
         },
         "returns" : {
             "constellation" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified Constellation objects {id, ark, nameEntry} of the recently published Constellations"
             },
             "result": {
@@ -992,7 +993,7 @@
         },
         "returns" : {
             "constellation" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified Constellation objects {id, ark, nameEntry} of random Constellations"
             },
             "result": {
@@ -1052,19 +1053,19 @@
         "description" : "Returns a list of Constellations based on the query parameters.  By default, it will return a subset of published Constellations.  If a user object is supplied, additional statuses are allowed to be queried, including \"needs review\" for all Constellations needing review.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Acting user's User object",
                 "optional": true
             },
             "status" : {
-                "type": "String", 
+                "type": "String",
                 "description": "Status of Constellations to return.  Currently supported: \"published\" (default) and \"needs review\"",
                 "optional": true
             }
         },
         "returns" : {
             "results" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified objects of {id, version, nameEntry} of the Constellations matching the query"
             }
         },
@@ -1108,16 +1109,16 @@
         "parameters" : {
             "constellationid" : {
                 "type" : "Integer",
-                "description" : "Constellation ID" 
+                "description" : "Constellation ID"
             }
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full current Constellation Object"
             },
             "history" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "List of history objects, in reverse order, describing what has happened to the Constellation through the current version."
             },
             "timing": {
@@ -1226,29 +1227,29 @@
         "parameters" : {
             "constellationid" : {
                 "type" : "Integer",
-                "description" : "Constellation ID for Constellation to read", 
+                "description" : "Constellation ID for Constellation to read",
                 "optional" : true
             },
             "version" : {
                 "type" : "Integer",
-                "description": "Version of the Constellation to read", 
+                "description": "Version of the Constellation to read",
                 "optional":true
             },
             "type" : {
                 "type" : "String",
-                "description": "What type of file to return: constellation_json or eac_cpf.", 
+                "description": "What type of file to return: constellation_json or eac_cpf.",
                 "optional":true
             },
             "arkid" : {
                 "type" : "String",
-                "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'", 
+                "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'",
                 "optional": true
             }
         },
         "returns" : {
             "file" : {
                 "type" : "Object",
-                "description" : "File information object, including mime-type, filename, and base64-encoded content of the file." 
+                "description" : "File information object, including mime-type, filename, and base64-encoded content of the file."
             }
         },
         "examples" : [
@@ -1277,26 +1278,26 @@
         "description" : "Returns a list of Constellations denoted as maybe-same-as the given Constellation.  If the user object is given, it will contain mergeable flags to denote if the user has permission to merge any of the Constellations.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "User object",
                 "optional": true
             },
             "constellationid" : {
                 "type" : "Integer",
-                "description" : "Constellation ID" 
+                "description" : "Constellation ID"
             }
         },
         "returns" : {
             "mergeable" : {
-                "type": "Boolean", 
+                "type": "Boolean",
                 "description" : "Boolean value denoting whether the Constellations can be merged by this user"
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Summary Constellation Object of the requested Constellation"
             },
             "maybe_same" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Array of objects, each containing a \"mergeable\" flag and a Constellation Object of the Constellation asserted to be the maybe the same."
             },
             "timing": {
@@ -1402,16 +1403,16 @@
         "description" : "Makes a maybe-same assertion between the constellations specified.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" : "User object"
             },
             "assertion" : {
-                "type": "String", 
+                "type": "String",
                 "description" : "User's assertion statement about the similarity of these Constellations"
             },
             "constellationids" : {
-                "type": "Array of Integers", 
-                "description" :  "2 or more Constellation IDs to assert as maybe_same" 
+                "type": "Array of Integers",
+                "description" :  "2 or more Constellation IDs to assert as maybe_same"
             }
         },
         "returns": {
@@ -1447,20 +1448,20 @@
         "description" : "Computes the difference between the two given Constellations.  Returns Constellation objects containing: only those items in the first, only those items in the second, and components shared.",
         "parameters" : {
             "constellationid1" :{
-                "type": "Integer", 
+                "type": "Integer",
                 "description" :  "Constellation ID for one Constellation to compare"
             },
             "version1" : {
-                "type": "Integer", 
+                "type": "Integer",
                 "description" :  "Constellation Version to compare.  If not set, it will compare the published version.",
                 "optional": true
             },
             "constellationid2" :{
-                "type": "Integer", 
+                "type": "Integer",
                 "description" :  "Constellation ID for the other Constellation to compare"
             },
-            "version2" : { 
-                "type": "Integer", 
+            "version2" : {
+                "type": "Integer",
                 "description" :  "Constellation Version to compare.  If not set, it will compare the published version.",
                 "optional": true
             }
@@ -1500,33 +1501,33 @@
         "description" : "Computes the difference between the two given Constellations.  Checks out the two Constellations in editing for the given user to allow a merge.  Returns Constellation objects containing: only those items in the first, only those items in the second, and components shared.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" : "User object"
             },
             "constellationid1" : {
-                "type": "Integer", 
+                "type": "Integer",
                 "description" :  "Constellation ID for one Constellation to compare"
             },
             "constellationid2" : {
-                "type": "Integer", 
+                "type": "Integer",
                 "description" :  "Constellation ID for the other Constellation to compare"
             }
         },
         "returns" : {
             "constellation1" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" : "Constellation object containing only data distinct to the first Constellation"
             },
             "constellation2" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" : "Constellation object containing only data distinct to the second Constellation"
             },
-            "intersection" : { 
-                "type": "Object", 
+            "intersection" : {
+                "type": "Object",
                 "description" : "Constellation object containing only data shared by both Constellations"
             },
             "mergeable" : {
-                "type": "Boolean", 
+                "type": "Boolean",
                 "description" : "Boolean value denoting whether these two Constellations can be merged by this user"
             }
         },
@@ -1556,21 +1557,21 @@
         "description" : "Given Constellation IDs and a full, merged, Constellation, creates a new Constellation in SNAC from the given Constellation and sets all Constellations given by the IDs to be \"tombstoned\" and redirected to the new, merged, Constellation.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" : "User object"
             },
             "constellationids" : {
-                "type": "Array of Integers", 
+                "type": "Array of Integers",
                 "description" :  "2 or more Constellation IDs to merge together.  Each Constellation will be \"tombstoned\" and point to a new Constellation that matches the one provided by the user in the Constellation parameter."
             },
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" :  "Full merged Constellation object.  The version of the Constellation here will be considered by SNAC as the merged version; it will be written as a new Constellation."
             }
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object with current id and version numbers"
             },
             "result": {
@@ -1637,17 +1638,17 @@
         "description" : "Given Constellation IDs, creates a new Constellation in SNAC from the combined data from all Constellations, \"tombstones\" the originals, and redirects thier IDs to the new, merged, Constellation.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" : "User object"
             },
             "constellationids" : {
-                "type": "Array of Integers", 
+                "type": "Array of Integers",
                 "description" :  "2 or more Constellation IDs to merge together.  Each Constellation will be \"tombstoned\" and point to a new Constellation that matches the one provided by the user in the Constellation parameter."
             }
         },
         "returns" : {
             "constellation" : {
-                "type": "Object", 
+                "type": "Object",
                 "description": "Full Constellation object with current id and version numbers"
             },
             "result": {
@@ -1701,22 +1702,22 @@
         "parameters" : {
             "constellationid" : {
                 "type" : "Integer",
-                "description" : "Constellation ID for Constellation to read", 
+                "description" : "Constellation ID for Constellation to read",
                 "optional" : true
             },
             "version" : {
                 "type" : "Integer",
-                "description": "Version of the Constellation to read", 
+                "description": "Version of the Constellation to read",
                 "optional":true
             },
             "type" : {
                 "type" : "String",
-                "description": "How much of the Constellation to return.  Without this parameter, the entire Constellation is returned.  If set to \"summary\", a summary is returned without relationships.", 
+                "description": "How much of the Constellation to return.  Without this parameter, the entire Constellation is returned.  If set to \"summary\", a summary is returned without relationships.",
                 "optional":true
             },
             "arkid" : {
                 "type" : "String",
-                "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'", 
+                "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'",
                 "optional": true
             }
         },
@@ -1730,7 +1731,7 @@
                 "description" : "Message relating to the \"success-notice\" result.  Contains a \"text\" string including a human-readable note and an \"info\" object of additional information about the Constellation."
             },
             "constellation" : {
-                "type": "Object|Array of Objects", 
+                "type": "Object|Array of Objects",
                 "description": "Full Constellation object with current id and version numbers.  If the ID/Ark given point to a Constellation that has been split, multiple Constellation objects will be returned instead."
             },
             "maybesame_count": {
@@ -1803,12 +1804,12 @@
         "description" : "Check out the Constellation for editing.",
         "parameters" : {
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" : "User object"
             },
             "constellationid" : {
                 "type" : "Integer",
-                "description" : "Constellation ID for Constellation to edit" 
+                "description" : "Constellation ID for Constellation to edit"
             }
         },
         "returns" : {
@@ -1817,7 +1818,7 @@
                 "description": "Reviewer's note, if set by another user."
             },
             "constellation" : {
-                "type": "Object|Array of Objects", 
+                "type": "Object|Array of Objects",
                 "description": "Full Constellation object with current id and version numbers, ready for editing.  Those id/version values must be present with future update queries."
             },
             "timing": {
@@ -1883,69 +1884,69 @@
         "parameters" : {
             "term" : {
                 "type" : "String",
-                "description": "Search term to query against SNAC" 
+                "description": "Search term to query against SNAC"
             },
             "start" : {
                 "type" : "Integer",
-                "description": "Position in the results to start.  Begin with 0" 
+                "description": "Position in the results to start.  Begin with 0"
             },
             "count" : {
                 "type" : "Integer",
-                "description": "Number of results to return" 
+                "description": "Number of results to return"
             },
             "entity_type" : {
                 "type" : "String",
-                "description": "The entity type of the identity to search (person, corporateBody, family)", 
+                "description": "The entity type of the identity to search (person, corporateBody, family)",
                 "optional":true
             },
             "biog_hist" : {
                 "type" : "Boolean",
-                "description": "Whether or not to search biographical histories for the search term", 
+                "description": "Whether or not to search biographical histories for the search term",
                 "optional":true
             },
             "facets" : {
                 "type" : "Object of String Arrays",
-                "description": "Facets to use in searching.", 
+                "description": "Facets to use in searching.",
                 "optional":true
             },
             "search_type" : {
                 "type" : "String",
-                "description": "What type of search to perform.  By default, performs standard keyword search.  Passing 'autocomplete' will use left-anchored autocomplete search.  Passing 'advanced' will allow wildcards and other advanced features.", 
+                "description": "What type of search to perform.  By default, performs standard keyword search.  Passing 'autocomplete' will use left-anchored autocomplete search.  Passing 'advanced' will allow wildcards and other advanced features.",
                 "optional":true
             }
         },
         "returns" : {
             "results" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Simplified Constellation objects {id, ark, nameEntry} of random Constellations"
             },
             "aggregations" : {
                 "type" : "Object of String Arrays",
-                "description": "List of facets that are included in the current search results" 
+                "description": "List of facets that are included in the current search results"
             },
             "term" : {
                 "type" : "String",
-                "description": "Search term to query against SNAC" 
+                "description": "Search term to query against SNAC"
             },
             "count" : {
                 "type" : "Integer",
-                "description": "Number of results returned in this request" 
+                "description": "Number of results returned in this request"
             },
             "total" : {
                 "type" : "Integer",
-                "description": "Number of total search results" 
+                "description": "Number of total search results"
             },
             "page" : {
                 "type" : "Integer",
-                "description": "Page number of results based on total and count" 
+                "description": "Page number of results based on total and count"
             },
             "pagination" : {
                 "type" : "Integer",
-                "description": "Number of total pages of results based on total and count" 
+                "description": "Number of total pages of results based on total and count"
             },
             "search_type" : {
                 "type" : "String",
-                "description": "What type of search to perform.  By default, performs standard keyword search.  Passing 'autocomplete' will use left-anchored autocomplete search.  Passing 'advanced' will allow wildcards and other advanced features." 
+                "description": "What type of search to perform.  By default, performs standard keyword search.  Passing 'autocomplete' will use left-anchored autocomplete search.  Passing 'advanced' will allow wildcards and other advanced features."
             },
             "timing": {
                 "type": "Float",
@@ -2150,27 +2151,27 @@
         "parameters" : {
             "term" : {
                 "type" : "String",
-                "description": "Search term to query against SNAC" 
+                "description": "Search term to query against SNAC"
             },
             "entity_type" : {
                 "type" : "String",
-                "description": "The entity type of the identity to search (person, corporateBody, family)", 
+                "description": "The entity type of the identity to search (person, corporateBody, family)",
                 "optional":true
             },
             "position" : {
                 "type" : "String",
                 "description": "Whether the \"requested\" term in the browse list should be in the \"middle\" of the list, \"before\", or \"after\".",
-                "optional": true 
+                "optional": true
             },
             "icid" : {
                 "type" : "String",
                 "description": "Constellation ID if needed to distinguish between identical names in the response list",
-                "optional": true 
+                "optional": true
             }
         },
         "returns" : {
             "results" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "An array of names from SNAC, in a special format.  Includes the preferred name entry of a Constellation with its ark, Constellation ID, degree, resources, entity type, and timestamp of when it was updated.  These results also include the normalized lower-case name entry."
             },
             "result": {
@@ -2413,7 +2414,7 @@
                 "description": "Resource object to write to SNAC, with \"operation\" set to \"insert\"."
             },
             "user" : {
-                "type": "Object", 
+                "type": "Object",
                 "description" : "Acting user object"
             }
         },
@@ -2777,7 +2778,12 @@
         "parameters" : {
             "term" : {
                 "type" : "String",
-                "description": "Search term to query against the SNAC resource cache." 
+                "description": "Search term to query against the SNAC resource cache."
+            },
+            "count" : {
+                "type" : "Integer",
+                "description": "Number of results to return",
+                "optional":true
             }
         },
         "returns" : {
@@ -2787,15 +2793,15 @@
             },
             "total" : {
                 "type" : "Integer",
-                "description": "Number of total search results" 
+                "description": "Number of total search results"
             },
             "page" : {
                 "type" : "Integer",
-                "description": "Page number of results based on total and count" 
+                "description": "Page number of results based on total and count"
             },
             "pagination" : {
                 "type" : "Integer",
-                "description": "Number of total pages of results based on total and count" 
+                "description": "Number of total pages of results based on total and count"
             },
             "timing": {
                 "type": "Float",
@@ -2985,22 +2991,22 @@
         "parameters" : {
             "query" : {
                 "type" : "Object",
-                "description": "JSON-formatted Elastic Search query.  This would be the \"query\" portion of an Elastic Search API call.  We will automatically include the index and type for Elastic Search." 
+                "description": "JSON-formatted Elastic Search query.  This would be the \"query\" portion of an Elastic Search API call.  We will automatically include the index and type for Elastic Search."
             },
             "size" : {
                 "type" : "Integer",
                 "description": "Number of results to return",
-                "optional": true 
+                "optional": true
             },
             "from" : {
                 "type" : "Integer",
                 "description": "Starting point in the results, 0-based",
-                "optional": true 
+                "optional": true
             }
         },
         "returns" : {
             "results" : {
-                "type": "Array of Objects", 
+                "type": "Array of Objects",
                 "description": "Full results directly from Elastic Search"
             },
             "timing": {

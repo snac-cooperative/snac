@@ -24,7 +24,7 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
     if (minLength === undefined) {
         minLength = 2;
     }
-
+        
         if(selectItem.attr('id').endsWith(idMatch)
             && !selectItem.attr('id').endsWith("ZZ")) {
                 selectItem.select2({
@@ -104,8 +104,20 @@ function geovocab_select_replace(selectItem, idMatch) {
         }
 }
 
-
 var lastSourceSearchResults = null;
+
+/**
+ * Add <br> helper script
+ *
+ * Adds <br> to strings so that they can be shown to the user in HTML
+ * after being input into a text-only field.
+ */
+function addbr(str) {
+    if (typeof str !== 'undefined' && str !== null) {
+        return (str + '').replace(/(\r\n|\n\r|\r|\n)/g, '<br>' + '$1');
+    }
+    return '';
+}
 
 /**
  * Replace a select that is linked to a Constellation Source search
@@ -166,15 +178,24 @@ function scm_source_select_replace(selectItem, idMatch) {
                     lastSourceSearchResults.forEach(function(source) {
                         if (source.id == sourceID) {
                             // Update the text of the source
-                            if (typeof source.text !== 'undefined')
-                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).html(source.text).removeClass('hidden');
-                            else
+                            if (typeof source.text !== 'undefined') {
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).html(addbr(source.text)).removeClass('hidden');
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).closest(".panel-body").removeClass('hidden');
+                            } else {
                                 $("#scm_" + shortName + "_source_text_" + j + "_" + i).text("").addClass('hidden');
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).closest(".panel-body").addClass('hidden');
+                            
+                            }
                             // Update the URI of the source
                             if (typeof source.uri !== 'undefined')
                                 $("#scm_" + shortName + "_source_uri_" + j + "_" + i).html('<a href="'+source.uri+'" target="_blank">'+source.uri+'</a>');
                             else
                                 $("#scm_" + shortName + "_source_uri_" + j + "_" + i).html('');
+                            // Update the URI of the source
+                            if (typeof source.citation !== 'undefined')
+                                $("#scm_" + shortName + "_source_citation_" + j + "_" + i).html(source.citation).removeClass('hidden');
+                            else
+                                $("#scm_" + shortName + "_source_citation_" + j + "_" + i).html('').addClass('hidden');
                         }
                     });
                 }
@@ -264,6 +285,30 @@ function select_replace_simple(selectItem) {
         width: '100%',
         allowClear: true,
         theme: 'bootstrap'
+    });
+}
+
+
+
+/**
+ * Load Vocab Select Options
+ *
+ * Replaces the select with a select2 object preloaded with an array of options
+ *
+ * @param  JQuery selectItem The JQuery item to replace
+ * @param  string type       The type of the vocabulary term
+ * @param  string type       Text placeholder for select 
+ */
+function loadVocabSelectOptions(selectItem, type, placeholder) {
+    $.get(snacUrl + "/vocabulary?type=" + type)
+    .done(function(data) {
+        var options = data.results;
+        selectItem.select2({
+            data: options,
+            allowClear: false,
+            theme: 'bootstrap',
+            placeholder: placeholder
+        });
     });
 }
 

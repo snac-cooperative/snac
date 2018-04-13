@@ -20,7 +20,7 @@ namespace snac\exceptions;
  * Exception for handling errors with SNAC Server's unknown commands.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class SNACUnknownCommandException extends SNACException {
 

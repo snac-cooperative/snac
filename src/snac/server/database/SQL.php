@@ -1646,7 +1646,7 @@ class SQL
     {
         $qq = 'select_source';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.citation, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where fk_id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -1674,7 +1674,7 @@ class SQL
     {
         $qq = 'select_source_list';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.citation, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where ic_id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -1739,7 +1739,7 @@ class SQL
     {
         $qq = 'select_source_by_id';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.citation, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -1781,7 +1781,7 @@ class SQL
      * because it is used by language as a foreign key.
      *
      */
-    public function insertSource($vhInfo, $id, $displayName, $text, $note, $uri)
+    public function insertSource($vhInfo, $id, $displayName, $text, $citation, $note, $uri)
     {
         if (! $id)
         {
@@ -1790,15 +1790,16 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq,
                             'insert into source
-                            (version, ic_id, id, display_name, text, note, uri)
+                            (version, ic_id, id, display_name, text, citation, note, uri)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
                                   $vhInfo['ic_id'],
                                   $id,
                                   $displayName,
                                   $text,
+                                  $citation,
                                   $note,
                                   $uri));
         $this->sdb->deallocate($qq);
@@ -3143,7 +3144,7 @@ class SQL
     }
 
     /**
-     * Get laguages for list of resources
+     * Get languages for list of resources
      *
      * Returns the list of all languages for a given array of resource ids.
      *
@@ -3814,6 +3815,9 @@ class SQL
      * @param  int $entryTypeID     Entity Type ID
      * @param  text|null $link            Link for this resource
      * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
+     * @param  text|null $date            Text entry date of this resource
+     * @param  text|null $displayEntry    Display Entry of resource
+     * @param  int $userID               The userid of the user
      * @return string[]                  Array containing id, version
      */
     public function insertResource(        $resourceID,
@@ -3825,7 +3829,10 @@ class SQL
                                            $docTypeID,
                                            $entryTypeID,
                                            $link,
-                                           $objectXMLWrap)
+                                           $objectXMLWrap,
+                                           $date,
+                                           $displayEntry,
+                                           $userID)
     {
         if (! $resourceID)
         {
@@ -3837,9 +3844,9 @@ class SQL
         $qq = 'insert_resource';
         $this->sdb->prepare($qq,
                             'insert into resource_cache
-                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap)
+                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry, user_id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
@@ -3852,11 +3859,15 @@ class SQL
                           $docTypeID,         // 7
                           $entryTypeID,       // 8
                           $link,              // 9
-                          $objectXMLWrap);    // 10
+                          $objectXMLWrap,     // 10
+                          $date,              // 11
+                          $displayEntry,      // 12
+                          $userID);          // 13
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return array($resourceID, $resourceVersion);
     }
+
 
     /**
      * Insert Resource Language
@@ -3870,9 +3881,10 @@ class SQL
      * @param int $scriptID The script ID from the vocabulary table
      * @param string $vocabularySource The source for this vocab term
      * @param string $note The descriptive note for this language
+     * @param boolean $is_deleted Whether Resource Language is deleted
      * @return int The ID for the language just written
      */
-    public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note)
+    public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note, $is_deleted)
     {
         if (! $id)
         {
@@ -3881,16 +3893,17 @@ class SQL
         $qq = 'insert_resource_language';
         $this->sdb->prepare($qq,
                             'insert into resource_language
-                            (resource_id, version, id, language_id, script_id, vocabulary_source, note)
+                            (resource_id, version, id, language_id, script_id, vocabulary_source, note, is_deleted)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
         $eArgs = array($resourceID,
                        $resourceVersion,
                        $id,
                        $languageID,
                        $scriptID,
                        $vocabularySource,
-                       $note);
+                       $note,
+                       $this->sdb->boolToPg($is_deleted));
         $result = $this->sdb->execute($qq, $eArgs);
         $this->sdb->deallocate($qq);
         return $id;
@@ -4653,7 +4666,7 @@ class SQL
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
             'select rr.*, r.type as document_type, r.href, r.object_xml_wrap, r.title, r.extent,
-                    r.abstract, r.repo_ic_id from
+                    r.abstract, r.date, r.display_entry, r.repo_ic_id from
                 (select aa.id, aa.version, aa.ic_id,
                         aa.relation_entry, aa.descriptive_note, aa.arcrole,
                         aa.resource_id, aa.resource_version
@@ -4692,7 +4705,7 @@ class SQL
        $this->sdb->prepare($qq,
                            'select
                            aa.id, aa.version, aa.title, aa.href, aa.abstract, aa.extent, aa.repo_ic_id,
-                           aa.object_xml_wrap, aa.type
+                           aa.object_xml_wrap, aa.type, aa.date, aa.display_entry
                            from resource_cache as aa,
                            (select max(version) as version from resource_cache where version<=$1 and id=$2) as bb
                            where not aa.is_deleted and
@@ -5501,12 +5514,12 @@ class SQL
     public function searchResources($query, $urlOnly = false)
     {
         $queryStr =
-                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id, date, display_entry
                   from resource_cache
                   where href = $1 or title ilike $1 order by title asc';
         if ($urlOnly) {
             $queryStr =
-                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id, date, display_entry
                   from resource_cache
                   where href = $1 order by title asc';
         }

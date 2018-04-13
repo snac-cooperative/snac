@@ -317,7 +317,7 @@ class NameEntry extends AbstractData {
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true, $checkSubcomponents = true) {
-        
+
         if ($other == null || ! ($other instanceof \snac\data\NameEntry))
             return false;
 

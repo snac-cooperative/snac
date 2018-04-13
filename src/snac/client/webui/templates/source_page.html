@@ -67,40 +67,35 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             <div class="panel panel-source">
                 <div class="panel-heading panel-source-heading"><h3 class="panel-title panel-source-title">{{source.displayName}}</h3></div>
                 <div class="panel-body">
-                    {% if key != 0 %}
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group well well-sm">
-                                <h5 class="text-center" style="font-weight: bold">Source Information</h5>
-                                <p class="panel panel-body scm-source-panel {{ not source.text ? 'hidden'}}">{{source.text|e}}</p>
-                                <p class="text-center">
-                                    {% if source.uri %}
-                                    <a href="{{source.uri}}" target="_blank">{{source.uri}}</a>
-                                    {% endif %}
-                                </p>
-                            </div>
-                        </div>
+                        {% if key != 0 %}
                         <div class="col-md-6">
                             <div class="panel panel-default">
-                                <div class="panel-heading"><h4 class="panel-title">Found Data</h4></div>
-                                <div class="panel-body">
-                                    {% if source.foundData %}
-                                        {{source.foundData|raw}}
-                                    {% else %}
-                                        <p>No found data listed for this source</p>
-                                    {% endif %}
+                                <div class="panel-heading">
+                                    Source Citation
+                                </div>
+                                <div class="panel-body {{not source.text ? 'hidden'}}">
+                                    <p class="{{not source.text ? 'hidden'}}" style="">{{source.text|e|raw|nl2br}}</p>
+                                </div>
+                                <div class="panel-footer">
+                                    <p class="{{ not source.citation ? 'hidden'}}">{{source.citation|e}}</p>
+                                    <p>
+                                        {% if source.uri %}
+                                        <a href="{{source.uri}}" target="_blank">{{source.uri}}</a>
+                                        {% endif %}
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    {% endif %}
-                    {% if source.snacControlMetadata %}
-                    <div class="row">
+                        <div class="col-md-6">
+                        {% else %}
                         <div class="col-md-12">
+                        {% endif %}
                             <h4>SCM Citations</h4>
+                            {% if source.snacControlMetadata %}
                             <div style="">
                                 {% for scm in source.snacControlMetadata %}
-                                <div class="panel panel-default" style="width: 250px; margin: 10px; display:inline-block; vertical-align:top;">
+                                <div class="panel panel-default" style="width: 45%; margin: 10px; display:inline-block; vertical-align:top;">
                                         <div class="panel-body">
                                             <h5 style="font-weight: bold;">{{scm.object}}</h5>
                                             <p>{% if scm.subCitation %}
@@ -117,9 +112,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                     </div>
                                 {% endfor %}
                             </div>
+                            {% endif %}
                         </div>
                     </div>
-                    {% endif %}
                 </div>
             </div>
         </div>

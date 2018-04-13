@@ -23,7 +23,7 @@ namespace snac\exceptions;
  * that is being thrown.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class SNACException extends \Exception {
 
@@ -54,7 +54,7 @@ class SNACException extends \Exception {
         $toPrint .= "},";
         $toPrint .= "\"timing\" : " . round((microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) * 1000, 2);
         $toPrint .= "}";
-        
+
         return $toPrint;
     }
 }

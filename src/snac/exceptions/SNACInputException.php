@@ -20,7 +20,7 @@ namespace snac\exceptions;
  * Exception for handling errors with user input to SNAC.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class SNACInputException extends SNACException {
 

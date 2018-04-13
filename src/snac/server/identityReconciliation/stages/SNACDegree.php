@@ -45,9 +45,9 @@ class SNACDegree implements helpers\Stage {
      *
      * @param \snac\data\Constellation $search The constellation to be evaluated.
      * @param \snac\data\ReconciliationResult[] $list A list of resultss to evaluate against.  This
-     * may be null.  
-     * @return array 
-     *      
+     * may be null.
+     * @return array
+     *
      */
     public function run($search, $list) {
 

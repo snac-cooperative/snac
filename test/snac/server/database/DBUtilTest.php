@@ -69,6 +69,9 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $this->user = $dbuser->readUser($testUser);
         //$dbuser = new \snac\server\database\DBUser();
 
+        global $log;
+        $this->logger = new \Monolog\Logger('WebUI');
+        $this->logger->pushHandler($log);
 
     }
 
@@ -95,6 +98,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testMultiSecondOrderData()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -210,6 +214,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($firstDateList[0], $secondDateList[0]);
         $this->assertEquals($firstDateList[1], $secondDateList[1]);
         $this->assertEquals($firstDateList[2], $secondDateList[2]);
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -219,6 +225,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testWithStatus()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         // Make any previous ones published
         $objList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing');
         foreach ($objList as $c) {
@@ -257,6 +264,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         $objList = $this->dbu->listConstellationsWithStatusForAny('published', 10, 10);
         $this->assertTrue(count($objList)==10);
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -266,6 +275,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testUpdateContrib()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -315,6 +325,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals("TestName", $newContribName);
         $this->assertEquals($nameVersion, $newNameVersion);
         $this->assertTrue($newContribVersion > $contribVersion);
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -325,6 +337,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testFullCPFIngestCPFStatus()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -343,6 +356,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
          * you want status you must call readConstellationStatus() and get it directly from the db.
          */
         $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -354,6 +369,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testSearchVocabularyNameComponent()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -416,6 +432,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
          * you want status you must call readConstellationStatus() and get it directly from the db.
          */
         $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
 
@@ -424,6 +442,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testFullCPFDateIsRange()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -461,6 +480,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
              */
             $this->assertFalse($gObj->getIsRange());
         }
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
 
@@ -486,6 +507,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testFullCPFNrdOperationUpdate()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -558,6 +580,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         $finalObj = $this->dbu->readConstellation($xObj->getID(), $xObj->getVersion());
         $this->assertEquals($finalObj->getEntityType()->getTerm(), 'family');
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -565,6 +589,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testSourceSCM()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -635,6 +660,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         $longerSourceList = $postAddObj->getSources();
         $this->assertEquals(count($sourceList)+1, count($longerSourceList));
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -644,6 +671,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testDeleteViaWriteConstellationStatus()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -670,6 +698,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $this->logger->addDebug(sprintf("delete via status version: %s ic_id: %s", $delVersion, $retObj->getID()));
 
         $this->assertNotFalse($delVersion);
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -694,6 +724,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testFullCPFWithEditList()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
@@ -843,6 +874,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
             fwrite($cfile, $postDeleteJSON);
             fclose($cfile);
         }
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -851,6 +884,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testTableVocabularyPopulated()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         /* Verbose:
          * $sql = $this->dbu->sqlObj();
          * $numRows = $sql->countVocabulary();
@@ -859,6 +893,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
          */
         $numRows = $this->dbu->sqlObj()->countVocabulary();
         $this->assertTrue($numRows > 100000);
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -877,6 +913,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testDemoConstellation()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
 
 
         $eParser = new \snac\util\EACCPFParser();
@@ -962,6 +999,24 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $modObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
         $this->assertEquals($modName, $modObj->getNameEntries()[0]->getOriginal());
         $this->assertTrue($origNCount == count($modObj->getNameEntries()));
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
+    }
+
+    protected function insertResources(&$c) {
+        foreach ($c->getResourceRelations() as &$rel) {
+            $resource = $rel->getResource();
+            if ($resource->getID() == null) {
+                $resource->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+                $retObj = $this->dbu->writeResource($this->user, $resource);
+                if ($retObj !== false) {
+                    $resource->setID($retObj->getID());
+                    $resource->setVersion($retObj->getVersion());
+                    $resource->setOperation(null);
+                    $rel->setResource($resource);
+                }
+            }
+        }
     }
 
     /**
@@ -974,11 +1029,13 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testParseToDB()
     {
+        $this->logger->addDebug("Starting: " . __METHOD__);
         // Parse a file, write the data into the db.
 
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation("insert");
         $constellationObj = $eParser->parseFile("test/snac/server/database/99166-w6f2061g.xml");
+        $this->insertResources($constellationObj);
         $retObj = $this->dbu->writeConstellation($this->user,
                                                  $constellationObj,
                                                  'machine ingest of hand-crafted, full CPF test record',
@@ -1046,6 +1103,8 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         $this->assertTrue($retObj->getVersion() < $updatedObj->getVersion());
         $this->assertEquals($retObj->getID(), $updatedObj->getID());
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
     /**
@@ -1054,9 +1113,13 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testIngestAnotherProblemCPF()
     {
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/util/eac-cpf/99166-w65k3tsm.xml");
+
+        $this->insertResources($cObj);
 
         $retObj = $this->dbu->writeConstellation($this->user,
                                                  $cObj,
@@ -1076,5 +1139,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         // Assert that we could change the status
         $this->assertNotFalse($ret, "Error writing deleted status to object");
+        
+        $this->logger->addDebug("Ending: " . __METHOD__);
     }
 }

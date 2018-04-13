@@ -92,7 +92,7 @@ class DBUser
          */
 
         $this->sql = new SQL($this->db, 'deleted');
-        
+
         // create a log channel
         $this->logger = new \Monolog\Logger('DBUser');
         $this->logger->pushHandler($log);
@@ -1088,7 +1088,7 @@ class DBUser
             // System users only below 100
             if ($user["id"] < 100)
                 continue;
-                
+
             $newUserRec = $this->sql->selectUserByID($user["id"]);
             $newUser = $this->populateUser($newUserRec);
             array_push($userList, $newUser);
@@ -1334,9 +1334,9 @@ class DBUser
 
 
     /**
-     * Archive Message 
+     * Archive Message
      *
-     * Archives a message from the database 
+     * Archives a message from the database
      *
      * @param \snac\data\Message $message   Message to archive (with ID)
      * @return boolean True if successful, false otherwise

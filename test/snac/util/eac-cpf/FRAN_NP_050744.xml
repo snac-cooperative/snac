@@ -13,7 +13,7 @@
       <conventionDeclaration>
          <citation> Notice établie conformément à la norme ICA-ISAAR (CPF) 2004, aux normes ISO 8601 pour le système de normalisation des dates utilisé, ainsi que AFNOR NF Z44-061 juin 1986 Catalogage : forme et structure des vedettes noms de personne, des vedettes titres, des rubriques de classement et des titres forgés et NF Z 44-060, décembre 1996 Catalogue d'auteurs et d'anonymes – Forme et structure des vedettes de collectivités-auteurs. </citation>
       </conventionDeclaration>
-      
+
       <maintenanceHistory>
          <maintenanceEvent>
             <eventType>created</eventType>
@@ -67,11 +67,11 @@
                <p>Date de création incertaine.</p>
             </descriptiveNote>
          </existDates>
-         
-         
-         
-         
-         
+
+
+
+
+
          <structureOrGenealogy>
             <p>idem</p>
          </structureOrGenealogy>
@@ -111,12 +111,12 @@
                   <p>Mêmes possibilités que pour champ précédent</p>
                </descriptiveNote>
             </mandate><biogHist>
-            <p>Cet 
-     <span style="underline">organisme fictif</span> est créé pour faire des 
-     <span style="bold">tests aux Archives nationales</span>. 
+            <p>Cet
+     <span style="underline">organisme fictif</span> est créé pour faire des
+     <span style="bold">tests aux Archives nationales</span>.
     </p>
-            <p>Insertion de 
-     <span style="italic">caractères spéciaux</span> : « blah » 
+            <p>Insertion de
+     <span style="italic">caractères spéciaux</span> : « blah »
     </p>
             <p>Pas possible de mettre un lien hypertexte ici.</p>
             <p>Caractères en exposant ?</p>
