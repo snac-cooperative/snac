@@ -43,23 +43,17 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * to aid in lookups.
      */
     public function __construct() {
-        $this->db = new \snac\server\database\DBUtil();
-        $vocab = $this->db->getAllVocabulary();
-        // Fix up the vocabulary into a nested array
-        foreach($vocab as $v) {
-            if (!isset($this->vocab[$v["type"]]))
-                $this->vocab[$v["type"]] = array();
-            array_push($this->vocab[$v["type"]], 
-                array(
-                    "id"=>$v["id"], 
-                    "value"=>$v["value"],
-                    "uri"=>$v["uri"],
-                    "description"=>$v["description"]));
-        }
-
         $this->serverExecutor = new \snac\server\ServerExecutor();
     }
 
+    public function setConstellationStore(&$cStore) {
+        $this->db = $cStore;
+    }
+
+    private function setupConstellationStore() {
+        if ($this->db == null)
+            $this->db = new \snac\server\database\DBUtil();
+    }
 
     /**
      * Get a Term by string value/term
@@ -69,18 +63,8 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * @return \snac\data\Term The Term object for the value
      */
     public function getTermByValue($value, $type) {
-        $term = new \snac\data\Term();
-        if (isset($this->vocab[$type]))
-            foreach ($this->vocab[$type] as $k => $v) {
-                if ($v["value"] == $value) {
-                    $term->setTerm($value);   
-                    $term->setID($v["id"]);
-                    $term->setURI($v["uri"]);
-                    $term->setDescription($v["description"]);
-                    return $term;
-                }
-            }
-        return null;
+        $this->setupConstellationStore();
+        return $this->db->populateTerm(null, $value, $type);
     }
 
     /**
@@ -91,17 +75,8 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * @return \snac\data\Term The Term object for the id
      */
     public function getTermByID($id, $type) {
-        $term = new \snac\data\Term();
-        if (isset($this->vocab[$type]))
-            if (isset($this->vocab[$type][$id])) {
-                $v = $this->vocab[$type][$id];
-                $term->setTerm($v["value"]);   
-                $term->setID($v["id"]);
-                $term->setURI($v["uri"]);
-                $term->setDescription($v["description"]);
-                return $term;
-            }
-        return null;
+        $this->setupConstellationStore();
+        return $this->db->populateTerm($id);
     }
     
 
@@ -112,7 +87,12 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * @return \snac\data\GeoTerm The GeoTerm object for the uri
      */
     public function getGeoTermByURI($uri) {
+        $this->setupConstellationStore();
         return $this->db->getPlaceByURI($uri);
+    }
+
+    public function getConstellation($ark) {
+        return $this->db->readPublishedConstellationByARK($ark, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
     }
 
     /**
