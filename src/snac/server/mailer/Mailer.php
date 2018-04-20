@@ -122,7 +122,7 @@ class Mailer {
         
         $toEmail = $message->getToUser()->getEmail();
         if ($message->getToUser()->getWorkEmail() !== null)
-            $toEmail = $toUser->getWorkEmail();
+            $toEmail = $message->getToUser()->getWorkEmail();
         
         $this->mailer->addAddress($toEmail, $message->getToUser()->getFullName()); // Add a recipient
         $this->mailer->isHTML(true);                                            // Set email format to HTML
