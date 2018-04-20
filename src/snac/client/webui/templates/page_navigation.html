@@ -69,11 +69,15 @@
                         <li><a href="{{control.snacURL}}/dashboard"><i class="fa fa-fw fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
                         <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         <li><a href="{{control.snacURL}}/stats"><i class="fa fa-fw fa-bar-chart" aria-hidden="true"></i> SNAC Statistics</a></li>
-                        {% if permissions.ViewAdminDashboard %}
+                        {% if permissions.ViewAdminDashboard or permissions.ViewVocabDashboard %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">Administration</li>
+                        {% if permissions.ViewAdminDashboard %}
                         <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Admin Dashboard</a></li>
+                        {% endif %}
+                        {% if permissions.ViewVocabDashboard %}
                         <li><a href="{{control.snacURL}}/vocab_administrator"><i class="fa fa-fw fa-list-alt" aria-hidden="true"></i> Vocabulary</a></li>
+                        {% endif %}
                         {% endif %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
