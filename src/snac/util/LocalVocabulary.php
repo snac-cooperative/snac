@@ -46,10 +46,30 @@ class LocalVocabulary implements \snac\util\Vocabulary {
         $this->serverExecutor = new \snac\server\ServerExecutor();
     }
 
+    /**
+     * Set Contellation Store
+     *
+     * Sets a Constellation Store (DBUtil) into this instance of a
+     * Local Vocabulary.  This is not necessary to be run, since if a
+     * Constellation Store is not available when a term has been requested,
+     * this class will automatically instantiate a DBUtil instance.
+     *
+     * This is best used when calling the EAC-CPF parser from ServerExecutor,
+     * which already has a Constellation Store instantiated.
+     *
+     * @param \snac\server\database\DBUtil $cStore The Constellation Store to set
+     */
     public function setConstellationStore(&$cStore) {
         $this->db = $cStore;
     }
 
+    /**
+     * Setup Constellation Store
+     *
+     * Checks to see if there is a Constellation Store (DBUtil) set for this
+     * instance.  If so, it does nothing.  If not, then this method will attempt
+     * to instantiate a default DBUtil instance.
+     */
     private function setupConstellationStore() {
         if ($this->db == null)
             $this->db = new \snac\server\database\DBUtil();
