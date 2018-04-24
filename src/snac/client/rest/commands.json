@@ -1,5 +1,4 @@
 {
-    "parse_eac": {},
     "vocabulary" : {
         "category": "vocabulary",
         "title" : "Search Vocabulary",
@@ -3096,5 +3095,9 @@
                 }
             }
         ]
+    },
+    "parse_eac": {
+        "title": "Parse EAC-CPF XML to Constellation (Pre-Alpha)",
+        "description": "Parses a given EAC-CPF file into a Constellation JSON object using the SNAC profile."
     }
 }
