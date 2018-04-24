@@ -69,8 +69,8 @@ function setAjaxResultsIntoPage(data) {
         data.results.forEach(function(result) {
             var html = "<h4><a href=\""+snacUrl+"/view/"+result.id+"\">"+result.nameEntries[0].original+"</a></h4>"
                     + "<p class=\"identity-info\">"
-                    + "    <span>"+result.ark+"</span>"
-            if ($.inArray("holdingRepository", result.flags))
+                    + "    <span>"+result.ark+"</span>";
+            if (typeof result.flags != "undefined" && result.flags.indexOf("holdingRepository") != -1)
                 html += "    <span>(Holding Repository)</span>";
             else
                 html += "    <span>("+result.entityType.term+")</span>";

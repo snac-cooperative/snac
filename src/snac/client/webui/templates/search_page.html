@@ -200,7 +200,7 @@
                     <h4><a href="{{control.snacURL}}/view/{{result.id}}">{{result.nameEntries.0.original}}</a></h4>
                     <p class="identity-info">
                         <span>{{result.ark}}</span>
-                        <span>({{result.entityType.term}})</span>
+                        <span>({{"holdingRepository" in result.flags ? 'Holding Repository' : result.entityType.term}})</span>
                     </p>
                     {% if result.biogHists.0.text %}
                     <p>{{result.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}</p>
