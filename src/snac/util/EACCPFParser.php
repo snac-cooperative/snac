@@ -1271,7 +1271,8 @@ class EACCPFParser {
                             case "resourceRelation":
                                 $relation = new \snac\data\ResourceRelation();
                                 $resource = new \snac\data\Resource();
-                                $resource->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "document_type"));
+                                if (isset($ratts["role"]))
+                                    $resource->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "document_type"));
                                 $resource->setLink($ratts['href']);
                                 $resource->setLinkType($this->getTerm($this->getValue($ratts['type']), "document_type"));
                                 if (isset($ratts['arcrole']))
