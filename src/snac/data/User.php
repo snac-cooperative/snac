@@ -111,6 +111,14 @@ class User implements \Serializable {
      * @var string Preferred rules
      */
     private $preferredRules = null;
+    
+    /**
+     * Number of Unread Messages 
+     *
+     * @var int Number of unread messages in the system
+     */
+    private $numUnreadMessages = 0;
+
 
     /**
      * Whether the user is active
@@ -172,6 +180,15 @@ class User implements \Serializable {
     }
 
     /**
+     * Get the number of unread messages
+     * @return string the username
+     */
+    public function getNumUnreadMessages()
+    {
+        return $this->numUnreadMessages;
+    }
+
+    /**
      * Get the list of roles
      *
      * Return the role list
@@ -220,6 +237,16 @@ class User implements \Serializable {
     public function setUserID($id) {
 
         $this->userid = $id;
+    }
+
+    /**
+     * Set the number of unread messages
+     *
+     * @param int $count The number of unread messages
+     */
+    public function setNumUnreadMessages($count) {
+
+        $this->numUnreadMessages = $count;
     }
 
     /**
@@ -520,6 +547,7 @@ class User implements \Serializable {
                 "email" => $this->email,
                 "workEmail" => $this->workEmail,
                 "workPhone" => $this->workPhone,
+                "unreadMessageCount" => $this->numUnreadMessages,
                 "active" => $this->active,
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token,
@@ -615,6 +643,11 @@ class User implements \Serializable {
             $this->token = $data["token"];
         else
             $this->token = null;
+
+        if (isset($data["unreadMessageCount"]))
+            $this->numUnreadMessages = $data["unreadMessageCount"];
+        else
+            $this->numUnreadMessages = 0;
 
         if (isset($data["active"]))
             $this->active = $data["active"];

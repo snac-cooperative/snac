@@ -75,6 +75,10 @@ class ServerConnect {
             $this->user = $user;
     }
 
+    public function getUser() {
+        return $this->user;
+    }
+
     /**
      * Perform Server Query
      *
@@ -120,6 +124,14 @@ class ServerConnect {
         }
 
         $this->logger->addDebug("Got the following server response", $return);
+
+        if (isset($return["user"]) && $return["user"] != null) {
+            $tmpUser = new \snac\data\User($return["user"]);
+            if ($tmpUser != null) {
+                $this->user = $tmpUser;
+            }
+        }
+
         return $return;
     }
 

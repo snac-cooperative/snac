@@ -75,6 +75,10 @@ class WebUIExecutor {
         $this->user = $user;
     }
 
+    public function getUser() {
+        return $this->connect->getUser();
+    }
+
     /**
      * Set User Permissions Data
      *

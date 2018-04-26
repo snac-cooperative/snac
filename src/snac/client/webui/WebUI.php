@@ -651,6 +651,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $executor->displayGridPage($this->input, $display);
                 break;
         }
+        
+        
+        // The server will always return a newer version of the user.  So in this case, we'll always
+        // serialize to the session the latest version of the user returned to the web ui.  The
+        // ServerConnect utility now checks for the user object and updates its copy with the one
+        // returned from the server rather than keeping the initial one sent by WebUI when the
+        // ServerConnect object was created.
+        if ($executor->getUser() != null)
+            $_SESSION['snac_user'] = serialize($executor->getUser());
 
         // If the display has been given a template, then use it.  Else, print out JSON.
         if ($display->hasTemplate()) {
