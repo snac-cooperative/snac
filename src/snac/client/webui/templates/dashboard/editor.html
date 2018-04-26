@@ -54,20 +54,33 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 <div class="container snac" role="main">
 
-    <h1>Dashboard</h1>
 
     <div class="row">
         <div class="alert alert-01 alert-info" id="status-message" style="display: none">
             <p></p>
         </div><!-- end alert -->
     </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="well well-md">
-                <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows the most recently published Constellations across SNAC and provides searching.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column shows constellations you have out for review and other information depending on your permission level.</p>
+    <div class="row dashboard-title">
+        <div class="col-md-4">
+            <div>
+                <div class="large-icon-box">
+                    <p class="text-center background-icon">
+                        <i class="fa fa-folder" style="color: #CFEBFD;" ></i>
+                    </p>
+                    <p class="text-right overlay-icon" >
+                        <i class="fa fa-pencil" style="color: #1B5880;"></i>
+                    </p>
+                </div>
             </div>
         </div>
+        <div class="col-md-8">
+                <h1 class="title">Editor's Dashboard</h1>
+                <div class="well-md">
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows the most recently published Constellations across SNAC and provides searching.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column shows constellations you have out for review and other information depending on your permission level.</p>
+                </div>
+        </div>
     </div>
+
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
@@ -106,38 +119,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         </div>
                 </div>
             </form>
-
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">View Recently Published</h3>
-                </div>
-                <div class="panel-body">
-                    <p>Browse interesting and recently published Constellations from all of SNAC</p>
-                    <div class="list-group">
-                        {% for recent in data.allrecents %}
-                        <a href="{{control.snacURL}}/view/{{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">View Your Recently Edited</h3>
-                </div>
-                <div class="panel-body">
-                    <p>Browse Constellations you have recently edited in SNAC.</p>
-                    <div class="list-group">
-                        {% for recent in data.recent %}
-                        <a href="{{control.snacURL}}/view/{{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% if permissions.Edit or permissions.Create %}
-        <div class="col-md-4">
-            <!-- Middle column -->
+            
             {% if permissions.Create %}
             <div class="panel panel-success">
                 <div class="panel-heading">
@@ -153,6 +135,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             {% endif %}
 
 
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
             {% if permissions.Edit %}
             <div class="panel panel-warning">
                 <div class="panel-heading">
@@ -184,6 +169,41 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     </div>
                 </div>
             </div>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
+            {% if data.messages|length > 0 %}
+            <div class="alert alert-warning">
+                <div class="">
+                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
+                    <a class="list-group-item list-group-item-warning" href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messaging Center</a>
+                </div>
+            </div>
+            {% endif %}
+
+
+            {% if permissions.Edit %}
+            <div class="panel panel-review">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Locked for Review</h3>
+                </div>
+                <div class="panel-body">
+                    <p>You have the following Constellations that have been sent for review.  You may unlock them here to
+                    continue editing them.</p>
+                    <div class="list-group">
+                        {% if not data.review_lock %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
+                        {% for link in data.review_lock %}
+                        <a href="{{control.snacURL}}/unlock/{{link.id}}/{{link.version}}" class="list-group-item"><span class="pull-right"> <i class="fa fa-unlock" aria-hidden="true"></i> </span> {{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if permissions.Edit %}
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Locked Edits</h3>
@@ -202,76 +222,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 </div>
             </div>
             {% endif %}
-        </div>
-        {% endif %}
-        <div class="col-md-4">
-            <!-- Right column -->
 
-            {% if data.messages|length > 0 %}
-            <div class="alert alert-warning">
-                <div class="">
-                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
-                    <a class="list-group-item list-group-item-warning" href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messaging Center</a>
-                </div>
-            </div>
-            {% endif %}
-
-
-            <div class="panel panel-review">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Locked for Review</h3>
-                </div>
-                <div class="panel-body">
-                    <p>You have the following Constellations that have been sent for review.  You may unlock them here to
-                    continue editing them.</p>
-                    <div class="list-group">
-                        {% if not data.review_lock %}
-                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
-                        {% endif %}
-                        {% for link in data.review_lock %}
-                        <a href="{{control.snacURL}}/unlock/{{link.id}}/{{link.version}}" class="list-group-item"><span class="pull-right"> <i class="fa fa-unlock" aria-hidden="true"></i> </span> {{link.nameEntry}}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            {% if permissions.ChangeLocks %}
-            <div class="panel panel-review">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Constellations Needing Review</h3>
-                </div>
-                <div class="panel-body">
-                    <p>The following Constellations need review.  Select one to check it out and begin editing.</p>
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Sent directly to you</div>
-                        <div class="panel-body">
-                            <div class="list-group" style="margin-bottom: 0px;">
-                                {% if not data.review %}
-                                <span href="#" class="list-group-item disabled">No Constellations Available</span>
-                                {% endif %}
-                                {% for link in data.review %}
-                                <a href="{{control.snacURL}}/edit/{{link.id}}/{{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Sent to any reviewers</div>
-                        <div class="panel-body">
-                            <div class="list-group" style="margin-bottom: 0px;">
-                                {% if not data.needs_review %}
-                                <span href="#" class="list-group-item disabled">No Constellations Available</span>
-                                {% endif %}
-                                {% for link in data.needs_review %}
-                                <a href="{{control.snacURL}}/edit/{{link.id}}/{{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>

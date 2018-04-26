@@ -39,7 +39,26 @@
 
 <div class="container snac" role="main">
 
-    <h1>Vocabulary Dashboard</h1>
+    <div class="row dashboard-title">
+        <div class="col-md-4">
+            <div>
+                <div class="large-icon-box">
+                    <p class="text-center background-icon">
+                        <i class="fa fa-folder" style="color: #FAD5D5" ></i>
+                    </p>
+                    <p class="text-right overlay-icon" >
+                        <i class="fa fa-link" style="color: #BE3434"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+                <h1 class="title">Vocabulary Dashboard</h1>
+                <div class="well-md">
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows the most recently published Constellations across SNAC and provides searching.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column shows constellations you have out for review and other information depending on your permission level.</p>
+                </div>
+        </div>
+    </div>
 
     <ol class="breadcrumb">
         <li>Vocabulary Dashboard</a></li>
@@ -54,26 +73,6 @@
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
-            <h3>Overview</h3>
-
-            <p>Welcome to the Vocabulary Administrator's dashboard.</p>
-            <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
-
-
-            <div class="panel panel-success">
-                <div class="panel-heading">
-                    <h3 class="panel-title"><i class="fa fa-fw fa-question-circle"></i> Help</h3>
-                </div>
-                <div class="panel-body">
-                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
-                    <div class="list-group">
-                        <a href="#" class="list-group-item disabled">Coming Soon</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <!-- Middle column -->
             {% if permissions.EditVocabulary %}
             <div class="panel panel-info">
                 <div class="panel-heading">
@@ -88,6 +87,11 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
+            {% if permissions.EditVocabulary %}
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Geographic Vocabulary Management</h3>
@@ -122,33 +126,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="constellation-settings" tabindex="-1"
-	role="dialog" aria-labelledby="constellation-settings">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="settings-title">Constellation Settings</h4>
-			</div>
-			<div class="modal-body col-xs-12">
-				<ol class="breadcrumb">
-					<li id="settings-name"></li>
-					<li>Settings</li>
-				</ol>
-				<div class="col-xs-12">
-				    <p>You may perform the following actions on this constellation</p>
-
-                    <div class="list-group" id="settings-actions">
-
-                    </div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
-			</div>
-		</div>
-	</div>
-</div>
 {{ footer(X, user, permissions, control) }}
 </body>
 </html>

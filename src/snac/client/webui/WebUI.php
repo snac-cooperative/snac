@@ -440,7 +440,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // User and messaging commands
             case "dashboard":
-                $executor->displayDashboardPage($display);
+                $executor->displayDashboardPage($this->input, $display);
                 break;
             case "profile":
                 $executor->displayProfilePage($display);

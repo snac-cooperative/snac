@@ -1240,10 +1240,25 @@ class WebUIExecutor {
      *
      * Fills the display object with the dashboard for the given user.
      *
+     * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displayDashboardPage(&$display) {
-        $display->setTemplate("dashboard");
+    public function displayDashboardPage(&$input, &$display) {
+        $template = "editor";
+        if (isset($input["subcommand"])) {
+            switch ($input["subcommand"]) {
+                case "reviewer":
+                    $template = "review";
+                    break;
+                case "reporting":
+                    $template = "reporting";
+                    break;
+                case "explore":
+                    $template = "explore";
+                    break;
+            }
+        }
+        $display->setTemplate("dashboard/$template");
         // Ask the server for a list of records to edit
         $ask = array("command"=>"user_information"
         );
