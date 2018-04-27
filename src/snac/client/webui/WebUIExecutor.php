@@ -486,6 +486,12 @@ class WebUIExecutor {
 
                 } else {
                     $display->setTemplate("view_page");
+
+                    // hack to allow various view pages
+                    if (isset($input["subcommand"]) && $input["subcommand"] != "") {
+                        $display->setTemplate("sketches/{$input["subcommand"]}");
+                    }
+
                     if (isset($serverResponse["editing_user"]))
                         $editingUser = $serverResponse["editing_user"];
 
