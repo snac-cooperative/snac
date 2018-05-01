@@ -450,7 +450,7 @@ class WebUIExecutor {
      */
     public function displayViewPage(&$input, &$display) {
         $message = null;
-        if (isset($input["part"]) && $input["part"] == "relations")
+        if ((isset($input["part"]) && $input["part"] == "relations") || isset($input["subcommand"]))
             $serverResponse = $this->getConstellation($input, $display, false);
         else
             $serverResponse = $this->getConstellation($input, $display, "summary");
@@ -469,6 +469,7 @@ class WebUIExecutor {
                         if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
                             $repo = $resourceRel->getResource()->getRepository();
                             $holdings[$repo->getID()] = array(
+                                "id" => $repo->getID(),
                                 "name" => $repo->getPreferredNameEntry()->getOriginal()
                             );
                             foreach ($repo->getPlaces() as $place) {
@@ -490,6 +491,27 @@ class WebUIExecutor {
                     // hack to allow various view pages
                     if (isset($input["subcommand"]) && $input["subcommand"] != "") {
                         $display->setTemplate("sketches/{$input["subcommand"]}");
+                        $this->logger->addDebug("Getting Holding institution information from the resource relations");
+                        $c = new \snac\data\Constellation($constellation);
+                        foreach ($c->getResourceRelations() as $resourceRel) {
+                            if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
+                                $repo = $resourceRel->getResource()->getRepository();
+                                $holdings[$repo->getID()] = array(
+                                    "id" => $repo->getID(),
+                                    "name" => $repo->getPreferredNameEntry()->getOriginal()
+                                );
+                                foreach ($repo->getPlaces() as $place) {
+                                    if ($place->getGeoTerm() != null) {
+                                        $holdings[$repo->getID()]["latitude"] = $place->getGeoTerm()->getLatitude();
+                                        $holdings[$repo->getID()]["longitude"] = $place->getGeoTerm()->getLongitude();
+                                    }
+                                }
+                            }
+                        }
+                        // Sort the holding institutions alphabetically
+                        usort($holdings, function($a, $b) {
+                            return $a["name"] <=> $b["name"];
+                        });
                     }
 
                     if (isset($serverResponse["editing_user"]))
