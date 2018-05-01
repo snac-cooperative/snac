@@ -344,7 +344,7 @@ $(document).ready(function() {
             <div class="col-md-8">
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="{{ data.biogHists.0.text ? 'active' }}"><a href="#biography" role="tab" data-toggle="tab">Biography</a></li>
-                    <li class="{{ data.biogHists.0.text ?: 'active' }}"><a href="#artifacts" role="tab" data-toggle="tab" onClick="displayHoldingsMapInteractive();">Artifacts</a></li>
+                    <li class="{{ data.biogHists.0.text ? '' : 'active' }}"><a href="#artifacts" role="tab" data-toggle="tab" onClick="displayHoldingsMapInteractive();">Artifacts</a></li>
                     <li><a href="#relationships" role="tab" data-toggle="tab">Relationships</a></li>
                     <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
                 </ul>
@@ -370,7 +370,7 @@ $(document).ready(function() {
                             {% endif %}
                         </div>
                     </div>
-                    <div class="body-tab-pane tab-pane {{ data.biogHists.0.text ?: 'active' }}" id="artifacts">
+                    <div class="body-tab-pane tab-pane {{ data.biogHists.0.text ? '' : 'active' }}" id="artifacts">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="geoplace-map" id="holdingsMap">
