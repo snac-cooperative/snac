@@ -53,6 +53,7 @@
     -webkit-border-radius: 4px;
     /*margin-bottom: 10px;*/
     position:relative;
+    display: none;
 }
 
 .wikipedia_thumbnail img {
@@ -179,7 +180,6 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
     padding-right:0.2em;
     position:relative;
     max-width:300px;
-
 }
 
 .wikipedia_thumbnail img {
@@ -484,16 +484,32 @@ $(document).ready(function() {
                             <thead>
                                 <tr>
                                     <th width="25%">Relation</th>
-                                    <th width="50%">Name</th>
-                                    <th width="25%">Entity Type</th>
+                                    <th width="75%">Name</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for relation in data.relations %}
                                 <tr>
                                     <td>{{relation.type.term}}</td>
-                                    <td><a href="{{control.snacURL}}/view/{{relation.targetConstellation}}">{{relation.content}}</a></td>
-                                    <td>{{relation.targetEntityType.term}}</td>
+                                    <td>
+                                        {% if relation.targetEntityType.term == 'person' %}
+                                        <span class="fa-stack fa-sm" title="Entity Type: Person">
+                                            <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                                            <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+                                        </span>
+                                        {% elseif relation.targetEntityType.term == 'corporateBody' %}
+                                        <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                                            <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                                            <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+                                        </span>
+                                        {% elseif relation.targetEntityType.term == 'family' %}
+                                        <span class="fa-stack fa-sm" title="Entity Type: Family">
+                                            <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                                            <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+                                        </span>
+                                        {% endif %}
+                                        <a href="{{control.snacURL}}/view/{{relation.targetConstellation}}">{{relation.content}}</a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -504,7 +520,7 @@ $(document).ready(function() {
                                     "searching" : true,
                                     "autoWidth": false,
                                     "columnDefs": [
-                                        {"width": "50%", "targets":1}
+                                        {"width": "75%", "targets":1}
                                     ]
                                 });
                             });
@@ -521,6 +537,28 @@ $(document).ready(function() {
                     <div class="wikipedia_thumbnail" id="wikipediaImage"></div>
                 </div>
                 <div class="well well-md">
+                    <div class="row">
+                        <div class="col-md-12">
+                        <h4 class="text-center" style="margin-top: 0px;">
+                            {% if data.entityType.term == 'person' %}
+                            <span class="fa-stack fa-sm" title="Entity Type: Person">
+                                <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                                <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+                            </span> Person
+                            {% elseif data.entityType.term == 'corporateBody' %}
+                            <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                                <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                                <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+                            </span> Corporate Body
+                            {% elseif data.entityType.term == 'family' %}
+                            <span class="fa-stack fa-sm" title="Entity Type: Family">
+                                <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                                <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+                            </span> Family
+                            {% endif %}
+                        </h4>
+                        </div>
+                    </div>
                     <div class="row">
                         {% if data.dates %}
                             <label class="col-xs-6">Exist Dates:</label>
