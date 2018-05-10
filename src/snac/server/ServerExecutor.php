@@ -2266,12 +2266,31 @@ class ServerExecutor {
             if (isset($input["version"])) {
                 // if asking for a specific version, then just try to read this
                 // id and version number.
+                $this->logger->addDebug("Querying the Cache");
+                $constellation = $this->cStore->readConstellationDataFromCache($input["constellationid"], $input["version"]);
 
-                $this->logger->addDebug("Reading specific constellation from the database, flags=$readFlags");
-                $constellation = $this->cStore->readConstellation(
-                        $input["constellationid"],
-                        $input["version"],
-                        $readFlags);
+                if ($constellation !== false) {
+                    $this->logger->addDebug("Constellation was in the Cache");
+                    // If in the cache, let's create it as an object (might rework this)
+                    $cObj = new \snac\data\Constellation();
+                    $cObj->fromJSON($constellation);
+                    $constellation = $cObj;
+
+                } else {
+                    $this->logger->addDebug("Constellation not in the Cache");
+                    // If not in the cache, must do real query
+                    $this->logger->addDebug("Reading specific constellation from the database, flags=$readFlags");
+                    $constellation = $this->cStore->readConstellation(
+                            $input["constellationid"],
+                            $input["version"],
+                            $readFlags);
+                    // Only save full constellations to the cache
+                    if ($constellation !== false && $readFlags == \snac\server\database\DBUtil::$FULL_CONSTELLATION) {
+                        $this->logger->addDebug("Adding the Constellation to the Cache");
+                        $this->cStore->updateConstellationDataToCache($constellation);
+                    }
+                }
+
                 if ($constellation === false) {
                     throw new \snac\exceptions\SNACInputException("Constellation with id " .
                             $input["constellationid"] . " does not have version" .
@@ -2306,7 +2325,29 @@ class ServerExecutor {
         // If we have gotten here, we have a list of icids to read.  It is probably just one,
         // but may be multiple.
         foreach ($icids as $icid) {
-            $constellation = $this->cStore->readPublishedConstellationByID($icid, $readFlags);
+            // Try the cache first
+            $this->logger->addDebug("Querying the Cache");
+            $constellation = $this->cStore->readConstellationDataFromCache($icid);
+
+            if ($constellation !== false) {
+                $this->logger->addDebug("Constellation was in the Cache");
+                // If in the cache, let's create it as an object (might rework this)
+                $cObj = new \snac\data\Constellation();
+                $cObj->fromJSON($constellation);
+                $constellation = $cObj;
+
+            } else {
+                $this->logger->addDebug("Constellation not in the Cache");
+                // If not in the cache, must do real query
+                $constellation = $this->cStore->readPublishedConstellationByID($icid, $readFlags);
+
+                // Only save full constellations to the cache
+                if ($constellation !== false && $readFlags == \snac\server\database\DBUtil::$FULL_CONSTELLATION) {
+                    $this->logger->addDebug("Adding the Constellation to the Cache");
+                    $this->cStore->updateConstellationDataToCache($constellation);
+                }
+            }
+
             if ($constellation !== false) {
                 array_push($constellations, $constellation);
             }

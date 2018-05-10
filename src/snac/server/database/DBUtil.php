@@ -4201,6 +4201,27 @@ class DBUtil
         return false;
     }
 
+    //**********************************************
+    // CACHING
+    //**********************************************
+    
+    public function readConstellationDataFromCache($id = null, $version = null) {
+        return $this->sql->selectConstellationFromCache($id, $version);
+    }
+    
+    public function updateConstellationDataToCache($constellation) {
+        $this->logger->addDebug("Adding Constellation to Cache");
+        if ($constellation == null)
+            return;
+        
+        $this->logger->addDebug("Getting Constellation JSON FOR Cache");
+        $jsonData = $constellation->toJSON(true, false);
+
+        $this->logger->addDebug("Calling SQL to add to cache");
+        $result = $this->sql->updateConstellationDataCache($constellation->getID(), $constellation->getVersion(), $jsonData);
+        $this->logger->addDebug("SQL Returned with " . $result);
+    }
+
     /**
      * Generate a Maintenance Note
      *

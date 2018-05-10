@@ -104,6 +104,7 @@ drop table if exists resource_origination_name;
 drop table if exists constellation_lookup;
 drop table if exists messages;
 drop table if exists not_same;
+drop table if exists constellation_cache;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -1126,6 +1127,19 @@ create table not_same (
     user_id          int,  -- fk to appuser table, user that made the assertion
     timestamp        timestamp default(now()));
 create index not_same_idx1 on not_same (ic_id1, ic_id2);
+
+
+create table constellation_cache (
+    id              int,
+    version         int,
+    ark             text,
+    timestamp       timestamp default(now()),
+    data            text
+);
+create index constellation_cache_idx1 on constellation_cache (id);
+create index constellation_cache_idx2 on constellation_cache (id, version);
+create index constellation_cache_idx3 on constellation_cache (ark);
+
 
 -- Views that allow us to query the most recent constellation data
 

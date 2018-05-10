@@ -679,7 +679,10 @@ abstract class AbstractData implements \Serializable {
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string JSON encoding of this object
      */
-    public function toJSON($shorten = true) {
+    public function toJSON($shorten = true, $prettyPrint = true) {
+        if (!$prettyPrint)
+            return json_encode($this->toArray($shorten));
+
         return json_encode($this->toArray($shorten), JSON_PRETTY_PRINT);
     }
 

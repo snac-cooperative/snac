@@ -6311,4 +6311,57 @@ class SQL
 
         return $this->sdb->fetchrow($result);
     }
+
+
+
+
+
+    public function selectConstellationFromCache($id = null, $version = null) {
+        if ($id == null)
+            return false;
+
+        $result = null;
+        if ($version == null)
+            $result = $this->sdb->query("select * from constellation_cache where id = $1 limit 1;", array($id));
+        else
+            $result = $this->sdb->query("select * from constellation_cache where id = $1 and version = $2 limit 1;", array($id, $version));
+
+        if (!$result)
+            return false;
+
+        $row = $this->sdb->fetchrow($result);
+        
+        if ($row && is_array($row) && isset($row["data"]))
+            return $row["data"];
+
+        return false;
+            
+    }
+    
+    public function updateConstellationDataCache($id, $version, $jsonData) {
+        if ($id == null || $version == null || $jsonData == null)
+            return false;
+        $this->logger->addDebug("Trying to delete from cache"); 
+        $result = null;
+        $result = $this->sdb->query("delete from constellation_cache where id = $1;", array($id));
+        // Don't care about the result, since if the delete fails we just don't have an item in the cache
+
+        $this->logger->addDebug("Getting count of cache"); 
+        $result = $this->sdb->query("select count(*) from constellation_cache", array());
+        if (!$result)
+            return false;
+
+        $row = $this->sdb->fetchrow($result);
+        if (!$row || !is_array($row) || !isset($row["count"]))
+            return false;
+
+        $count = $row["count"];
+        if ($count <= \snac\Config::$CONSTELLATION_CACHE_LIMIT) {
+            $this->logger->addDebug("Writing to cache"); 
+            $result = $this->sdb->query("insert into constellation_cache (id, version, data) values ($1, $2, $3);", array($id, $version, $jsonData));
+            if ($result)
+                return true;
+        }
+        return false;
+    }
 }
