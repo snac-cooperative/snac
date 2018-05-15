@@ -740,7 +740,8 @@ function subMakeEditable(short, i) {
 
     // add parser btn if nameEntry is a computed name
     if (short === 'nameEntry' && $("#nameEntry_component_0_panel_" + i).find('select:first').text() === "Name") {
-        $('#nameEntry_component_0_remove_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i + '"> Parse </button>');
+        $('#nameEntry_component_add_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i +
+        '" style="margin-left:5px;"> <i class="fa fa-magic" aria-hidden="true"></i> Parse </button>');
     }
 
 
@@ -1225,6 +1226,7 @@ function newOriginationName(i) {
  * @return boolean      false to play nice with the browser.
  */
 function newNameEntryComponent(i) {
+    removeParserButton(i);
 	var nextid = 1;
 	if ($('#nameEntry_component_next_j_'+i).exists()) {
 	    nextid = parseInt($('#nameEntry_component_next_j_'+i).text());
@@ -1742,7 +1744,6 @@ function parseName(e) {
     // TODO: make parseFamily, parseCorp
 
     $('#name-parser-options').text('');
-    $('#name-parser').modal('toggle');
 
     // var $partType = $(e.target).parent().parent().find("select:last");
     // var $partType = $(e.target).closest('[id^="nameEntry_reorderable_').find("select:last");
@@ -1754,8 +1755,6 @@ function parseName(e) {
     var $textbox = $nameComponents.find('input[type="text"]:last');
 
     var name = $textbox.val();
-    var $nameComponent = $nameComponents.find('.reorderable'); ///
-    $nameComponent.replaceWith('<div style="margin-left:10%; font-size: 14x; font-style:italic; color: #777777;"> Name: ' + name + '</div>');
 
     var entityType = $('#entityType').text().trim();
     $('#name-parser-type').text(capitalize(entityType));
@@ -1768,11 +1767,13 @@ function parseName(e) {
         parsed = parser.parsePerson();
         parser.guessPerson();
         guess = parser.displayPerson();
+    } else {
+        return;
     }
-    if (entityType === "corporation")
-        parsed = parser.parseCorp();
-    if (entityType === "family")
-        parsed = parser.parseFamily();
+    // if (entityType === "corporation")
+    //     parsed = parser.parseCorp();
+    // if (entityType === "family")
+    //     parsed = parser.parseFamily();
 
     var parsedOption = '';
 
@@ -1787,12 +1788,12 @@ function parseName(e) {
         "<label class='radio form-inline' for='name-parser-option-" + counter + "'>" +
         "<input type='radio'name='parsed-names' id='name-parser-option-" + counter + "' value='PARSER??'>" +
         "<ul class='list-unstyled'>" + parsedOption + "</ul></label> </div>");
-
     parsedOption = '';
 
     for (var key in guess) {
         if (guess[key] && guess[key].length != 0) {
             parsedOption += "<li><span style='font-weight: bold;'>" + key + "</span>: " + guess[key] + "</li>";
+            parsedOption += "HEYEYEEYEYEYYEYOOOOOO"
         }
     }
 
@@ -1812,6 +1813,16 @@ function parseName(e) {
     //     </div>
     // `);
 
+
+    $('#parser-accept-btn').unbind('click')
+    $('#parser-accept-btn').on('click', function() {
+        acceptParsedName(e, parsed, i, $nameComponents, name)
+    })
+}
+
+function acceptParsedName(e, parsed, i, $nameComponents, name) {
+    var $nameComponent = $nameComponents.find('.reorderable'); ///
+    $nameComponent.replaceWith('<div style="margin-left:10%; font-size: 14x; font-style:italic; color: #777777;"> Name: ' + name + '</div>');
 
     // TODO: load from ajax call with entity type
     var nameComponentMap = {
@@ -1856,6 +1867,10 @@ function parseName(e) {
     // $('#name-parser-options').text('');
 }
 
+function removeParserButton(i) {
+    $('#nameEntry_datapart_' + i).find('.name-parser').remove()
+}
+
 /**
  * Things to do when the page finishes loading
  */
@@ -1864,6 +1879,7 @@ $(document).ready(function() {
     $('#nameEntries').on('click', '.name-parser', function(event) {
         event.preventDefault();
         parseName(event);
+        $("#name-parser").modal('toggle');
     });
 
     // Load the place cache, if needed
