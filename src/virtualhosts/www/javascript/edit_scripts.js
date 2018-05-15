@@ -738,8 +738,8 @@ function subMakeEditable(short, i) {
         });
     }
 
-    // add parser btn if nameEntry is a computed name
-    if (short === 'nameEntry' && $("#nameEntry_component_0_panel_" + i).find('select:first').text() === "Name") {
+    // add parser btn if nameEntry is a computed name and entity is person
+    if (short === 'nameEntry' && ($("#entityType").val() === "700") && $("#nameEntry_component_0_panel_" + i).find('select:first').text() === "Name") {
         $('#nameEntry_component_add_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i +
         '" style="margin-left:5px;"> <i class="fa fa-magic" aria-hidden="true"></i> Parse </button>');
     }
@@ -1793,7 +1793,6 @@ function parseName(e) {
     for (var key in guess) {
         if (guess[key] && guess[key].length != 0) {
             parsedOption += "<li><span style='font-weight: bold;'>" + key + "</span>: " + guess[key] + "</li>";
-            parsedOption += "HEYEYEEYEYEYYEYOOOOOO"
         }
     }
 
@@ -1866,6 +1865,7 @@ function acceptParsedName(e, parsed, i, $nameComponents, name) {
     updateNameEntryHeading(i);
     // $('#name-parser-options').text('');
 }
+
 
 function removeParserButton(i) {
     $('#nameEntry_datapart_' + i).find('.name-parser').remove()
