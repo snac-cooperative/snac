@@ -204,6 +204,11 @@ class WebUIExecutor {
             $c = new \snac\data\Constellation();
             $constellation = $c->toArray();
         } else {
+            if ($input["command"] == "edit") {
+                // ask for only a portion of the constellation on initial edit with the edit page
+                $query["flags"] = \snac\server\database\DBUtil::$READ_FULL_SUMMARY;
+            }
+
             $this->logger->addDebug("Sending query to the server", $query);
             $serverResponse = $this->connect->query($query);
             $this->logger->addDebug("Received server response", array($serverResponse));
