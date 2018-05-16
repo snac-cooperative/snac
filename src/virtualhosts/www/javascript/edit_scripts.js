@@ -10,6 +10,9 @@
  */
 
 var biogHistEditor = null;
+    
+var constellation = null;
+var loadingConstellation = false;
 
 // Has anything been edited on this page?
 var somethingHasBeenEdited = false;
@@ -28,7 +31,116 @@ var defaults = {
     }
 };
 
+    
+var resourceRelationid = 1;
 
+function displayResourceInfoModal(rId) {
+    return false;
+}
+
+function openResourceEditPanel(rId) {
+    var resourceRel = null;
+    constellation.resourceRelations.forEach(function(relation) {
+        if (relation.id == rId) {
+            resourceRel = relation;
+            return;
+        }
+    });
+    if (resourceRel == null)
+        return false;
+
+    var text = $('#resourceRelation_template').clone();
+    var html = text.html().replace(/ZZ/g, resourceRelationid); // clones DOM, replaces zz with next ids
+    $('#add_resourceRelation_div').after(html);
+
+    if (typeof resourceRel.id !== 'undefined')
+        $('#resourceRelation_id_'+resourceRelationid).val(resourceRel.id);
+    if (typeof resourceRel.version !== 'undefined')
+        $('#resourceRelation_version_'+resourceRelationid).val(resourceRel.version);
+    if (typeof resourceRel.resource.id !== 'undefined')
+        $('#resourceRelation_resourceid_'+resourceRelationid).val(resourceRel.resource.id);
+    if (typeof resourceRel.resource.version !== 'undefined')
+        $('#resourceRelation_resourceversion_'+resourceRelationid).val(resourceRel.resource.version);
+    
+    if (typeof resourceRel.role.term !== 'undefined') {
+        $('#resourceRelation_relationPictureArrow_'+resourceRelationid).text(resourceRel.role.term);
+        $('#resourceRelation_role_id_'+resourceRelationid).val(resourceRel.role.id);
+        $('#resourceRelation_role_term_'+resourceRelationid).val(resourceRel.role.term);
+    } 
+    
+    if (typeof resourceRel.note !== 'undefined')
+        $('#resourceRelation_note_'+resourceRelationid).val(resourceRel.note);
+    
+    if (typeof resourceRel.resource.displayEntry !== 'undefined')
+        $('#resourceRelation_displayEntryText_'+resourceRelationid).text(resourceRel.resource.displayEntry);
+    else if (typeof resourceRel.content !== 'undefined')
+        $('#resourceRelation_displayEntryText_'+resourceRelationid).text(resourceRel.content);
+
+    if (typeof resourceRel.resource.link !== 'undefined')
+        $('#resourceRelation_linkText_'+resourceRelationid).html(resourceRel.resource.link + " <a class='label label-info' target='_blank' href='"+resourceRel.resource.link+"'>View</a>");
+    if (typeof resourceRel.resource.displayEntry !== 'undefined')
+        $('#resourceRelation_displayEntryText_'+resourceRelationid).text(resourceRel.resource.displayEntry);
+    if (typeof resourceRel.resource.title !== 'undefined') {
+        $('#resourceRelation_titleText_'+resourceRelationid).text(resourceRel.resource.title);
+        updatePictureTitle('resourceRelation', resourceRelationid, resourceRel.resource.title);
+    }
+    if (typeof resourceRel.resource.abstract !== 'undefined')
+        $('#resourceRelation_abstractText_'+resourceRelationid).text(resourceRel.resource.abstract);
+    if (typeof resourceRel.resource.extent !== 'undefined')
+        $('#resourceRelation_extentText_'+resourceRelationid).text(resourceRel.resource.extent);
+    if (typeof resourceRel.resource.documentType !== 'undefined' && typeof resourceRel.resource.documentType.term !== 'undefined')
+        $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceRel.resource.documentType.term);
+
+
+
+    turnOnButtons("resourceRelation", resourceRelationid);
+    turnOnTooltips("resourceRelation", resourceRelationid);
+    makeEditable("resourceRelation", resourceRelationid);
+    resourceRelationid = resourceRelationid + 1;
+
+
+    //TODO Must also add all SCMs that are inside!
+    
+    return false;
+}
+
+function getEditData(callback) {
+    if (constellation != null) {
+        callback();
+        return;
+    }
+
+    loadingConstellation = true;
+    $.get(snacUrl+"/edit_data/"+$('#constellationid').val()+"/"+$('#version').val(), null, function (data) {
+        if (data.result && data.result == "success" && data.constellation) {
+            constellation = data.constellation;
+        }
+        loadingConstellation = false;
+        callback();
+    });
+}
+
+$(document).ready(function() {
+    /*
+    $("body").prepend("<div id=\"overlay-lock\"></div>");
+    $("#overlay-lock").css({
+        "position": "absolute", 
+        "width": $(document).width(), 
+        "height": $(document).height(),
+        "z-index": 99998,
+        "top":0,
+        "left": 0,
+        "background-color":"rgba(0, 0, 0, 0.8)" 
+    });
+    */
+    $("#loading-pane").modal({keyboard:false});
+    //$("#loading-pane").css({"z-index":99999});
+    getEditData(function() {
+        $("#loading-pane").modal("hide");
+        //$("#loading-pane").remove();
+        //$("#overlay-lock").remove();
+    });
+});
 
 /**
  * Display Error message
@@ -153,6 +265,10 @@ function undoEdit(short, i) {
 	makeUneditable(short, i);
 
 	// restore the old content
+    if (short == "resourceRelation") {
+        $("#" + short + "_panel_" + i).remove();
+        return;
+    }
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
     turnOnTooltips(short,i);
     $("#" + short + "_datapart_" + i + " input[type='checkbox']").each(function() {
@@ -1991,6 +2107,38 @@ $(document).ready(function() {
             if (resourceRelationOpen)
                 return;
 
+            getEditData(function() {
+                var resourceDataTable = $('#resourceRelationsTable').DataTable({
+                    order: [],
+                    pageLength: 10
+                    /*dom: 'Bfrtip',
+                    buttons: [
+                        'copy', 'excel'
+                    ]*/
+                });
+
+                if (typeof(constellation.resourceRelations) != "undefined") {
+                    constellation.resourceRelations.forEach(function(relation) {
+                        var displayName = relation.resource.title;
+                        if (typeof relation.resource.displayEntry != "undefined")
+                            displayName = relation.resource.displayEntry;
+                        else if (typeof relation.content != "undefined")
+                            displayName = relation.content;
+
+                        resourceDataTable.row.add( [
+                                relation.role.term,
+                                displayName,
+                                "<a href='#' onClick='return displayResourceInfoModal("+relation.id+");'>Info</a> - <a href='#' onClick='return openResourceEditPanel("+relation.id+");'>Edit</a>"
+                        ] );
+                    });
+                    resourceDataTable.draw();
+                }
+            });
+
+            
+            
+
+            /*
             $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=resourceRelations", null, function (data) {
                 resourceRelationOpen = true;
                 $('#resourceRelations').html(data);
@@ -2000,6 +2148,8 @@ $(document).ready(function() {
                 if ($('#next_resourceRelation_i').exists()) {
                     resourceRelationid = parseInt($('#next_resourceRelation_i').text());
                 }
+            });
+            */
                 console.log("Next resourceRelation ID: " + resourceRelationid);
                  if ($('#btn_create_resourceRelation').exists()){
                     $('#btn_create_resourceRelation').click(function(){
@@ -2143,7 +2293,7 @@ $(document).ready(function() {
                 }
 
                 turnOnTooltipsForTab("resourceRelations");
-            });
+
         });
     }
 

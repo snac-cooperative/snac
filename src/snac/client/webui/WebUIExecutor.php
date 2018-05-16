@@ -167,6 +167,27 @@ class WebUIExecutor {
         $this->drawErrorPage("Subcommand required", $display);
     }
 
+
+    public function getEditData(&$input) {
+        $response = ["result" => "failure"];
+        $query = $input;
+        $constellation = null;
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        if (isset($serverResponse["constellation"]))
+            $constellation = $serverResponse["constellation"];
+        
+        if ($constellation != null) {
+            $response = [
+                "constellation" => $constellation,
+                "result" => "success"
+            ];
+        }
+
+        return $response;
+    }
+
     /**
      * Display Edit Page
      *

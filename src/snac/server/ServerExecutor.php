@@ -2452,7 +2452,11 @@ class ServerExecutor {
                         $response["review_note"] = $reviewNote;
 
                     // read the constellation into response
-                    $constellation = $this->cStore->readConstellation($cId);
+                    $constellation = null;
+                    if (isset($input["flags"]))
+                        $constellation = $this->cStore->readConstellation($cId, null, $input["flags"]);
+                    else
+                        $constellation = $this->cStore->readConstellation($cId);
 
                     $this->logger->addDebug("Finished reading constellation from the database");
                     $response["constellation"] = $constellation->toArray();

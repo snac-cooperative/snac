@@ -373,6 +373,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "edit_part":
+            case "edit_data":
                 if (!$executor->hasPermission("Edit")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to edit constellations.", 403);
                 }
