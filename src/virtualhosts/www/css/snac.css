@@ -413,6 +413,11 @@ td.rotate > div > span {
     margin-bottom: 15px;
 }
 
+.bioghist-display {
+    height: 450px;
+    overflow-y: scroll;
+}
+
 .scm-source-panel {
     margin-bottom: 0px;
 }
