@@ -38,7 +38,25 @@ function displayResourceInfoModal(rId) {
     return false;
 }
 
-function openResourceEditPanel(rId) {
+var testing;
+
+function closePanel(panelId) {
+    var row = $("#resourceRelationsTable").DataTable().row($("#"+panelId).data('tableIndex'));
+    $(row.node()).find('.btn-primary').removeClass('disabled').data({panelId: panelId});
+    $("#" + panelId).hide();
+}
+
+function openResourceEditPanel(rId, cur) {
+    if ($(cur).data('panelId')) {
+        $("#" + $(cur).data('panelId')).show();
+    
+        // Disable the open button
+        $(cur).addClass("disabled").prop("disabled", true);
+
+        return false;
+    }
+
+
     var resourceRel = null;
     constellation.resourceRelations.forEach(function(relation) {
         if (relation.id == rId) {
@@ -53,6 +71,15 @@ function openResourceEditPanel(rId) {
     var html = text.html().replace(/ZZ/g, resourceRelationid); // clones DOM, replaces zz with next ids
     $('#add_resourceRelation_div').after(html);
 
+    // Save the table row information
+    testing = cur;
+    var tableRow = $("#resourceRelationsTable").DataTable().row($(cur).closest("tr").get(0));
+    $("#resourceRelation_panel_"+resourceRelationid).data({tableIndex: tableRow.index()});
+
+    // Disable the open button
+    $(cur).addClass("disabled").prop("disabled", true);
+
+    // Fill out the template with data
     if (typeof resourceRel.id !== 'undefined')
         $('#resourceRelation_id_'+resourceRelationid).val(resourceRel.id);
     if (typeof resourceRel.version !== 'undefined')
@@ -66,6 +93,7 @@ function openResourceEditPanel(rId) {
         $('#resourceRelation_relationPictureArrow_'+resourceRelationid).text(resourceRel.role.term);
         $('#resourceRelation_role_id_'+resourceRelationid).val(resourceRel.role.id);
         $('#resourceRelation_role_term_'+resourceRelationid).val(resourceRel.role.term);
+        $('#select_resourceRelation_role_'+resourceRelationid+' p.form-control-static').text(resourceRel.role.term);
     } 
     
     if (typeof resourceRel.note !== 'undefined')
@@ -95,7 +123,7 @@ function openResourceEditPanel(rId) {
 
     turnOnButtons("resourceRelation", resourceRelationid);
     turnOnTooltips("resourceRelation", resourceRelationid);
-    makeEditable("resourceRelation", resourceRelationid);
+    //makeEditable("resourceRelation", resourceRelationid);
     resourceRelationid = resourceRelationid + 1;
 
 
@@ -265,10 +293,6 @@ function undoEdit(short, i) {
 	makeUneditable(short, i);
 
 	// restore the old content
-    if (short == "resourceRelation") {
-        $("#" + short + "_panel_" + i).remove();
-        return;
-    }
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
     turnOnTooltips(short,i);
     $("#" + short + "_datapart_" + i + " input[type='checkbox']").each(function() {
@@ -724,6 +748,12 @@ function makeEditable(short, i) {
     $("#" + short + "_deletebutton_" + i).off('click').on("click", function() {
         return false;
     });
+    if ($("#" + short + "_closebutton_" + i)) {
+        $("#" + short + "_closebutton_" + i).addClass("disabled");
+        $("#" + short + "_closebutton_" + i).off('click').on("click", function() {
+            return false;
+        });
+    }
 
     $("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
 
@@ -990,6 +1020,14 @@ function makeUneditable(shortName, i) {
     $("#" + shortName + "_deletebutton_" + i).off('click').on("click", function() {
        setDeleted(shortName, i);
     });
+    if ($("#" + shortName + "_closebutton_" + i)) {
+        $("#" + shortName + "_closebutton_" + i).removeClass("disabled");
+        $("#" + shortName + "_closebutton_" + i).off('click').on("click", function() {
+            //$(cur).addClass("disabled").prop("disabled", true);
+            closePanel(shortName + "_panel_" + i);
+            return false;
+        });
+    }
 
     return false;
 }
@@ -1111,6 +1149,13 @@ function setDeleted(short, i) {
         // disable the SCM button
         $("#" + short + "_scmbutton_" + i).removeClass("list-group-item-success").addClass("disabled").prop('disabled', true);
 
+        // disable the close button
+        if ($("#" + short + "_closebutton_" + i)) {
+            $("#" + short + "_closebutton_" + i).addClass("disabled");
+            $("#" + short + "_closebutton_" + i).off('click').on("click", function() {
+                return false;
+            });
+        }
     } else {
     	// set undelete
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-warning").addClass("list-group-item-danger");
@@ -1128,6 +1173,14 @@ function setDeleted(short, i) {
         // restore the SCM button
         $("#" + short + "_scmbutton_" + i).addClass("list-group-item-success").removeClass("disabled").prop('disabled', false);
 
+        // restore the close button
+        if ($("#" + short + "_closebutton_" + i)) {
+            $("#" + short + "_closebutton_" + i).removeClass("disabled");
+            $("#" + short + "_closebutton_" + i).off('click').on("click", function() {
+                closePanel(short + "_panel_" + i);
+                return false;
+            });
+        }
     }
 
     return subSetDeleted(short, i);
@@ -1232,6 +1285,15 @@ function turnOnButtons(shortName, i) {
     $("#"+shortName+"_deletebutton_"+i).on("click", function() {
         setDeleted(shortName, i);
     });
+        
+    // Turn on the close button
+    if ($("#" + shortName + "_closebutton_" + i)) {
+        $("#" + shortName + "_closebutton_" + i).removeClass("disabled");
+        $("#" + shortName + "_closebutton_" + i).off('click').on("click", function() {
+            closePanel(shortName + "_panel_" + i);
+            return false;
+        });
+    }
 }
 
 function turnOnTooltips(shortName, i) {
@@ -2128,7 +2190,7 @@ $(document).ready(function() {
                         resourceDataTable.row.add( [
                                 relation.role.term,
                                 displayName,
-                                "<a href='#' onClick='return displayResourceInfoModal("+relation.id+");'>Info</a> - <a href='#' onClick='return openResourceEditPanel("+relation.id+");'>Edit</a>"
+                                "<a class='btn btn-primary' href='#' onClick='return openResourceEditPanel("+relation.id+", this);'>Open</a>"
                         ] );
                     });
                     resourceDataTable.draw();
@@ -2182,6 +2244,7 @@ $(document).ready(function() {
                             if (typeof resourceResults[rid].documentType !== 'undefined' && typeof resourceResults[rid].documentType.term !== 'undefined')
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
 
+                            $('#resourceRelation_closebutton_'+resourceRelationid).remove();
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);
@@ -2275,6 +2338,7 @@ $(document).ready(function() {
                                         $('#resourceRelation_documentTypeText_'+resourceRelationid).text(data.resource.documentType.term);
 
 
+                                    $('#resourceRelation_closebutton_'+resourceRelationid).remove();
 
                                     turnOnButtons("resourceRelation", resourceRelationid);
                                     turnOnTooltips("resourceRelation", resourceRelationid);
