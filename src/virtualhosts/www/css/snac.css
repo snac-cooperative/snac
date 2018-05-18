@@ -422,6 +422,11 @@ td.rotate > div > span {
     margin-bottom: 0px;
 }
 
+.table-row-disabled {
+    background-color: #eeeeee!important;
+    color: #343434!important;
+}
+
 .form-group .well p, .form-group p.form-control-static {
     word-wrap: break-word;
 }

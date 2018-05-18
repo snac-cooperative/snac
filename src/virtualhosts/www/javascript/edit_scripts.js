@@ -43,15 +43,29 @@ var testing;
 function closePanel(panelId) {
     var row = $("#resourceRelationsTable").DataTable().row($("#"+panelId).data('tableIndex'));
     $(row.node()).find('.btn-primary').removeClass('disabled').data({panelId: panelId});
+    $(row.node()).removeClass('table-row-disabled');
     $("#" + panelId).hide();
 }
 
-function openResourceEditPanel(rId, cur) {
+function applyTableChanges(shortName, i) {
+    if (shortName == "resourceRelation") {
+        var table = $("#resourceRelationsTable").DataTable();
+        var row = table.row($("#"+shortName+"_panel_"+i).data('tableIndex'));
+        if (row) {
+            // The only thing resource relation editing can change is the role
+            table.cell(row, 0).data($("#"+shortName + "_role_term_" + i).val());
+            table.draw(false);
+        }
+    }
+}
+
+function openResourceRelationEditPanel(rId, cur) {
     if ($(cur).data('panelId')) {
         $("#" + $(cur).data('panelId')).show();
     
         // Disable the open button
-        $(cur).addClass("disabled").prop("disabled", true);
+        $(cur).addClass("disabled");
+        $(cur).closest('tr').addClass('table-row-disabled');
 
         return false;
     }
@@ -77,7 +91,8 @@ function openResourceEditPanel(rId, cur) {
     $("#resourceRelation_panel_"+resourceRelationid).data({tableIndex: tableRow.index()});
 
     // Disable the open button
-    $(cur).addClass("disabled").prop("disabled", true);
+    $(cur).addClass("disabled");
+    $(cur).closest('tr').addClass("table-row-disabled");
 
     // Fill out the template with data
     if (typeof resourceRel.id !== 'undefined')
@@ -1024,6 +1039,7 @@ function makeUneditable(shortName, i) {
         $("#" + shortName + "_closebutton_" + i).removeClass("disabled");
         $("#" + shortName + "_closebutton_" + i).off('click').on("click", function() {
             //$(cur).addClass("disabled").prop("disabled", true);
+            applyTableChanges(shortName, i);
             closePanel(shortName + "_panel_" + i);
             return false;
         });
@@ -1177,6 +1193,7 @@ function setDeleted(short, i) {
         if ($("#" + short + "_closebutton_" + i)) {
             $("#" + short + "_closebutton_" + i).removeClass("disabled");
             $("#" + short + "_closebutton_" + i).off('click').on("click", function() {
+                applyTableChanges(short, i);
                 closePanel(short + "_panel_" + i);
                 return false;
             });
@@ -1290,6 +1307,7 @@ function turnOnButtons(shortName, i) {
     if ($("#" + shortName + "_closebutton_" + i)) {
         $("#" + shortName + "_closebutton_" + i).removeClass("disabled");
         $("#" + shortName + "_closebutton_" + i).off('click').on("click", function() {
+            applyTableChanges(shortName, i);
             closePanel(shortName + "_panel_" + i);
             return false;
         });
@@ -2190,7 +2208,7 @@ $(document).ready(function() {
                         resourceDataTable.row.add( [
                                 relation.role.term,
                                 displayName,
-                                "<a class='btn btn-primary' href='#' onClick='return openResourceEditPanel("+relation.id+", this);'>Open</a>"
+                                "<a class='btn btn-primary' href='#' onClick='return openResourceRelationEditPanel("+relation.id+", this);'>Open</a>"
                         ] );
                     });
                     resourceDataTable.draw();
