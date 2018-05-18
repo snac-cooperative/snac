@@ -740,6 +740,13 @@ function subMakeEditable(short, i) {
         });
     }
 
+    // add parser btn if nameEntry is a computed name, entity is person, and if btn doesn't already exist
+    if (short === 'nameEntry' && ($("#entityType").val() === "700") && $("#nameEntry_component_0_panel_" + i).find('select:first').text() === "Name") {
+        if (!$("#nameEntry_panel_" + i).find('.name-parser').length) {
+            $('#nameEntry_component_add_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i +
+            '" style="margin-left:5px;"> <i class="fa fa-magic" aria-hidden="true"></i> Parse </button>');
+        }
+    }
 
 
     // Set this data's operation value appropriately
@@ -1223,6 +1230,7 @@ function newOriginationName(i) {
  * @return boolean      false to play nice with the browser.
  */
 function newNameEntryComponent(i) {
+    removeParserButton(i);
 	var nextid = 1;
 	if ($('#nameEntry_component_next_j_'+i).exists()) {
 	    nextid = parseInt($('#nameEntry_component_next_j_'+i).text());
@@ -1730,6 +1738,115 @@ function magicDefaultFill(selectID, vocabType) {
 
 }
 
+function capitalize(word) {
+    return word[0].toUpperCase() + word.slice(1);
+}
+
+function parseName(e) {
+    $('#name-parser-options').text('');
+    var $nameComponents = $(e.target).closest('.name-components');
+
+    var $partType = $nameComponents.find("select:last");
+    var $textbox = $nameComponents.find('input[type="text"]:last');
+
+    var name = $textbox.val();
+
+    var entityType = $('#entityType').text().trim();
+    $('#name-parser-type').text(capitalize(entityType));
+    $('#name-parser-original').text(name);
+
+    var parser = new NameParser();
+    guesses = parser.guessPerson(name);
+
+    var parsedOption = '';
+
+    var counter = 0;
+    guesses.forEach(function(guess) {
+        // attach name data object to radio
+        for (var key in guess) {
+            if (guess[key] && guess[key].length != 0) {
+                parsedOption += "<li><span style='font-weight: bold;'>" + key + "</span>: " + guess[key] + "</li>";
+            }
+        }
+
+        $('#name-parser-options').append("<div class='radio'>" +
+            "<label class='radio form-inline' for='name-parser-option-" + counter + "'>" +
+            "<input type='radio' name='parsed-names' id='name-parser-option-" + counter + "'>" +
+            "<ul class='list-unstyled'>" + parsedOption + "</ul></label> </div>");
+
+
+        $('#name-parser-options').find("input[type='radio']:last").data("parsed-name", guess);
+
+        parsedOption = '';
+        counter++;
+    })
+
+    $('#name-parser-options').find("input[type='radio']:first").prop('checked', true)
+
+
+    $('#parser-accept-btn').unbind('click')
+    $('#parser-accept-btn').on('click', function() {
+        var selectedName = $('#name-parser input[type="radio"]:checked').data('parsed-name')
+        console.log("you chose: ", selectedName);
+        $.get( snacUrl + "/vocabulary/?type=name_component&entity_type=700")
+            .done(function(data) {
+            acceptParsedName(selectedName, $nameComponents, name, data.results)
+        })
+    })
+}
+
+function acceptParsedName(selectedName, $nameComponents, name, nameComponentIDs) {
+    var i = $nameComponents.attr('id').split('_')[2];
+    var $nameComponent = $nameComponents.find('.reorderable'); ///
+    $nameComponent.replaceWith('<div style="margin-left:10%; font-size: 14x; font-style:italic; color: #777777;"> Name: ' + name + '</div>');
+
+    var nameComponentMap = {};
+
+    for (var k = 0; k < nameComponentIDs.length; k++) {
+        nameComponentMap[nameComponentIDs[k].text] = nameComponentIDs[k].id
+    }
+    // var nameComponentMap = {
+    //     'Surname': 400223,
+    //     'Forename': 400224,
+    //     'NameAddition': 400236,
+    //     'Date': 400237,
+    //     'NameExpansion': 400226,
+    //     'Numeration': 400225
+    // };
+
+    for (var key in selectedName) {
+        if (key == 'NameAdditions') {
+            key = 'NameAddition';
+            // TODO: Extract doubled logic
+            for (var j = 0; j < selectedName['NameAdditions'].length; j++) {
+                newNameEntryComponent(i);
+                var option = new Option(key, nameComponentMap[key], false, true);
+                $partType = $nameComponents.find("select:last");
+                $partType.append(option).trigger('change');
+                $textbox = $nameComponents.find("input[type='text']:last");
+                $textbox.val(selectedName["NameAdditions"][j]);
+
+                $partType.append(option).trigger('change');
+            }
+        } else if (selectedName[key] && nameComponentMap[key]) {
+            newNameEntryComponent(i);
+            var option = new Option(key, nameComponentMap[key], false, true);
+            $partType = $nameComponents.find("select:last");
+            $partType.append(option).trigger('change');
+            $textbox = $nameComponents.find("input[type='text']:last");
+            $textbox.val(selectedName[key]);
+
+            $partType.append(option).trigger('change');
+        }
+    }
+
+    $("#nameEntry_datapart_" + i).find(".name-parser").remove();
+    updateNameEntryHeading(i);
+}
+
+function removeParserButton(i) {
+    $('#nameEntry_datapart_' + i).find('.name-parser').remove();
+}
 
 /**
  * Things to do when the page finishes loading
@@ -1738,6 +1855,17 @@ $(document).ready(function() {
 
     // Load the place cache, if needed
     loadGeoPlaceResultCache();
+
+    // listen for name-parsing
+    $('#nameEntries').on('click', '.name-parser', function(event) {
+        event.preventDefault();
+        parseName(event);
+        $("#name-parser").modal('toggle');
+    });
+
+    $('#name-parser').on('shown.bs.modal', function () {
+        $('#parser-accept-btn').focus();
+    })
 
     // If the constellation is in "insert" mode, then we should automatically set "somethingHasBeenEdited"
     // to be true...
