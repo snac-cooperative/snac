@@ -1851,6 +1851,15 @@ class WebUIExecutor {
                 $display->setData(array("title"=> "Search for a Resource"));
                 $display->setTemplate("resources/search");
                 break;
+            case "resource":
+                // id passed is actually resourceID,
+                $resourceID = $input["constellationid"];
+                $resource = $this->connect->lookupResource($resourceID);
+
+                $display->setData(array("title"=> "View a Resource",
+                                        "resource" => $resource));
+                $display->setTemplate("resources/view");
+                break;
             case "edit_resource":
                 if (isset($this->permissions["EditResources"])) {
                     // id passed is actually resourceID,
@@ -3174,7 +3183,7 @@ class WebUIExecutor {
                             // If the user made a search query as well, then try to limit the results.
                             // If the displayEntry of the source doesn't contain the query string, then don't
                             // include it in the search results sent back to the client.
-                            if (isset($input["q"]) && $input["q"] != '' && 
+                            if (isset($input["q"]) && $input["q"] != '' &&
                                 stripos($source->getDisplayName(), $input["q"]) === false) {
                                 continue;
                             }
