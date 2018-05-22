@@ -168,6 +168,32 @@
         </form>
 
         <a type="button" class="btn btn-primary" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-edit" aria-hidden="true"></i> Edit Resource</a>
+
+
+        {% if  data.related_constellations %}
+            <div class="row">
+                <div class="col-md-12 search-results">
+                    <h3>Related Constellations</h3>
+                    <p class="search-info">There are {{data.related_constellations|length}} Constellations related to this resource.
+                    </p>
+                    {% for constellation in data.related_constellations %}
+                        <div id="result{{loop.index}}">
+                        <h4><a href="{{control.snacURL}}/view/{{constellation.id}}">{{constellation.nameEntries.0.original}}</a></h4>
+                        <p class="identity-info">
+                            <span>{{constellation.ark}}</span>
+                            <span>({{constellation.entityType.term}})</span>
+                        </p>
+                        {% if constellation.biogHists.0.text %}
+                            <p>{{constellation.biogHists.0.text | striptags | slice(0, 500)}}...</p>
+                        {% else %}
+                            <!-- <p class="missing">No biographical history available for this identity.</p> -->
+                        {% endif %}
+                        <p class="final" style="margin-top: 5px;"></p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
     </div>
 {{ footer(X, user, permissions, control) }}
 </body>
