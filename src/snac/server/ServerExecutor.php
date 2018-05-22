@@ -687,7 +687,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function readResource(&$input) {
-        $response = array();
+        $response = [];
         $resource = null;
 
         try {
@@ -701,6 +701,12 @@ class ServerExecutor {
             $resource = $this->cStore->readResource($id, $version);
 
             $response["resource"] = $resource->toArray();
+            if (isset($input["relationships"])) {
+                $icids = $this->neo4J->getResourceRelationships($input["resourceid"]);
+                foreach ($icids as $icid) {
+                    $response["related_constellations"][] = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY)->toArray();
+                }
+            }
             $this->logger->addDebug("Serialized resource for output to client");
         } catch (Exception $e) {
             $response["error"] = $e;
