@@ -54,6 +54,11 @@
         $('#resource-form').on('submit', saveResource);
         markEditedResourceFields($('#resource-form'));
         $('#search-results-box').on("click", "a.list-group-item", selectHoldingRepository);
+        $("input").on('keypress', function(event){
+            if(event.keyCode == 13) {
+                event.preventDefault();
+            }
+        });
     });
 </script>
 
