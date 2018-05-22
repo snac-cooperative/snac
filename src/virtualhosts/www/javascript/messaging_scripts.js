@@ -65,6 +65,10 @@ function showMessage(messageID) {
                                     + data.message.toUser.userName +")");
             currentMessage = data.message;
             $('#message_view_pane').html(html);
+	    $('#message_view_pane a').on('click', function() {
+	        window.open($(this).attr('href'));
+	        return false;
+	    });
 
             $("#reply_message").removeAttr("disabled").removeClass("disabled");
             $("#forward_message").removeAttr("disabled").removeClass("disabled");
