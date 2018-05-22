@@ -1852,12 +1852,20 @@ class WebUIExecutor {
                 $display->setTemplate("resources/search");
                 break;
             case "resource":
-                // id passed is actually resourceID,
-                $resourceID = $input["constellationid"];
-                $resource = $this->connect->lookupResource($resourceID);
+                if (!isset($input["constellationid"])) {
+                    $error = ["error" => ["type" => "Not Found", "message" => "The resource you were looking for does not exist."]];
+                    return $response = $this->drawErrorPage($error, $display);
+                };
 
+                $request = [
+                    "command" => "read_resource",
+                    "resourceid" => $input["constellationid"],          // id passed is actually resourceID,
+                    "relationships" => true];
+
+                $response = $this->connect->query($request);
                 $display->setData(array("title"=> "View a Resource",
-                                        "resource" => $resource));
+                                        "resource" => $response["resource"],
+                                        "related_constellations" => $response["related_constellations"]));
                 $display->setTemplate("resources/view");
                 break;
             case "edit_resource":
