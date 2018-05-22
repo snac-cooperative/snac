@@ -161,7 +161,8 @@ while($name = $db->fetchrow($allNames))
             "ark" => $name["ark_id"],
             "version" => $name["version"],
             "entity_type" => $name["entity_type"],
-            "name" => $name["original"]
+            "name" => $name["original"],
+	    'name_lower' => strtolower($name["original"])
         ];
     }
     $previousICID = $name["ic_id"];
