@@ -666,6 +666,10 @@ button.list-group-item-sources.active:focus {
     border-color: #5158b8;
 }
 
+.leaflet-container {
+    border-radius: 10px;
+}
+
 
 /* Use the following to define new panel styles */
 .panel-review {

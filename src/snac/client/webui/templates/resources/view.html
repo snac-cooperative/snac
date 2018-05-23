@@ -37,6 +37,35 @@
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/edit_scripts.js{{control.noCache}}"></script>
 
+
+<script>
+    function displayResourceHoldingMap() {
+        var latitude = {{data.resource.repository.places[0].geoplace.latitude}};
+        var longitude = {{data.resource.repository.places[0].geoplace.longitude}};
+        holdingsMapView = L.map('holdingsMap').setView([latitude,longitude],7);//setView([35.092344, -39.023438], 2);
+        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(holdingsMapView);
+        var bounds = new L.LatLngBounds();
+        if (latitude != '' && longitude != '') {
+            var marker = L.marker([latitude, longitude]).addTo(holdingsMapView).bindPopup("{{data.resource.repository.nameEntries[0].original}}");
+        }
+    }
+
+
+    $(document).ready(function() {
+        // TODO: check lat/long via twig templating methods. Put on page and grab from div?
+        var geoMapView = null;
+        var impliedRelationsLoaded = false;
+        var holdingsMapView = null;
+        var bounds = new L.LatLngBounds();
+        if ({{data.resource.repository.places[0].geoplace.latitude}}) {
+            displayResourceHoldingMap()
+        }
+    })
+</script>
+
 </head>
 <body role="document">
     {% import "resources/_resource_form.html" as resources %}
@@ -45,6 +74,8 @@
 
 
     <div class="container snac" role="main">
+        <h1>Vocabulary: {{ data.title }} </h1>
+        <!-- <h1>{{data.resource.title | slice(0, 300) }}</h1> -->
         <ol class="breadcrumb">
             <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
             <li><a href="{{control.snacURL}}/vocab_administrator/resources">Resource Management</a></li>
@@ -183,6 +214,17 @@
 
                 </div>
                 <div class="col-md-4">
+                    {% if data.resource.repository %}
+                    <!-- {# resources.displayResourceActions() #} -->
+                    <div class="geoplace-map" id="holdingsMap"></div>
+                    <p class="text-center"> <a href="{{control.snacURL}}/view/{{data.resource.repository.id}}"> {{data.resource.repository.nameEntries[0].original }} </a> </p>
+                    {% endif %}
+                    <div class="list-group" style="margin-top: 30px;">
+                        <!-- <a class="btn btn-primary" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-edit" aria-hidden="true"></i> Edit Resource</a> -->
+                        <!-- <a class="btn btn-success" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a> -->
+                        <a class="list-group-item list-group-item-info" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-edit" aria-hidden="true"></i> Edit Resource</a>
+                        <a class="list-group-item list-group-item-visualize" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
+                    </div>
                 </div>
             </div>
         </form>
