@@ -59,7 +59,10 @@
 
             // Load the table into a datatable
             var datatable = $('.table').DataTable({
-                "searching": false
+                "searching": false,
+                "columnDefs": [
+                    { "width": "80px", "targets": 0 },
+                ]
             });
 
             $('#searchbutton').click(function() {
@@ -79,8 +82,10 @@
                     if (data.results.length > 0) {
                         for (var key in data.results) {
                             result = data.results[key];
-                            var editIcon = "<a href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
-                                result.id + "/" + result.version + "'> <i class='fa fa-edit'></i> </a>";
+                            var icons = "<div class='btn-group'><a class='btn btn-success' href ='{{control.snacURL}}/vocab_administrator/resource/" +
+                                result.id + "/" + result.version + "'> <i class='fa fa-eye'></i> </a>" +
+                                "<a class='btn btn-primary' href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
+                                result.id + "/" + result.version + "'> <i class='fa fa-edit'></i> </a></div>";
                             var title = result.title || "";
                             var type = result.documentType.term || "";
                             var abstract = result.abstract || "";
@@ -94,7 +99,7 @@
                                 var holding_href = "{{control.snacURL}}/view/" + repo.id;
                                 holdingInstitution = "<a href=" + holding_href + " target='_blank'>" + holdingInstitution + "</a>";
                             }
-                            var row = new Array(editIcon, title, abstract, href, holdingInstitution, type);
+                            var row = new Array(icons, title, abstract, href, holdingInstitution, type);
                             datatable.row.add(row);
                         }
                     }
