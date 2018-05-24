@@ -407,7 +407,11 @@
                                          {% for relation in data.new.resourceRelations %}
                                          {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                              <div class="related updated" style="margin-top: 5px;">
-                                                 <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                {% if relation.resource.link %}
+                                                    <a href="relation.resource.link">{{relation.content|default(relation.resource.title)}}</a>
+                                                {% else %}
+                                                    {{relation.content|default(relation.resource.title)}}
+                                                {% endif %}
                                                  <!--<span class="arcrole">{{relation.role.term}}</span>-->
                                                  <div>{{relation.role.term}}</div>
                                                  <div></div>
@@ -417,7 +421,11 @@
                                          {% for relation in data.resourceRelations %}
                                          {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                              <div class="related" style="margin-top: 5px;">
-                                                 <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                {% if relation.resource.link %}
+                                                    <a href="relation.resource.link">{{relation.content|default(relation.resource.title)}}</a>
+                                                {% else %}
+                                                    {{relation.content|default(relation.resource.title)}}
+                                                {% endif %}
                                                  <!--<span class="arcrole">{{relation.role.term}}</span>-->
                                                  <div>{{relation.role.term}}</div>
                                                  <div></div>
@@ -427,7 +435,11 @@
                                          {% for relation in data.old.resourceRelations %}
                                          {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                              <div class="related older" style="margin-top: 5px;">
-                                                 <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                {% if relation.resource.link %}
+                                                    <a href="relation.resource.link">{{relation.content|default(relation.resource.title)}}</a>
+                                                {% else %}
+                                                    {{relation.content|default(relation.resource.title)}}
+                                                {% endif %}
                                                  <!--<span class="arcrole">{{relation.role.term}}</span>-->
                                                  <div>{{relation.role.term}}</div>
                                                  <div></div>
