@@ -700,14 +700,17 @@ class ServerExecutor {
                 $version = $input["version"];
             $resource = $this->cStore->readResource($id, $version);
 
-            $response["resource"] = $resource->toArray();
+            if (isset($resource))
+                $response["resource"] = $resource->toArray();
+            $response["related_constellations"] = [];
+
             if (isset($input["relationships"])) {
                 $icids = $this->neo4J->getResourceRelationships($input["resourceid"]);
                 foreach ($icids as $icid) {
                     $response["related_constellations"][] = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY)->toArray();
                 }
             }
-            $this->logger->addDebug("Serialized resource for output to client");
+            $this->logger->addDebug("Serialized resource for output to client", $response);
         } catch (Exception $e) {
             $response["error"] = $e;
         }

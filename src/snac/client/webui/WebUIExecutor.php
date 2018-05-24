@@ -1863,10 +1863,13 @@ class WebUIExecutor {
                     "relationships" => true];
 
                 $response = $this->connect->query($request);
-                $display->setData(array("title"=> "View a Resource",
-                                        "resource" => $response["resource"],
-                                        "related_constellations" => $response["related_constellations"]));
-                $display->setTemplate("resources/view");
+                //TODO: Check if resource exists, check if related_constellations
+                if (isset($response, $response["resource"])) {
+                    $display->setData(array("title"=> "View Resource",
+                                            "resource" => $response["resource"],
+                                            "related_constellations" => $response["related_constellations"]));
+                    $display->setTemplate("resources/view");
+                }
                 break;
             case "edit_resource":
                 if (isset($this->permissions["EditResources"])) {
