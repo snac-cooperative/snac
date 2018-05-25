@@ -430,6 +430,10 @@ td.rotate > div > span {
     text-decoration: none;
 }
 
+td > .btn-group {
+    display: flex;
+}
+
 /* Advanced Search Information */
 #advancedSearchText dl {
     margin-left: 25px;
