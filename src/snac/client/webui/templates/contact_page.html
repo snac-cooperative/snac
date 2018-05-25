@@ -37,6 +37,10 @@ tinymce.init({
 });
 </script>
 
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 <!-- SNAC Scripts -->
 <script src="{{control.snacURL}}/javascript/profile.js{{control.noCache}}"></script>
@@ -46,17 +50,31 @@ tinymce.init({
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
+<script>
+$(document).ready(function() {
+    $('#contact-topic-select').select2( {
+        theme: 'bootstrap'
+    });
+})
+</script>
+
 </head>
+
+
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
+
 <div class="container snac" role="main">
 <form id="profile_form">
-    <h1>Contact Us</h1>
+    <h1>Contact SNAC</h1>
     <div class="row">
         <div class="col-md-4">
+            <p>SNAC (Social Networks and Archival Context Cooperative) is a discovery service for persons, families, and corporations found within archival collections at cultural heritage institutions.</p>
+            <p>If you're looking for information regarding accessing specific archival documents, please contact the holding institution directly. </p>
+
             <p>We value your comments and suggestions.  Please use this form to send a message to the SNAC team.  If you are reporting a technical problem with the system, please use the feedback option at the bottom-right of the page you encountered the error, if possible, which will provide us with more technical details of your issue.</p>
         </div>
         <div class="col-md-8">
@@ -64,6 +82,19 @@ tinymce.init({
             <div class="alert alert-01" id="comment_status_message" style="display: none">
             </div><!-- end alert -->
             <div class="form-horizontal">
+
+                <div class="form-group required">
+                    <label class="control-label col-xs-3">Topic</label>
+
+                    <div class="col-xs-9">
+                        <select class="form-control" name="topic" id='contact-topic-select' required>
+                            <option value=""></option>
+                            <option value="Data Correction"> Data Correction </option>
+                            <option value="Technical Feedback"> Technical Feedback </option>
+                            <option value="Archival Inquiry"> Archival Inquiry </option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="control-label col-xs-3">Your Name</label>
                     <div class="col-xs-9">

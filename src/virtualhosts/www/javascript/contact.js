@@ -8,6 +8,7 @@
  */
 
 function sendContactForm() {
+
     var feedbackBody = {
         "subject" : $("#subject").val() ? $("#subject").val() : "Contact Form Submission",
         "name" : $("#name").val(),
@@ -20,13 +21,13 @@ function sendContactForm() {
 
     $("#send_comment").prop("disabled", true).addClass("disabled");
     $("#send_comment").html("<i class=\"fa fa-spinner fa-pulse fa-fw\"></i> Sending...");
-    
+
     $.post(snacUrl+"/feedback", feedbackBody, function (data) {
         if (data.result == "success") {
             // show success alert
             $("#comment_status_message").addClass("alert-success").html("<p>Message sent successfully.</p>");
             $('#comment_status_message').slideDown();
-            
+
             $("#send_comment").html("<i class=\"fa fa-paper-plane-o\" aria-hidden=\"true\"></i> Send");
             $("#send_comment").prop("disabled", false).removeClass("disabled");
         } else {
@@ -46,6 +47,10 @@ function sendContactForm() {
 $(document).ready(function() {
 
     $("#send_comment").click(function() {
+        if ($('#contact-topic-select').val() === '') {
+            alert("Please select message topic.");
+            return
+        }
         sendContactForm();
         $("#send_comment").off("click").prop("disabled", true).addClass("disabled");
         return false;
