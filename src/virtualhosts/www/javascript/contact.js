@@ -13,7 +13,8 @@ function sendContactForm() {
         "subject" : $("#subject").val() ? $("#subject").val() : "Contact Form Submission",
         "name" : $("#name").val(),
         "email" : $("#email").val(),
-        "body" : "<p>" + tinymce.get("message").getContent() + "</p>" +
+        "body" :    "<p> Topic: " + $("#contact-topic-select").val() + "</p>" +
+                    "<p>" + tinymce.get("message").getContent() + "</p>" +
                     "<p><strong>URL:</strong> " + window.location.href + "<br>" +
                     "<strong>Referer</strong>:" + document.referrer + "</p>",
         "token" : $("#g-recaptcha-response").val()
