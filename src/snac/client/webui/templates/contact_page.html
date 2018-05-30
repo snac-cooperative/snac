@@ -53,6 +53,9 @@ tinymce.init({
 <script>
 $(document).ready(function() {
     $('#contact-topic-select').select2( {
+        placeholder: "Select a Topic",
+        allowClear: false,
+        minimumResultsForSearch: -1,
         theme: 'bootstrap'
     });
 })
@@ -72,7 +75,7 @@ $(document).ready(function() {
     <h1>Contact SNAC</h1>
     <div class="row">
         <div class="col-md-4">
-            <p>SNAC (Social Networks and Archival Context Cooperative) is a discovery service for persons, families, and corporations found in archival collections.</p>
+            <p>SNAC (Social Networks and Archival Context Cooperative) is a discovery service for persons, families, and corporations found within archival collections at cultural heritage institutions.</p>
             <p>If you're looking for information regarding accessing specific archival documents, please contact the holding institution directly. </p>
 
             <p>We value your comments and suggestions.  Please use this form to send a message to the SNAC team.  If you are reporting a technical problem with the system, please use the feedback option at the bottom-right of the page you encountered the error, if possible, which will provide us with more technical details of your issue.</p>
@@ -88,8 +91,8 @@ $(document).ready(function() {
 
                     <div class="col-xs-9">
                         <select class="form-control" name="topic" id='contact-topic-select' required>
-                            <option value=""></option>
-                            <option value="Data Correction"> Data Correction </option>
+                            <option></option>
+                            <option value="Data Correction"> Data Correction (Please include evidence)</option>
                             <option value="Technical Feedback"> Technical Feedback </option>
                             <option value="Other"> Other </option>
                         </select>
