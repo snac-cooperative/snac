@@ -81,7 +81,7 @@
                             result = data.results[key];
                             var icons = "<div class='btn-group'><a class='btn btn-success' aria-label='view' target='_blank' href ='{{control.snacURL}}/vocab_administrator/resource/" +
                                 result.id + "'> <i class='fa fa-eye'></i> </a>" +
-                                {% if permissions.EditResource %}
+                                {% if permissions.EditResources %}
                                     "<a class='btn btn-primary' aria-label='edit' target='_blank' href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
                                     result.id + "'> <i class='fa fa-edit'></i> </a>" +
                                 {% endif %}
