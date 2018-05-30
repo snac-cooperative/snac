@@ -192,6 +192,8 @@ $txn->runStack($stack);
 $txn->commit();
 
 $connector->run('CREATE INDEX ON :Identity(id)');
+$connector->run('CREATE CONSTRAINT ON (i:Identity) ASSERT i.id IS UNIQUE');
+
 
 $stack = $connector->stack();
 $i = 0;
