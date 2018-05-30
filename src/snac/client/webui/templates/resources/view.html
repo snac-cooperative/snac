@@ -221,12 +221,12 @@
                     <div class="geoplace-map" id="holdingsMap"></div>
                     <p class="text-center"  style="margin-bottom: 30px;"> <a href="{{control.snacURL}}/view/{{data.resource.repository.id}}"> {{data.resource.repository.nameEntries[0].original }} </a> </p>
                     {% endif %}
+
+                    {% if permissions.EditResources%}
                     <div class="list-group">
-                        <!-- <a class="btn btn-primary" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-edit" aria-hidden="true"></i> Edit Resource</a> -->
-                        <!-- <a class="btn btn-success" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a> -->
                         <a class="list-group-item list-group-item-info" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-edit" aria-hidden="true"></i> Edit Resource</a>
-                        <a class="list-group-item list-group-item-visualize" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </form>
