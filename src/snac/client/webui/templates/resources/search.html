@@ -155,11 +155,13 @@
 
                 </form>
 
+                {% if permissions.EditResources %}
                 <div class="text-center">
                     <a href="{{control.snacURL}}/vocab_administrator/add_resource" class="btn btn-success">
                         <i class="fa fa-fw fa-plus"></i> Add New Resource
                     </a>
                 </div>
+                {% endif %}
 
                 <div class="form-horizontal">
                     <table class="table">
