@@ -398,7 +398,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->writeResource($this->input);
                 break;
             case "update_resource":
-                if (!$executor->hasPermission("EditResources"))
+                if (!$executor->hasPermission("Edit Resources"))
                    throw new \snac\exceptions\SNACPermissionException("User not authorized to update resources.");
                 $this->response = $executor->writeResource($this->input);
                 break;
