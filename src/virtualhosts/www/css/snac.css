@@ -48,19 +48,21 @@ body {
 
 .footer-content {
     margin-top: 10px;
+    text-align: center;
 }
 
 .footer p {
     margin-bottom: 0px;
+    font-size: 12px;
 }
 
 .footer a, .footer a:hover, .footer a:visited, .footer a:active {
     color: #fff;
 }
 
-.footer h3 {
-    margin-top: 0px;
-    margin-bottom: 5px;
+.footer h4 {
+    margin-top: 5px;
+    margin-bottom: 0px;
     font-family: Roboto;
     font-weight: 300;
 }
