@@ -30,10 +30,14 @@ function saveResource(event) {
     $.post(snacUrl + "/save_resource", $form.serialize())
         .done(function(data) {
             createdResource = data;
+            if (typeof(data.resource) === 'undefined')  {
+                $('#error-message').slideDown();
+                return false;
+            }
             $('#notification-message').slideUp();
             $('#success-message').slideDown();
             setTimeout(function() {
-                window.location.replace(snacUrl + "/vocab_administrator/resources");
+                window.location = (snacUrl + "/vocab_administrator/resource/" + data.resource.id);
             }, 1000);
         })
         .fail(function() {

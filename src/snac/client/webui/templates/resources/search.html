@@ -79,8 +79,13 @@
                     if (data.results.length > 0) {
                         for (var key in data.results) {
                             result = data.results[key];
-                            var editIcon = "<a href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
-                                result.id + "/" + result.version + "'> <i class='fa fa-edit'></i> </a>";
+                            var icons = "<div class='btn-group'><a class='btn btn-success' title='View' target='_blank' href ='{{control.snacURL}}/vocab_administrator/resource/" +
+                                result.id + "'> <i class='fa fa-eye'></i> </a>" +
+                                {% if permissions.EditResources %}
+                                    "<a class='btn btn-primary' title='Edit' target='_blank' href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
+                                    result.id + "'> <i class='fa fa-edit'></i> </a>" +
+                                {% endif %}
+                                    "</div>";
                             var title = result.title || "";
                             var type = result.documentType.term || "";
                             var abstract = result.abstract || "";
@@ -94,7 +99,7 @@
                                 var holding_href = "{{control.snacURL}}/view/" + repo.id;
                                 holdingInstitution = "<a href=" + holding_href + " target='_blank'>" + holdingInstitution + "</a>";
                             }
-                            var row = new Array(editIcon, title, abstract, href, holdingInstitution, type);
+                            var row = new Array(icons, title, abstract, href, holdingInstitution, type);
                             datatable.row.add(row);
                         }
                     }
@@ -149,11 +154,13 @@
 
                 </form>
 
+                {% if permissions.EditResources %}
                 <div class="text-center">
                     <a href="{{control.snacURL}}/vocab_administrator/add_resource" class="btn btn-success">
                         <i class="fa fa-fw fa-plus"></i> Add New Resource
                     </a>
                 </div>
+                {% endif %}
 
                 <div class="form-horizontal">
                     <table class="table">

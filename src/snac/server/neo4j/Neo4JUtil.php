@@ -355,7 +355,7 @@ class Neo4JUtil {
                     'icid' => "{$from->getID()}"
                 ]
             );
-            
+
             foreach ($result->getRecords() as $record) {
                 $path = $record->pathValue("p");
 
@@ -377,7 +377,7 @@ class Neo4JUtil {
                     $type = $relation->type();
 
                     $data = [];
-                    
+
                     // Resource Relations have id/version
                     if ($relation->hasValue('id'))
                         $data["id"] = $relation->value('id');
@@ -674,4 +674,33 @@ class Neo4JUtil {
         }
 
     }
+
+
+    /**
+     * Get Resource Relationships
+     *
+     * Given a resource id, returns an array of constellation ids related to that resource.
+     *
+     * @param $resource_id The id of the resource
+     * @return string[]    An array of related constellation ids
+     */
+    public function getResourceRelationships($resource_id) {
+        if ($this->connector != null) {
+            // Returning a single array of ids using collect()
+            $result = $this->connector->run("MATCH (r:Resource {id: '{$resource_id}' })--(i:Identity) return collect(i.id) as ids ");
+            $relatedConstellationIDs = $result->getRecord()->get('ids');
+
+            // // Returning multiple rows and dealing with each record individually
+            // $relatedConstellationIDs = [];
+            // $result = $this->connector->run("MATCH (r:Resource {id: '{$resource_id}' })--(i:Identity) return i, i.id as id, i.name as name ");
+            // foreach ($result->getRecords() as $record) {
+            //     $id = $record->get('id');
+            //     $name = $record->get('name');
+            //     $relatedConstellationIDs[] = $id;
+            //     $relatedConstellationIDs[] = $name;
+            // }
+            return $relatedConstellationIDs;
+        }
+    }
+    
 }
