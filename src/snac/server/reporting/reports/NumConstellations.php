@@ -45,9 +45,9 @@ class NumConstellations extends helpers\Report {
         $sql = "select count(*)
                 from version_history as aa,
                     (select max(version) as version, id from version_history
-                    where status in ('published', 'tombstoned', 'deleted', 'embargoed')
+                    where status in ('published', 'tombstone', 'deleted', 'embargoed')
                     group by id) as cc
-                where              
+                where
                     aa.id=cc.id and
                     aa.version=cc.version and
                     aa.status = 'published';";
