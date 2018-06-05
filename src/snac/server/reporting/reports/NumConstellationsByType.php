@@ -42,18 +42,18 @@ class NumConstellationsByType extends helpers\Report {
      * @return string[]       Report results
      */
     public function compute($psql) {
-        $sql = "select v.value, count(*) from 
+        $sql = "select v.value, count(*) from
             (select distinct v.value, cc.id
                 from version_history as aa,
-                    (select n.ic_id, n.entity_type, b.version from nrd n, 
+                    (select n.ic_id, n.entity_type, b.version from nrd n,
                         (select max(version) as version, ic_id from nrd
                         group by ic_id) as b where n.ic_id = b.ic_id and
-                        not n.is_deleted) as bb, 
+                        not n.is_deleted) as bb,
                     (select max(version) as version, id from version_history
-                    where status in ('published', 'tombstoned', 'deleted', 'embargoed')
+                    where status in ('published', 'tombstone', 'deleted', 'embargoed')
                     group by id) as cc,
                     vocabulary v
-                where              
+                where
                     aa.id=cc.id and
                     aa.version=cc.version and
                     bb.ic_id=cc.id and
