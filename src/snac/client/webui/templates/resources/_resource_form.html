@@ -4,7 +4,7 @@
         <!-- HIDDEN VALUES-->
         <input name="resources[0][operation]" type="hidden" value="{{ resource ? "update" : "insert" }}">
         <!-- <input name="resources[0][documentType_vocabtype]" type="hidden" value="document_type"> -->
-        <input name="resources[0][id]" type="hidden" value="{{resource.id}}" />
+        <input name="resources[0][id]" type="hidden" id="resource-id" value="{{resource.id}}" />
         <input name="resources[0][version]" type="hidden" value="{{resource.version}}">
         <input name="resources[0][extent]" type="hidden" value="">
 
