@@ -75,9 +75,13 @@
                 return false;
             });
 
-
             function searchResource() {
-                $.post("{{control.snacURL}}/resource_search?count=100", $("#search-form").serialize(), function(data) {
+                var serializedForm = $("#search-form").find(':input').filter(function () {
+                            return $(this).val() != '';
+                        }).serialize();
+
+                $.post("{{control.snacURL}}/resource_search?count=100", serializedForm, function(data) {
+                    x = data
                     var results = [];
                     datatable.clear();
                     if (data.results.length > 0) {
@@ -111,7 +115,10 @@
                 });
             }
 
-            loadVocabSelectOptions($('#resource-type-select'), "document_type")
+            loadVocabSelectOptions($('#resource-type-select'), "document_type").done(function() {
+                var newOption = new Option("All Resources", '', false, false)
+                $('#resource-type-select').append(newOption)
+            })
         });
     </script>
 
