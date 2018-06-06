@@ -64,3 +64,18 @@ foreach ($all as $row) {
     echo "Updating $id: $badurl to $url\n";
 }
 
+echo "\nSTEP 4: update LDS links\n=====================\n";
+
+$res = $db->query("select id, href from resource_cache where href like 'http://eadview.lds.org/%'", array()); 
+$all = $db->fetchAll($res);
+foreach ($all as $row) {
+    $badurl = $row["href"];
+    $id = $row["id"];
+
+    $fn = str_replace('http://eadview.lds.org', '', $badurl);
+    $url = 'https://eadview.lds.org' . $fn;
+
+    $res = $db->query("update resource_cache set href = $1 where id = $2;", array( $url, $id));
+    echo "Updating $id: $badurl to $url\n";
+}
+
