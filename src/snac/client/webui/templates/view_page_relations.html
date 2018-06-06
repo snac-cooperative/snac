@@ -158,7 +158,7 @@
                                         {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             <div class="related updated" style="margin-top: 10px;">
                                                 {% if relation.resource.link %}
-                                                    <a href="relation.resource.link">{{relation.content|default(relation.resource.title)}}</a>
+                                                    <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
                                                 {% else %}
                                                     {{relation.content|default(relation.resource.title)}}
                                                 {% endif %}
@@ -172,7 +172,7 @@
                                         {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             <div class="related" style="margin-top: 10px;">
                                                 {% if relation.resource.link %}
-                                                    <a href="relation.resource.link">{{relation.content|default(relation.resource.title)}}</a>
+                                                    <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
                                                 {% else %}
                                                     {{relation.content|default(relation.resource.title)}}
                                                 {% endif %}
@@ -186,7 +186,7 @@
                                         {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             <div class="related older" style="margin-top: 10px;">
                                                 {% if relation.resource.link %}
-                                                    <a href="relation.resource.link">{{relation.content|default(relation.resource.title)}}</a>
+                                                    <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
                                                 {% else %}
                                                     {{relation.content|default(relation.resource.title)}}
                                                 {% endif %}
