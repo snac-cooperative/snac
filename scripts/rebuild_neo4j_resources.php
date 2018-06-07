@@ -131,8 +131,7 @@ $txn = $connector->transaction();
 $txn->runStack($stack);
 $txn->commit();
 
-$connector->run('CREATE INDEX ON :Resource(id)');
-
+$connector->run('CREATE CONSTRAINT ON (r:Resource) ASSERT r.id IS UNIQUE');
 
 $stack = $connector->stack();
 $i = 0;

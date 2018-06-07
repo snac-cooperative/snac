@@ -230,3 +230,10 @@ $(function () {
     })
 })
 }
+
+function shortenIfLong(str, maxLength, pretty=true) {
+    if (str.length <= maxLength) return str;
+
+    var cutoff = pretty ? str.lastIndexOf(' ', maxLength) : maxLength
+    return str.slice(0, cutoff) + '...'
+}

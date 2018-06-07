@@ -191,6 +191,8 @@ class Display {
         // caching of javascript.
         if (\snac\Config::$DEBUG_MODE == true) {
             $this->data["control"]["noCache"] = trim("?_=".`git rev-parse HEAD`);
+        } else if (isset(\snac\Config::$CACHE_COOKIE)) {
+            $this->data["control"]["noCache"] = trim("?_=".\snac\Config::$CACHE_COOKIE);
         }
 
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
