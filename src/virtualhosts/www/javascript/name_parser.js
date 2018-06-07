@@ -25,9 +25,10 @@ NameParser.prototype.guessPerson = function(name) {
     // Guess Surname and Forename
     if (!name.parsed["Surname"] && name.parsed["Forename"].match(/ /)) {
         var newClone = Object.assign({}, clonedParse)
-        var forenameWithSpace = newClone["Forename"].split(/ (.+)/);
-        newClone["Surname"] = forenameWithSpace[0];
-        newClone["Forename"] = forenameWithSpace[1];
+        var forenameWithSpace = newClone["Forename"]
+        lastSpace = forenameWithSpace.lastIndexOf(' ')
+        newClone["Surname"] = forenameWithSpace.slice(0, lastSpace).trim()
+        newClone["Forename"] = forenameWithSpace.slice(lastSpace).trim()
 
         flippedNames = Object.assign({}, newClone)
         flippedNames["Surname"] = newClone["Forename"]
@@ -37,15 +38,12 @@ NameParser.prototype.guessPerson = function(name) {
         name.guesses.push(flippedNames);
     }
 
-
     // if multiple name additions, add guess with them combined
     if (name.parsed["NameAdditions"] > 1) {
         var newClone = Object.assign({}, clonedParse)
         newClone["NameAdditions"] = newClone["NameAdditions"].join(' ');
         name.guesses.push(newClone);
     }
-
-    // if date, insert comma before first digit
 
     return name.guesses;
 };
@@ -130,8 +128,6 @@ NameParser.prototype.parseDate = function(name) {
     }
     return name.parsed["Date"];
 };
-
-
 
 
 // Numeration is for titles, , For generational suffix, use nameAdditon
