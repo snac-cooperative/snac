@@ -98,7 +98,7 @@
                             var type = result.documentType.term || "";
                             var abstract = shortenIfLong(result.abstract || "", 300);
                             var href = result.link || "";
-                            href = "<a href=" + href + " target='_blank'>" + shortenIfLong(href, 35, false) + "</a>";
+                            href = "<a href=" + href + " target='_blank' title='" + href + "'>" + shortenIfLong(href, 35, false) + "</a>";
 
                             var repo = result.repository || "";
                             var holdingInstitution = "";
