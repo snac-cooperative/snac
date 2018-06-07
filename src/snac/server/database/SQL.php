@@ -4664,7 +4664,7 @@ class SQL
         {
             // the following merge will preserve the resource_version from the resource_cache table and drop the one from related_resource
             // since the resource_cache results are merged first.
-            array_push($all, array_merge($resources[$row["resource_id"]], $row));
+            array_push($all, array_merge($row, $resources[$row["resource_id"]]));
         }
         $this->sdb->deallocate($qq);
 
