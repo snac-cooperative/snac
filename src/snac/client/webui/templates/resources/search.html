@@ -41,14 +41,14 @@
     <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
     <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
     <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+    <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+    <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 
     <script>
         $(document).ready(function() {
 
             // Use select2 to display the select dropdowns
-            // rather than the HTML default
-
             $('select').each(function() {
                 $(this).select2({
                     minimumResultsForSearch: Infinity,
@@ -59,7 +59,15 @@
 
             // Load the table into a datatable
             var datatable = $('.table').DataTable({
-                "searching": false
+                "searching": false,
+                "columns": [ { "width": "5%" },
+                    { "width": "30%" },
+                    { "width": "30%" },
+                    { "width": "15%" },
+                    { "width": "10%" },
+                    { "width": "10%" },
+                ]
+
             });
 
             $('#searchbutton').click(function() {
@@ -69,12 +77,8 @@
 
 
             function searchResource() {
-                resourceResults = null;
                 $.post("{{control.snacURL}}/resource_search?count=100", $("#search-form").serialize(), function(data) {
-                    resourceResults = data;
                     var results = [];
-                    // console.log($("#search_form").serialize());
-                    // console.log(data);
                     datatable.clear();
                     if (data.results.length > 0) {
                         for (var key in data.results) {
@@ -86,11 +90,11 @@
                                     result.id + "'> <i class='fa fa-edit'></i> </a>" +
                                 {% endif %}
                                     "</div>";
-                            var title = result.title || "";
+                            var title = shortenIfLong(result.title || "", 300);
                             var type = result.documentType.term || "";
-                            var abstract = result.abstract || "";
+                            var abstract = shortenIfLong(result.abstract || "", 300);
                             var href = result.link || "";
-                            href = "<a href=" + href + " target='_blank'>" + href + "</a>";
+                            href = "<a href=" + href + " target='_blank'>" + shortenIfLong(href, 35, false) + "</a>";
 
                             var repo = result.repository || "";
                             var holdingInstitution = "";
