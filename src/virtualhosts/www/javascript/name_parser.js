@@ -117,12 +117,14 @@ NameParser.prototype.parsePerson = function(name) {
  */
 NameParser.prototype.parseDate = function(name) {
     for (var i=0; i < name.parts.length; i++) {
-        if (name.parts[i].match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
-            var match = name.parts[i].match(/-?\d.*\d-?/);
-            name.parsed["Date"] = match[0];
-            name.parts[i] = name.parts[i].substring(0, match.index).trim();
-            if (name.parts[i] === '') {
-                name.parts.splice(i, 1);
+        if (name.parts[i].match(/\d\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
+            var match = name.parts[i].match(/-?\d\d.*\d-?/);
+            if (match) {
+                name.parsed["Date"] = match[0];
+                name.parts[i] = name.parts[i].substring(0, match.index).trim();
+                if (name.parts[i] === '') {
+                    name.parts.splice(i, 1);
+                }
             }
         }
     }
