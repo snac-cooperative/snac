@@ -45,15 +45,25 @@ function sendContactForm() {
     });
 }
 
+function confirmSendContactForm() {
+    bootbox.confirm("<h4>I understand that SNAC is a research discovery platform for persons, families and " +
+        "corporations and not a means of contacting the individual, institution, or holding repository " +
+        "of any identity displayed on our website.</h4>",
+        function(answer) {
+            if (answer) {
+                sendContactForm()
+            }
+        })
+}
+
 $(document).ready(function() {
 
     $("#send_comment").click(function() {
-        if ($('#contact-topic-select').val() === '') {
-            alert("Please select message topic.");
-            return
+        if ($('#contact-topic-select').val() === '' || !$("#contact-confirm-checkbox").prop('checked')) {
+            alert("Please fill all required fields.");
+            return false
         }
-        sendContactForm();
-        $("#send_comment").off("click").prop("disabled", true).addClass("disabled");
+        confirmSendContactForm();
         return false;
     });
 
