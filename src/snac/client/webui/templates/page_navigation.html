@@ -48,15 +48,13 @@
                         <li><a href="{{control.snacURL}}/dashboard/explore"><i class="fa fa-fw fa-globe" aria-hidden="true"></i> Explore</a></li>
                         <li><a href="{{control.snacURL}}/dashboard/editor"><i class="fa fa-fw fa-pencil" aria-hidden="true"></i> Editor</a></li>
                         <li><a href="{{control.snacURL}}/dashboard/reviewer"><i class="fa fa-fw fa-check-circle" aria-hidden="true"></i> Reviewer</a></li>
-                        <li><a href="{{control.snacURL}}/dashboard/reporting"><i class="fa fa-fw fa-pie-chart" aria-hidden="true"></i> Reporting</a></li>
-                        {% if permissions.ViewAdminDashboard or permissions.ViewVocabDashboard %}
-                        <li role="separator" class="divider"></li>
-                        {% if permissions.ViewVocabDashboard %}
-                        <li><a href="{{control.snacURL}}/vocab_administrator"><i class="fa fa-fw fa-link" aria-hidden="true"></i> Vocabulary</a></li>
+                        {% if permissions.EditResources or permissions.ViewVocabDashboard %}
+                        <li><a href="{{control.snacURL}}/vocab_administrator"><i class="fa fa-fw fa-link" aria-hidden="true"></i> Supplemental</a></li>
                         {% endif %}
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{{control.snacURL}}/dashboard/reporting"><i class="fa fa-fw fa-pie-chart" aria-hidden="true"></i> Reporting</a></li>
                         {% if permissions.ViewAdminDashboard %}
                         <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cog" aria-hidden="true"></i> Administrator</a></li>
-                        {% endif %}
                         {% endif %}
                     </ul>
                 </li>

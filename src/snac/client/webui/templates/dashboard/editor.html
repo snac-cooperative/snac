@@ -76,7 +76,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         <div class="col-md-8">
                 <h1 class="title">Editor's Dashboard</h1>
                 <div class="well-md">
-                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows the most recently published Constellations across SNAC and provides searching.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column shows constellations you have out for review and other information depending on your permission level.</p>
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Editor's dashboard.  From here, you can search for and create new Identity Constellations, pick up where you left off on your current in-progress edits, and unlock Identity Constellations.  If you have sent a Constellation for review, but the reviewer has not started, you may pull back the Constellation from the right column.</p>
                 </div>
         </div>
     </div>
@@ -98,6 +98,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             </div>
 
             -->
+            {% if data.messages|length > 0 %}
+            <div class="alert alert-warning">
+                <div class="">
+                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
+                    <a class="list-group-item list-group-item-warning" href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messaging Center</a>
+                </div>
+            </div>
+            {% endif %}
 
             <form class="form-horizontal" id="search_form" onsubmit="return false;">
                 <div class="well well-lg text-center">
@@ -173,14 +181,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         </div>
         <div class="col-md-4">
             <!-- Right column -->
-            {% if data.messages|length > 0 %}
-            <div class="alert alert-warning">
-                <div class="">
-                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
-                    <a class="list-group-item list-group-item-warning" href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messaging Center</a>
-                </div>
-            </div>
-            {% endif %}
 
 
             {% if permissions.Edit %}

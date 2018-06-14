@@ -76,7 +76,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         <div class="col-md-8">
                 <h1 class="title">Reporting Dashboard</h1>
                 <div class="well-md">
-                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows the most recently published Constellations across SNAC and provides searching.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column shows constellations you have out for review and other information depending on your permission level.</p>
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Reporting dashboard!  Here you may find interesting aggregated data about the Constellations in SNAC, their connections, related resources, editing activity, and holding repositories.  Most reports are updated weekly or monthly.</p>
                 </div>
         </div>
     </div>
@@ -84,20 +84,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
-            <!--
-            <div class="panel panel-success">
-                <div class="panel-heading">
-                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
-                </div>
-                <div class="panel-body">
-                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
-                    <div class="list-group">
-                        <a href="#" class="list-group-item disabled">Coming Soon</a>
-                    </div>
+            {% if data.messages|length > 0 %}
+            <div class="alert alert-warning">
+                <div class="">
+                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
+                    <a class="list-group-item list-group-item-warning" href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messaging Center</a>
                 </div>
             </div>
-
-            -->
+            {% endif %}
 
             <div class="panel panel-success">
                 <div class="panel-heading">
