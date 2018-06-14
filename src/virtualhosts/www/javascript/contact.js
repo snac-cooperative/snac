@@ -45,16 +45,22 @@ function sendContactForm() {
     });
 }
 
-$(document).ready(function() {
-
-    $("#send_comment").click(function() {
-        if ($('#contact-topic-select').val() === '') {
-            alert("Please select message topic.");
-            return
+function validateContactForm() {
+    var valid = true;
+    $('#contact-topic-select,#name,#email,#subject').each(function() {
+        if ($(this).val() === '') {
+            valid = false;
         }
-        sendContactForm();
-        $("#send_comment").off("click").prop("disabled", true).addClass("disabled");
-        return false;
-    });
+    })
+    return valid && $("#contact-confirm-checkbox").prop('checked')
+}
 
+$(document).ready(function() {
+    $("#send_comment").click(function() {
+        if (validateContactForm()) {
+            sendContactForm()
+        } else {
+            alert("Please fill all fields.")
+        }
+    });
 });
