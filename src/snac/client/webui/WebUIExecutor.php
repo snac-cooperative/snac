@@ -1870,12 +1870,34 @@ class WebUIExecutor {
                 $display->setData(array("title"=> "Search for a Resource"));
                 $display->setTemplate("resources/search");
                 break;
+            case "resource":
+                $request = [
+                    "command" => "read_resource",
+                    "resourceid" => $input["constellationid"] ?? '',          // id passed is actually resourceID,
+                    "relationships" => true];
+
+                $response = $this->connect->query($request);
+                if (isset($response, $response["resource"])) {
+                    $display->setData(array("title"=> "View Resource",
+                                            "resource" => $response["resource"],
+                                            "related_constellations" => $response["related_constellations"]));
+                    $display->setTemplate("resources/view");
+                } else {
+                    $error = ["error" => ["type" => "Not Found", "message" => "The resource you were looking for does not exist."]];
+                    $this->drawErrorPage($error, $display);
+                    break;
+                }
+                break;
             case "edit_resource":
                 if (isset($this->permissions["EditResources"])) {
                     // id passed is actually resourceID,
-                    $resourceID = $input["constellationid"];
+                    $resourceID = $input["constellationid"] ?? '';
                     $resource = $this->connect->lookupResource($resourceID);
-
+                    if ($resource === false) {
+                        $error = ["error" => ["type" => "Not Found", "message" => "The resource you were looking for does not exist."]];
+                        $this->drawErrorPage($error, $display);
+                        break;
+                    }
                     $display->setData(array("title"=> "Edit a Resource",
                                             "resource" => $resource));
                     $display->setTemplate("resources/edit");
@@ -3193,7 +3215,7 @@ class WebUIExecutor {
                             // If the user made a search query as well, then try to limit the results.
                             // If the displayEntry of the source doesn't contain the query string, then don't
                             // include it in the search results sent back to the client.
-                            if (isset($input["q"]) && $input["q"] != '' && 
+                            if (isset($input["q"]) && $input["q"] != '' &&
                                 stripos($source->getDisplayName(), $input["q"]) === false) {
                                 continue;
                             }

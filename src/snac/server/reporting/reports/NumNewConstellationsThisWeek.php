@@ -45,9 +45,9 @@ class NumNewConstellationsThisWeek extends helpers\Report {
         $sql = "select count(*)
                 from version_history as aa,
                     (select min(timestamp) as timestamp, id from version_history
-                    where status in ('published', 'tombstoned', 'deleted', 'embargoed')
+                    where status in ('published', 'tombstone', 'deleted', 'embargoed')
                     group by id) as cc
-                where              
+                where
                     aa.id=cc.id and
                     aa.version=cc.version and
                     cc.timestamp > NOW() - INTERVAL '7 days' and
@@ -66,4 +66,3 @@ class NumNewConstellationsThisWeek extends helpers\Report {
     }
 
 }
-

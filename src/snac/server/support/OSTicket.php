@@ -50,8 +50,6 @@ class OSTicket {
 
         $payload = array();
 
-        //TODO We should have the WebUI send the user information through the message as well, rather than just the email.
-
         $this->logger->addDebug('Trying to submit message', $message->toArray());
         if ($message->getFromString() !== null) {
             list($name, $email, $junk) = explode("|", $message->getFromString());
@@ -65,6 +63,12 @@ class OSTicket {
         }
         $payload["subject"] = $message->getSubject();
         $payload["alert"] = true;
+
+        // If Config has a specific department to send the ticket to, then
+        // send it directly to that department
+        if (isset(Config::$OSTICKET_DEPARTMENT))
+            $payload["deptId"] = Config::$OSTICKET_DEPARTMENT;
+        
         $payload["autorespond"] = true;
         $payload["message"] = \Html2Text\Html2Text::convert($message->getBody());
 

@@ -907,7 +907,7 @@ class DBUtil
         $history = $this->listVersionHistory($mainID, $version, false);
 
         foreach ($history as $event) {
-            if ($event['status'] == 'published' || $event['status'] == 'deleted' || $event['status'] == 'tombstoned')
+            if ($event['status'] == 'published' || $event['status'] == 'deleted' || $event['status'] == 'tombstone')
                 return null;
             else if ($event["status"] == 'needs review' || $event["status"] == 'change locks')
                 return $event;

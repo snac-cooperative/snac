@@ -1208,10 +1208,12 @@ class ConstellationPostMapper {
             }
             $relation->setOperation($this->getOperation($data));
 
-            $resource = null;
+            $resource = false;
             if ($this->lookupTerms) {
                 $resource = $this->lookupTermsConnector->lookupResource($data["resourceid"], $data["resourceversion"]);
-            } else {
+            }
+
+            if ($resource === false) {
                 $resource = new \snac\data\Resource();
                 $resource->setID($data["resourceid"]);
                 $resource->setVersion($data["resourceversion"]);

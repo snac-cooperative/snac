@@ -193,9 +193,6 @@ class ServerConnect {
             return $resource;
         }
 
-        $resource = new \snac\data\Resource();
-        $resource->setID($id);
-        $resource->setVersion($version);
-        return $resource;
+        return false;
     }
 }

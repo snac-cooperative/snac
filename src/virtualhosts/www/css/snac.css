@@ -48,19 +48,21 @@ body {
 
 .footer-content {
     margin-top: 10px;
+    text-align: center;
 }
 
 .footer p {
     margin-bottom: 0px;
+    font-size: 12px;
 }
 
 .footer a, .footer a:hover, .footer a:visited, .footer a:active {
     color: #fff;
 }
 
-.footer h3 {
-    margin-top: 0px;
-    margin-bottom: 5px;
+.footer h4 {
+    margin-top: 5px;
+    margin-bottom: 0px;
     font-family: Roboto;
     font-weight: 300;
 }
@@ -463,6 +465,10 @@ td.rotate > div > span {
     text-decoration: none;
 }
 
+td > .btn-group {
+    display: flex;
+}
+
 /* Advanced Search Information */
 #advancedSearchText dl {
     margin-left: 25px;
@@ -697,6 +703,10 @@ button.list-group-item-sources.active:focus {
     color: #fff;
     background-color: #5158b8;
     border-color: #5158b8;
+}
+
+.leaflet-container {
+    border-radius: 10px;
 }
 
 

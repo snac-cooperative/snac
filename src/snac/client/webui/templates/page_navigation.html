@@ -12,7 +12,7 @@
             ga('send', 'pageview');
         </script>
     {% endif %}
-        
+
     <script>
         var snacUrl = "{{control.snacURL}}";
     </script>
@@ -93,6 +93,14 @@
                         <li><a href="{{control.snacURL}}/dashboard"><i class="fa fa-fw fa-tachometer" aria-hidden="true"></i> Default Dashboard</a></li>
                         <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         <li><a href="{{control.snacURL}}/stats"><i class="fa fa-fw fa-bar-chart" aria-hidden="true"></i> SNAC Statistics</a></li>
+                        
+                        {% if permissions.EditResources or permissions.ViewVocabDashboard %}
+                        <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">Vocabulary</li>
+                        {% if permissions.EditResources %}
+                        <li><a href="{{control.snacURL}}/vocab_administrator/resources"><i class="fa fa-fw fa-book" aria-hidden="true"></i> Resources</a></li>
+                        {% endif %}
+                        {% endif %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
                         <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
@@ -114,7 +122,7 @@
     <p class="snac-system-notice">This is the <b>demo version</b>.  Edits made to these Constellations will not be permanent.</p>
     {% endif %}
 {% endmacro %}
-                
+
 {% macro footer(X, user, permissions, control) %}
     {% if control.interfaceVersion == "development" %}
     <div class="footer footer-development-version">
@@ -127,9 +135,9 @@
             <div class="row">
                 <div class="col-md-4 footer-content">
                     <p class="text-center">
-                    <img src="{{control.snacURL}}/images/paper_dolls_art2.png"/><br/>
-                    Social Networks and Archival Context
+                        <img src="{{control.snacURL}}/images/paper_dolls_art2.png"/><br/>
                     </p>
+                    <h4 class="text-center">Social Networks and Archival Context</h4>
                     <p class="text-center" style="margin-top: 5px;">
                         <a href="https://twitter.com/snaccooperative" title="Visit us on Twitter">
                             <i class="fa fa-2x fa-twitter-square" style="vertical-align: middle" aria-hidden="true"></i></a>
@@ -144,21 +152,22 @@
                     </p>
                 </div>
                 <div class="col-md-4 footer-content">
-                    <h3 class="">Sponsors</h3>
-                    <p class="">
-                    <a href="http://www.mellon.org" target="_blank">The Andrew W. Mellon Foundation</a><br>
-                    <a href="http://www.imls.gov" target="_blank">Institute of Museum and Library Services</a><br>
-                    <a href="http://www.neh.gov" target="_blank">National Endowment for the Humanities</a>
-                    </p>
+                    <p style="font-size: medium; margin-top: 30px;">SNAC is a discovery service for persons, families, and corporations found within archival collections at cultural heritage institutions.</p>
                 </div>
                 <div class="col-md-4 footer-content">
-                    <h3 class="">Collaborators</h3>
-                    <p class="">
-                    <a href="http://library.virginia.edu" target="_blank">UVa Library</a><br>
-                    <a href="http://www.iath.virginia.edu" target="_blank">UVa IATH</a><br>
-                    <a href="http://www.ischool.berkeley.edu" target="_blank">UC Berkeley School of Information</a><br>
-                    <a href="http://www.cdlib.org" target="_blank">California Digital Library</a><br>
-                    <a href="http://www.archives.gov" target="_blank">National Archives and Records Administration</a></p> 
+                    <div class="row">
+                        <h4 class="">Sponsors</h4>
+                        <p>
+                            <a href="http://www.mellon.org" target="_blank">The Andrew W. Mellon Foundation</a><br>
+                            <a href="http://www.imls.gov" target="_blank">Institute of Museum and Library Services</a><br>
+                            <a href="http://www.neh.gov" target="_blank">National Endowment for the Humanities</a>
+                        </p>
+                        <h4 class="">Hosts</h4>
+                        <p>
+                            <a href="http://library.virginia.edu" target="_blank">University of Virginia Library</a><br>
+                            <a href="http://www.archives.gov" target="_blank">National Archives and Records Administration</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

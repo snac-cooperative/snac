@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>SNAC Vocabulary: {{ data.title }}</title>
+    <title>{{ data.title }} - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -40,6 +40,9 @@
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/resource_admin.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
 
 <script>
     $(document).ready(function() {
@@ -54,6 +57,11 @@
         $('#resource-form').on('submit', saveResource);
         markEditedResourceFields($('#resource-form'));
         $('#search-results-box').on("click", "a.list-group-item", selectHoldingRepository);
+        $("input").on('keypress', function(event){
+            if(event.keyCode == 13) {
+                event.preventDefault();
+            }
+        });
     });
 </script>
 
@@ -65,9 +73,8 @@
 
 
     <div class="container snac" role="main">
-        <h1>Vocabulary: {{ data.title }}</h1>
+        <h1>{{ data.title }}</h1>
         <ol class="breadcrumb">
-            <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
             <li><a href="{{control.snacURL}}/vocab_administrator/resources">Resource Management</a></li>
             <li>{{data.title}}</li>
         </ol>
