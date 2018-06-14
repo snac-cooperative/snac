@@ -92,13 +92,6 @@
                         <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         <li><a href="{{control.snacURL}}/stats"><i class="fa fa-fw fa-bar-chart" aria-hidden="true"></i> SNAC Statistics</a></li>
                         
-                        {% if permissions.EditResources or permissions.ViewVocabDashboard %}
-                        <li role="separator" class="divider"></li>
-                        <li class="dropdown-header">Vocabulary</li>
-                        {% if permissions.EditResources %}
-                        <li><a href="{{control.snacURL}}/vocab_administrator/resources"><i class="fa fa-fw fa-book" aria-hidden="true"></i> Resources</a></li>
-                        {% endif %}
-                        {% endif %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
                         <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
