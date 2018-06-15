@@ -425,6 +425,12 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->generateReport($this->input);
                 break;
 
+            // Ingest and Parsing tasks
+            case "parse_eac":
+                //if (!$executor->hasPermission("Create"))
+                //   throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->parseEACCPFToConstellation($this->input);
+                break;
 
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"], 400);
