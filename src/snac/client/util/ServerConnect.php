@@ -75,6 +75,13 @@ class ServerConnect {
             $this->user = $user;
     }
 
+    /**
+     * Get User
+     *
+     * Gets the user object returned from the Server
+     *
+     * @return \snac\data\User|null The user object
+     */
     public function getUser() {
         return $this->user;
     }

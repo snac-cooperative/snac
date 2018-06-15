@@ -75,6 +75,13 @@ class WebUIExecutor {
         $this->user = $user;
     }
 
+    /**
+     * Get User
+     *
+     * Gets the user object out of the Server's response
+     *
+     * @return \snac\data\User|null The user object
+     */
     public function getUser() {
         return $this->connect->getUser();
     }

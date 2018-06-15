@@ -6300,7 +6300,15 @@ class SQL
         }
         return $all;
     }
-    
+
+    /**
+     * Unread Message Count
+     *
+     * Selects the unread message count for the given user id.
+     *
+     * @param int $userid The numeric userid for a user
+     * @return int The number of messages unread for this user
+     */ 
     public function selectNumUnreadMessagesByUserID($userid) {
         $retVal = 0;
         
