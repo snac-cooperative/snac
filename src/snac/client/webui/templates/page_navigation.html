@@ -44,15 +44,19 @@
                         <i class="fa fa-tachometer" aria-hidden="true"></i> Dashboards <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
+                        <li class="dropdown-header">CPF Dashboards</li>
                         <li><a href="{{control.snacURL}}/dashboard/explore"><i class="fa fa-fw fa-globe" aria-hidden="true"></i> Explore</a></li>
                         <li><a href="{{control.snacURL}}/dashboard/editor"><i class="fa fa-fw fa-pencil" aria-hidden="true"></i> Editor</a></li>
                         {% if permissions.ChangeLocks %}
                         <li><a href="{{control.snacURL}}/dashboard/reviewer"><i class="fa fa-fw fa-check-circle" aria-hidden="true"></i> Reviewer</a></li>
                         {% endif %}
                         {% if permissions.EditResources or permissions.ViewVocabDashboard %}
+                        <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">non-CPF Dashboards</li>
                         <li><a href="{{control.snacURL}}/vocab_administrator"><i class="fa fa-fw fa-link" aria-hidden="true"></i> Supplemental</a></li>
                         {% endif %}
                         <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">System Dashboards</li>
                         <li><a href="{{control.snacURL}}/reports/dashboard"><i class="fa fa-fw fa-pie-chart" aria-hidden="true"></i> Reporting</a></li>
                         {% if permissions.ViewAdminDashboard %}
                         <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cog" aria-hidden="true"></i> Administrator</a></li>
