@@ -740,14 +740,14 @@ function subMakeEditable(short, i) {
         });
     }
 
-    // add parser btn if nameEntry is a computed name, entity is person, and if btn doesn't already exist
-    if (short === 'nameEntry' && ($("#entityType").val() === "700") && $("#nameEntry_component_0_panel_" + i).find('select:first').text() === "Name") {
-        if (!$("#nameEntry_panel_" + i).find('.name-parser').length) {
-            $('#nameEntry_component_add_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i +
+    // add parser btn if nameEntry is a computed name, entity is person, and if no btn or extra name components already exist
+    if (short === 'nameEntry' && ($("#entityType").val() === "700") &&
+        ($("#nameEntry_component_0_panel_" + i).find('select:first').text() === "Name") &&
+        (!$("#nameEntry_panel_" + i).find('.name-parser').length &&
+            $("#nameEntry_component_1_panel_" + i).length === 0)) {
+        $('#nameEntry_component_add_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i +
             '" style="margin-left:5px;"> <i class="fa fa-magic" aria-hidden="true"></i> Parse </button>');
-        }
     }
-
 
     // Set this data's operation value appropriately
     if ($("#" + short + "_id_" + i).val() != "")
@@ -1787,7 +1787,6 @@ function parseName(e) {
     $('#parser-accept-btn').unbind('click')
     $('#parser-accept-btn').on('click', function() {
         var selectedName = $('#name-parser input[type="radio"]:checked').data('parsed-name')
-        console.log("you chose: ", selectedName);
         $.get( snacUrl + "/vocabulary/?type=name_component&entity_type=700")
             .done(function(data) {
             acceptParsedName(selectedName, $nameComponents, name, data.results)
@@ -1817,7 +1816,6 @@ function acceptParsedName(selectedName, $nameComponents, name, nameComponentIDs)
     for (var key in selectedName) {
         if (key == 'NameAdditions') {
             key = 'NameAddition';
-            // TODO: Extract doubled logic
             for (var j = 0; j < selectedName['NameAdditions'].length; j++) {
                 newNameEntryComponent(i);
                 var option = new Option(key, nameComponentMap[key], false, true);

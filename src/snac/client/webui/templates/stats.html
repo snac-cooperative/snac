@@ -15,10 +15,6 @@
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
-<!-- Helper Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
@@ -52,7 +48,7 @@
     /*font-family: Crimson Text;*/
     font-family: Roboto;
     font-weight: 300;
-    font-size: 5vw; 
+    font-size: 5vw;
     text-align: center;
 }
 
@@ -101,7 +97,7 @@
         <div class="col-md-12">
 
             <p class="big-banner">{{data.reports["Number of Identity Constellations"].result.value|number_format}} constellations</p>
-                                
+
 
             {% set total = data.reports["Number of Identity Constellations by Type"].result.person + data.reports["Number of Identity Constellations by Type"].result.corporateBody + data.reports["Number of Identity Constellations by Type"].result.family %}
             <div class="progress">
@@ -175,14 +171,14 @@
                         legend: {
                             show: false
                         }
-                    });    
+                    });
                 </script>
 
         </div>
     </div>
     <div class="row">
         <div class="col-md-12">
-            
+
             <script src="javascript/leaflet-heat.js"></script>
             <script>
                 $(document).ready(function() {
@@ -194,7 +190,7 @@
                         maxZoom: 19,
                         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     }).addTo(holdingsMapView);
-                    
+
                     //custom size for this example, and autoresize because map style has a percentage width
 
                     // dataPoints is an array of arrays: [[lat, lng, intensity]...]
@@ -208,8 +204,8 @@
                     {% for d in data.reports["Holding Locations"].result %}
                         dataPoints.push([{{d.latitude}}, {{d.longitude}}, {{max(d.count / max, 0.4)}}]);
                     {% endfor %}
-                    
-                    
+
+
                     var heatLayer = L.heatLayer(dataPoints, { maxZoom: 5 }).addTo(holdingsMapView);
                     //heatLayer.setOpacity(0.6);
 

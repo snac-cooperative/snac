@@ -25,9 +25,10 @@ NameParser.prototype.guessPerson = function(name) {
     // Guess Surname and Forename
     if (!name.parsed["Surname"] && name.parsed["Forename"].match(/ /)) {
         var newClone = Object.assign({}, clonedParse)
-        var forenameWithSpace = newClone["Forename"].split(/ (.+)/);
-        newClone["Surname"] = forenameWithSpace[0];
-        newClone["Forename"] = forenameWithSpace[1];
+        var forenameWithSpace = newClone["Forename"]
+        lastSpace = forenameWithSpace.lastIndexOf(' ')
+        newClone["Surname"] = forenameWithSpace.slice(0, lastSpace).trim()
+        newClone["Forename"] = forenameWithSpace.slice(lastSpace).trim()
 
         flippedNames = Object.assign({}, newClone)
         flippedNames["Surname"] = newClone["Forename"]
@@ -37,15 +38,12 @@ NameParser.prototype.guessPerson = function(name) {
         name.guesses.push(flippedNames);
     }
 
-
     // if multiple name additions, add guess with them combined
     if (name.parsed["NameAdditions"] > 1) {
         var newClone = Object.assign({}, clonedParse)
         newClone["NameAdditions"] = newClone["NameAdditions"].join(' ');
         name.guesses.push(newClone);
     }
-
-    // if date, insert comma before first digit
 
     return name.guesses;
 };
@@ -119,19 +117,19 @@ NameParser.prototype.parsePerson = function(name) {
  */
 NameParser.prototype.parseDate = function(name) {
     for (var i=0; i < name.parts.length; i++) {
-        if (name.parts[i].match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
-            var match = name.parts[i].match(/-?\d.*\d-?/);
-            name.parsed["Date"] = match[0];
-            name.parts[i] = name.parts[i].substring(0, match.index).trim();
-            if (name.parts[i] === '') {
-                name.parts.splice(i, 1);
+        if (name.parts[i].match(/\d\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
+            var match = name.parts[i].match(/-?\d\d.*\d-?/);
+            if (match) {
+                name.parsed["Date"] = match[0];
+                name.parts[i] = name.parts[i].substring(0, match.index).trim();
+                if (name.parts[i] === '') {
+                    name.parts.splice(i, 1);
+                }
             }
         }
     }
     return name.parsed["Date"];
 };
-
-
 
 
 // Numeration is for titles, , For generational suffix, use nameAdditon
