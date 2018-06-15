@@ -306,7 +306,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
                 left join (select v.id as ic_id, v.version, nrd.ark_id
                         from version_history v
                         left join (select bb.id, max(bb.version) as version from
-                        (select id, version from version_history where status in ('published', 'deleted')) bb
+                        (select id, version from version_history where status in ('published', 'deleted', 'tombstone')) bb
                         group by id order by id asc) mv
                         on v.id = mv.id and v.version = mv.version
                         left join nrd on v.id = nrd.ic_id
@@ -325,7 +325,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         from
             version_history v,
             (select bb.id, max(bb.version) as version from
-                (select id, version from version_history where status in ('published', 'deleted')) bb
+                (select id, version from version_history where status in ('published', 'deleted', 'tombstone')) bb
                 group by id order by id asc) mv,
             vocabulary etv,
             nrd n

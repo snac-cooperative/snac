@@ -16,10 +16,6 @@
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
-<!-- Helper Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
@@ -29,7 +25,8 @@
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/dashboard.js{{control.noCache}}"></script>
-<script src="{{control.snacURL}}/javascript/search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 </head>
 <body role="document">
@@ -74,7 +71,7 @@
         </div>
         <div class="col-md-4">
             <!-- Middle column -->
-            {% if permissions.AddUsers or permissions.ModifyUsers or permissions.AssignRoles %}
+            {% if permissions.EditVocabulary %}
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">Vocabulary Management</h3>
@@ -82,18 +79,12 @@
                 <div class="panel-body">
                     <p>Use the following links to administer controlled vocabularies.</p>
                     <div class="list-group">
-                        {% if permissions.AddUsers %}
                         <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Vocabulary Term</a>
-                        {% endif %}
 
-                        {% if permissions.ModifyUsers or permissions.AssignRoles %}
                         <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Vocabularies</a>
-                        {% endif %}
                     </div>
                 </div>
             </div>
-            {% endif %}
-            {% if permissions.ManageGroups %}
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Geographic Vocabulary Management</h3>
@@ -110,7 +101,7 @@
         </div>
         <div class="col-md-4">
             <!-- Right column -->
-            {% if permissions.ManageGroups %}
+            {% if permissions.EditResources %}
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Resource Cache Management</h3>

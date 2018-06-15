@@ -46,10 +46,10 @@ class TopEditorsThisWeek extends helpers\Report {
                     (select count(*), user_id
                         from version_history
                         where
-                            status in ('needs review', 'published', 'tombstoned', 'deleted', 'embargoed') and
+                            status in ('needs review', 'published', 'tombstone', 'deleted', 'embargoed') and
                             timestamp > NOW() - INTERVAL '7 days' and
                             user_id > 100
-                        group by user_id) b, 
+                        group by user_id) b,
                     appuser a
                 where b.user_id = a.id
                 order by b.count desc
@@ -69,4 +69,3 @@ class TopEditorsThisWeek extends helpers\Report {
     }
 
 }
-

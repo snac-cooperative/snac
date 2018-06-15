@@ -45,7 +45,7 @@ class PublishesLastMonth extends helpers\Report {
         $sql = "select count(*), date_trunc('day', timestamp) as date
                     from version_history
                     where
-                        status in ('published', 'tombstoned', 'deleted', 'embargoed') and
+                        status in ('published', 'tombstone', 'deleted', 'embargoed') and
                         timestamp > NOW() - INTERVAL '31 days'
                     group by date
                     order by date asc;";

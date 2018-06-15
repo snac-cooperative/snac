@@ -293,8 +293,8 @@
         "tooltip" : "How this Identity Constellation is related to the resource"
     },
     "resourceURI" : {
-        "display" : "HREF",
-        "tooltip" : "The permanent link (URI) to the external resource"
+        "display" : "Resource Link",
+        "tooltip" : "The preferred permanent link to the finding aid or other descriptive resource."
     },
     "resourceDocumentType" : {
         "display" : "Resource Type",
@@ -336,7 +336,7 @@
     "_comment" : "%%% Source elements",
 
     "sourceDisplayName" : {
-        "display" : "Reference Name",
+        "display" : "Source Name",
         "tooltip" : "The editor/human-readable name of this source, displayed when choosing a Source from the Cite dialog box"
     },
     "sourceURI" : {
@@ -359,7 +359,7 @@
         "tooltip" : "The data for the described data element, as it appeared in the source"
     },
     "scmCitation" : {
-        "display" : "Reference Name",
+        "display" : "Source Name",
         "tooltip" : "The source object from this Constellation where the information on this data element was found"
     },
     "scmSubCitation" : {
