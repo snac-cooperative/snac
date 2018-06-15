@@ -481,6 +481,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->handleVisualization($this->input, $display);
                 break;
 
+            // Reporting 
+            case "reports":
+                $response = $executor->handleReporting($this->input, $display, $user);
+                break;
+                
             // Administrator command (the sub method handles admin commands)
             case "administrator":
                 $response = $executor->handleAdministrator($this->input, $display, $user);

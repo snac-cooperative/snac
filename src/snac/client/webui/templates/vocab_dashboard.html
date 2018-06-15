@@ -57,10 +57,6 @@
         </div>
     </div>
 
-    <ol class="breadcrumb">
-        <li>Supplemental Dashboard</a></li>
-    </ol>
-
 
     <div class="row">
         <div class="alert alert-01 alert-info" id="status-message" style="display: none">
@@ -68,9 +64,9 @@
         </div><!-- end alert -->
     </div>
     <div class="row">
+        {% if permissions.EditVocabulary %}
         <div class="col-md-4">
             <!-- Left column -->
-            {% if permissions.EditVocabulary %}
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">Vocabulary Management</h3>
@@ -84,11 +80,11 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
+        {% endif %}
+        {% if permissions.EditVocabulary %}
         <div class="col-md-4">
             <!-- Middle column -->
-            {% if permissions.EditVocabulary %}
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Geographic Vocabulary Management</h3>
@@ -101,11 +97,11 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
+        {% endif %}
+        {% if permissions.EditResources %}
         <div class="col-md-4">
             <!-- Right column -->
-            {% if permissions.EditResources %}
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Resource Cache Management</h3>
@@ -118,8 +114,8 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
+        {% endif %}
     </div>
 </div>
 

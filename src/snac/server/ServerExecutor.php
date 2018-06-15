@@ -1023,11 +1023,13 @@ class ServerExecutor {
          */
 
         $user = null;
+        $otherUser = false;
         if ($input == null) {
             $user = $this->user;
         } else {
             if (isset($input["user_edit"])) {
                 $user = $this->uStore->readUser(new \snac\data\User($input["user_edit"]));
+                $otherUser = true;
             }
         }
 
@@ -1038,24 +1040,27 @@ class ServerExecutor {
         }
         $response["result"] = "success";
 
-        $response["user"] = $user->toArray();
+        // User Information array
+        $info = [];
+
+        $info["user"] = $user->toArray();
 
         /*
          * Get the list of Groups the User is a member of
          */
-        $response["groups"] = array();
+        $info["groups"] = array();
         $groups = $this->uStore->listGroupsForUser($user);
         foreach ($groups as $group) {
-            array_push($response["groups"], $group->toArray());
+            array_push($info["groups"], $group->toArray());
         }
 
         /*
          * Get the list of Messages for the user
          */
-        $response["messages"] = array();
+        $info["messages"] = array();
         $messages = $this->uStore->listMessagesToUser($user, true, true);
         foreach ($messages as $message) {
-            array_push($response["messages"], $message->toArray());
+            array_push($info["messages"], $message->toArray());
         }
 
         /*
@@ -1070,7 +1075,7 @@ class ServerExecutor {
         // First look for constellations editable
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "locked editing");
 
-        $response["editing"] = array ();
+        $info["editing"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
@@ -1079,12 +1084,12 @@ class ServerExecutor {
                         "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
                 );
                 $this->logger->addDebug("User has checked out", $item);
-                array_push($response["editing"], $item);
+                array_push($info["editing"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["editing"],
+        usort($info["editing"],
                 function ($a, $b) {
                     return $a['nameEntry'] <=> $b['nameEntry'];
                 });
@@ -1092,7 +1097,7 @@ class ServerExecutor {
         // Next look for currently editing constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "currently editing");
 
-        $response["editing_lock"] = array ();
+        $info["editing_lock"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
@@ -1101,12 +1106,12 @@ class ServerExecutor {
                         "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
                 );
                 $this->logger->addDebug("User was currently editing", $item);
-                array_push($response["editing_lock"], $item);
+                array_push($info["editing_lock"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["editing_lock"],
+        usort($info["editing_lock"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
@@ -1114,7 +1119,7 @@ class ServerExecutor {
         // Next look for sent for review constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "needs review");
 
-        $response["review_lock"] = array ();
+        $info["review_lock"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
@@ -1123,12 +1128,12 @@ class ServerExecutor {
                         "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
                 );
                 $this->logger->addDebug("User had for review", $item);
-                array_push($response["review_lock"], $item);
+                array_push($info["review_lock"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["review_lock"],
+        usort($info["review_lock"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
@@ -1136,7 +1141,7 @@ class ServerExecutor {
         // Next look for needs review by this user constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "needs review", null, null, true);
 
-        $response["review"] = array ();
+        $info["review"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
@@ -1145,18 +1150,18 @@ class ServerExecutor {
                         "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
                 );
                 $this->logger->addDebug("User needed to review", $item);
-                array_push($response["review"], $item);
+                array_push($info["review"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["review"],
+        usort($info["review"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
 
         $editList = $this->cStore->listRecentConstellationsForUser($user, 10);
-        $response["recent"] = array ();
+        $info["recent"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 if ($constellation->getPreferredNameEntry() != null) {
@@ -1165,9 +1170,17 @@ class ServerExecutor {
                             "version" => $constellation->getVersion(),
                             "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
                     );
-                    array_push($response["recent"], $item);
+                    array_push($info["recent"], $item);
                 }
             }
+        }
+
+
+        // Check to see if we're editing a different user
+        if ($otherUser) {
+            $response["user_edit"] = $info;
+        } else {
+            $response = array_merge($response, $info);
         }
 
         return $response;

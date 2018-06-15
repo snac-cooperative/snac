@@ -108,6 +108,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         </div>
         <div class="col-md-4">
             <!-- Middle column -->
+            {% if permissions.ViewReports %} 
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">Weekly Reports</h3>
@@ -115,13 +116,15 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 <div class="panel-body">
                     <p>Reports generated weekly</p>
                     <div class="list-group">
-                        <a href="{{control.snacURL}}/administrator/report_general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
+                        <a href="{{control.snacURL}}/reports/general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
         <div class="col-md-4">
             <!-- Right column -->
+            {% if permissions.ViewReports %} 
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Monthly Reports</h3>
@@ -129,10 +132,11 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 <div class="panel-body">
                     <p>Reports generated monthly</p>
                     <div class="list-group">
-                        <a href="{{control.snacURL}}/administrator/report_holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
+                        <a href="{{control.snacURL}}/reports/holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
