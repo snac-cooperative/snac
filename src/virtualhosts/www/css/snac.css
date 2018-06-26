@@ -393,6 +393,39 @@ td.rotate > div > span {
     background: #d9edf7
 }
 
+.snac-toolbar {
+    top: 50px;
+    min-height: 0px;
+    background: #efefef;
+    z-index: 1020;
+}
+.snac-toolbar .navbar-nav li a {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    color: #555;
+}
+.snac-toolbar .navbar-nav li:hover {
+    background: #dedede;
+}
+.snac-toolbar .navbar-nav li.dropdown-header:hover {
+    background: inherit;
+}
+.snac-toolbar .navbar {
+    min-height: 0px;
+    margin-bottom: 0px;
+}
+
+.snac-toolbar .alert {
+    border-radius: 0px!important;
+    margin-bottom: 0px!important;
+    padding-left: 20%;
+    padding-right: 20%;
+}
+
+.snac-toolbar-info {
+    min-width: 300px;
+}
+
 /* centered columns styles */
 .row-centered {
     text-align:center;
