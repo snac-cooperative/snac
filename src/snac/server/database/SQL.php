@@ -4048,6 +4048,51 @@ class SQL
 
 
     /**
+     * Get a single vocabulary record by Type and Value
+     *
+     * @param string $value The value of a vocabulary term
+     *
+     * @param string $type The type of a vocabulary term
+     *
+     * @return string[] A list with keys: id, type, value, uri, description
+     *
+     */
+    public function selectTermByValueAndType($value, $type)
+    {
+        $qq = 's_term_by_value';
+        $this->sdb->prepare($qq,
+                            'select
+                            id, type, value, uri, description
+                            from vocabulary where value=$1 and type=$2');
+        $result = $this->sdb->execute($qq, array($value, $type));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+    /**
+     * Get a single vocabulary record by URI
+     *
+     * @param string $uri The uri of a vocabulary term
+     *
+     * @return string[] A list with keys: id, type, value, uri, description
+     *
+     */
+    public function selectTermByUri($uri)
+    {
+        $qq = 's_term_by_uri';
+        $this->sdb->prepare($qq,
+                            'select
+                            id, type, value, uri, description
+                            from vocabulary where uri=$1');
+        $result = $this->sdb->execute($qq, array($uri));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+
+    /**
      *
      * Select from table nrd
      *
@@ -4618,10 +4663,35 @@ class SQL
      */
     public function selectResourceRelation($vhInfo)
     {
+        $qq = 'select_resources';
+        $this->sdb->prepare($qq,
+            'select r.id as resource_id, r.version as resource_version, r.type as document_type, r.href, r.object_xml_wrap,
+                r.title, r.extent, r.abstract, r.date, r.display_entry, r.repo_ic_id from
+                (select id, max(version) as version from resource_cache where id in
+                    (select aa.resource_id
+                        from related_resource as aa,
+                            (select id, max(version) as version from related_resource where version<=$1
+                                and ic_id=$2 group by id) as bb
+                        where not aa.is_deleted and
+                        aa.id=bb.id
+                        and aa.version=bb.version)
+                    group by id) as ridvers,
+                resource_cache r
+                where not r.is_deleted and r.id = ridvers.id and r.version = ridvers.version;');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id']));
+        $resources = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            $resources[$row["resource_id"]] = $row;
+        }
+        $this->sdb->deallocate($qq);
+
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
-            'select rr.*, r.type as document_type, r.href, r.object_xml_wrap, r.title, r.extent,
-                    r.abstract, r.date, r.display_entry, r.repo_ic_id from
+            'select rr.* from
                 (select aa.id, aa.version, aa.ic_id,
                         aa.relation_entry, aa.descriptive_note, aa.arcrole,
                         aa.resource_id, aa.resource_version
@@ -4629,8 +4699,7 @@ class SQL
                         (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
                     where not aa.is_deleted and
                     aa.id=bb.id
-                    and aa.version=bb.version) rr
-                left join resource_cache r on rr.resource_id = r.id and rr.resource_version = r.version');
+                    and aa.version=bb.version) rr;');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
@@ -4638,9 +4707,17 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            array_push($all, $row);
+            // the following merge will preserve the resource_version from the resource_cache table and drop the one from related_resource
+            // since the resource_cache results are merged first.
+            array_push($all, array_merge($resources[$row["resource_id"]], $row));
         }
         $this->sdb->deallocate($qq);
+
+
+
+
+
+
         return $all;
     }
 
