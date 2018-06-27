@@ -400,9 +400,19 @@ td.rotate > div > span {
     z-index: 1020;
 }
 .snac-toolbar .navbar-nav li a {
-    padding-top: 6px;
+    padding-top: 8px;
     padding-bottom: 6px;
     color: #555;
+}
+.snac-toolbar .navbar-nav li.highlight {
+    padding-bottom: 0px;
+}
+.snac-toolbar .navbar-nav li.highlight a {
+    padding-bottom: 6px;
+}
+.snac-toolbar .navbar-nav li.highlight a:hover {
+    border-bottom: 2px solid #333;
+    padding-bottom: 4px;
 }
 .snac-toolbar .navbar-nav li:hover {
     background: #dedede;
@@ -410,6 +420,28 @@ td.rotate > div > span {
 .snac-toolbar .navbar-nav li.dropdown-header:hover {
     background: inherit;
 }
+
+.snac-toolbar .navbar-nav li.toolbar-save a:hover {
+    border-bottom: 2px solid #31708f;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-dashboard a:hover {
+    border-bottom: 2px solid #3c763d;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-review a:hover ,
+.snac-toolbar .navbar-nav li.toolbar-send a:hover {
+    border-bottom: 2px solid #AE5A0B;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-publish a:hover {
+    border-bottom: 2px solid #C6AE17;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-cancel a:hover {
+    border-bottom: 2px solid #a94442;
+}
+
 .snac-toolbar .navbar {
     min-height: 0px;
     margin-bottom: 0px;
@@ -422,9 +454,14 @@ td.rotate > div > span {
     padding-right: 20%;
 }
 
+.snac-toolbar-inner {
+    border: 0px;
+}
+
 .snac-toolbar-info {
     min-width: 300px;
 }
+
 
 /* centered columns styles */
 .row-centered {
