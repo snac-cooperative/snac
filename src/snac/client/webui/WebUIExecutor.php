@@ -2345,8 +2345,14 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        if (isset($input['savemessage'])) {
-            $request["message"] = $input["savemessage"];
+        // Add a message if we have it
+        if (isset($input['savemessage']) || isset($input["reviewmessage"])) {
+            $message = "";
+            if (isset($input["reviewmessage"]))
+                $message .= $input["reviewmessage"] . "\n\n";
+            if (isset($input["savemessage"]))
+                $message .= $input["savemessage"];
+            $request["message"] = $message;
         }
         $serverResponse = $this->connect->query($request);
 
@@ -2405,8 +2411,14 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        if (isset($input['savemessage'])) {
-            $request["message"] = $input["savemessage"];
+        // Add a message if we have it
+        if (isset($input['savemessage']) || isset($input["reviewmessage"])) {
+            $message = "";
+            if (isset($input["reviewmessage"]))
+                $message .= $input["reviewmessage"] . "\n\n";
+            if (isset($input["savemessage"]))
+                $message .= $input["savemessage"];
+            $request["message"] = $message;
         }
         $serverResponse = $this->connect->query($request);
 
@@ -2473,8 +2485,14 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        if (isset($input['savemessage'])) {
-            $request["message"] = $input["savemessage"];
+        // Add a message if we have it
+        if (isset($input['savemessage']) || isset($input["reviewmessage"])) {
+            $message = "";
+            if (isset($input["reviewmessage"]))
+                $message .= $input["reviewmessage"] . "\n\n";
+            if (isset($input["savemessage"]))
+                $message .= $input["savemessage"];
+            $request["message"] = $message;
         }
         $serverResponse = $this->connect->query($request);
 
@@ -2639,8 +2657,14 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        if (isset($input['savemessage'])) {
-            $request["message"] = $input["savemessage"];
+        // Add a message if we have it
+        if (isset($input['savemessage']) || isset($input["reviewmessage"])) {
+            $message = "";
+            if (isset($input["reviewmessage"]))
+                $message .= $input["reviewmessage"] . "\n\n";
+            if (isset($input["savemessage"]))
+                $message .= $input["savemessage"];
+            $request["message"] = $message;
         }
         $serverResponse = $this->connect->query($request);
 
@@ -2902,8 +2926,13 @@ class WebUIExecutor {
         }
 
         // Add a message if we have it
-        if (isset($input['savemessage'])) {
-            $request["message"] = $input["savemessage"];
+        if (isset($input['savemessage']) || isset($input["reviewmessage"])) {
+            $message = "";
+            if (isset($input["reviewmessage"]))
+                $message .= $input["reviewmessage"] . "\n\n";
+            if (isset($input["savemessage"]))
+                $message .= $input["savemessage"];
+            $request["message"] = $message;
         }
 
         // Send the query to the server
