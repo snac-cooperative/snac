@@ -565,6 +565,9 @@ $(document).ready(function() {
             }, 10000);
             return false;
         }
+        
+        // Copy the review message from the modal into the form body
+        $("#reviewmessage").val($("#reviewerNotebook").val());
 
         // If nothing has changed, alert the user and publish
         if (somethingHasBeenEdited == false) {
