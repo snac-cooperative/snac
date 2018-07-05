@@ -143,13 +143,29 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="dropdown-menu dropdown-menu-right">
                             <div class="panel-body snac-toolbar-info form-horizontal">
                                 <div class="form-group">
-                                    <label for="ark" class="control-label col-xs-3" data-content="{{X.ark.tooltip}}" data-toggle="popover" data-placement="top">
+                                    <label for="ark" class="control-label col-xs-4" data-content="{{X.ark.tooltip}}" data-toggle="popover" data-placement="top">
                                         {{ X.ark.display }}
                                     </label>
-                                    <div class="col-xs-9">
-                                        <p class="form-control-static">{{ data.ark }}</p>
+                                    <div class="col-xs-8">
+                                        <p class="form-control-static">{{ data.ark ?: 'pending'}}</p>
                                     </div>
                                     <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Ark ID
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <p class="form-control-static">{{data.ark ? data.ark|replace({'http://n2t.net/ark:/99166/': ''}) : 'pending'}}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        SNAC ID
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <p class="form-control-static">{{ data.id ?: 'pending' }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
