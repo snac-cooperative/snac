@@ -156,7 +156,8 @@ $(document).ready(function() {
                 	});
 
                     // Everything's been saved, so mark not in editing
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     // Clear the undo set
                     undoSet = new Array();
@@ -212,7 +213,8 @@ $(document).ready(function() {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
-		                somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+		                //somethingHasBeenEdited = false;
 
 		                $('#notification-message').slideUp();
 
@@ -278,7 +280,8 @@ $(document).ready(function() {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // No longer in editing, save succeeded
-	                    somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+	                    //somethingHasBeenEdited = false;
 
 	                    $('#notification-message').slideUp();
 
@@ -335,7 +338,8 @@ $(document).ready(function() {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
-		                somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+		                //somethingHasBeenEdited = false;
 
 		                $('#notification-message').slideUp();
 
@@ -401,7 +405,8 @@ $(document).ready(function() {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // Edit succeeded, so save mode off
-	                    somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+	                    //somethingHasBeenEdited = false;
 
 	                    $('#notification-message').slideUp();
 
@@ -458,7 +463,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -523,7 +529,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -579,7 +586,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -645,7 +653,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -710,7 +719,8 @@ $(document).ready(function() {
             }
 
             // By setting this to false, the page will not prompt on exit
-            somethingHasBeenEdited = false;
+            setEditedFlag(false);
+            //somethingHasBeenEdited = false;
 
         	// If Constellation ID or EntityType or NameEntry do not have values, don't update state and go to dashboard
         	var noNameEntryText = true;
@@ -730,7 +740,8 @@ $(document).ready(function() {
 	        $.post(snacUrl+"/unlock", $("#constellation_form").serialize(), function (data) {
 	            // Check the return value from the ajax. If success, then go to dashboard
 	            if (data.result == "success") {
-	                somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+	                //somethingHasBeenEdited = false;
 	                $('#success-message').html("<p>Constellation unlocked. Going to dashboard.</p>");
 	                setTimeout(function(){
 	                    $('#success-message').slideDown();
@@ -843,7 +854,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
