@@ -752,6 +752,35 @@ class ElasticSearchUtil {
     }
 
     /**
+     * Update Resource in Resource Index
+     *
+     * Updates the specified resource field given a resource id and value.
+     *
+     * @param $id The resource id
+     * @param $field The name of the field to update as it exists in ES, or the field to add
+     * @param
+     */
+    public function updateResourceField($id, $field, $value) {
+
+        if ($this->connector != null) {
+            $params = [
+                    'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
+                    'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
+                    'id' => $id,
+                    'body' => [
+                        'doc' => [
+                            $field => $value
+                        ]
+                    ]
+            ];
+
+            $this->connector->update($params);
+            $this->logger->addDebug("Updated resource in elasticsearch");
+        }
+
+    }
+
+    /**
      * Search SNAC Resources Index
      *
      * Searches the resources index for the query.  Allows for pagination by the start and count parameters.
