@@ -639,8 +639,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayStatsPage($this->input, $display);
                 break;
 
-            case "upload":
-                $response = $executor->displayUploadPage($this->input, $display);
+            case "ingest":
+                $response = $executor->handleIngest($this->input, $display);
                 break;
 
             // If dropping through, then show the landing page

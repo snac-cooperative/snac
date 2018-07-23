@@ -43,6 +43,8 @@ $(document).on('change', ':file', function() {
     input.trigger('fileselect', [numFiles, label]);
 });
 
+var lastResult = null;
+
 // We can watch for our custom `fileselect` event like this
 $(document).ready( function() {
     $(':file').on('fileselect', function(event, numFiles, label) {
@@ -57,6 +59,56 @@ $(document).ready( function() {
         }
 
     });
+
+    $("form#upload-form").submit(function(e) {
+            e.preventDefault();
+            var preview = false;
+            var dump = false;
+            $("#process").prop("disabled", true);
+            var processURL = snacUrl+"/ingest/process";
+            if ($('input[name=display_format]:checked').val() == 'preview') {
+                preview = true;
+                processURL = snacUrl+"/ingest/process_preview";
+            }
+            if ($('input[name=display_format]:checked').val() == 'parseonly') {
+                dump = true;
+                processURL = snacUrl+"/ingest/process";
+            }
+            var formData = new FormData(this);
+            $.ajax({
+                url: processURL,
+                type: 'POST',
+                data: formData,
+                async: true,
+                success: function (data) {
+                    $("#process").prop("disabled", false);
+                    if (dump) {
+                        lastResult = JSON.stringify(data, null, 4);
+                        $("#results").html();
+                        $("#results").html("<a id='download' class='btn btn-info'>Download</a><br><pre>" + lastResult + "</pre>");
+                        var download = $("#download");
+                        download.prop('target', '_blank');
+                        download.prop('download', 'parsedJSON.json');
+                        var blob = new Blob([lastResult], {type: 'text/json'}); // pass a useful mime type here
+                        var url = URL.createObjectURL(blob);
+                        download.prop('href', url);
+                    } else if (preview) {
+                        lastResult = data;
+                        //$("#results").html(data);
+                        var blob = new Blob([lastResult], {type: 'text/html'}); // pass a useful mime type here
+                        var url = URL.createObjectURL(blob);
+                        var w = window.open(url);
+                        //$(w.document.body).html(data);
+                    }
+                    console.log(data);
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+    });
+
+
 });
 </script>
 
@@ -70,18 +122,35 @@ $(document).ready( function() {
 <div class="container snac" role="main">
     <h1>Upload/Ingest</h1>
 
+
+    <div class="well well-lg">
+        <p><b>Instructions</b>:  Use the following form to upload EAC-CPF XML and/or Constellation JSON files for parsing.  You may upload multiple files, including mixing EAC-CPF XML and JSON.  The preview option will currently only display the first Constellation parsed from the file(s).</p>
+        <p><i>You will need to disable your pop-up blocker to view the preview page.</i></p>
+    </div>
+
     <div class="row">
         <div class="col-md-12">
+            <form id="upload-form"  enctype="multipart/form-data">
+                <div class="input-group">
+                    <input type="text" class="form-control" value="Choose file(s) to upload and process" readonly>
+                    <label class="input-group-btn">
+                        <span class="btn btn-primary">
+                            Browse&hellip; <input type="file" style="display: none;" name="uploads[]" multiple>
+                        </span>
+                    </label>
+                </div>
 
-            <div class="input-group">
-                <input type="text" class="form-control" value="Choose a file to upload and process" readonly>
-                <label class="input-group-btn">
-                    <span class="btn btn-primary">
-                        Browse&hellip; <input type="file" style="display: none;" multiple>
-                    </span>
-                </label>
-            </div>
+                <div class="text-center" style="margin-top: 20px;">
+                    <input type="radio" value="preview" name="display_format" id="display-format"> Preview &nbsp;&nbsp;&nbsp;&nbsp; 
+                    <input type="radio" value="parseonly" name="display_format" id="display-format" checked> Parse Only <br> 
+                    <button type="submit" id="process" class="btn btn-success"> Process </button>
+                </div>
+            </form>
 
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12" id="results">
         </div>
     </div>
 </div>

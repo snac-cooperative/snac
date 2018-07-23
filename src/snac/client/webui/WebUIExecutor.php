@@ -1187,17 +1187,99 @@ class WebUIExecutor {
         return true;
     }
 
+
+    private function parseIngestFiles() {
+        $upfiles = [];
+        if (isset($_FILES["uploads"]))
+            $upfiles = $_FILES["uploads"];
+
+        $fileObjs = [];
+        foreach ($upfiles["name"] as $i => $name) {
+            $file = [];
+            $file["name"] = $name;
+            $file["type"] = $upfiles["type"][$i];
+            $file["filename"] = $upfiles["tmp_name"][$i];
+            $file["error"] = $upfiles["error"][$i];
+            $file["size"] = $upfiles["size"][$i];
+            $fileObjs[$i] = $file;
+        }
+        $files = [];
+        $errors = [];
+        $parsed = [];
+        foreach ($fileObjs as $file) {
+            if (substr($file["name"], -5) === ".json" && $file["type"] == "application/json") {
+                // Process JSON
+                $c = new \snac\data\Constellation(json_decode(file_get_contents($file["filename"]), true));
+                array_push($parsed, $c->toArray());
+            } else if (substr($file["name"], -4) === ".xml") {
+                // Process XML
+                // ASK Server to parse it for us
+                $request = [
+                    "command" => "parse_eac",
+                    "file" => [
+                        "mime-type" => $file["type"],
+                        "content" => base64_encode(file_get_contents($file["filename"]))
+                    ]
+                ];
+                $serverResponse = $this->connect->query($request);
+
+                if (isset($serverResponse["constellation"]) && $serverResponse["constellation"] != null) {
+                    array_push($parsed, $serverResponse["constellation"]);
+                } else {
+                    array_push($errors, $serverResponse);
+                }
+            } else if (substr($file["name"], -4) === ".zip") {
+                // Process ZIP
+                array_push($errors, "We currently do not accept zip files");
+            } else {
+                array_push($errors, "Could not process {$file["name"]}");
+            }
+        }
+
+        return [
+            "parsed" => $parsed,
+            "errors" => $errors,
+            "files" => $files
+        ];
+    }
+
     /**
-     * Display Upload Page
+     * Handle Ingest Commands 
      *
-     * Displays a page that will eventually house a file upload to parse and ingest.
+     * Handles ingest commands, including displaying an upload page and processing results. 
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displayUploadPage(&$input, &$display) {
-        $display->setTemplate("upload");
-        return true;
+    public function handleIngest(&$input, &$display) {
+        $return = true;
+        $command = "upload";
+        if (isset($input["subcommand"]))
+            $command = $input["subcommand"];
+        
+        switch($command) {
+
+            case "process":
+                $result = $this->parseIngestFiles();
+                $return = [
+                    "constellation" => $result["parsed"]
+                ];
+                if (!empty($result["errors"]))
+                    $return["errors"] = $result["errors"];
+                break; 
+            case "process_preview":
+                $result = $this->parseIngestFiles();
+                if (empty($result["errors"]) && !empty($result["parsed"])) {
+                    $display->setTemplate("detailed_preview_page");
+                    $display->setData(array_merge($result["parsed"][0], array("preview" => true)));
+                }
+                break;
+            case "upload":
+            default:
+                $display->setTemplate("upload");
+                break;
+        }
+        return $return;
     }
 
     /**
