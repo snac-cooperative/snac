@@ -421,8 +421,14 @@ td.rotate > div > span {
     background: inherit;
 }
 
+.snac-toolbar .navbar-nav li.toolbar-save a.save-active {
+    border-bottom: 2px solid #31708f;
+    padding-bottom: 4px;
+}
+
 .snac-toolbar .navbar-nav li.toolbar-save a:hover {
     border-bottom: 2px solid #31708f;
+    padding-bottom: 4px;
 }
 
 .snac-toolbar .navbar-nav li.toolbar-dashboard a:hover {
