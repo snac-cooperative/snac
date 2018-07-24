@@ -70,6 +70,10 @@ $(document).ready( function() {
                 preview = true;
                 processURL = snacUrl+"/ingest/process_preview";
             }
+            if ($('input[name=display_format]:checked').val() == 'previewcompare') {
+                preview = true;
+                processURL = snacUrl+"/ingest/process_preview_compare";
+            }
             if ($('input[name=display_format]:checked').val() == 'parseonly') {
                 dump = true;
                 processURL = snacUrl+"/ingest/process";
@@ -100,7 +104,7 @@ $(document).ready( function() {
                         var w = window.open(url);
                         //$(w.document.body).html(data);
                     }
-                    console.log(data);
+                    //console.log(data);
                 },
                 cache: false,
                 contentType: false,
@@ -142,6 +146,7 @@ $(document).ready( function() {
 
                 <div class="text-center" style="margin-top: 20px;">
                     <input type="radio" value="preview" name="display_format" id="display-format"> Preview &nbsp;&nbsp;&nbsp;&nbsp; 
+                    <input type="radio" value="previewcompare" name="display_format" id="display-format"> Preview and Compare &nbsp;&nbsp;&nbsp;&nbsp; 
                     <input type="radio" value="parseonly" name="display_format" id="display-format" checked> Parse Only <br> 
                     <button type="submit" id="process" class="btn btn-success"> Process </button>
                 </div>
