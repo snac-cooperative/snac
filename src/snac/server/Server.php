@@ -151,6 +151,10 @@ class Server implements \snac\interfaces\ServerInterface {
             case "user_information":
                 $this->response = $executor->userInformation();
                 break;
+            case "institution_information":
+                $this->response = $executor->institutionInformation();
+                break;
+
 
             case "search_users":
                 if (!$executor->hasPermission("Edit"))

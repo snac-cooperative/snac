@@ -641,6 +641,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             case "ingest":
                 $response = $executor->handleIngest($this->input, $display);
+            
+            case "institution":
+                $response = $executor->displayInstitutionPage($this->input, $display);
                 break;
 
             // If dropping through, then show the landing page

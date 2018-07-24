@@ -1186,6 +1186,18 @@ class WebUIExecutor {
         $display->setTemplate("stats");
         return true;
     }
+    
+    public function displayInstitutionPage(&$input, &$display) {
+        $ask = array(
+            "command"=>"institution_information"
+        );
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+            return $this->drawErrorPage($serverResponse, $display);
+        $display->setData(array_merge($serverResponse, ["json" => json_encode($serverResponse, JSON_PRETTY_PRINT)]));
+        $display->setTemplate("institution_info");
+        return true;
+    }
 
 
     private function parseIngestFiles() {

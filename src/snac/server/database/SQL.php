@@ -6388,4 +6388,93 @@ class SQL
 
         return $this->sdb->fetchrow($result);
     }
+
+
+    public function getInstitutionReportData($icid) {
+        $return = [
+            "week" => [],
+            "month" => []
+        ];
+
+        $result = $this->sdb->query("select distinct id from version_history 
+            where timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days' 
+                and status != 'published' and status != 'deleted' 
+                and status != 'tombstoned' and status != 'needs review';", array());
+
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["week"]["allEdits"] = $all;
+            $return["week"]["allEditCount"] = count($all);
+        }
+
+        $result = $this->sdb->query("select distinct v.id from 
+            version_history v, appuser u 
+            where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days' 
+                and v.status != 'published' and v.status != 'deleted' 
+                and v.status != 'tombstoned' and v.status != 'needs review' 
+                and v.user_id = u.id and u.affiliation = $1", array($icid));
+        
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["week"]["instEdits"] = $all;
+            $return["week"]["instEditCount"] = count($all);
+        }
+        
+        $result = $this->sdb->query("select fullname, count(*) from
+                (select distinct u.fullname, v.id from 
+                version_history v, appuser u 
+                where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days' 
+                    and v.status != 'published' and v.status != 'deleted' 
+                    and v.status != 'tombstoned' and v.status != 'needs review' 
+                    and v.user_id = u.id and u.affiliation = $1) a
+            group by fullname        
+            order by count desc, fullname asc", array($icid));
+        
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["week"]["topEditors"] = $all;
+        }
+        
+        $result = $this->sdb->query("select distinct id from version_history 
+            where timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days' 
+                and status != 'published' and status != 'deleted' 
+                and status != 'tombstoned' and status != 'needs review';", array());
+
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["month"]["allEdits"] = $all;
+            $return["month"]["allEditCount"] = count($all);
+        }
+
+        $result = $this->sdb->query("select distinct v.id from 
+            version_history v, appuser u 
+            where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days' 
+                and v.status != 'published' and v.status != 'deleted' 
+                and v.status != 'tombstoned' and v.status != 'needs review' 
+                and v.user_id = u.id and u.affiliation = $1", array($icid));
+        
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["month"]["instEdits"] = $all;
+            $return["month"]["instEditCount"] = count($all);
+        }
+        
+        $result = $this->sdb->query("select fullname, count(*) from
+                (select distinct u.fullname, v.id from 
+                version_history v, appuser u 
+                where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days' 
+                    and v.status != 'published' and v.status != 'deleted' 
+                    and v.status != 'tombstoned' and v.status != 'needs review' 
+                    and v.user_id = u.id and u.affiliation = $1) a
+            group by fullname        
+            order by count desc, fullname asc", array($icid));
+        
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["month"]["topEditors"] = $all;
+        }
+        
+
+        return $return;
+    }
 }
