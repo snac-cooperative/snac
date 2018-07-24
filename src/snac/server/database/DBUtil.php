@@ -4971,4 +4971,8 @@ class DBUtil
     public function deleteFromNameIndex(&$constellation) {
         return $this->sql->deleteFromNameIndex($constellation->getID());
     }
+
+    public function getInstitutionReportData(&$constellation) {
+        return $this->sql->getInstitutionReportData($constellation->getID());
+    }
 }

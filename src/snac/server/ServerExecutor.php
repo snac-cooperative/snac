@@ -1004,6 +1004,22 @@ class ServerExecutor {
         return $response;
     }
 
+    public function institutionInformation() {
+        if ($this->user == null || $this->user->getAffiliation() == null) {
+            $response["result"] = "failure";
+            $response["error"] = "The user does not exist.";
+            return $response;
+        }
+
+        $affil = $this->cStore->readPublishedConstellationByID($this->user->getAffiliation()->getID(), \snac\server\database\DBUtil::$READ_SHORT_SUMMARY); 
+        $response = [
+            "result" => "success",
+            "constellation" => $affil->toArray(),
+            "stats" => $this->cStore->getInstitutionReportData($affil)
+        ];
+        return $response;
+    }
+
     /**
      * Get User Information
      *
