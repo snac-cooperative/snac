@@ -641,6 +641,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             case "ingest":
                 $response = $executor->handleIngest($this->input, $display);
+                break;
             
             case "institution":
                 $response = $executor->displayInstitutionPage($this->input, $display);
