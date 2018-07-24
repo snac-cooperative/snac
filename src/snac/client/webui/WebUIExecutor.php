@@ -1286,6 +1286,32 @@ class WebUIExecutor {
                     $display->setData(array_merge($result["parsed"][0], array("preview" => true)));
                 }
                 break;
+            case "process_preview_compare":
+                $result = $this->parseIngestFiles();
+                if (empty($result["errors"]) && !empty($result["parsed"])) {
+                    $display->setTemplate("detailed_preview_page");
+                    $parsed = new \snac\data\Constellation($result["parsed"][0]);
+                    
+                    $res = null;
+                    $constellation = null;
+                    if ($parsed->getID() != null) {
+                        $in = ["constellationid" => $parsed->getID()];
+                        $disp = null;
+                        $res = $this->getConstellation($in, $disp);
+                    } else if ($parsed->getArk() != null) {
+                        $in = ["arkid" => $parsed->getArk()];
+                        $disp = null;
+                        $res = $this->getConstellation($in, $disp);
+                    }
+                    if ($res != null && isset($res["constellation"])) {
+                        $constellation = new \snac\data\Constellation($res["constellation"]);
+                        $constellation->combine($parsed);
+                    } else {
+                        $constellation = $parsed;
+                    }
+                    $display->setData(array_merge($constellation->toArray(), array("preview" => true)));
+                }
+                break;
             case "upload":
             default:
                 $display->setTemplate("upload");
