@@ -152,7 +152,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->userInformation();
                 break;
             case "institution_information":
-                $this->response = $executor->institutionInformation();
+                $this->response = $executor->institutionInformation($this->input);
                 break;
 
 

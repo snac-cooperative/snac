@@ -6390,24 +6390,33 @@ class SQL
     }
 
 
+    /**
+     * Get Institutional Reporting Data 
+     *
+     * Given an ICID, queries through Postgres to get statistical data
+     * on the institution denoted by that IC.  This includes the number of recent
+     * updates to constellations and the top editors at that institution.
+     *
+     * @param int $icid The Constellation ID to query 
+     * @return string[] The statistical data from the database
+     */
     public function getInstitutionReportData($icid) {
         $return = [
             "week" => [],
             "month" => []
         ];
 
-        $result = $this->sdb->query("select distinct id from version_history 
+        $result = $this->sdb->query("select count(distinct id) from version_history 
             where timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days' 
                 and status != 'published' and status != 'deleted' 
                 and status != 'tombstoned' and status != 'needs review';", array());
 
         if ($result) {
             $all = $this->sdb->fetchAll($result);
-            $return["week"]["allEdits"] = $all;
-            $return["week"]["allEditCount"] = count($all);
+            $return["week"]["allEditCount"] = $all[0]["count"];
         }
 
-        $result = $this->sdb->query("select distinct v.id from 
+        $result = $this->sdb->query("select count(distinct v.id) from 
             version_history v, appuser u 
             where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days' 
                 and v.status != 'published' and v.status != 'deleted' 
@@ -6416,8 +6425,7 @@ class SQL
         
         if ($result) {
             $all = $this->sdb->fetchAll($result);
-            $return["week"]["instEdits"] = $all;
-            $return["week"]["instEditCount"] = count($all);
+            $return["week"]["instEditCount"] = $all[0]["count"];
         }
         
         $result = $this->sdb->query("select fullname, count(*) from
@@ -6435,18 +6443,17 @@ class SQL
             $return["week"]["topEditors"] = $all;
         }
         
-        $result = $this->sdb->query("select distinct id from version_history 
+        $result = $this->sdb->query("select count(distinct id) from version_history 
             where timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days' 
                 and status != 'published' and status != 'deleted' 
                 and status != 'tombstoned' and status != 'needs review';", array());
 
         if ($result) {
             $all = $this->sdb->fetchAll($result);
-            $return["month"]["allEdits"] = $all;
-            $return["month"]["allEditCount"] = count($all);
+            $return["month"]["allEditCount"] = $all[0]["count"];
         }
 
-        $result = $this->sdb->query("select distinct v.id from 
+        $result = $this->sdb->query("select count(distinct v.id) from 
             version_history v, appuser u 
             where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days' 
                 and v.status != 'published' and v.status != 'deleted' 
@@ -6455,8 +6462,7 @@ class SQL
         
         if ($result) {
             $all = $this->sdb->fetchAll($result);
-            $return["month"]["instEdits"] = $all;
-            $return["month"]["instEditCount"] = count($all);
+            $return["month"]["instEditCount"] = $all[0]["count"];
         }
         
         $result = $this->sdb->query("select fullname, count(*) from

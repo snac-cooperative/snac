@@ -1004,18 +1004,51 @@ class ServerExecutor {
         return $response;
     }
 
-    public function institutionInformation() {
-        if ($this->user == null || $this->user->getAffiliation() == null) {
+    /**
+     * Institutional Information 
+     *
+     * Given a constellationid as input or a user object's affiliation, this method
+     * will look up institutional information, including the summary constellation,
+     * the editing stats, and the connectivity of that institution as a holding
+     * repository in SNAC.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function institutionInformation(&$input) {
+        $icid = null;
+        if (isset($input["constellationid"]) && $this->hasPermission("Modify Users")) {
+            $icid = $input["constellationid"];
+        } else {
+            if ($this->user == null || $this->user->getAffiliation() == null) {
+                $response["result"] = "failure";
+                $response["error"] = "The user does not exist.";
+                return $response;
+            }
+            $icid = $this->user->getAffiliation()->getID();
+        }
+
+        if ($icid == null) {
             $response["result"] = "failure";
-            $response["error"] = "The user does not exist.";
+            $response["error"] = "The institution does not exist.";
             return $response;
         }
 
-        $affil = $this->cStore->readPublishedConstellationByID($this->user->getAffiliation()->getID(), \snac\server\database\DBUtil::$READ_SHORT_SUMMARY); 
+        // Reading the published version will look up the correct Constellation through the Lookup table, in case the
+        // affiliation has been merged
+        $affil = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+
+        $this->logger->addDebug("Getting stats from postgres");
+        $stats = $this->cStore->getInstitutionReportData($affil);
+        $this->logger->addDebug("Done with postgres, getting stats from neo4j");
+        $counts = $this->neo4J->getHoldingInstitutionStats($affil); 
+        $this->logger->addDebug("Done with neo4j stats");
         $response = [
             "result" => "success",
             "constellation" => $affil->toArray(),
-            "stats" => $this->cStore->getInstitutionReportData($affil)
+            "stats" => $stats,
+            "counts" => $counts
         ];
         return $response;
     }
