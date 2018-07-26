@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Supplemental Dashboard - Social Networks and Archival Context</title>
+<title>Other Stuff Dashboard - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -50,9 +50,9 @@
             </div>
         </div>
         <div class="col-md-8">
-                <h1 class="title">Supplemental Dashboard</h1>
+                <h1 class="title">Other Stuff Dashboard</h1>
                 <div class="well-md">
-                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Supplemental dashboard!  This dashboard provides access to search, add, and manage non-CPF objects in SNAC.  Here, you'll find vocabulary terms, geographic places, and our cache of Resources.</p>
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Other Stuff dashboard!  This dashboard provides access to search, add, and manage non-CPF objects in SNAC.  Here, you'll find concept (vocabulary) terms, geographic places, and our cache of Resources.</p>
                 </div>
         </div>
     </div>
@@ -69,14 +69,14 @@
             <!-- Left column -->
             <div class="panel panel-info">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Vocabulary Management</h3>
+                    <h3 class="panel-title">Concept Management</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Use the following links to administer controlled vocabularies.</p>
+                    <p>Use the following links to administer controlled concept vocabularies.</p>
                     <div class="list-group">
-                        <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Vocabulary Term</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Concept Term</a>
 
-                        <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Vocabularies</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Concepts</a>
                     </div>
                 </div>
             </div>
