@@ -1005,6 +1005,55 @@ class ServerExecutor {
     }
 
     /**
+     * Institutional Information 
+     *
+     * Given a constellationid as input or a user object's affiliation, this method
+     * will look up institutional information, including the summary constellation,
+     * the editing stats, and the connectivity of that institution as a holding
+     * repository in SNAC.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function institutionInformation(&$input) {
+        $icid = null;
+        if (isset($input["constellationid"]) && $this->hasPermission("Modify Users")) {
+            $icid = $input["constellationid"];
+        } else {
+            if ($this->user == null || $this->user->getAffiliation() == null) {
+                $response["result"] = "failure";
+                $response["error"] = "The user does not exist.";
+                return $response;
+            }
+            $icid = $this->user->getAffiliation()->getID();
+        }
+
+        if ($icid == null) {
+            $response["result"] = "failure";
+            $response["error"] = "The institution does not exist.";
+            return $response;
+        }
+
+        // Reading the published version will look up the correct Constellation through the Lookup table, in case the
+        // affiliation has been merged
+        $affil = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+
+        $this->logger->addDebug("Getting stats from postgres");
+        $stats = $this->cStore->getInstitutionReportData($affil);
+        $this->logger->addDebug("Done with postgres, getting stats from neo4j");
+        $counts = $this->neo4J->getHoldingInstitutionStats($affil); 
+        $this->logger->addDebug("Done with neo4j stats");
+        $response = [
+            "result" => "success",
+            "constellation" => $affil->toArray(),
+            "stats" => $stats,
+            "counts" => $counts
+        ];
+        return $response;
+    }
+
+    /**
      * Get User Information
      *
      * Gets the user information, including their user information from the database as well
@@ -1081,7 +1130,7 @@ class ServerExecutor {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User has checked out", $item);
                 array_push($info["editing"], $item);
@@ -1103,7 +1152,7 @@ class ServerExecutor {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User was currently editing", $item);
                 array_push($info["editing_lock"], $item);
@@ -1125,7 +1174,7 @@ class ServerExecutor {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User had for review", $item);
                 array_push($info["review_lock"], $item);
@@ -1147,7 +1196,7 @@ class ServerExecutor {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User needed to review", $item);
                 array_push($info["review"], $item);
@@ -1168,7 +1217,7 @@ class ServerExecutor {
                     $item = array (
                             "id" => $constellation->getID(),
                             "version" => $constellation->getVersion(),
-                            "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                            "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                     );
                     array_push($info["recent"], $item);
                 }
@@ -3249,7 +3298,7 @@ class ServerExecutor {
                 $item = array (
                     "id" => $constellation->getID(),
                     "version" => $constellation->getVersion(),
-                    "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                    "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("Listing (".$status.")", $item);
                 array_push($response["results"], $item);
@@ -3734,6 +3783,8 @@ class ServerExecutor {
                 $reportEngine->addReport("NumNewConstellationsThisWeek");
                 $reportEngine->addReport("NumEditsThisWeek");
                 $reportEngine->addReport("PublishesLastMonth");
+                $reportEngine->addReport("ConstellationsConnectedResourcesPercentage");
+                $reportEngine->addReport("ConstellationsConnectedConstellationsPercentage");
                 break;
             case "general":
             default:
@@ -3752,4 +3803,57 @@ class ServerExecutor {
 
         return array("result" => "success");
     }
+
+    /**
+     * Parse EAC and return result
+     *
+     * Parses and EAC-CPF file given on the input and returns the SNAC JSON object
+     * as well as any errors that occurred during the conversion process.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function parseEACCPFToConstellation($input) {
+        if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
+            throw new \snac\exceptions\SNACInputException("No EAC-CPF file specified", 400);
+        }
+
+        $file = base64_decode($input["file"]["content"]);
+        if (!stristr($file, "<eac-cpf")) {
+            throw new \snac\exceptions\SNACInputException("File does not have EAC-CPF tag specified", 400);
+        }
+
+        \libxml_use_internal_errors(true);
+        $testDoc = \simplexml_load_string($file);
+        $testXml = explode("\n", $file);
+        if (!$testDoc) {
+            $errorText = "";
+            $errors = \libxml_get_errors();
+            foreach ($errors as $error) {
+                 $errorText .= \display_xml_error($error, $xml);
+            }
+            \libxml_clear_errors();
+            throw new \snac\exceptions\SNACInputException("File is not correctly-formatted XML:\n".$errorText, 400);
+        }
+
+        $response = array();
+
+        $localVocab = new \snac\util\LocalVocabulary();
+        $localVocab->setConstellationStore($this->cStore);
+        $parser = new \snac\util\EACCPFParser();
+        $parser->setVocabulary($localVocab);
+        $constellation = $parser->parse($file);
+        $errors = $parser->getMissing();
+
+        $response["constellation"] = $constellation->toArray();
+        $response["unparsed"] = $errors;
+
+        if (empty($errors))
+            $response["result"] = "success";
+        else
+            $response["result"] = "failure";
+
+        return $response;
+    }
+
 }

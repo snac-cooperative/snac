@@ -1153,7 +1153,9 @@ class WebUIExecutor {
     }
 
     /**
-     * Display Status Page
+     * Display Stats Page
+     *
+     * Displays overall stats for SNAC
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
@@ -1167,6 +1169,29 @@ class WebUIExecutor {
             return $this->drawErrorPage($serverResponse, $display);
         $display->setData($serverResponse);
         $display->setTemplate("stats");
+        return true;
+    }
+    
+    /**
+     * Display Institution Stats Page
+     *
+     * Displays the stats page for the given institution
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayInstitutionPage(&$input, &$display) {
+        $ask = array(
+            "command"=>"institution_information"
+        );
+        if (isset($input["constellationid"]))
+            $ask["constellationid"] = $input["constellationid"];
+
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+            return $this->drawErrorPage($serverResponse, $display);
+        $display->setData(array_merge($serverResponse, ["json" => json_encode($serverResponse, JSON_PRETTY_PRINT)]));
+        $display->setTemplate("institution_info");
         return true;
     }
 

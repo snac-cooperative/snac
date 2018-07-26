@@ -1704,7 +1704,7 @@ class DBUtil
     public function populateTerm($termID, $value=null, $type=null, $uri=null)
     {
         // If in the cache, then don't re-query
-        if (isset($this->termCache[$termID]))
+        if (isset($termID) && isset($this->termCache[$termID]))
             return $this->termCache[$termID];
 
         if (isset($termID)) {
@@ -1725,7 +1725,7 @@ class DBUtil
         $newObj->setDescription($row['description']);
 
         // Save this to the cache
-        $this->termCache[$termID] = $newObj;
+        $this->termCache[$row['id']] = $newObj;
         /*
          * Class Term has no SNACControlMetadata
          */
@@ -4970,5 +4970,9 @@ class DBUtil
      */
     public function deleteFromNameIndex(&$constellation) {
         return $this->sql->deleteFromNameIndex($constellation->getID());
+    }
+
+    public function getInstitutionReportData(&$constellation) {
+        return $this->sql->getInstitutionReportData($constellation->getID());
     }
 }

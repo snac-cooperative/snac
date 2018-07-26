@@ -130,10 +130,10 @@ class Neo4JUtil {
             foreach ($result->getRecords() as $record) {
                 $path = $record->pathValue("p");
                 array_push($rels, [
-                    "arcrole" => $path->relationships()[0]->value('arcrole'),
+                    "arcrole" => $path->relationships()[0]->hasValue('arcrole') ? $path->relationships()[0]->value('arcrole') : null,
                     "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
                     "version" => $path->relationships()[0]->hasValue('version') ? $path->relationships()[0]->value('version') : null,
-                        "target" => $path->end()->value("id"),
+                    "target" => $path->end()->value("id"),
                     "operation" => "delete"
                     ]
                 );
@@ -144,7 +144,7 @@ class Neo4JUtil {
             $relsToModify = array();
             foreach($constellation->getRelations() as $relation) {
                 $add = true;
-                foreach ($rels as &$rel) {
+                foreach ($rels as &$rel) { 
                     if ($relation->getTargetConstellation() == $rel["target"]) {
                         // if it's been found, then don't add it to the index
                         $add = false;
@@ -214,27 +214,30 @@ class Neo4JUtil {
             // ************************************
             // STEP 3: Check all the resource relations. Update, insert, or delete as appropriate
             $this->logger->addDebug("Reading resource relationships from Neo4J");
-
-            $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:RRELATION]->(b:Resource) return p;",
-                [
-                    'icid' => $constellation->getID()
-                ]
-            );
-
-            // List out relations
-            $rels = array();
-            foreach ($result->getRecords() as $record) {
-                $path = $record->pathValue("p");
-                array_push($rels, [
-                    "target" => $path->end()->value("id"),
-                    "role" => $path->relationships()[0]->value('role'),
-                    "id" => $path->relationships()[0]->value('id'),
-                    "version" => $path->relationships()[0]->value('version'),
-                    "operation" => "delete"
+            try {
+                $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:RRELATION]->(b:Resource) return p;",
+                    [
+                        'icid' => $constellation->getID()
                     ]
                 );
-            }
 
+                // List out relations
+                $rels = array();
+                foreach ($result->getRecords() as $record) {
+                    $path = $record->pathValue("p");
+                    array_push($rels, [
+                        "target" => $path->end()->value("id"),
+                        "role" => $path->relationships()[0]->hasValue('role') ? $path->relationships()[0]->value('role') : null,
+                        "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
+                        "version" => $path->relationships()[0]->hasValue('version') ? $path->relationships()[0]->value('version') : null,
+                        "operation" => "delete"
+                        ]
+                    );
+                }
+            } catch (\Exception $e) {
+                $this->logger->addError("Neo4J threw an exception: ".$e->getMessage(), $e->getTrace());
+                throw $e;
+            }
             $this->logger->addDebug("Reconciling Resource Relationships to Current IC");
             $relsToDelete = array();
             $relsToModify = array();
@@ -514,7 +517,6 @@ class Neo4JUtil {
      * @param  \snac\data\Constellation $constellation Constellation to search
      * @return boolean  Returns true if it's a holding repository, false otherwise
      */
-
     public function checkHoldingInstitutionStatus(&$constellation) {
         $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;",
             [
@@ -529,6 +531,62 @@ class Neo4JUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * Get Holding Institution Statistics 
+     *
+     * Returns the statistics of the given Holding Institution.  It currently returns
+     * the number of resources connected to the holding repository as well as the number
+     * of constellations connected to those resources.
+     *
+     * @param  \snac\data\Constellation $constellation Constellation to search
+     * @return string[] An associative array of statistical data 
+     */
+    public function getHoldingInstitutionStats(&$constellation) {
+        $return = [];
+        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;",
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['instRes'] = $result->firstRecord()->get('count');;
+            }
+        }
+        $result = $this->connector->run("MATCH (r:Resource) return count(r) as count;",
+            [
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['allRes'] = $result->firstRecord()->get('count');;
+            }
+        }
+
+        $result = $this->connector->run("MATCH p=(c:Identity)-->(:Resource)-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(distinct(c)) as count;",
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['instCons'] = $result->firstRecord()->get('count');;
+            }
+        }
+        $result = $this->connector->run("MATCH (r:Identity) return count(r) as count;",
+            [
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['allCons'] = $result->firstRecord()->get('count');;
+            }
+        }
+
+        return $return;
+
     }
 
     /**
@@ -702,5 +760,5 @@ class Neo4JUtil {
             return $relatedConstellationIDs;
         }
     }
-    
+
 }

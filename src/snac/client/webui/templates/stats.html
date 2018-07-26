@@ -117,6 +117,52 @@
         </div>
     </div>
     <div class="row">
+        <div class="col-md-6">
+            <p class="above-map">connected to resources...</p>
+            <div id="connperc"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        // iris data from R
+                        columns: [
+                        {% for x,y in data.reports["Constellations Connected To Resources Percentages"].result %}
+                            ['{{x}}', {{y}}],
+                        {% endfor %}
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#connperc',
+                        size: {
+                            height: 350
+                        }
+                });
+
+            </script>
+        </div>
+        <div class="col-md-6">
+            <p class="above-map">...and each other</p>
+            <div id="connconperc"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        // iris data from R
+                        columns: [
+                        {% for x,y in data.reports["Constellations Connected To Constellations Percentages"].result %}
+                            ['{{x}}', {{y}}],
+                        {% endfor %}
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#connconperc',
+                        size: {
+                            height: 350
+                        }
+                });
+
+            </script>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-md-12">
             <p class="above-map">currently maintained by editors...</p>
         </div>

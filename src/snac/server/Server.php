@@ -151,6 +151,10 @@ class Server implements \snac\interfaces\ServerInterface {
             case "user_information":
                 $this->response = $executor->userInformation();
                 break;
+            case "institution_information":
+                $this->response = $executor->institutionInformation($this->input);
+                break;
+
 
             case "search_users":
                 if (!$executor->hasPermission("Edit"))
@@ -425,6 +429,12 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->generateReport($this->input);
                 break;
 
+            // Ingest and Parsing tasks
+            case "parse_eac":
+                //if (!$executor->hasPermission("Create"))
+                //   throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->parseEACCPFToConstellation($this->input);
+                break;
 
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"], 400);
