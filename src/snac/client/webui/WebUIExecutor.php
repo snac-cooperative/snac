@@ -76,6 +76,17 @@ class WebUIExecutor {
     }
 
     /**
+     * Get User
+     *
+     * Gets the user object out of the Server's response
+     *
+     * @return \snac\data\User|null The user object
+     */
+    public function getUser() {
+        return $this->connect->getUser();
+    }
+
+    /**
      * Set User Permissions Data
      *
      * Sets the permissions bitfield (as an associative array) for the user connected
@@ -1401,10 +1412,22 @@ class WebUIExecutor {
      *
      * Fills the display object with the dashboard for the given user.
      *
+     * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displayDashboardPage(&$display) {
-        $display->setTemplate("dashboard");
+    public function displayDashboardPage(&$input, &$display) {
+        $template = "editor";
+        if (isset($input["subcommand"])) {
+            switch ($input["subcommand"]) {
+                case "reviewer":
+                    $template = "review";
+                    break;
+                case "explore":
+                    $template = "explore";
+                    break;
+            }
+        }
+        $display->setTemplate("dashboard/$template");
         // Ask the server for a list of records to edit
         $ask = array("command"=>"user_information"
         );
@@ -1729,6 +1752,46 @@ class WebUIExecutor {
         return $response;
     }
 
+    public function handleReporting(&$input, &$display, &$user) {
+        if (!isset($input["subcommand"])) {
+            $input["subcommand"] = "dashboard";
+        }
+
+        switch ($input["subcommand"]) {
+            case "general":
+                $ask = array(
+                    "command"=>"report",
+                    "type" => "general"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $display->setData($serverResponse);
+                $display->setTemplate("report_general_page");
+                break;
+
+            case "holdings":
+                $ask = array(
+                    "command"=>"report",
+                    "type" => "holdings"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $display->setData($serverResponse);
+                $display->setTemplate("report_list_page");
+                break;
+
+            case "dashboard":
+                $display->setTemplate("dashboard/reporting");
+                break;
+
+            default:
+                $this->displayPermissionDeniedPage("Administrator", $display);
+        }
+        return;
+    }
+
     /**
      * Handle Administrative tasks
      *
@@ -1771,8 +1834,8 @@ class WebUIExecutor {
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
                     return $this->drawErrorPage($serverResponse, $display);
-                $userEdit = $serverResponse["user"];
-                $userGroups = $serverResponse["groups"];
+                $userEdit = $serverResponse["user_edit"]["user"];
+                $userGroups = $serverResponse["user_edit"]["groups"];
 
                 // Ask the server for all the Roles
                 $ask = array("command"=>"admin_roles"
@@ -1801,11 +1864,11 @@ class WebUIExecutor {
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
                     return $this->drawErrorPage($serverResponse, $display);
-                $userEdit = $serverResponse["user"];
-                $userGroups = $serverResponse["groups"];
+                $userEdit = $serverResponse["user_edit"]["user"];
+                $userGroups = $serverResponse["user_edit"]["groups"];
 
                 $serverResponse["title"] = "User Activity";
-                $display->setData($serverResponse);
+                $display->setData($serverResponse["user_edit"]);
                 $display->setTemplate("admin_user_activity");
                 break;
             case "edit_user_post":
@@ -2048,7 +2111,7 @@ class WebUIExecutor {
                 }
                 break;
             case "dashboard":
-                if (isset($this->permissions["ViewVocabDashboard"]) && $this->permissions["ViewVocabDashboard"]) {
+                if (isset($this->permissions["ViewVocabDashboard"]) ||  isset($this->permissions["EditResources"])) {
                     $display->setTemplate("vocab_dashboard");
                 } else {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);

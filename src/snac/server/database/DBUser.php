@@ -430,6 +430,8 @@ class DBUser
         $user->setWorkPhone($record['work_phone']);
         $user->setUserActive($record['active']);
 
+        $user->setNumUnreadMessages($this->sql->selectNumUnreadMessagesByUserID($record['id']));
+
         /*
          * We may need the functions listUserRoles() and listGroupsForUser() for uses outside of simply building
          * user objects, although no other uses are possible as long as these functions take $user as an

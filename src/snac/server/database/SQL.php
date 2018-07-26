@@ -6302,6 +6302,28 @@ class SQL
     }
 
     /**
+     * Unread Message Count
+     *
+     * Selects the unread message count for the given user id.
+     *
+     * @param int $userid The numeric userid for a user
+     * @return int The number of messages unread for this user
+     */ 
+    public function selectNumUnreadMessagesByUserID($userid) {
+        $retVal = 0;
+        
+        $result = $this->sdb->query(
+            'select count(*) as count from messages m where to_user = $1 and not read',
+            array($userid));
+
+        while ($row = $this->sdb->fetchrow($result)) {
+            $retVal = $row["count"];
+        }
+
+        return $retVal;
+    }
+
+    /**
      * Select Messages from User
      *
      * Selects all messages for the given userID.
