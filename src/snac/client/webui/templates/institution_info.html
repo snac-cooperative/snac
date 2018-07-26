@@ -172,6 +172,50 @@
             </script>
         </div>
     </div>
+    <div class="row stats-row">
+        <div class="col-md-6">
+            <p class="stat-heading">Connected Resources</p>
+            <div id="resperc" class="data-display"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        // iris data from R
+                        columns: [
+                            ['{{data.constellation.nameEntries.0.original}}', {{data.counts.instRes}}],
+                            ['Others', {{data.counts.allRes - data.counts.instRes}}],
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#resperc',
+                        size: {
+                            height: 350
+                        }
+                });
+
+            </script>
+        </div>
+        <div class="col-md-6">
+            <p class="stat-heading">Connected Constellations</p>
+            <div id="consperc" class="data-display"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        // iris data from R
+                        columns: [
+                            ['{{data.constellation.nameEntries.0.original}}', {{data.counts.instCons}}],
+                            ['Others', {{data.counts.allCons - data.counts.instCons}}],
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#consperc',
+                        size: {
+                            height: 350
+                        }
+                });
+
+            </script>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-12">
             <p class="stats-date">Report last generated {{"now"|date('Y-m-d h:i:sa')}}.</p>

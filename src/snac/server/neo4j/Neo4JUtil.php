@@ -517,7 +517,6 @@ class Neo4JUtil {
      * @param  \snac\data\Constellation $constellation Constellation to search
      * @return boolean  Returns true if it's a holding repository, false otherwise
      */
-
     public function checkHoldingInstitutionStatus(&$constellation) {
         $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;",
             [
@@ -532,6 +531,62 @@ class Neo4JUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * Get Holding Institution Statistics 
+     *
+     * Returns the statistics of the given Holding Institution.  It currently returns
+     * the number of resources connected to the holding repository as well as the number
+     * of constellations connected to those resources.
+     *
+     * @param  \snac\data\Constellation $constellation Constellation to search
+     * @return string[] An associative array of statistical data 
+     */
+    public function getHoldingInstitutionStats(&$constellation) {
+        $return = [];
+        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;",
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['instRes'] = $result->firstRecord()->get('count');;
+            }
+        }
+        $result = $this->connector->run("MATCH (r:Resource) return count(r) as count;",
+            [
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['allRes'] = $result->firstRecord()->get('count');;
+            }
+        }
+
+        $result = $this->connector->run("MATCH p=(c:Identity)-->(:Resource)-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(distinct(c)) as count;",
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['instCons'] = $result->firstRecord()->get('count');;
+            }
+        }
+        $result = $this->connector->run("MATCH (r:Identity) return count(r) as count;",
+            [
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['allCons'] = $result->firstRecord()->get('count');;
+            }
+        }
+
+        return $return;
+
     }
 
     /**
