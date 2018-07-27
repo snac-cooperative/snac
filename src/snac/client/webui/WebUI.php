@@ -158,7 +158,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Code to take the site into read-only mode (destroys login session)
         if (\snac\Config::$READ_ONLY) {
             // Make sure there is no session to keep track of anymore
-            session_name("SNACWebUI");
+            session_name(\snac\Config::$SESSION_NAME);
             session_start();
             session_destroy();
 
@@ -179,7 +179,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // *****************************************
 
         // Start the session
-        session_name("SNACWebUI");
+        session_name(\snac\Config::$SESSION_NAME);
         session_start();
 
         // Google OAuth Settings (from Config)
@@ -261,7 +261,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Destroy the old session
                 session_destroy();
                 // Restart the session
-                session_name("SNACWebUI");
+                session_name(\snac\Config::$SESSION_NAME);
                 session_start();
 
                 if (isset($this->input["r"])) {
@@ -329,7 +329,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Destroy the old session
                 session_destroy();
                 // Restart the session
-                session_name("SNACWebUI");
+                session_name(\snac\Config::$SESSION_NAME);
                 session_start();
                 $_SESSION = array();
 

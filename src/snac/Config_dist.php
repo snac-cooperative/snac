@@ -29,6 +29,11 @@ class Config {
 
 
     /**
+     * @var string Session name to use for SNAC (cookie name)
+     */
+    public static $SESSION_NAME = 'SNACWebUI';
+
+    /**
      * @var boolean Whether the system in OFFLINE (Maintenance) mode
      */
     public static $SITE_OFFLINE = false;
