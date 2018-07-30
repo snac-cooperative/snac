@@ -197,6 +197,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         if (empty($_SESSION['snac_user'])) {
             // If the user wants to do something, but hasn't logged in, then
             // send them to the home page.
+            $this->logger->addDebug("snac_user session variable not defined");
             if (!empty($this->input["command"]) &&
                 !(in_array($this->input["command"], $publicCommands)))
                 $this->input["command"] = "";
@@ -215,6 +216,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
                 // startSNACSession will connect to the server and ask to start a session.  The server will
                 // reissue the session and extend the token expiration if the session does already exist.
+                $this->logger->addDebug("User had session, so we're verifying and extending");
                 $tmpUser = $executor->startSNACSession($user);
                 if ($tmpUser !== false) {
                     $user = $tmpUser;
@@ -253,6 +255,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Workflow: Handle user commands, perform actions
         // *************************************************
 
+        $this->logger->addDebug("Switching on command: " . $this->input["command"]);
 
         switch($this->input["command"]) {
 
@@ -336,6 +339,32 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Go to the homepage
                 header('Location: ' . \snac\Config::$WEBUI_URL);
                 return;
+            
+            case "extend":
+                $this->logger->addDebug("Trying to extend session");
+                $tmpUser = $executor->extendSNACSession();
+
+                if ($tmpUser === false) {
+                    session_destroy();
+                    $display->setTemplate("error_page");
+                    $display->setData(array(
+                        "type" => "Invalid User",
+                        "message" => "The Google account does not exist in our system. Please log-in again with a different account."
+                    ));
+                    array_push($this->responseHeaders, "Content-Type: text/html");
+                    $this->response = $display->getDisplay();
+                    return;
+
+                }
+                $user = $tmpUser;
+                $this->logger->addDebug("Successfully extended session");
+
+                $_SESSION['snac_user'] = serialize($user);
+                $response = [
+                    "result" => "success",
+                    "user" => $user->toArray()
+                ];
+                break;
 
             // Editing, Preview, View, and Other Commands
             case "edit":

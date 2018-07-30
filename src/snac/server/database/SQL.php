@@ -330,7 +330,7 @@ class SQL
     public function selectSession($userID, $accessToken)
     {
         $result = $this->sdb->query(
-            'select * from session where appuser_fk=$1 and access_token=$2',
+            'select access_token, expires from session where appuser_fk=$1 and access_token=$2',
             array($userID, $accessToken));
         $row = $this->sdb->fetchrow($result);
         return $row;

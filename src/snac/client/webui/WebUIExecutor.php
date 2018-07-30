@@ -1089,11 +1089,30 @@ class WebUIExecutor {
      *
      * Calls to the server to start a new user's session
      *
-     * @return boolean true on success, false otherwise
+     * @return \snac\data\User|boolean user object on success, false otherwise
      */
     public function startSNACSession() {
         $query = array(
                 "command" => "start_session"
+                );
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Server Responded to starting session", array($serverResponse));
+
+        if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
+            return new \snac\data\User($serverResponse["user"]);
+        return false;
+    }
+
+    /**
+     * Extend SNAC Session
+     *
+     * Calls to the server to extend a user's session
+     *
+     * @return \snac\data\User|boolean user object on success, false otherwise
+     */
+    public function extendSNACSession() {
+        $query = array(
+                "command" => "extend_session"
                 );
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Server Responded to starting session", array($serverResponse));

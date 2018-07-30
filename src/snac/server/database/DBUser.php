@@ -867,10 +867,8 @@ class DBUser
             return false;
 
         // Update the token for the user object
-        $user->setToken(array(
-            "access_token" => $user->getToken()["access_token"],
-            "expires" => $this->sql->selectSession($user->getUserID(),
-                                                   $user->getToken()["access_token"])));
+        $user->setToken($this->sql->selectSession($user->getUserID(),
+                                                   $user->getToken()["access_token"]));
         return true;
     }
 

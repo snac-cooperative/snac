@@ -308,6 +308,32 @@ class ServerExecutor {
 
         return $response;
     }
+    
+    /**
+     * Extend the user session
+     *
+     * Extends the user session and fills out the response with a sucess or failure 
+     * based on whether or not the user's session was successfully extended, as
+     * well as the user object which may be useful to the web ui and other clients
+     *
+     * @return string[] The response to send to the client
+     */
+    public function extendSession() {
+        $response = array();
+
+        $this->authenticateUser($this->user);
+
+        if ($this->user != null) {
+            // sessionExtend updates the object passed as paremeter
+            $this->uStore->sessionExtend($this->user);
+            $response["user"] = $this->user->toArray();
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+
+        return $response;
+    }
 
 
     /**

@@ -142,6 +142,10 @@ class Server implements \snac\interfaces\ServerInterface {
             case "start_session":
                 $this->response = $executor->startSession();
                 break;
+            
+            case "extend_session":
+                $this->response = $executor->extendSession();
+                break;
 
             case "end_session":
                 $this->response = $executor->endSession();
