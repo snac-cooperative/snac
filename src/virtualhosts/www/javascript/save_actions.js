@@ -934,7 +934,7 @@ $(document).ready(function() {
      * @param  event e The event that happened
      */
 	function unloadPage(e) {
-		if(somethingHasBeenEdited){
+		if(typeof(somethingHasBeenEdited) != "undefined" && somethingHasBeenEdited){
 			var message = 'You may have unsaved changes on this Constellation.  Are you sure you want to leave the page and risk losing those edits?';
 			var e = e || window.event;
 			// For IE and Firefox

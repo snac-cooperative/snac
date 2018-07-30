@@ -16,7 +16,9 @@ var geoMapView = null;
 var impliedRelationsLoaded = false;
 
 var holdingsMapView = null;
-var bounds = new L.LatLngBounds();
+var bounds = null;
+if (typeof(L) != 'undefined')
+    new L.LatLngBounds();
 
 
 // Reservations for Edit
