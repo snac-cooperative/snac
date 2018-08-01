@@ -1813,6 +1813,16 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
+            case "test_vocab":
+                    $response = $this->testVocabQuery('concepts');
+                    $display->setData(array("title"=> "Test Vocab", "response" => $response));
+                    $display->setTemplate("test_vocab_vocab_edit_term");
+                break;
+            case "concepts":
+                    $response = $this->testVocabQuery('concepts');
+                    $display->setData(array("title"=> "Concepts",  "response" => $response));
+                    $display->setTemplate("test_vocab_concepts");
+                break;
             case "add_term_post":
                 if (isset($this->permissions["EditVocabulary"])) {
                     return $this->saveVocabularyTerm($input, $user);
@@ -3450,5 +3460,25 @@ class WebUIExecutor {
 
 
         return true;
+    }
+
+    /**
+    * TestVocab Query
+    */
+    public function testVocabQuery($query) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/' . $query);
+        curl_setopt($ch, CURLOPT_HTTPHEADER,
+        array (
+            'Content-Type: application/json',
+            // 'Content-Length: ' . strlen($data)
+        ));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        // curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        $this->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        return json_decode($response, true);
     }
 }

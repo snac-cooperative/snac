@@ -673,9 +673,7 @@ class ServerExecutor {
                 $results = $response["results"];
                 $response["results"] = array();
                 foreach ($results as $result)
-                    array_push(
-                        $response["results"],
-                        $this->cStore->readResource($result["id"])->toArray());
+                        $response["results"][] = $this->cStore->readResource($result["id"])->toArray();
             }
         }
 
@@ -3741,9 +3739,9 @@ class ServerExecutor {
 
         return array("result" => "success");
     }
-    
+
     /**
-     * Parse EAC and return result 
+     * Parse EAC and return result
      *
      * Parses and EAC-CPF file given on the input and returns the SNAC JSON object
      * as well as any errors that occurred during the conversion process.
