@@ -1236,6 +1236,14 @@ function newNameEntryComponent(i) {
 	    nextid = parseInt($('#nameEntry_component_next_j_'+i).text());
 	}
 	console.log("Creating new name entry component for nameEntry " + i + " with id: " + nextid);
+    // add parser btn if entity is person, and if no btn or other name components already exist
+    if (($("#entityType").val() === "700") && (nextid == 0) &&
+        (!$("#nameEntry_panel_" + i).find('.name-parser').length &&
+            $("#nameEntry_component_1_panel_" + i).length === 0)) {
+        $('#nameEntry_component_add_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i +
+            '" style="margin-left:5px;"> <i class="fa fa-magic" aria-hidden="true"></i> Parse </button>');
+    }
+
     somethingHasBeenEdited = true;
     var text = $('#component_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);

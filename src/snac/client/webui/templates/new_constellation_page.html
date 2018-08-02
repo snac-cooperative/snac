@@ -49,6 +49,7 @@
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/name_parser.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -272,6 +273,9 @@ $(document).ready(function() {
                 </div>
             </div>
         </div>
+
+        {% include '_name_parser.html' %}
+
     </div>
     {{ footer(X, user, permissions, control) }}
     </body>
