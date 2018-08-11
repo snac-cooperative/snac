@@ -709,30 +709,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     </div>
 </div>
 
-<div class="modal fade" id="name-parser" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header primary">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h3 class="modal-title">Possible Name Parsings</h3>
-            </div>
-            <div class="modal-body alert-info">
-                <div class="form-horizontal">
-                    <h4>Entity Type: <span id="name-parser-type"><span></h4>
-                    <h4>Name: <span id="name-parser-original"><span></h4>
-                    <p>If parsing is incomplete or incorrect, please edit after selecting.</p>
-                    <div id="name-parser-options" class="well">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <span style="margin-right:15px; font-size:large; font-weight:bold">Is this name correct?</span>
-                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Cancel"><span aria-hidden="true">Cancel</span></button>
-                <button type="button" id="parser-accept-btn" class="btn btn-primary" data-dismiss="modal" aria-label="Accept"><span aria-hidden="true">Accept</span></button>
-            </div>
-        </div>
-    </div>
-</div>
+{% include '_name_parser.html' %}
 
 
     </div>
