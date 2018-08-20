@@ -1819,7 +1819,7 @@ class WebUIExecutor {
                     $display->setTemplate("test_vocab_vocab_edit_term");
                 break;
             case "concepts":
-                    $response = $this->testVocabQuery('concepts');
+                    $response = $this->testVocabQuery('concepts_details');
                     $display->setData(array("title"=> "Concepts",  "response" => $response));
                     $display->setTemplate("test_vocab_concepts");
                 break;

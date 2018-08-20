@@ -83,8 +83,15 @@ $(document).ready(function() {
     <div class="row">
         <div class="col-md-8">
             {% for concept in data.response.concepts %}
-                <li>{{concept.term}}</li>
-                    {{concept.broader}}
+                {% for term in concept.terms %}
+                    <p>{{term.value}}</p>
+                    {% if concept.broader_concepts.length != 0 %}
+                        <p>Broader</p>
+                        {% for term in concept.terms %}
+                            <p style='margin-left:5px;'>{{concept.broader_concepts[0].terms[0].value}}</p>
+                            {% endfor %}
+                    {% endif %}
+                {% endfor %}
             {% endfor %}
 
         </div>
