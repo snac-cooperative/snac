@@ -24,8 +24,8 @@
             <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
             <div class="col-xs-8">
-                <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{resource.displayEntry}}"
-                    placeholder="Proper name. Title. Date." required>
+                <textarea name="resources[0][displayEntry]" class="form-control"
+                    placeholder="Proper name. Title. Date." required>{{resource.displayEntry}}</textarea>
             </div>
         </div>
 
@@ -33,8 +33,7 @@
             <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceTitle.display}} </label>
             <div class="col-xs-8">
-                <input id="resource-title" type="text" name="resources[0][title]" class="form-control" value="{{resource.title}}"
-                    pattern="^((?![hH][tT][tT][pP][sS]?:).)*$" required>
+                <textarea id="resource-title" name="resources[0][title]" class="form-control" required>{{resource.title}}</textarea>
             </div>
         </div>
 
@@ -59,7 +58,7 @@
             <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceAbstract.display}} </label>
             <div class="col-xs-8">
-                <textarea name="resources[0][abstract]" class="form-control" rows="3"> {{resource.abstract}}</textarea>
+                <textarea name="resources[0][abstract]" class="form-control" rows="3">{{resource.abstract}}</textarea>
             </div>
         </div>
 
