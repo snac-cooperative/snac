@@ -144,7 +144,7 @@ class Neo4JUtil {
             $relsToModify = array();
             foreach($constellation->getRelations() as $relation) {
                 $add = true;
-                foreach ($rels as &$rel) { 
+                foreach ($rels as &$rel) {
                     if ($relation->getTargetConstellation() == $rel["target"]) {
                         // if it's been found, then don't add it to the index
                         $add = false;
@@ -742,10 +742,10 @@ class Neo4JUtil {
      * @param $resource_id The id of the resource
      * @return string[]    An array of related constellation ids
      */
-    public function getResourceRelationships($resource_id) {
+    public function getResourceRelationships($resourceID) {
         if ($this->connector != null) {
             // Returning a single array of ids using collect()
-            $result = $this->connector->run("MATCH (r:Resource {id: '{$resource_id}' })--(i:Identity) return collect(i.id) as ids ");
+            $result = $this->connector->run("MATCH (r:Resource {id: '{$resourceID}' })-[:RRELATION]-(i:Identity) return collect(i.id) as ids ");
             $relatedConstellationIDs = $result->getRecord()->get('ids');
 
             // // Returning multiple rows and dealing with each record individually

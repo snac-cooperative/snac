@@ -2137,7 +2137,7 @@ $(document).ready(function() {
                 console.log("Next resourceRelation ID: " + resourceRelationid);
                  if ($('#btn_create_resourceRelation').exists()){
                     $('#btn_create_resourceRelation').click(function(){
-                        var rid = $('input[name=resourceChoice]:checked', '#resource_search_form').val()
+                        var rid = $('input[name=resourceChoice]:checked', '#resource_search_form').val();
                         if (rid != null && resourceResults != null && rid != 'new') {
                             somethingHasBeenEdited = true;
                             var text = $('#resourceRelation_template').clone();
@@ -2150,7 +2150,8 @@ $(document).ready(function() {
                                 $('#resourceRelation_resourceversion_'+resourceRelationid).val(resourceResults[rid].version);
 
                             if (typeof resourceResults[rid].link !== 'undefined')
-                                $('#resourceRelation_linkText_'+resourceRelationid).html(resourceResults[rid].link + " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
+                                $('#resourceRelation_linkText_'+resourceRelationid).html("<a target='_blank' href='"+resourceResults[rid].link+"'>"+resourceResults[rid].link+"</a>" +
+                                    " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
                             if (typeof resourceResults[rid].displayEntry !== 'undefined')
                                 $('#resourceRelation_displayEntryText_'+resourceRelationid).text(resourceResults[rid].displayEntry);
                             if (typeof resourceResults[rid].title !== 'undefined') {
@@ -2166,6 +2167,8 @@ $(document).ready(function() {
                             if (typeof resourceResults[rid].documentType !== 'undefined' && typeof resourceResults[rid].documentType.term !== 'undefined')
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
 
+                            $('#resourceRelation_linkText_'+resourceRelationid).after("<a class='control-label-subtext' target='_blank' href='" +
+                                snacUrl+"/vocab_administrator/resources/"+resourceResults[rid].id+"'>View in SNAC</a>");
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);
@@ -2244,7 +2247,8 @@ $(document).ready(function() {
                                         $('#resourceRelation_resourceversion_'+resourceRelationid).val(data.resource.version);
 
                                     if (typeof data.resource.link !== 'undefined')
-                                        $('#resourceRelation_linkText_'+resourceRelationid).html(data.resource.link + " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
+                                        $('#resourceRelation_linkText_'+resourceRelationid).html("<a target='_blank' href='"+data.resource.link+"'>"+data.resource.link+"</a>" +
+                                            " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
                                     if (typeof data.resource.displayEntry !== 'undefined')
                                         $('#resourceRelation_displayEntryText_'+resourceRelationid).text(data.resource.displayEntry);
                                     if (typeof data.resource.title !== 'undefined') {
@@ -2258,8 +2262,8 @@ $(document).ready(function() {
                                     if (typeof data.resource.documentType !== 'undefined' && typeof data.resource.documentType.term !== 'undefined')
                                         $('#resourceRelation_documentTypeText_'+resourceRelationid).text(data.resource.documentType.term);
 
-
-
+                                    $('#resourceRelation_linkText_'+resourceRelationid).after("<a class='control-label-subtext' target='_blank' href='" +
+                                        snacUrl+"/vocab_administrator/resources/"+data.resource.id+"'>View in SNAC</a>");
                                     turnOnButtons("resourceRelation", resourceRelationid);
                                     turnOnTooltips("resourceRelation", resourceRelationid);
                                     makeEditable("resourceRelation", resourceRelationid);

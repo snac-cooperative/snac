@@ -665,7 +665,7 @@
 {% endmacro %}
 
 
-{% macro displayResourceRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName) %}
+{% macro displayResourceRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName, control) %}
     {% import 'widgets.html' as widgets %}
     {% import _self as components %}
         <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
@@ -733,12 +733,14 @@
                                 <span id="resourceRelation_documentTypeText_{{i}}">{{relation.resource.documentType.term}}</span>:
                                 <span id="resourceRelation_extentText_{{i}}">{{relation.resource.extent ? relation.resource.extent : ''}}</span>
                             </p>
-                            <p id="resourceRelation_LinkText_{{i}}">
-                                <span id="resourceRelation_linkText_{{i}}">{{relation.resource.link}}
+                            <p id="resourceRelation_linkText_{{i}}">
                                 {% if relation.resource.link %}
-                                    <a class="label label-info" target="_blank" href="{{relation.resource.link}}">View</a>
+                                    <a target="_blank" href="{{relation.resource.link}}">{{relation.resource.link}}</a> <a class="label label-info" target="_blank" href="{{relation.resource.link}}">View</a>
                                 {% endif %}
                             </p>
+                            {% if relation.resource.id %}
+                                <a class="control-label-subtext" target="_blank" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}}">View in SNAC</a>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="form-group">

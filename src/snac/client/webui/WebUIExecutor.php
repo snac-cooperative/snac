@@ -1873,13 +1873,19 @@ class WebUIExecutor {
                 }
                 break;
             case "resources":
-                $display->setData(array("title"=> "Search for a Resource"));
-                $display->setTemplate("resources/search");
-                break;
-            case "resource":
+                $resourceID = $input["constellationid"] ?? null; // id passed is actually resourceID,
+
+                // /resources
+                if (!isset($resourceID)) {
+                    $display->setData(array("title"=> "Search for a Resource"));
+                    $display->setTemplate("resources/search");
+                    break;
+                }
+
+                // /resources/id
                 $request = [
                     "command" => "read_resource",
-                    "resourceid" => $input["constellationid"] ?? '',          // id passed is actually resourceID,
+                    "resourceid" => $resourceID,
                     "relationships" => true];
 
                 $response = $this->connect->query($request);
@@ -1891,13 +1897,12 @@ class WebUIExecutor {
                 } else {
                     $error = ["error" => ["type" => "Not Found", "message" => "The resource you were looking for does not exist."]];
                     $this->drawErrorPage($error, $display);
-                    break;
                 }
                 break;
             case "edit_resource":
                 if (isset($this->permissions["EditResources"])) {
                     // id passed is actually resourceID,
-                    $resourceID = $input["constellationid"] ?? '';
+                    $resourceID = $input["constellationid"] ?? null;
                     $resource = $this->connect->lookupResource($resourceID);
                     if ($resource === false) {
                         $error = ["error" => ["type" => "Not Found", "message" => "The resource you were looking for does not exist."]];

@@ -6,7 +6,7 @@
 
 {% set i = 0 %}
 {% for relation in data.resourceRelations %}
-    {{ components.displayResourceRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
+    {{ components.displayResourceRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original, control) }}
     {% set i = i + 1 %}
 {% endfor %}
 

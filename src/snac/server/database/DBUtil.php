@@ -17,6 +17,7 @@ use phpDocumentor\Plugin\Scrybe\Converter\Metadata\TableOfContents\BaseEntry;
 use \snac\server\validation\validators\IDValidator;
 use \snac\server\validation\validators\HasOperationValidator;
 use \snac\server\validation\validators\ResourceValidator;
+use \snac\data\Resource;
 
 
 /**
@@ -2995,9 +2996,9 @@ class DBUtil
      * @param  \snac\data\Resource $resource Resource object to read
      * @return \snac\data\Resource|boolean The resource object or false if not in database
      */
-    public function readResourceByData($resource){
+    public function readResourceByData(Resource $resource) {
         if ($resource === null)
-            false;
+            return false;
         // check if resource exists in database
         $documentType = null;
         if ($resource->getDocumentType() != null)

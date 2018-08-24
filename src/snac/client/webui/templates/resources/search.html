@@ -80,7 +80,7 @@
                     if (data.results.length > 0) {
                         for (var key in data.results) {
                             result = data.results[key];
-                            var icons = "<div class='btn-group'><a class='btn btn-success' title='View' target='_blank' href ='{{control.snacURL}}/vocab_administrator/resource/" +
+                            var icons = "<div class='btn-group'><a class='btn btn-success' title='View' target='_blank' href ='{{control.snacURL}}/vocab_administrator/resources/" +
                                 result.id + "'> <i class='fa fa-eye'></i> </a>" +
                                 {% if permissions.EditResources %}
                                     "<a class='btn btn-primary' title='Edit' target='_blank' href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
@@ -121,10 +121,10 @@
     {% from 'page_navigation.html' import topNavigation,footer %} {{ topNavigation(X, user, permissions, control) }}
 
     <div class="container snac" role="main">
-        <h1>Resource Management</h1>
+        <h1>Resources</h1>
 
         <ol class="breadcrumb">
-            <li>Resource Management</li>
+            <li>Resources</li>
         </ol>
 
         <div class="row">

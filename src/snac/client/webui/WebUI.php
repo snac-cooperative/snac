@@ -110,6 +110,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "download",
                 "error",
                 "vocabulary",
+                "vocab_administrator",
                 "quicksearch",
                 "relations",
                 "maybesame",
@@ -123,7 +124,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "api_test",
                 "contact",
                 "stats",
-                "feedback"
+                "feedback",
+                "resource_search"
         );
 
         // These are read-only commands that are allowed in read-only mode

@@ -1267,7 +1267,7 @@ $(document).ready(function() {
                                     {% for resourceRelation in data.constellation1.resourceRelations %}
                                         <div class="data-component data-component-a" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
-                                                {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.constellation1.entityType.term, data.constellation1.nameEntries.0.original) }}
+                                                {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.constellation1.entityType.term, data.constellation1.nameEntries.0.original, control) }}
                                             </div>
                                             <script>
                                             pieceCache[{{i}}] = {
@@ -1299,7 +1299,7 @@ $(document).ready(function() {
                                     {% for resourceRelation in data.intersection.resourceRelations %}
                                         <div class="data-component  data-component-both" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
-                                                {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.intersection.entityType.term, 'both') }}
+                                                {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.intersection.entityType.term, 'both', control) }}
                                             </div>
                                             <script>
                                             pieceCache[{{i}}] = {
@@ -1323,7 +1323,7 @@ $(document).ready(function() {
                                     {% for resourceRelation in data.constellation2.resourceRelations %}
                                         <div class="data-component data-component-b" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
-                                                {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.constellation2.entityType.term, data.constellation2.nameEntries.0.original) }}
+                                                {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.constellation2.entityType.term, data.constellation2.nameEntries.0.original, control) }}
                                             </div>
                                             <script>
                                             pieceCache[{{i}}] = {

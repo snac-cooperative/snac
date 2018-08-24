@@ -37,7 +37,7 @@ function saveResource(event) {
             $('#notification-message').slideUp();
             $('#success-message').slideDown();
             setTimeout(function() {
-                window.location = (snacUrl + "/vocab_administrator/resource/" + data.resource.id);
+                window.location = (snacUrl + "/vocab_administrator/resources/" + data.resource.id);
             }, 1000);
         })
         .fail(function() {
