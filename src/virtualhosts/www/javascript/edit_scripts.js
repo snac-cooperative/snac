@@ -2160,7 +2160,7 @@ $(document).ready(function() {
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
 
                             $('#resourceRelation_linkText_'+resourceRelationid).after("<a class='control-label-subtext' target='_blank' href='" +
-                                snacUrl+"/vocab_administrator/resource/"+resourceResults[rid].id+"'>View in SNAC</a>");
+                                snacUrl+"/vocab_administrator/resources/"+resourceResults[rid].id+"'>View in SNAC</a>");
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);
@@ -2255,7 +2255,7 @@ $(document).ready(function() {
                                         $('#resourceRelation_documentTypeText_'+resourceRelationid).text(data.resource.documentType.term);
 
                                     $('#resourceRelation_linkText_'+resourceRelationid).after("<a class='control-label-subtext' target='_blank' href='" +
-                                        snacUrl+"/vocab_administrator/resource/"+data.resource.id+"'>View in SNAC</a>");
+                                        snacUrl+"/vocab_administrator/resources/"+data.resource.id+"'>View in SNAC</a>");
                                     turnOnButtons("resourceRelation", resourceRelationid);
                                     turnOnTooltips("resourceRelation", resourceRelationid);
                                     makeEditable("resourceRelation", resourceRelationid);

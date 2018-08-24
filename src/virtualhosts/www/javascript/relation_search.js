@@ -121,7 +121,7 @@ function setRelationSearchPosition(start) {
                  } else {
                      html += "<h4 class='list-group-item-heading'>Ill-formed resource</h4>";
                  }
-                 html += "<a class='control-label-subtext' target='_blank' href='"+snacUrl+"/vocab_administrator/resource/"+data.results[key].id+"'>View in SNAC</a>";
+                 html += "<a class='control-label-subtext' target='_blank' href='"+snacUrl+"/vocab_administrator/resources/"+data.results[key].id+"'>View in SNAC</a>";
                  html += "</div>";
                  html += "</div></div>";
              } // end for
