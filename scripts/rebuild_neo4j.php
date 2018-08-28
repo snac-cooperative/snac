@@ -72,12 +72,12 @@ while($row = $db->fetchrow($allRel))
 {
     if (!isset($rels[$row["ic_id"]]))
         $rels[$row["ic_id"]] = array();
-    
+
     $rels[$row["ic_id"]][$row["id"]] = [
         "id" => $row["id"],
         "version" => $row["version"],
         "source" => $row["ic_id"],
-        "target" => $row["related_id"], 
+        "target" => $row["related_id"],
         "target_ark" => $row["related_ark"],
         "arcrole" => isset($lookup["relation_type"][$row["arcrole"]]) ? $lookup["relation_type"][$row["arcrole"]]["value"] : null
     ];
@@ -173,9 +173,9 @@ echo "Updating the Neo4J Graph. This may take a while...\n";
 $stack = $connector->stack();
 $i = 0;
 foreach ($nodes as $node) {
-    $stack->push('CREATE (n:Identity) SET n += {infos}', 
+    $stack->push('CREATE (n:Identity) SET n += {infos}',
         [
-            'infos' => $node 
+            'infos' => $node
         ]);
     if ($i++ > 10000) {
         $txn = $connector->transaction();
@@ -192,6 +192,7 @@ $txn->runStack($stack);
 $txn->commit();
 
 $connector->run('CREATE CONSTRAINT ON (i:Identity) ASSERT i.id IS UNIQUE');
+$connector->run('CREATE INDEX ON :Identity(name_lower)');
 
 
 $stack = $connector->stack();
@@ -199,7 +200,7 @@ $i = 0;
 foreach ($rels as $noderel) {
     foreach ($noderel as $edge) {
         $stack->push("MATCH (a:Identity {id: {id1} }),(b:Identity {id: {id2} })
-            CREATE (a)-[r:ICRELATION {infos}]->(b)", 
+            CREATE (a)-[r:ICRELATION {infos}]->(b)",
             [
                 'id1' => $edge["source"],
                 'id2' => $edge["target"],
@@ -220,4 +221,3 @@ foreach ($rels as $noderel) {
 $txn = $connector->transaction();
 $txn->runStack($stack);
 $txn->commit();
-
