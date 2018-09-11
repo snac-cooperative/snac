@@ -1,6 +1,6 @@
 <?php
 /**
- * Full Install Script 
+ * Full Install Script
  *
  * This script walks the user through fully installing SNAC on a server,
  * including creating the database, pre-populating vocabulary and users.
@@ -43,7 +43,7 @@ if ($argc >= 4)
     $datamergesample = $argv[3];
 
 // Read the configuration file
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Reading the configuration file in src/snac/Config.php.\n";
 
 $host = Config::$DATABASE["host"];
@@ -54,7 +54,7 @@ $user = Config::$DATABASE["user"];
 
 // Try to create the database
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to try creating the PostgreSQL database?\n  ('yes' or 'no'): ";
 $response = "no";
 if (!$automate)
@@ -66,7 +66,7 @@ if ($response == "yes") {
     echo "  Trying to create the database.  This script requires SUDO\n".
         "  privileges to switch to the postgres user to create the \n".
         "  database.  Enter the password for SUDO next:\n";
-    
+
     $retval = 0;
     // Run a system shell command, that sudos bash, then su's to postgres user,
     // then creates the user and database from the Config class.
@@ -82,7 +82,7 @@ create database $database;
 grant create,connect on database $database to $user;
 EOF'
     \"\n", $retval);
-    
+
     if ($retval != 0) {
         echo "  There was a problem creating the database.  Use the\n".
             "  following commands to create the database:\n\n".
@@ -98,7 +98,7 @@ EOF'
 
 
 // Try to connect to the database
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Attempting to make a database connection.\n\n";
 
 $dbHandle = pg_connect("host=$host port=$port dbname=$database user=$user password=$password");
@@ -109,8 +109,8 @@ if ($dbHandle === false) {
 
 
 $siteoffline = false;
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
-echo "Would you like to take the site offline during this process?\n ('yes' or 'no'): "; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
+echo "Would you like to take the site offline during this process?\n ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
     $response = trim(fgets(STDIN));
@@ -121,7 +121,7 @@ if ($response == "yes") {
     $retval = 0;
     echo "  Attempting to update the Config.php file.\n\n";
     system("cd ../ && sed -i 's/SITE_OFFLINE = false/SITE_OFFLINE = true/g' src/snac/Config.php\n", $retval);
-    
+
     if ($retval != 0) {
         echo "  There was a problem taking the site offline.\n\n";
     }
@@ -132,7 +132,7 @@ if ($response == "yes") {
 }
 
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the schema (tables, indicies, roles, privileges) into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -162,9 +162,9 @@ if ($response == "yes") {
     echo "  Successfully loaded roles and privileges\n\n";
 } else {
     echo "  Not loading the schema, roles, or privileges. The schema can be found in sql_files/schema.sql.\n\n";
-} 
+}
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the vocabulary schema (and drop the existing tables)?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -185,9 +185,9 @@ if ($response == "yes") {
     echo "  Successfully refreshed the vocabulary schema.  You must load the data into these tables later.\n\n";
 } else {
     echo "  Not updating the vocabulary schema.  The schema can be found in sql_files/vocabulary_init.sql.\n\n";
-} 
+}
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the place vocabulary schema (and drop the existing tables)?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -208,11 +208,11 @@ if ($response == "yes") {
     echo "  Successfully refreshed the place vocabulary schema.  You must load the data into these tables later.\n\n";
 } else {
     echo "  Not updating the place vocabulary schema.  The schema can be found in sql_files/places_vocabulary_init.sql.\n\n";
-} 
+}
 
 
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the initial users into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -236,7 +236,7 @@ if ($response == "yes") {
     echo "  Not loading the users. They can be found in sql_files/initialize_users.sql.\n\n";
 }
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the language codes into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -260,7 +260,7 @@ if ($response == "yes") {
     echo "  Not loading the language codes. They can be found in sql_files/languages.sql.\n\n";
 }
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the script codes into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -286,7 +286,7 @@ if ($response == "yes") {
 
 
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the controlled vocabulary into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -311,7 +311,7 @@ if ($response == "yes") {
 }
 
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the controlled place vocabulary into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -335,7 +335,33 @@ if ($response == "yes") {
     echo "  Not loading the controlled place vocabulary. They can be found in sql_files/places_vocabulary.sql.\n\n";
 }
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
+echo "Would you like to load the controlled concept vocabulary into the database?\n  ('yes' or 'no'): ";
+$response = "yes";
+if (!$automate)
+    $response = trim(fgets(STDIN));
+else
+    echo "yes\n";
+
+if ($response == "yes") {
+    // TODO: add concept_vocabulary.sql and necessary csvs
+    echo "  Adding controlled concepts vocabulary to the database\n";
+    $res = pg_query($dbHandle, file_get_contents("sql_files/concept_vocabulary.sql"));
+
+    if (!$res) {
+        $error = pg_last_error($dbHandle);
+        echo "  ERR: Unable to run script due to the following error:\n";
+        echo $error."\n";
+        die();
+    }
+
+    echo "  Successfully loaded the controlled place vocabulary.\n\n";
+} else {
+    echo "  Not loading the controlled place vocabulary. They can be found in sql_files/places_vocabulary.sql.\n\n";
+}
+
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
+
 echo "Would you like to empty the Elastic Search Indices?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -392,8 +418,8 @@ if ($response == "yes" && \snac\Config::$USE_ELASTIC_SEARCH) {
 }
 
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
-echo "Would you like to load a small sampling of records (100) into the database?\n ('yes' or 'no'): "; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
+echo "Would you like to load a small sampling of records (100) into the database?\n ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
     $response = trim(fgets(STDIN));
@@ -415,7 +441,7 @@ if ($response == "yes") {
         $dir2 = $datamergesample;
     $retval = 0;
     echo "  Attempting to ingest sample records from $dir and $dir2.\n";
-    /* 
+    /*
      * Run a system shell command, that sudos bash, then su's to postgres user,
      * then creates the user and database from the Config class.
      *
@@ -423,7 +449,7 @@ if ($response == "yes") {
      * which is the shell command being run below.
      */
     system("cd ../scripts && ./ingest_sample.php $dir $dir2\n", $retval);
-    
+
     if ($retval != 0) {
         echo "  There was a problem ingesting the sample records.\n\n";
     }
@@ -432,9 +458,9 @@ if ($response == "yes") {
 }
 
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the May 2016 sample set of records into the database?\n";
-echo "This will take a SIGNIFICANT amount of time!\n ('yes' or 'no'): "; 
+echo "This will take a SIGNIFICANT amount of time!\n ('yes' or 'no'): ";
 $response = "no";
 if (!$automate)
     $response = trim(fgets(STDIN));
@@ -456,7 +482,7 @@ if ($response == "yes") {
     $retval = 0;
     echo "  Attempting to ingest May 2016 sample records from $dir.\n";
     system("cd ../scripts && ./ingest_list.php $dir ../install/setup_files/may2016-list.txt\n", $retval);
-    
+
     if ($retval != 0) {
         echo "  There was a problem ingesting the May 2016 sample records.\n\n";
     }
@@ -464,9 +490,9 @@ if ($response == "yes") {
     echo "  Not ingesting May 2016 sample records.\n\n";
 }
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 echo "Would you like to load the set of institution records into the database?\n";
-echo "These include most instutitions participating in the SNAC cooperative, and are needed for SNAC Users\n  ('yes' or 'no'): "; 
+echo "These include most instutitions participating in the SNAC cooperative, and are needed for SNAC Users\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
     $response = trim(fgets(STDIN));
@@ -483,7 +509,7 @@ if ($response == "yes") {
     $retval = 0;
     echo "  Attempting to ingest institution records from $dir.\n";
     system("cd ../scripts && ./ingest_institutions.php $dir ../install/setup_files/institutions.csv\n", $retval);
-    
+
     if ($retval != 0) {
         echo "  There was a problem ingesting the institution records.\n\n";
     }
@@ -491,8 +517,8 @@ if ($response == "yes") {
     echo "  Not ingesting institution records.\n\n";
 }
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
-echo "Would you like to load a set of users into the database?\n See setup_files/users_dist.csv for the file format\n ('yes' or 'no'): "; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
+echo "Would you like to load a set of users into the database?\n See setup_files/users_dist.csv for the file format\n ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate) {
     $response = trim(fgets(STDIN));
@@ -510,7 +536,7 @@ if ($response == "yes") {
     $retval = 0;
     echo "  Attempting to read and import user accounts from $filename.\n";
     system("../scripts/add_users.php setup_files/institutions.csv $filename\n", $retval);
-    
+
     if ($retval != 0) {
         echo "  There was a problem importing the users.\n\n";
     }
@@ -522,7 +548,7 @@ if ($siteoffline) {
     $retval = 0;
     echo "Attempting to bring the site back online.\n";
     system("cd ../ && sed -i 's/SITE_OFFLINE = true/SITE_OFFLINE = false/g' src/snac/Config.php\n", $retval);
-    
+
     if ($retval != 0) {
         echo "  There was a problem bringing the site back online.\n\n";
     }
