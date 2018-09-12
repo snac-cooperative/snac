@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Bulk update of resource hrefs from a csv file
+ * Tear down and rebuild Concept Vocabulary tables
  *
  *
  * @author Joseph Glass
