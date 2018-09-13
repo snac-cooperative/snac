@@ -18,13 +18,23 @@ use \Monolog\Handler\StreamHandler;
 // Set up the global log stream
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
+$logger = new \Monolog\Logger('Server');
+$logger->pushHandler($log);
+
 // SNAC Postgres DB Handler
 // $cStore = new \snac\server\database\DBUtil();
 // $uStore = new \snac\server\database\DBUser();
+// $host = Config::$DATABASE["host"];
+// $port = Config::$DATABASE["port"];
+// $database = Config::$DATABASE["database"];
+// $password = Config::$DATABASE["password"];
+// $user = Config::$DATABASE["user"];
+// $dbHandle = pg_connect("host=$host port=$port dbname=$database user=$user password=$password");
 
 $db = new \snac\server\database\DatabaseConnector();
+$logger->addDebug("test", []);
 
-// $handle = fopen("/Users/josephglass/work/csvs/nationalities/nationality_matching-2.csv", "r");
+$handle = fopen("/Users/josephglass/work/csvs/nationalities/nationality_matching-2.csv", "r");
 
 $handle = fopen("nationality_matching_cleanup.csv", "r");
 $nonmatching = fopen("nationality_nonmatching_cleanup.csv", "r");
@@ -32,9 +42,9 @@ $write = fopen("nationality_ids.csv", "w");
 
 // $handle = fopen("nationality_nonmatching_cleanup.csv", "r");
 
-echo "Reading nationality\n";
+$logger->addDebug( "Reading nationality\n", []);
 
-    function createGoodTerms($db) {
+    function createGoodTerms($db, $logger) {
         $handle = fopen("nationality_matching_cleanup.csv", "r");
         while (($data = fgetcsv($handle, 1000, ',')) !== false) {
             $correct_term = $data[0];
@@ -44,17 +54,17 @@ echo "Reading nationality\n";
                 // Update vocab with id to the correct value
 ////                $db->query("UPDATE vocabulary SET value = $correct_term where type = 'nationality' and value ilike $1", array($term));
                 $db->query("UPDATE vocabulary SET value = $1 where id = $2", array($correct_term, $correct_term_id));
-                echo "Updating vocabulary, setting id $correct_term_id to value $correct_term \n";
+                $logger->addDebug( "Updating vocabulary, setting id $correct_term_id to value $correct_term \n", []);
             } else {
                 //Insert new empty LoCDT term
                 $db->query("INSERT INTO vocabulary(type, value) VALUES('nationality', $1)", array($correct_term));
-                echo "Inserting $correct_term into vocab\n";
+                $logger->addDebug( "Inserting $correct_term into vocab\n", []);
             }
         }
         fclose($handle);
     }
 
-    function updateNationalityTermIDs($db, $column) {
+    function updateNationalityTermIDs($db, $column, $logger) {
         $handle = fopen("nationality_matching_cleanup.csv", "r");
         while (($data = fgetcsv($handle, 1000, ',')) !== false) {
             $correct_term = $data[0];
@@ -68,19 +78,19 @@ echo "Reading nationality\n";
                 $term_id = $row['id'];
                 if ($term_id) {
                     $db->query("UPDATE nationality SET term_id = $1 where term_id = $2", array($correct_term_id, $term_id));
-                    echo "Updating nationality, setting $term with id $term_id to $correct_term id: $correct_term_id \n";
+                    $logger->addDebug( "Updating nationality, setting $term with id $term_id to $correct_term id: $correct_term_id \n", []);
                     $db->query("DELETE FROM vocabulary WHERE id = $1 AND type = 'nationality'", array($term_id));
-                    echo "Deleting $term with id $term_id from vocab\n";
+                    $logger->addDebug( "Deleting $term with id $term_id from vocab\n", []);
                 } else {
-                    echo "No term_id for $term\n";
+                    $logger->addDebug( "No term_id for $term\n", []);
                 }
             }
         }
         fclose($handle);
     }
 
-    function updateNonmatching($db) {
-        echo "Updating Nonmatching\n";
+    function updateNonmatching($db, $logger) {
+        $logger->addDebug( "Updating Nonmatching\n", []);
         $nonmatching = fopen("nationality_nonmatching_cleanup.csv", "r");
         while (($data = fgetcsv($nonmatching, 1000, ',')) !== false) {
             $correct_term = $data[0];
@@ -95,38 +105,38 @@ echo "Reading nationality\n";
                     if (!$row['id']) {
                         // if term doesn't exist, insert it
                         $db->query("INSERT INTO vocabulary(type, value) VALUES('nationality', $1)", array($correct_term));
-                        echo "Inserting: $correct_term into vocab\n";
+                        $logger->addDebug( "Inserting: $correct_term into vocab\n", []);
                         $resource = $db->query("select * from vocabulary where type = 'nationality' and value = $1", array($correct_term));
                         $row = pg_fetch_assoc($resource);
                     }
                     $correct_term_id = $row['id'];
                     if (!$row['id']) {
-                        echo "Error: can't find id for $correct_term\n";
+                        $logger->addDebug( "Error: can't find id for $correct_term\n", []);
                     }
+                    // delete old term_id from vocabulary
+                    $db->query("DELETE FROM vocabulary WHERE id = $1 AND type = 'nationality'", array($old_term_id));
+                    $logger->addDebug( "Deleting id $old_term_id from vocab for {$row['value']} \n", []);
 
                 }
             // set nationality to correct term.
             $db->query("UPDATE nationality set term_id = $1 where term_id = $2 ", array($correct_term_id, $old_term_id));
-            echo "Updating nationality for $correct_term, changing $old_term_id to $correct_term_id\n";
-            $db->query("DELETE FROM vocabulary WHERE id = $1 AND type = 'nationality'", array($old_term_id));
-            echo "Deleting {$row['value']} with id $old_term_id from vocab\n";
+            $logger->addDebug( "Updating nationality for $correct_term, changing $old_term_id to $correct_term_id\n", []);
 
 
         }
         fclose($nonmatching);
     }
 
-    createGoodTerms($db);
-    updateNationalityTermIDs($db, 2);
-    updateNationalityTermIDs($db, 3);
-    updateNationalityTermIDs($db, 4);
-    updateNationalityTermIDs($db, 5);
-    updateNationalityTermIDs($db, 6);
-    updateNationalityTermIDs($db, 7);
-    updateNationalityTermIDs($db, 8);
-    updateNationalityTermIDs($db, 9);
-    updateNationalityTermIDs($db, 10);
-    updateNationalityTermIDs($db, 11);
-    updateNonmatching($db);   // live
-    echo 'done!';
-// }
+    createGoodTerms($db, $logger);
+    updateNationalityTermIDs($db, 2, $logger);
+    updateNationalityTermIDs($db, 3, $logger);
+    updateNationalityTermIDs($db, 4, $logger);
+    updateNationalityTermIDs($db, 5, $logger);
+    updateNationalityTermIDs($db, 6, $logger);
+    updateNationalityTermIDs($db, 7, $logger);
+    updateNationalityTermIDs($db, 8, $logger);
+    updateNationalityTermIDs($db, 9, $logger);
+    updateNationalityTermIDs($db, 10, $logger);
+    updateNationalityTermIDs($db, 11, $logger);
+    updateNonmatching($db, $logger);
+    $logger->addDebug( 'done!', []);
