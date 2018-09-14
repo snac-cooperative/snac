@@ -79,8 +79,8 @@ $logger->addDebug( "Reading nationality\n", []);
                 if ($term_id) {
                     $db->query("UPDATE nationality SET term_id = $1 where term_id = $2", array($correct_term_id, $term_id));
                     $logger->addDebug( "Updating nationality, setting $term with id $term_id to $correct_term id: $correct_term_id \n", []);
-                    $db->query("DELETE FROM vocabulary WHERE id = $1 AND type = 'nationality'", array($term_id));
-                    $logger->addDebug( "Deleting $term with id $term_id from vocab\n", []);
+                    // $db->query("DELETE FROM vocabulary WHERE id = $1 AND type = 'nationality'", array($term_id));
+                    $logger->addDebug( "Should delete $term with id $term_id from vocab\n", []);
                 } else {
                     $logger->addDebug( "No term_id for $term\n", []);
                 }
@@ -114,8 +114,8 @@ $logger->addDebug( "Reading nationality\n", []);
                         $logger->addDebug( "Error: can't find id for $correct_term\n", []);
                     }
                     // delete old term_id from vocabulary
-                    $db->query("DELETE FROM vocabulary WHERE id = $1 AND type = 'nationality'", array($old_term_id));
-                    $logger->addDebug( "Deleting id $old_term_id from vocab for {$row['value']} \n", []);
+                    // $db->query("DELETE FROM vocabulary WHERE id = $1 AND type = 'nationality'", array($old_term_id));
+                    $logger->addDebug( "Should delete id $old_term_id from vocab for {$row['value']} \n", []);
 
                 }
             // set nationality to correct term.
