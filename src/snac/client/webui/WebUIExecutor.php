@@ -1813,15 +1813,27 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
-            case "test_vocab":
+            case "edit_concept":
                     $response = $this->testVocabQuery('concepts');
                     $display->setData(array("title"=> "Test Vocab", "response" => $response));
-                    $display->setTemplate("test_vocab_vocab_edit_term");
+                    $display->setTemplate("concepts/edit");
                 break;
             case "concepts":
-                    $response = $this->testVocabQuery('concepts_details');
+                $id = $input["constellationid"] ?? '';   // actually conceptID ,
+                $request = [
+                    "command" => "concepts",
+                    "id" => $id,
+                ];
+                if ($id) {
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "View Concept" ,  "response" => $response));
+                    $display->setTemplate("concepts/view");
+
+                } else {
+                    $response = $this->connect->query($request);
                     $display->setData(array("title"=> "Concepts",  "response" => $response));
-                    $display->setTemplate("test_vocab_concepts");
+                    $display->setTemplate("concepts/index");
+                }
                 break;
             case "add_term_post":
                 if (isset($this->permissions["EditVocabulary"])) {

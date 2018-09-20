@@ -649,6 +649,65 @@ class ServerExecutor {
         return $response;
     }
 
+
+    /**
+     * Read Concept
+     *
+     * Reads the vocabulary from the database, based on the input given and returns
+     * the result
+     *
+     * @param string[] $input Direct server input
+     * @return string[] The response to send to the client
+     */
+    public function readConcepts() {
+        $response = [];
+        $concepts = $this->cStore->getAllConcepts();
+        $this->logger->addInfo("Concepts", [$concepts] );
+
+        if (!empty($concepts)) {
+            $response["concepts"] = $concepts;
+            $response["result"] = "success";
+        } else {
+            $response["concepts"] = null;
+            $response["result"] = "failure";
+        }
+        return $response;
+    }
+
+    /**
+     * Read Concept
+     *
+     * Reads a concept from the database for an id
+     *
+     * @param string[] $id Concept id
+     * @return string[] The response to send to the client
+     */
+    public function readConcept($id) {
+        $response = array();
+        $concept = $this->cStore->getConcept($id);
+        $response["concept"] = $concept;
+        $this->logger->addInfo("Finding concept", $concept);
+        return $response;
+    }
+
+    /**
+     * Read Detailed Concept
+     *
+     * Reads a  vocabulary from the database, based on the input given and returns
+     * the result
+     *
+     * @param string[] $input Direct server input
+     * @return string[] The response to send to the client
+     */
+    public function readDetailedConcept($id) {
+        $this->logger->addInfo("Finding detailed concept", []);
+        $response = array();
+        $concept = $this->cStore->getDetailedConcept($id);
+        $response["concept"] = $concept;
+        return $response;
+    }
+
+
     /**
      * Search Resources
      *

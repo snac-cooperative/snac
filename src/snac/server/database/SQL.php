@@ -6388,4 +6388,100 @@ class SQL
 
         return $this->sdb->fetchrow($result);
     }
+
+
+    // Concepts
+
+    /**
+     * Select all concepts
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @param integer $id Record id
+     *
+     * @param integer $termID Vocabulary foreign key for the term.
+     *
+     */
+    public function selectAllConcepts() {
+        $sql = "SELECT c.id, t.value
+                    FROM concept c
+                    LEFT JOIN term t
+                    ON c.id = t.concept_id
+                WHERE c.deprecated = 'f'
+                ORDER BY t.value";
+        // $sql = "SELECT * FROM term";
+
+        $result = $this->sdb->query($sql, array());
+        $concepts = array();
+        while ($row = $this->sdb->fetchrow($result)){
+            array_push($concepts, $row);
+        }
+        return $concepts;
+    }
+
+    /**
+     * Select Concept
+     *
+     * Gets the concept from database
+     *
+     * @param int $id Concept ID
+     * @return string[] Associative array of resource data
+     */
+    public function selectConcept($id) {
+       $qq = 'select_concept';
+
+       $sql = "SELECT t.id, t.value, t.preferred
+                   FROM concept c
+                   LEFT JOIN term t
+                   ON c.id = t.concept_id
+               WHERE c.id = $1
+               AND c.deprecated = 'f'
+               ORDER BY t.value";
+
+       $this->sdb->prepare($qq, $sql);
+
+       $result = $this->sdb->execute($qq, array($id));
+        $concept = [];
+       while ($row = $this->sdb->fetchrow($result)) {
+           $concept[] = $row;
+       }
+       return $concept;
+   }
+
+    /**
+     * Select Detailed Concept
+     *
+     * Gets the detailed concept from database
+     *
+     * @param int $id Concept ID
+     * @return string[] Associative array of resource data
+     */
+    public function selectDetailedConcept($id) {
+        $sql = "SELECT t.id as term_id, t.value, t.preferred
+                   FROM concept c
+                   LEFT JOIN term t
+                   ON c.id = t.concept_id
+                   LEFT JOIN concept_properties cp ON cp.concept_id = c.id
+                   LEFT JOIN related_concept ON c.id = related_concept.related_id
+                   LEFT JOIN broader_concept ON c.id = broader_concept.broader_id
+               WHERE c.id = $1
+               ORDER BY t.value";
+
+               // INNER JOIN concept_category ON c.id = concept_category.category_id WHERE concept_category.concept_id = 3
+               // AND c.deprecated = 'f'
+               // ORDER BY t.value;
+
+
+
+        $result = $this->sdb->query($sql, array($id));
+
+        $concept = [];
+        while ($row = $this->sdb->fetchrow($result)) {
+           $concept[] = $row;
+        }
+        $this->logger->addInfo("results of sql", [$concept]);
+        return $concept;
+    }
+
+
 }

@@ -1814,6 +1814,33 @@ class DBUtil
     }
 
 
+    /**
+     * Get all Concepts
+     * Get all the concepts from the database
+     */
+    public function getAllConcepts() {
+        return $this->sql->selectAllConcepts();
+    }
+
+
+    /**
+     * Get Concept
+     * Get concept from the database
+     */
+    public function getConcept($id) {
+        // $this->logger->addInfo("now in dbutil simple", [$id]);
+        return $this->sql->selectConcept($id);
+    }
+
+    /**
+     * Get Detailed Concept
+     * Get detailed concept from the database with related, broader and narrower concepts
+     */
+    public function getDetailedConcept($id) {
+        $this->logger->addInfo("now in dbutil detailed", [$id]);
+        return $this->sql->selectDetailedConcept($id);
+    }
+
 
     /**
      * Select (populate) ConventionDeclaration

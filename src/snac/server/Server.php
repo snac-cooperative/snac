@@ -432,6 +432,20 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->parseEACCPFToConstellation($this->input);
                 break;
 
+            case "concepts":
+                //if (!$executor->hasPermission("Create"))
+                  // throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+
+                if ($this->input['id']) {
+                    $this->logger->addInfo('simple: ', [$executor->readDetailedConcept($this->input['id'])]);
+                    $this->response = $executor->readDetailedConcept($this->input['id']);
+                } else {
+                    $this->response = $executor->readConcepts();
+                }
+                $this->logger->addInfo('ressponse: ', [$this->response]);
+
+                break;
+
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"], 400);
 
