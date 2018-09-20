@@ -95,17 +95,17 @@
             },
             "type" : {
                 "optional": true,
-                "type": "String", 
+                "type": "String",
                 "description" : "Type of the vocabulary to search."
             },
             "term_value" : {
                 "optional": true,
-                "type": "String", 
+                "type": "String",
                 "description" : "The value of the vocabulary to search."
             },
             "uri" : {
                 "optional": true,
-                "type": "String", 
+                "type": "String",
                 "description" : "The unique URI of the vocabulary to search."
             }
         },
@@ -3099,5 +3099,31 @@
     "parse_eac": {
         "title": "Parse EAC-CPF XML to Constellation (Pre-Alpha)",
         "description": "Parses a given EAC-CPF file into a Constellation JSON object using the SNAC profile."
+    },
+    "concepts" : {
+        "category": "vocabulary",
+        "title" : "Get Concepts",
+        "description" : "Get all concepts.",
+        "parameters" : {
+            "term_id" : {
+                "optional": true,
+                "type": "Integer",
+                "description" : "Term ID, if known.  If given a term id, that vocabulary term is directly returned."
+            }
+        },
+        "returns" : {
+            "term" : {
+                "type": "Object",
+                "description": "SNAC Concept Term of the requested term"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
     }
 }
