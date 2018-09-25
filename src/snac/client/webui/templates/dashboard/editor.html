@@ -77,6 +77,11 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 <h1 class="title">Editor's Dashboard</h1>
                 <div class="well-md">
                     <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Editor's dashboard.  From here, you can search for and create new Identity Constellations, pick up where you left off on your current in-progress edits, and unlock Identity Constellations.  If you have sent a Constellation for review, but the reviewer has not started, you may pull back the Constellation from the right column.</p>
+                    {% if permissions.Create %}
+                        <div class="col-md-6">
+                            <a href="{{control.snacURL}}/new" class="btn list-group-item list-group-item-success"><span class="glyphicon glyphicon-plus"></span> Create New Constellation</a>
+                        </div>
+                    {% endif %}
                 </div>
         </div>
     </div>
@@ -163,23 +168,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <!-- Middle column -->
-
-            {% if permissions.Create %}
-            <div class="panel panel-success">
-                <div class="panel-heading accordion-panel">
-                    <h3 class="panel-title">Create New Constellation</h3>
-                </div>
-                <div class="panel-body">
-                    <p>Use the button below to create a new constellation</p>
-                    <div class="list-group">
-                        <a href="{{control.snacURL}}/new" class="list-group-item list-group-item-success"><span class="glyphicon glyphicon-plus"></span> Create New Constellation</a>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
 
             {% if permissions.Edit %}
             <div class="panel panel-warning">
