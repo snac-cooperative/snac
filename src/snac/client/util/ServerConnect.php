@@ -76,6 +76,17 @@ class ServerConnect {
     }
 
     /**
+     * Get User
+     *
+     * Gets the user object returned from the Server
+     *
+     * @return \snac\data\User|null The user object
+     */
+    public function getUser() {
+        return $this->user;
+    }
+
+    /**
      * Perform Server Query
      *
      * Uses CURL to query the server by converting the given array into JSON, sending that
@@ -120,6 +131,14 @@ class ServerConnect {
         }
 
         $this->logger->addDebug("Got the following server response", $return);
+
+        if (isset($return["user"]) && $return["user"] != null) {
+            $tmpUser = new \snac\data\User($return["user"]);
+            if ($tmpUser != null) {
+                $this->user = $tmpUser;
+            }
+        }
+
         return $return;
     }
 

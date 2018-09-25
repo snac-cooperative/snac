@@ -107,6 +107,12 @@ function getParam(val) {
     return result;
 }
 
+function collapsePanel(event) {
+    var $panel = $(event.target).closest('.panel');
+    $panel.find('.panel-body').slideToggle();
+    $panel.find('.hideicon').toggle();
+}
+
 $(document).ready(function() {
     if (getParam("message")) {
         $('#status-message').html("<p>"+getParam("message")+"</p>");
@@ -125,4 +131,10 @@ $(document).ready(function() {
         reviewPayload.reviewer = null;
         sendReview();
     });
+
+
+    $(".accordion-panel").click(function(event) {
+        collapsePanel(event);
+    });
+
 });
