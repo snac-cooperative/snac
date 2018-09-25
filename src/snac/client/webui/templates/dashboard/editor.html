@@ -127,10 +127,49 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         </div>
                 </div>
             </form>
-            
+
+            <div class="panel panel-info">
+                <div class="panel-heading accordion-panel">
+                    <h3 class="panel-title">View Recently Published
+                        <i class="fa fa-chevron-up hideicon" style='display:inline;float:right'></i>
+                        <i class="fa fa-chevron-down hideicon" style='display:none;float:right'></i>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <p>Browse interesting and recently published Constellations from all of SNAC</p>
+                    <div class="list-group">
+                        {% for recent in data.allrecents %}
+                        <a href="{{control.snacURL}}/view/{{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel panel-info">
+                <div class="panel-heading accordion-panel">
+                    <h3 class="panel-title">View Your Recently Edited
+                        <i class="fa fa-chevron-up hideicon" style='display:inline;float:right'></i>
+                        <i class="fa fa-chevron-down hideicon" style='display:none;float:right'></i>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <p>Browse Constellations you have recently edited in SNAC.</p>
+                    <div class="list-group">
+                        {% for recent in data.recent %}
+                        <a href="{{control.snacURL}}/view/{{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Middle column -->
+
             {% if permissions.Create %}
             <div class="panel panel-success">
-                <div class="panel-heading">
+                <div class="panel-heading accordion-panel">
                     <h3 class="panel-title">Create New Constellation</h3>
                 </div>
                 <div class="panel-body">
@@ -142,14 +181,13 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             </div>
             {% endif %}
 
-
-        </div>
-        <div class="col-md-4">
-            <!-- Middle column -->
             {% if permissions.Edit %}
             <div class="panel panel-warning">
-                <div class="panel-heading">
-                    <h3 class="panel-title">In Progress Edits</h3>
+                <div class="panel-heading accordion-panel">
+                    <h3 class="panel-title">In Progress Edits
+                        <i class="fa fa-chevron-up hideicon" style='display:inline;float:right'></i>
+                        <i class="fa fa-chevron-down hideicon" style='display:none;float:right'></i>
+                    </h3>
                 </div>
                 <div class="panel-body">
                     <p>Continue where you left off on one of the following Constellations.</p>
@@ -185,8 +223,11 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
             {% if permissions.Edit %}
             <div class="panel panel-review">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Locked for Review</h3>
+                <div class="panel-heading accordion-panel">
+                    <h3 class="panel-title">Locked for Review
+                        <i class="fa fa-chevron-up hideicon" style='display:inline;float:right'></i>
+                        <i class="fa fa-chevron-down hideicon" style='display:none;float:right'></i>
+                    </h3>
                 </div>
                 <div class="panel-body">
                     <p>You have the following Constellations that have been sent for review.  You may unlock them here to
@@ -202,11 +243,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 </div>
             </div>
             {% endif %}
-            
+
             {% if permissions.Edit %}
             <div class="panel panel-danger">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Locked Edits</h3>
+                <div class="panel-heading accordion-panel">
+                    <h3 class="panel-title">Locked Edits
+                        <i class="fa fa-chevron-up hideicon" style='display:inline;float:right'></i>
+                        <i class="fa fa-chevron-down hideicon" style='display:none;float:right'></i>
+                    </h3>
                 </div>
                 <div class="panel-body">
                     <p>You have the following Constellations open in a browser for editing.  You may unlock them by clicking below, however your

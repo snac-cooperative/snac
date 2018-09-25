@@ -133,7 +133,7 @@ $(document).ready(function() {
     });
 
 
-    $(".dash-panel").click(function(event) {
+    $(".accordion-panel").click(function(event) {
         collapsePanel(event);
     });
 
