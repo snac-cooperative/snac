@@ -95,7 +95,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <h2>Core Data</h2>
 
                         <div class="panel panel-default">
-                        	<div class="panel-heading">Constellation Information</div>
+                        	<div class="panel-heading">Information</div>
                             <div class="panel-body">
                                 <div class="col-xs-10">
                                     <div class="form-group">
@@ -394,7 +394,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 <p>You may perform any of the following actions on this constellation.</p>
                                 <div class="list-group">
                                     <a class="list-group-item list-group-item-info"
-                                        href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                        href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
                                 </div>
                             </div>
                         </div>
@@ -403,7 +403,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                    <div class="panel panel-info" style="margin-top: 15px;">
                        <div class="panel-heading">
-                           <h3 class="panel-title">Constellation Options</h3>
+                           <h3 class="panel-title">Options</h3>
                        </div>
                        <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
                           <h5>Information</h5>
@@ -421,7 +421,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 {% endif %}
                                    <a class="list-group-item list-group-item-history"
                                       href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
-                                       <i class="fa fa-fw fa-history" aria-hidden="true"></i> Constellation History</a>
+                                       <i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History</a>
                                    <a class="list-group-item list-group-item-sources"
                                       href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
                                        <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source Summary</a>
@@ -437,7 +437,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                           </div>
                            <h5>Export As</h5>
                            <div class="list-group" style="margin-bottom: 0px;">
-                               <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
+                               <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
                                <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
                            </div>
                        </div>
@@ -451,18 +451,17 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                        </div>
                        <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
                            {% if user.email and permissions.Edit %}
-                          <h5>Constellation Actions</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
                                 {% if data.status == 'editable' %}
                                 <a class="list-group-item list-group-item-info"
-                                   href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                   href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
                                 <a class="list-group-item list-group-item-danger" id="reserveForEdit"
                                    href="#"><i class="fa fa-fw fa-bookmark" aria-hidden="true"></i>
                                    <span id="reserveForEditText">Reserve for Editing</span></a>
                                 {% else %}
                                     <a class="list-group-item list-group-item-danger disabled"
                                        href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
-                                        <span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation
+                                        <span class="glyphicon glyphicon-ban-circle"></span> Edit
                                     </a>
                                     {% if data.editingUser %}
                                         <div class="list-group-item">
