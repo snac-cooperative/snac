@@ -61,18 +61,33 @@ div#graph_controls { margin: 18px 0px 0px 24px; }
     </div>
 
     <form id="graph_form" name="graph_form" action="?" method="GET">
-    <div id="graph_controls">
-    <input type="hidden" id="constellationid" name="constellationid" value="{{ data.id }}">
-    <input type="checkbox" id="captions" name="captions" onchange="toggle_captions(this)"> <label for="captions">Captions</label>
-    &nbsp; &nbsp;
-    <input type="radio" id="degree_1" name="degree" value="1"> <label for="degree_1">1</label>
-    <input type="radio" checked id="degree_2" name="degree" value="2"> <label for="degree_2">2</label>
-    <input type="radio" id="degree_3" name="degree" value="3"> <label for="degree_3">3 Degrees</label>
-    &nbsp; &nbsp; <input type="range" id="delta" name="delta" min="0" max="20" step="1" value="10" style="width:300px;display:inline-block;vertical-align:middle;"> <label for="delta">Delta</label>
-    &nbsp; &nbsp; <input type="button" id="graph_button" name="graph_button" value="Re-Graph" onClick="load_data()">
-    &nbsp; &nbsp; <input type="checkbox" checked id="force" name="force" onchange="toggle_force(this)"> <label for="force">Force</label>
-    </div>
+        <div id="graph_controls" class="row">
+            <div class="col-md-3">
+                <div class="checkbox">
+                    <input type="hidden" id="constellationid" name="constellationid" value="{{ data.id }}">
+                    <label for="names"  class="checkbox-inline"><input type="checkbox" id="names" name="names" onchange="toggle_names(this)"> Names</label>
+                    <label for="movement"  class="checkbox-inline"><input type="checkbox" checked id="movement" name="movement" onchange="toggle_movement(this)">Movement</label>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="radio">
+                    <div class="col-md-3">
+                        <h4>Relationships: </h4>
+                    </div>
+                    <label>Degree: </label>
+                    <label for="degree_1" class="radio-inline"> <input onchange="load_data()" type="radio" id="degree_1" name="degree" value="1"> 1 </label>
+                    <label for="degree_2" class="radio-inline"> <input onchange="load_data()" type="radio" checked id="degree_2" name="degree" value="2"> 2 </label>
+                    <label for="degree_3" class="radio-inline"> <input onchange="load_data()" type="radio" id="degree_3" name="degree" value="3"> 3 </label>
+                </div>
+                <label for="delta">Show more</label>
+                <input type="range" id="delta" name="delta" min="0" max="20" step="1" value="10" style="width:300px;display:inline-block;vertical-align:middle;">
+                <label for="delta">Show fewer</label>
+                <input type="button" class="btn btn-primary" id="graph_button" name="graph_button" style="margin-left:15px;" value="Apply Filter" onClick="load_data()">
+            </div>
+        </div>
     </form>
+    </div>
+    <div>
 
 	<script type="text/javascript">
     <!--
@@ -83,13 +98,13 @@ div#graph_controls { margin: 18px 0px 0px 24px; }
         window.open(the_url, '_blank');
     }
 
-	function toggle_force(e)
+	function toggle_movement(e)
     {
         if(!e.checked) { alchemy.force.stop(); alchemy.conf.forceLocked = true; }
         if(e.checked) { alchemy.conf.forceLocked = false; alchemy.force.start(); }
     }
 
-	function toggle_captions(e)
+	function toggle_names(e)
     {
         if(e.checked) { d3.selectAll(".alchemy text").style("display", "block"); alchemy.conf.nodeCaptionsOnByDefault = true; }
         if(!e.checked) { d3.selectAll(".alchemy text").style("display", "none"); alchemy.conf.nodeCaptionsOnByDefault = false; }
@@ -112,7 +127,7 @@ div#graph_controls { margin: 18px 0px 0px 24px; }
                 dataSource: data,
                 forceLocked: false,
                 directedEdges: true,
-                nodeCaptionsOnByDefault: $("#captions").prop("checked") ? true : false,
+                nodeCaptionsOnByDefault: $("#names").prop("checked") ? true : false,
                 nodeTypes: { "dgr": ["x0", "x1", "x2", "x3", "x4"] },
                 nodeStyle: {
                     "all": { color: "#FFFFFF", borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" } },
@@ -130,9 +145,9 @@ div#graph_controls { margin: 18px 0px 0px 24px; }
 
                 alchemy.begin(config);
 
-                $("#force").prop("checked", "true");
+                $("#movement").prop("checked", "true");
 
-                $("#graph_button").prop("disabled", false).val("Re-Graph");
+                $("#graph_button").prop("disabled", false).val("Apply Filter");
             }
 		});
 
