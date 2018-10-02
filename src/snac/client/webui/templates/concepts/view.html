@@ -40,22 +40,18 @@
 
 
 <script src="{{control.snacURL}}/javascript/test_vocab_admin.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/concept_admin.js{{control.noCache}}"></script>
 
-<style>
-.theme-dropdown .dropdown-menu {
-    position: static;
-    display: block;
-    margin-bottom: 20px;
-}
-
-.snac > p > .btn {
-    margin: 5px 0;
-}
-
-.snac .navbar .container {
-    width: auto;
-}
-</style>
+<script>
+    $('document').ready( function() {
+        markEditedFields($('#concept-form'))
+        $('.term').on('click', function(event) {
+            console.log(event)
+            x = event
+            convertToInputField(event)
+        })
+    });
+</script>
 
 </head>
 <body role="document">
@@ -97,6 +93,27 @@
                     {% endif %}
                 {% endfor %}
             {% endfor %} -->
+
+
+            <form id="concept-form" class="form-horizontal">
+                <div class="form-group">
+                    <!-- TODO: Distinguish between preferred and nonpreferred -->
+
+
+                {% for term in data.response.concept %}
+                <div class="form-group">
+                    <label class="control-label col-xs-4">
+                        {{ (term.preferred == "t") ? "Preferred Term" : "Alternatve Term"}}
+                    </label>
+                    <div class="col-xs-8">
+                        <p class="form-control term" data-term-id="{{term.term_id}}" name="term" value="{{term.value}}">{{term.value}}</p>
+                    </div>
+                </div>
+                {% endfor %}
+
+
+            </form>
+
 
         </div>
         <div class="col-md-4">
