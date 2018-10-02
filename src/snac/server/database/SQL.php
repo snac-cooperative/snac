@@ -6408,6 +6408,7 @@ class SQL
                     LEFT JOIN term t
                     ON c.id = t.concept_id
                 WHERE c.deprecated = 'f'
+                AND t.preferred = 't'
                 ORDER BY t.value";
         // $sql = "SELECT * FROM term";
 
@@ -6436,7 +6437,7 @@ class SQL
                    ON c.id = t.concept_id
                WHERE c.id = $1
                AND c.deprecated = 'f'
-               ORDER BY t.value";
+               ORDER BY t.preferred DESC, t.value";
 
        $this->sdb->prepare($qq, $sql);
 
@@ -6465,7 +6466,7 @@ class SQL
                    LEFT JOIN related_concept ON c.id = related_concept.related_id
                    LEFT JOIN broader_concept ON c.id = broader_concept.broader_id
                WHERE c.id = $1
-               ORDER BY t.value";
+               ORDER BY t.preferred DESC, t.value";
 
                // INNER JOIN concept_category ON c.id = concept_category.category_id WHERE concept_category.concept_id = 3
                // AND c.deprecated = 'f'

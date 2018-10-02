@@ -39,23 +39,19 @@
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 
-<script src="{{control.snacURL}}/javascript/test_vocab_admin.js{{control.noCache}}"></script>
+<!-- Datatables -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 
-<style>
-.theme-dropdown .dropdown-menu {
-    position: static;
-    display: block;
-    margin-bottom: 20px;
-}
 
-.snac > p > .btn {
-    margin: 5px 0;
-}
 
-.snac .navbar .container {
-    width: auto;
-}
-</style>
+<script>
+    $(document).ready( function() {
+        $('#concept-table').DataTable();
+    })
+</script>
+
+
 
 </head>
 <body role="document">
@@ -73,63 +69,29 @@
         <!-- <li>{{data.response.concepts[0].term}}</li> -->
     </ol>
 
-    <div class="row">
-        <div class="col-md-8">
+        {% if permissions.EditResources %}
+        <div class="text-center">
+            <a href="{{control.snacURL}}/vocab_administrator/concepts/new" class="btn btn-success">
+                <i class="fa fa-fw fa-plus"></i> Add New Concept
+            </a>
+        </div>
+        {% endif %}
 
-            {% if permissions.EditResources %}
-            <div class="text-center">
-                <a href="{{control.snacURL}}/vocab_administrator/concepts/new" class="btn btn-success">
-                    <i class="fa fa-fw fa-plus"></i> Add New Concept
-                </a>
-            </div>
-            {% endif %}
-
+    <table id="concept-table" class="table">
+        <thead>
+            <tr>
+                <th>Concept</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for concept in data.response.concepts %}
-                <p><a href="{{control.snacURL}}/vocab_administrator/concepts/{{concept.id}}">{{concept.value}}</a></p>
+            <tr>
+                <td><p><a href="{{control.snacURL}}/vocab_administrator/concepts/{{concept.id}}">{{concept.value}}</a></p></td>
+            </tr>
             {% endfor %}
+        </tbody>
+    </table>
 
-            <!-- {% for concept in data.response.concepts %}
-                {% for term in concept.terms %}
-                    <p>{{term.value}}</p>
-                    {% if concept.broader_concepts.length != 0 %}
-                        <p>Broader</p>
-                        {% for term in concept.terms %}
-                            <p style='margin-left:5px;'>{{concept.broader_concepts[0].terms[0].value}}</p>
-                            {% endfor %}
-                    {% endif %}
-                {% endfor %}
-            {% endfor %} -->
-
-        </div>
-        <div class="col-md-4">
-            <!-- Right Column -->
-
-            <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
-                <p>Saving Term...</p>
-            </div><!-- end alert -->
-            <div class="alert alert-01 alert-success" id="success-message" style="display: none">
-                <p>Successfully saved!</p>
-            </div><!-- end alert -->
-            <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
-                <p>An error occured while saving</p>
-            </div><!-- end alert -->
-
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Actions</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-info" id="save_new_vocab"><i class="fa fa-fw fa-floppy-o"></i> Save Term <span class="pull-right fa fa-question-circle" title="Help" data-content="Save the vocabulary term information." data-toggle="popover" data-placement="top"></span></a>
-                        <a href="#" class="list-group-item list-group-item-danger" id="cancel_back"><i class="fa fa-fw fa-times-circle"></i> Cancel <span class="pull-right fa fa-question-circle" title="Help" data-content="Cancel and do not create this term." data-toggle="popover" data-placement="top"></span></a>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-
-    </div>
 </div>
 {{ footer(X, user, permissions, control) }}
 </body>
