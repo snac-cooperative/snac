@@ -95,17 +95,17 @@
             },
             "type" : {
                 "optional": true,
-                "type": "String", 
+                "type": "String",
                 "description" : "Type of the vocabulary to search."
             },
             "term_value" : {
                 "optional": true,
-                "type": "String", 
+                "type": "String",
                 "description" : "The value of the vocabulary to search."
             },
             "uri" : {
                 "optional": true,
-                "type": "String", 
+                "type": "String",
                 "description" : "The unique URI of the vocabulary to search."
             }
         },
@@ -3099,5 +3099,68 @@
     "parse_eac": {
         "title": "Parse EAC-CPF XML to Constellation (Pre-Alpha)",
         "description": "Parses a given EAC-CPF file into a Constellation JSON object using the SNAC profile."
+    },
+    "add_sameas": {
+        "title": "Add external links to a constellation",
+        "description": "Links a constellation to an external identity on sites such as Wikipedia, VIAF, etc.",
+        "category": "modification",
+        "parameters" : {
+            "user" : {
+                "type": "Object",
+                "description": "User object"
+            },
+            "constellationid" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            },
+            "sameas_uris" : {
+                "type": "Array",
+                "description": "An array of URIs to link this constellation to."
+            }
+        },
+        "examples" : [
+            {
+                "title": "Add sameAs links",
+                "description": "Checks out a given constellation, adds external links and publishes the constellation",
+                "query" : {
+                   "command" : "add_sameas",
+                   "constellationid" : 73093297,
+                   "sameas_uris": ["https://en.wikipedia.org/wiki/Franciscus_Gomarus", "http://id.loc.gov/authorities/names/nb98048106.html"],
+                   "user" : { "...":"..." }
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "currently editing",
+                        "ark": "http://n2t.net/ark:/99166/w6vz535m",
+                        "otherRecordIDs": [{
+                                "dataType": "SameAs",
+                                "type": {
+                                    "id": 28225
+                                },
+                                "uri": "http://id.loc.gov/authorities/names/nb98048106.html",
+                                "id": "83129381",
+                                "version": "11258569",
+                                "operation": "insert"
+                            },
+                            {
+                                "dataType": "SameAs",
+                                "type": {
+                                    "id": 28225
+                                },
+                                "uri": "http://id.loc.gov/authorities/names/nb98048106.html",
+                                "id": "83129382",
+                                "version": "11258569",
+                                "operation": "insert"
+                            }
+                        ],
+                        "id": 73093297,
+                        "version": "11258570"
+                    },
+                    "result": "success",
+                    "timing": 3052.06
+                }
+            }
+        ]
     }
 }
