@@ -363,7 +363,15 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->removeMaybeSameConstellation($this->input);
                 break;
 
+            case "add_sameas":
+                if (!$executor->hasPermission("Publish"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to Edit and Publish.", 403);
 
+                if (!isset($this->input["sameas_uris"], $this->input["constellationid"]) || count($this->input["sameas_uris"]) == 0)
+                    throw new \snac\exceptions\SNACInputException("Incorrect input.", 400);
+
+                $this->response = $executor->addConstellationSameAs($this->input["constellationid"], $this->input["sameas_uris"]);
+                break;
 
             case "read":
                 $this->response = $executor->readConstellation($this->input);
