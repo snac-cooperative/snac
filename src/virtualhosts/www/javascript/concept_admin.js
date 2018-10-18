@@ -199,3 +199,54 @@ function convertToInputField(event) {
     var inputField = "<input "+ $element[0].outerHTML.slice(2, $element[0].outerHTML.indexOf('>') +1);
     $element.replaceWith(inputField);
 }
+
+
+function deleteOrUndoLanguage(event) {
+    event.preventDefault();
+    var $btn = $(event.currentTarget);
+    $btn.toggleClass('btn-danger btn-warning');
+    $btn.find(':only-child').toggleClass('fa-minus-circle fa-undo');
+    var $language = $btn.closest('.language');
+    $language.toggleClass('alert-danger component-deleted');
+    // $(event.target).closest('.term').toggleClass('alert-danger component-deleted');
+    $(event.target).closest('.term').find('input[type=text]').toggleClass('alert-danger component-deleted');
+}
+
+jQuery.fn.visibilityToggle = function() {
+    return this.css('visibility', function(i, visibility) {
+        return (visibility == 'visible') ? 'hidden' : 'visible';
+    });
+};
+
+// $('input[type=checkbox]:not(:checked)')
+
+$('document').ready( function() {
+    // markEditedFields($('#concept-form'))
+    $('.term-edit').on('click', function(event) {
+        console.log(event)
+        $(event.target).closest('.term').toggleClass('well well-sm edited-field').find('input[type=text]').removeAttr('readonly')
+        x = event
+        // convertToInputField(event)
+    })
+
+    $('.select').each(function() {
+        $(this).select2({
+            minimumResultsForSearch: Infinity,
+            allowClear: false,
+            theme: 'bootstrap',
+            width: ''
+        });
+    });
+
+    $('#exampleModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var recipient = button.data('whatever') // Extract info from data-* attributes
+      // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+      // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+      var modal = $(this)
+      console.log("hello")
+      modal.find('.modal-title').text('New message to ' + recipient)
+      modal.find('.modal-body input').val(recipient)
+    })
+
+});
