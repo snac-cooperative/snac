@@ -63,9 +63,9 @@
         <div class="col-md-8">
 
             <h2>Terms</h2>
-            {% for term in data.response.concept %}
+            <!-- {% for term in data.response.concept %}
                 <p>{{term.value}}</p>
-            {% endfor %}
+            {% endfor %} -->
 
 
             <!-- {% for concept in data.response.concepts %}
@@ -91,14 +91,15 @@
 
                 {% for term in data.response.concept %}
                 {% set isChecked = (term.preferred == "t") ? "checked" : "" %}
+                <!-- delete isChecked??  -->
                 {% if term.preferred == "t" %}
                 <h4>Preferred Term</h4>
-                <div class="term form-group">
+                <div class="form-group">
                     <div class="col-xs-8">
                         <div class="input-group">
-                            <p type="text" class="form-control" data-term-id="{{term.term_id}}" data-is-preferred="{{term.preferred}}" name="term"> {{term.value}}</p>
+                            <p type="text" class="term form-control" data-term-id="{{term.term_id}}" data-is-preferred="{{term.preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
                             <span class="input-group-btn">
-                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" title="Edit"><i class="fa fa-edit"></i></button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#term-modal" title="Edit" onclick="buildTermForm(event)"><i class="fa fa-edit"></i></button>
                             </span>
                         </div>
                     </div>
@@ -110,159 +111,70 @@
                 {% for term in data.response.concept %}
                 {% set isChecked = (term.preferred == "t") ? "checked" : "" %}
                 {% if term.preferred == "f" %}
-                <div class="term form-group">
+                <div class="form-group">
                     <div class="col-xs-8">
                         <div class="input-group">
-                            <input type="text" readonly class="form-control" data-term-id="{{term.term_id}}" name="term" value="{{term.value}}">
+                            <p type="text" class="term form-control" data-term-id="{{term.term_id}}" data-is-preferred="{{term.preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
                             <span class="input-group-btn">
-                                <button type="button" class="btn btn-primary term-edit" title="Edit" target="_blank" href=""><i class="fa fa-edit"></i></button>
-                                <button type="button" class="btn btn-danger" onclick="deleteOrUndoLanguage(event)"><i class="fa fa-minus-circle"></i></button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#term-modal" title="Edit" onclick="buildTermForm(event)"><i class="fa fa-edit"></i></button>
                             </span>
                         </div>
-                    </div>
-                    <div class="col-xs-2">
-                        <input type="checkbox" data-toggle="toggle" data-on="Preferred" data-off="Alternate" {{isChecked}}>
                     </div>
                 </div>
                 {% endif %}
                 {% endfor %}
-
-                <br>
-                <br>
-                <br>
-<!--  -->
-<!--  -->
-                <div id="term-clone" class="term form-group well well-sm" style="">
-                    <div class="col-xs-8">
-                        <div class="input-group">
-                            <input type="text" class="form-control" data-term-id="{{term.term_id}}" name="term" value="{{term.value}}">
-                            <span class="input-group-btn">
-                                <button type="button" class="btn btn-primary term-edit" title="Edit" target="_blank" href=""><i class="fa fa-edit"></i></button>
-                                <button type="button" class="btn btn-danger" onclick="deleteOrUndoLanguage(event)"><i class="fa fa-minus-circle"></i></button>
-                            </span>
-                        </div>
-                        <br>
-                        <div class="">
-                            <input type="checkbox" data-toggle="toggle" data-on="Preferred" data-off="Alternate" data-size="normal">
-                            <button type="button" class="btn btn-danger" onclick="deleteOrUndoLanguage(event)"><i class="fa fa-minus-circle"></i></button>
-                            <button type="button" class="btn btn-primary " ><i class="fa fa-fw fa-floppy-o"></i>Save</button>
-                        </div>
-
-                    </div>
-
-                    <div class="col-xs-2">
-                        <input type="checkbox" data-toggle="toggle" data-on="Preferred" data-off="Alternate" data-size="normal">
-                    </div>
-                </div>
-<!--  -->
-<!--  -->
-
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Open modal for @mdo</button>
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@fat">Open modal for @fat</button>
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@getbootstrap">Open modal for @getbootstrap</button>
-
-
                 <button type="button" class="btn btn-success"> <i class="fa fa-plus"></i> Add Term</button>
-
             </form>
-
-
         </div>
-        <div class="col-md-4">
-            <!-- Right Column -->
-
-            <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
-                <p>Saving Term...</p>
-            </div><!-- end alert -->
-            <div class="alert alert-01 alert-success" id="success-message" style="display: none">
-                <p>Successfully saved!</p>
-            </div><!-- end alert -->
-            <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
-                <p>An error occured while saving</p>
-            </div><!-- end alert -->
-
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Actions</h3>
-                </div>
-            </div>
-        </div>
-
-
     </div>
+
+    <h2>Related Concepts</h2>
+    <h2>Broader Concepts</h2>
+    <h2>Narrower Concepts</h2>
+    <div class="">
+        <h3>LoadVocabSelectOptions</h3>
+    </div>
+
+
+
 </div>
 
 
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+<div class="modal fade" id="term-modal" tabindex="-1" role="dialog" aria-labelledby="term-modal-label">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="exampleModalLabel">New message</h4>
+        <h4 class="modal-title" id="term-modal-label">Edit Term: </h4>
       </div>
       <div class="modal-body">
-        <form>
-          <div class="form-group">
-            <label for="recipient-name" class="control-label">Recipient:</label>
-            <input type="text" class="form-control" id="recipient-name">
-          </div>
-          <div class="form-group">
-            <label for="message-text" class="control-label">Message:</label>
-            <textarea class="form-control" id="message-text"></textarea>
-          </div>
+        <form id="term-form">
 
-          <div class="term form-group">
-              <div class="input-group">
-                  <input type="text" readonly class="form-control" data-term-id="{{term.term_id}}" name="term" value="{{term.value}}">
-                  <span class="input-group-btn">
-                      <button type="button" class="btn btn-primary term-edit" title="Edit" target="_blank" href=""><i class="fa fa-edit"></i></button>
-                      <button type="button" class="btn btn-danger" onclick="deleteOrUndoLanguage(event)"><i class="fa fa-minus-circle"></i></button>
-                  </span>
-              </div>
-              <div class="col-xs-2">
-                  <input type="checkbox" data-toggle="toggle" data-on="Preferred" data-off="Alternate" {{isChecked}}>
-              </div>
-          </div>
-
-          <br>
-          <br>
-          <br>
-          <br>
-
-
-          <div class="term form-group">
-              <div class="form-group">
+          <div class="term form-group required">
+              <div class="form-group" style="margin-bottom:100px">
                   <label class="control-label col-xs-2" for="">Term</label>
                   <div class="col-xs-10">
-                      <input type="text" class="form-control" data-term-id="{{term.term_id}}" name="term" value="{{term.value}}">
+                      <input type="text" id="term-input" class="form-control" data-term-id="" name="term-id" value="" required>
                   </div>
-                  <!-- <span class="input-group-btn">
-                      <button type="button" class="btn btn-primary term-edit" title="Edit" target="_blank" href=""><i class="fa fa-edit"></i></button>
-                      <button type="button" class="btn btn-danger" onclick="deleteOrUndoLanguage(event)"><i class="fa fa-minus-circle"></i></button>
-                  </span> -->
               </div>
               <br>
-              <div class="col-xs-2">
-
-              </div>
-              <br>
-              <div class="col-xs-10">
-                  <button type="button" class="btn btn-danger" onclick="deleteOrUndoLanguage(event)"><i class="fa fa-minus-circle"></i> Delete</button>
-                  <button type="button" class="btn btn-primary " ><i class="fa fa-fw fa-floppy-o"></i> Save</button>
-
-
-                            <div class="checkbox">
-                                  <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal">
+              <div style="margin-left:100px;">
+                  <div class="checkbox col-xs-5" >
+                                  <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="isPreferred" value="checked">
                                   <label for="is-preferred">
                                   Preferred
                               </label>
                             </div>
 
+                            <div class="col-xs-6" style="margin-top:10px;">
+
+
+                                <!-- <button type="button" class="btn btn-primary " ><i class="fa fa-fw fa-floppy-o"></i> Save</button> -->
+
+                            </div>
 
               </div>
           </div>
-
-
 <!--
           <div class="checkbox">
             <label for="is-preferred">
@@ -273,13 +185,15 @@
 
         </form>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save Term</button>
+      <div class="modal-footer" style="margin-top:100px">
+        <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()"><i class="fa fa-minus-circle"></i> Delete</button>
+        <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
       </div>
     </div>
   </div>
 </div>
+
 {{ footer(X, user, permissions, control) }}
 </body>
 </html>
