@@ -123,7 +123,7 @@
                 </div>
                 {% endif %}
                 {% endfor %}
-                <button type="button" class="btn btn-success"> <i class="fa fa-plus"></i> Add Term</button>
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#term-modal"> <i class="fa fa-plus"></i> Add Term</button>
             </form>
         </div>
     </div>
@@ -134,9 +134,6 @@
     <div class="">
         <h3>LoadVocabSelectOptions</h3>
     </div>
-
-
-
 </div>
 
 
@@ -145,7 +142,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="term-modal-label">Edit Term: </h4>
+        <h4 class="modal-title" id="term-modal-label">Add Term</h4>
       </div>
       <div class="modal-body">
         <form id="term-form">

@@ -88,8 +88,8 @@ function buildTermForm(event) {
     console.log(term.data('isPreferred'));
     console.log(term.data('termValue'));
 
-    var title = $("#term-modal-label").text();
-    $("#term-modal-label").text(title + term.data('termValue'));
+    // var title = $("#term-modal-label").text();
+    $("#term-modal-label").text("Edit Term: " + term.data('termValue'));
 
     $termInput = $("#term-input");
     $termInput.data("termId", term.data('termId'));

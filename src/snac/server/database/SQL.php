@@ -6463,8 +6463,6 @@ class SQL
                    LEFT JOIN term t
                    ON c.id = t.concept_id
                    LEFT JOIN concept_properties cp ON cp.concept_id = c.id
-                   LEFT JOIN related_concept ON c.id = related_concept.related_id
-                   LEFT JOIN broader_concept ON c.id = broader_concept.broader_id
                WHERE c.id = $1
                ORDER BY t.preferred DESC, t.value";
 
@@ -6472,6 +6470,8 @@ class SQL
                // AND c.deprecated = 'f'
                // ORDER BY t.value;
 
+               // LEFT JOIN related_concept ON c.id = related_concept.related_id
+               // LEFT JOIN broader_concept ON c.id = broader_concept.broader_id
 
 
         $result = $this->sdb->query($sql, array($id));
