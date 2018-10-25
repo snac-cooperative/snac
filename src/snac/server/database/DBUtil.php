@@ -1828,7 +1828,6 @@ class DBUtil
      * Get concept from the database
      */
     public function getConcept($id) {
-        // $this->logger->addInfo("now in dbutil simple", [$id]);
         $concept = new \snac\data\Concept();
         $conceptTerm = new \snac\data\ConceptTerm();
         //TODO: build concept
@@ -1840,8 +1839,14 @@ class DBUtil
      * Get detailed concept from the database with related, broader and narrower concepts
      */
     public function getDetailedConcept($id) {
-        $this->logger->addInfo("now in dbutil detailed", [$id]);
-        return $this->sql->selectDetailedConcept($id);
+        $concept = [];
+
+        $concept['terms'] = $this->sql->selectDetailedConcept($id);
+        $concept['related_concepts'] = $this->sql->selectRelatedConcepts($id);
+        $concept['broader_concepts'] = $this->sql->selectBroaderConcepts($id);
+        $concept['narrower_concepts'] = $this->sql->selectNarrowerConcepts($id);
+
+        return $concept;
     }
 
 
