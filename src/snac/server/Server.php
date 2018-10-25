@@ -437,13 +437,10 @@ class Server implements \snac\interfaces\ServerInterface {
                   // throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
 
                 if ($this->input['id']) {
-                    $this->logger->addInfo('simple: ', [$executor->readDetailedConcept($this->input['id'])]);
                     $this->response = $executor->readDetailedConcept($this->input['id']);
                 } else {
                     $this->response = $executor->readConcepts();
                 }
-                $this->logger->addInfo('ressponse: ', [$this->response]);
-
                 break;
 
             default:

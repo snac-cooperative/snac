@@ -49,30 +49,30 @@
 {{ topNavigation(X, user, permissions, control) }}
 
 
+
 <div class="container snac" role="main">
     <h1>Vocabulary: {{ data.title }}</h1>
-
     <ol class="breadcrumb">
         <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
         <li><a href="{{control.snacURL}}/vocab_administrator/search">Controlled Vocabulary</a></li>
         <li><a href="{{control.snacURL}}/vocab_administrator/concepts">Concepts</a></li>
-        <li>{{data.response.concept[0].value}}</li>
+        <li>{{data.response.concept.terms[0].value}}</li>
     </ol>
-    <h1>{{data.response.concept[0].value}}</h1>
+    <h1>{{data.response.concept.terms[0].value}}</h1>
     <div class="row">
         <div class="col-md-8">
 
             <h2>Terms</h2>
-            <!-- {% for term in data.response.concept %}
+            <!-- {% for term in data.response.concept.terms %}
                 <p>{{term.value}}</p>
             {% endfor %} -->
 
 
-            <!-- {% for concept in data.response.concepts %}
+            <!-- {% for concept in data.response.concept.termss %}
                 <p><a href="{{control.snacURL}}/concepts/{{concept.id}}">{{concept.value}}</a></p>
             {% endfor %} -->
 
-            <!-- {% for concept in data.response.concepts %}
+            <!-- {% for concept in data.response.concept.termss %}
                 {% for term in concept.terms %}
                     <p>{{term.value}}</p>
                     {% if concept.broader_concepts.length != 0 %}
@@ -89,7 +89,7 @@
                     <!-- TODO: Distinguish between preferred and nonpreferred -->
 
 
-                {% for term in data.response.concept %}
+                {% for term in data.response.concept.terms %}
                 {% set isChecked = (term.preferred == "t") ? "checked" : "" %}
                 <!-- delete isChecked??  -->
                 {% if term.preferred == "t" %}
@@ -97,7 +97,7 @@
                 <div class="form-group">
                     <div class="col-xs-8">
                         <div class="input-group">
-                            <p type="text" class="term form-control" data-term-id="{{term.term_id}}" data-is-preferred="{{term.preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
+                            <p type="text" class="term form-control" data-term-id="{{term.id}}" data-is-preferred="{{term.preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#term-modal" title="Edit" onclick="buildTermForm(event)"><i class="fa fa-edit"></i></button>
                             </span>
@@ -108,13 +108,13 @@
                 {% endfor %}
 
                 <h4>Alternate Terms</h4>
-                {% for term in data.response.concept %}
+                {% for term in data.response.concept.terms %}
                 {% set isChecked = (term.preferred == "t") ? "checked" : "" %}
                 {% if term.preferred == "f" %}
                 <div class="form-group">
                     <div class="col-xs-8">
                         <div class="input-group">
-                            <p type="text" class="term form-control" data-term-id="{{term.term_id}}" data-is-preferred="{{term.preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
+                            <p type="text" class="term form-control" data-term-id="{{term.id}}" data-is-preferred="{{term.preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#term-modal" title="Edit" onclick="buildTermForm(event)"><i class="fa fa-edit"></i></button>
                             </span>
@@ -128,69 +128,125 @@
         </div>
     </div>
 
+    {% if data.response.concept.related_concepts %}
     <h2>Related Concepts</h2>
+    <div class="form-group">
+        {% for related in data.response.concept.related_concepts %}
+                    <h4> <a href="http://localhost/~josephglass/snac/www/vocab_administrator/concepts/{{related.id}}"> {{related.value}}</a></h4>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if data.response.concept.broader_concepts %}
     <h2>Broader Concepts</h2>
+    <div class="form-group">
+        {% for broader in data.response.concept.broader_concepts %}
+            <h4> <a href="http://localhost/~josephglass/snac/www/vocab_administrator/concepts/{{broader.id}}"> {{broader.value}}</a></h4>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if data.response.concept.narrower_concepts %}
     <h2>Narrower Concepts</h2>
+    <div class="form-group">
+        {% for narrower in data.response.concept.narrower_concepts %}
+            <h4> <a href="http://localhost/~josephglass/snac/www/vocab_administrator/concepts/{{narrower.id}}"> {{narrower.value}}</a></h4>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+
     <div class="">
         <h3>LoadVocabSelectOptions</h3>
     </div>
+
+<button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button>
 </div>
 
 
 <div class="modal fade" id="term-modal" tabindex="-1" role="dialog" aria-labelledby="term-modal-label">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="term-modal-label">Add Term</h4>
-      </div>
-      <div class="modal-body">
-        <form id="term-form">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="term-modal-label">Add Term</h4>
+            </div>
+            <div class="modal-body">
+                <form id="term-form">
 
-          <div class="term form-group required">
-              <div class="form-group" style="margin-bottom:100px">
-                  <label class="control-label col-xs-2" for="">Term</label>
-                  <div class="col-xs-10">
-                      <input type="text" id="term-input" class="form-control" data-term-id="" name="term-id" value="" required>
-                  </div>
-              </div>
-              <br>
-              <div style="margin-left:100px;">
-                  <div class="checkbox col-xs-5" >
-                                  <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="isPreferred" value="checked">
-                                  <label for="is-preferred">
-                                  Preferred
-                              </label>
+                    <div class="term form-group required">
+                        <div class="form-group" style="margin-bottom:100px">
+                            <label class="control-label col-xs-2" for="">Term</label>
+                            <div class="col-xs-10">
+                                <input type="text" id="term-input" class="form-control" data-term-id="" name="term-id" value="" required>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-left:100px;">
+                            <div class="checkbox col-xs-5">
+                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="isPreferred" value="checked">
+                                <label for="is-preferred">Preferred </label>
                             </div>
 
                             <div class="col-xs-6" style="margin-top:10px;">
-
-
                                 <!-- <button type="button" class="btn btn-primary " ><i class="fa fa-fw fa-floppy-o"></i> Save</button> -->
-
                             </div>
 
-              </div>
-          </div>
-<!--
-          <div class="checkbox">
-            <label for="is-preferred">
-                <input type="checkbox"  id="is-preferred" value="">
-                Preferred
-            </label>
-          </div> -->
-
-        </form>
-      </div>
-      <div class="modal-footer" style="margin-top:100px">
-        <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()"><i class="fa fa-minus-circle"></i> Delete</button>
-        <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
-      </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="margin-top:100px">
+                <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()"><i class="fa fa-minus-circle"></i> Delete</button>
+                <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
+
+<div class="modal fade" id="concept-relationship-modal" tabindex="-1" role="dialog" aria-labelledby="concept-relationship-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="concept-relationship-modal-label">Add Concept Relationship</h4>
+            </div>
+            <div class="modal-body">
+                <form id="concept-relationship-form">
+
+                    <div class="term form-group required">
+                        <div class="form-group" style="margin-bottom:100px">
+                            <label class="control-label col-xs-2" for="">Term</label>
+                            <div class="col-xs-10">
+                                <input type="text" id="term-input" class="form-control" data-term-id="" name="term-id" value="" required>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-left:100px;">
+                            <div class="checkbox col-xs-5">
+                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="isPreferred" value="checked">
+                                <label for="is-preferred">Preferred </label>
+                            </div>
+
+                            <div class="col-xs-6" style="margin-top:10px;">
+                                <!-- <button type="button" class="btn btn-primary " ><i class="fa fa-fw fa-floppy-o"></i> Save</button> -->
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="margin-top:100px">
+                <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()"><i class="fa fa-minus-circle"></i> Delete</button>
+                <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {{ footer(X, user, permissions, control) }}
 </body>
 </html>

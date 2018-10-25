@@ -662,7 +662,6 @@ class ServerExecutor {
     public function readConcepts() {
         $response = [];
         $concepts = $this->cStore->getAllConcepts();
-        $this->logger->addInfo("Concepts", [$concepts] );
 
         if (!empty($concepts)) {
             $response["concepts"] = $concepts;
@@ -686,7 +685,6 @@ class ServerExecutor {
         $response = array();
         $concept = $this->cStore->getConcept($id);
         $response["concept"] = $concept;
-        $this->logger->addInfo("Finding concept", $concept);
         return $response;
     }
 
@@ -700,7 +698,6 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function readDetailedConcept($id) {
-        $this->logger->addInfo("Finding detailed concept", []);
         $response = array();
         $concept = $this->cStore->getDetailedConcept($id);
         $response["concept"] = $concept;
