@@ -6404,9 +6404,9 @@ class SQL
      */
     public function selectAllConcepts() {
         $sql = "SELECT c.id, t.value
-                    FROM concept c
-                    LEFT JOIN term t
-                    ON c.id = t.concept_id
+                FROM concept c
+                LEFT JOIN term t
+                ON c.id = t.concept_id
                 WHERE c.deprecated = 'f'
                 AND t.preferred = 't'
                 ORDER BY t.value";
@@ -6426,15 +6426,17 @@ class SQL
      * Gets the concept from database
      *
      * @param int $id Concept ID
-     * @return string[] Associative array of resource data
+     * @return string[] Associative array of concept
      */
     public function selectConcept($id) {
        $qq = 'select_concept';
 
-       $sql = "SELECT t.id, t.value, t.preferred
-                   FROM concept c
-                   LEFT JOIN term t
-                   ON c.id = t.concept_id
+       $sql = "SELECT t.id,
+                      t.value,
+                      t.preferred
+               FROM concept c
+               LEFT JOIN term t
+               ON c.id = t.concept_id
                WHERE c.id = $1
                AND c.deprecated = 'f'
                ORDER BY t.preferred DESC, t.value";
@@ -6449,37 +6451,113 @@ class SQL
        return $concept;
    }
 
+
     /**
      * Select Detailed Concept
      *
-     * Gets the detailed concept from database
+     * Gets a detailed concept from database
      *
      * @param int $id Concept ID
      * @return string[] Associative array of resource data
      */
     public function selectDetailedConcept($id) {
-        $sql = "SELECT t.id as term_id, t.value, t.preferred
-                   FROM concept c
-                   LEFT JOIN term t
-                   ON c.id = t.concept_id
-                   LEFT JOIN concept_properties cp ON cp.concept_id = c.id
-               WHERE c.id = $1
-               ORDER BY t.preferred DESC, t.value";
-
-               // INNER JOIN concept_category ON c.id = concept_category.category_id WHERE concept_category.concept_id = 3
-               // AND c.deprecated = 'f'
-               // ORDER BY t.value;
-
-               // LEFT JOIN related_concept ON c.id = related_concept.related_id
-               // LEFT JOIN broader_concept ON c.id = broader_concept.broader_id
-
+        $sql = "SELECT t.id, t.value, t.preferred
+                FROM concept c
+                JOIN term t
+                ON c.id = t.concept_id
+                LEFT JOIN concept_properties cp ON cp.concept_id = c.id
+                WHERE c.id = $1
+                ORDER BY t.preferred DESC, t.value";
 
         $result = $this->sdb->query($sql, array($id));
         $concept = $this->sdb->fetchAll($result);
-
-        $this->logger->addInfo("results of sql", [$concept]);
         return $concept;
     }
 
 
+    /**
+     * Select Related Concept
+     *
+     * Gets all related concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectRelatedConcepts($id) {
+        $sql = "SELECT t.concept_id, t.value
+                FROM term t
+                JOIN related_concept rc
+                ON rc.related_id = t.concept_id
+                WHERE rc.concept_id = $1
+                AND t.preferred = 't'";
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * Select Broader Concepts
+     *
+     * Gets all broader concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectBroaderConcepts($id) {
+
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                JOIN broader_concept bc
+                ON bc.broader_id = t.concept_id
+                WHERE bc.narrower_id = $1
+                AND t.preferred = 't'";
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * Select Narrower Concepts
+     *
+     * Gets all narrower concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectNarrowerConcepts($id) {
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                JOIN broader_concept bc
+                ON bc.narrower_id = t.concept_id
+                WHERE bc.broader_id = $1
+                AND t.preferred = 't'";
+
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * UpdatePreferredTerm
+     *
+     * Sets one term's preference to true and all others to false for a given concept
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function updatePreferredTerm($conceptID, $termID) {
+        $sql = "UPDATE term t
+                    SET preferred =
+                    CASE
+                        WHEN t.term_id = $1
+                            THEN TRUE
+                            ELSE FALSE
+                        END
+                WHERE t.concept_id = $2";
+
+        $result = $this->sdb->query($sql, array($termID, $conceptID));
+    }
 }
