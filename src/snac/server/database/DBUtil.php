@@ -1829,6 +1829,9 @@ class DBUtil
      */
     public function getConcept($id) {
         // $this->logger->addInfo("now in dbutil simple", [$id]);
+        $concept = new \snac\data\Concept();
+        $conceptTerm = new \snac\data\ConceptTerm();
+        //TODO: build concept
         return $this->sql->selectConcept($id);
     }
 

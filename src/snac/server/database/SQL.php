@@ -6475,11 +6475,8 @@ class SQL
 
 
         $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
 
-        $concept = [];
-        while ($row = $this->sdb->fetchrow($result)) {
-           $concept[] = $row;
-        }
         $this->logger->addInfo("results of sql", [$concept]);
         return $concept;
     }
