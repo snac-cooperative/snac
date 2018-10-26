@@ -125,6 +125,53 @@
                 {% endfor %}
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#term-modal"> <i class="fa fa-plus"></i> Add Term</button>
             </form>
+
+            <div class="well well-lg text-center">
+                <div class="input-group select2-bootstrap-append">
+                    <select id="term-relationship-type-select" name="filters[type_id]" class="select" style="width: 25%;">
+                        <option>Broader</option>
+                        <option>Narrower</option>
+                        <option>Related</option>
+                    </select>
+                    <input type="text" class="form-control" placeholder="Term" id="searchbox" name="term" style="width: 75%">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" id="searchbutton">Search</button>
+                    </span>
+
+                </div>
+
+                <div id="otherOptions" class="text-right" style="margin-top: 15px;">
+                    <span style="padding-right: 5px; font-weight: normal;">Return top</span>
+                    <select id="count" name="count" style="width: 70px;">
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                    </select>
+                    <span style="padding-left: 5px; font-weight: normal;">matches</span>
+                </div>
+            </div>
+
+
+            <div class="radio">
+                <label>
+                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type1" value=""> Broader
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type2" value=""> Narrower
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type3" value="">Related
+                </label>
+            </div>
+
+
+
+
         </div>
     </div>
 

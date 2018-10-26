@@ -28,7 +28,7 @@
 //             },
 //             cache: true
 //         },
-//         width: '100%',
+//         width: '25%',
 //         minimumInputLength: 0,
 //         allowClear: true,
 //         theme: 'bootstrap',
@@ -101,7 +101,7 @@ function buildTermForm(event) {
 
 // clean up form on post or close
 function resetTermForm() {
-    $("#term-modal-label").text("Edit Term: ");
+    $("#term-modal-label").text("Add Term");
     $termInput = $("#term-input");
     $termInput.removeData();
     $termInput.val('');
@@ -141,14 +141,21 @@ function postTermForm() {
 }
 
 $('document').ready( function() {
-    $('.select').each(function() {
-        $(this).select2({
-            minimumResultsForSearch: Infinity,
-            allowClear: false,
-            theme: 'bootstrap',
-            width: ''
-        });
-    });
+    // $('.select').each(function() {
+    //     $(this).select2({
+    //         minimumResultsForSearch: Infinity,
+    //         allowClear: false,
+    //         theme: 'bootstrap',
+    //         width: '25%'
+    //     });
+    // });
+    //
+    // $("#term-relationship-type-select").select2({
+    //     minimumResultsForSearch: Infinity,
+    //     allowClear: false,
+    //     theme: 'bootstrap',
+    //     width: '25%',
+    // });
 
     // $("#term-modal").modal()
 
