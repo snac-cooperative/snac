@@ -46,6 +46,7 @@
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
+{% set concept = data.response.concept %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
@@ -56,23 +57,23 @@
         <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
         <li><a href="{{control.snacURL}}/vocab_administrator/search">Controlled Vocabulary</a></li>
         <li><a href="{{control.snacURL}}/vocab_administrator/concepts">Concepts</a></li>
-        <li>{{data.response.concept.terms[0].value}}</li>
+        <li>{{concept.terms[0].value|default("New Concept")}}</li>
     </ol>
-    <h1>{{data.response.concept.terms[0].value}}</h1>
+    <h1>{{concept.terms[0].value|default("New Concept")}}</h1>
     <div class="row">
         <div class="col-md-8">
 
             <h2>Terms</h2>
-            <!-- {% for term in data.response.concept.terms %}
+            <!-- {% for term in concept.terms %}
                 <p>{{term.value}}</p>
             {% endfor %} -->
 
 
-            <!-- {% for concept in data.response.concept.termss %}
-                <p><a href="{{control.snacURL}}/concepts/{{concept.id}}">{{concept.value}}</a></p>
+            <!-- {% for concept in concept.termss %}
+                <p><a href="{{control.snacURL}}/concepts/{{concept.concept_id}}">{{concept.value}}</a></p>
             {% endfor %} -->
 
-            <!-- {% for concept in data.response.concept.termss %}
+            <!-- {% for concept in concept.termss %}
                 {% for term in concept.terms %}
                     <p>{{term.value}}</p>
                     {% if concept.broader_concepts.length != 0 %}
@@ -89,7 +90,7 @@
                     <!-- TODO: Distinguish between preferred and nonpreferred -->
 
 
-                {% for term in data.response.concept.terms %}
+                {% for term in concept.terms %}
                 {% set isChecked = (term.preferred == "t") ? "checked" : "" %}
                 <!-- delete isChecked??  -->
                 {% if term.preferred == "t" %}
@@ -108,7 +109,7 @@
                 {% endfor %}
 
                 <h4>Alternate Terms</h4>
-                {% for term in data.response.concept.terms %}
+                {% for term in concept.terms %}
                 {% set isChecked = (term.preferred == "t") ? "checked" : "" %}
                 {% if term.preferred == "f" %}
                 <div class="form-group">
@@ -126,29 +127,21 @@
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#term-modal"> <i class="fa fa-plus"></i> Add Term</button>
             </form>
 
+            <br>
+
             <div class="well well-lg text-center">
                 <div class="input-group select2-bootstrap-append">
-                    <select id="term-relationship-type-select" name="filters[type_id]" class="select" style="width: 25%;">
+                    <select id="term-relationship-type-select" name="concept-relationship" class="select" style="width: 25%;">
+                        <!--TODO: load options   -->
                         <option>Broader</option>
                         <option>Narrower</option>
                         <option>Related</option>
                     </select>
-                    <input type="text" class="form-control" placeholder="Term" id="searchbox" name="term" style="width: 75%">
+                    <input type="text" class="form-control" placeholder="Term" id="" name="term" style="width: 75%">
                     <span class="input-group-btn">
-                        <button class="btn btn-default" id="searchbutton">Search</button>
+                        <button class="btn btn-default" id="">Search</button>
                     </span>
 
-                </div>
-
-                <div id="otherOptions" class="text-right" style="margin-top: 15px;">
-                    <span style="padding-right: 5px; font-weight: normal;">Return top</span>
-                    <select id="count" name="count" style="width: 70px;">
-                        <option value="50">50</option>
-                        <option value="100" selected>100</option>
-                        <option value="500">500</option>
-                        <option value="1000">1000</option>
-                    </select>
-                    <span style="padding-left: 5px; font-weight: normal;">matches</span>
                 </div>
             </div>
 
@@ -175,42 +168,42 @@
         </div>
     </div>
 
-    {% if data.response.concept.related_concepts %}
+    {% if concept.related_concepts %}
     <h2>Related Concepts</h2>
     <div class="form-group">
-        {% for related in data.response.concept.related_concepts %}
-                    <h4> <a href="http://localhost/~josephglass/snac/www/vocab_administrator/concepts/{{related.id}}"> {{related.value}}</a></h4>
+        {% for related in concept.related_concepts %}
+            <h4> <a href="{{snacUrl}}{{related.concept_id}}"> {{related.value}}</a></h4>
         {% endfor %}
     </div>
     {% endif %}
 
-    {% if data.response.concept.broader_concepts %}
+    {% if concept.broader_concepts %}
     <h2>Broader Concepts</h2>
     <div class="form-group">
-        {% for broader in data.response.concept.broader_concepts %}
-            <h4> <a href="http://localhost/~josephglass/snac/www/vocab_administrator/concepts/{{broader.id}}"> {{broader.value}}</a></h4>
+        {% for broader in concept.broader_concepts %}
+            <h4> <a href="{{snacUrl}}{{broader.concept_id}}"> {{broader.value}}</a></h4>
         {% endfor %}
     </div>
     {% endif %}
 
-    {% if data.response.concept.narrower_concepts %}
+    {% if concept.narrower_concepts %}
     <h2>Narrower Concepts</h2>
     <div class="form-group">
-        {% for narrower in data.response.concept.narrower_concepts %}
-            <h4> <a href="http://localhost/~josephglass/snac/www/vocab_administrator/concepts/{{narrower.id}}"> {{narrower.value}}</a></h4>
+        {% for narrower in concept.narrower_concepts %}
+            <h4> <a href="{{snacUrl}}{{narrower.concept_id}}"> {{narrower.value}}</a></h4>
         {% endfor %}
     </div>
     {% endif %}
-
-
 
     <div class="">
         <h3>LoadVocabSelectOptions</h3>
     </div>
 
-<button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button>
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button>
 </div>
 
+{{dump(concept)}}
+{{dump(concept.terms[0])}}
 
 <div class="modal fade" id="term-modal" tabindex="-1" role="dialog" aria-labelledby="term-modal-label">
     <div class="modal-dialog" role="document">
@@ -226,7 +219,8 @@
                         <div class="form-group" style="margin-bottom:100px">
                             <label class="control-label col-xs-2" for="">Term</label>
                             <div class="col-xs-10">
-                                <input type="text" id="term-input" class="form-control" data-term-id="" name="term-id" value="" required>
+                                <input type="text" id="term-input" class="form-control" name="term-value" data-term-id="" required>
+                                <input type="hidden" name="concept-id" value="{{concept.id}}">
                             </div>
                         </div>
                         <br>
@@ -245,7 +239,7 @@
                 </form>
             </div>
             <div class="modal-footer" style="margin-top:100px">
-                <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()"><i class="fa fa-minus-circle"></i> Delete</button>
+                <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()" disabled><i class="fa fa-minus-circle"></i> Delete</button>
                 <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
             </div>

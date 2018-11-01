@@ -83,20 +83,23 @@ function deleteTerm(event) {
 }
 
 function buildTermForm(event) {
-    var term = $(event.target).closest('.form-group').find('.term');
-    console.log(term.data('termId'));
-    console.log(term.data('isPreferred'));
-    console.log(term.data('termValue'));
+    var $term = $(event.target).closest('.form-group').find('.term');
+    console.log($term.data('termId'));
+    console.log($term.data('isPreferred'));
+    console.log($term.data('termValue'));
 
     // var title = $("#term-modal-label").text();
-    $("#term-modal-label").text("Edit Term: " + term.data('termValue'));
+    $("#term-modal-label").text("Edit Term: " + $term.data('termValue'));
 
     $termInput = $("#term-input");
-    $termInput.data("termId", term.data('termId'));
-    $termInput.data("isPreferred", term.data('isPreferred'));
-    $termInput.val(term.data('termValue'));
-    var checkboxStatus = term.data("isPreferred") === "t" ? "on" : "off";
+    $termInput.data("termId", $term.data('termId'));
+    $termInput.data("isPreferred", $term.data('isPreferred'));
+    $termInput.val($term.data('termValue'));
+    var checkboxStatus = $term.data("isPreferred") === "t" ? "on" : "off";
     $("#is-preferred").bootstrapToggle(checkboxStatus);
+    if ($term.data('termId')) {
+        $('#term-delete-btn').attr("disabled", false);
+    }
 }
 
 // clean up form on post or close
@@ -104,8 +107,9 @@ function resetTermForm() {
     $("#term-modal-label").text("Add Term");
     $termInput = $("#term-input");
     $termInput.removeData();
-    $termInput.val('');
+    $termInput.val("");
     $('#is-preferred').bootstrapToggle('off');
+    $('#term-delete-btn').attr("disabled", true);
 }
 
 
@@ -117,9 +121,17 @@ function postTermForm() {
         if (!confirm('Are you sure you want to set this as the sole preferred term for this concept?')) { return; }
     }
 
+    var serialized = $("#term-form").serialize();
 
+    // edit path
+    if ($("#term-input").data("termId")) {
+        serialized += "&term-id=" + $("#term-input").data("termId");
+    } else {
+
+    }
+
+    // new term path
 // Post form and reload page
-    var serialized = $("#term-form").serialize() + "&term-id=" + $("#term-input").data("termId");
     console.log(serialized);
     // $.post(snacUrl + "/", serialized)
     //     .done(function(data) {
@@ -141,14 +153,14 @@ function postTermForm() {
 }
 
 $('document').ready( function() {
-    // $('.select').each(function() {
-    //     $(this).select2({
-    //         minimumResultsForSearch: Infinity,
-    //         allowClear: false,
-    //         theme: 'bootstrap',
-    //         width: '25%'
-    //     });
-    // });
+    $('.select').each(function() {
+        $(this).select2({
+            minimumResultsForSearch: Infinity,
+            allowClear: false,
+            theme: 'bootstrap',
+            width: '25%'
+        });
+    });
     //
     // $("#term-relationship-type-select").select2({
     //     minimumResultsForSearch: Infinity,
