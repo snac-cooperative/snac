@@ -1841,6 +1841,7 @@ class DBUtil
     public function getDetailedConcept($id) {
         $concept = [];
 
+        $concept['id'] = $id;
         $concept['terms'] = $this->sql->selectDetailedConcept($id);
         $concept['related_concepts'] = $this->sql->selectRelatedConcepts($id);
         $concept['broader_concepts'] = $this->sql->selectBroaderConcepts($id);

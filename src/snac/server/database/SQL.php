@@ -6426,20 +6426,20 @@ class SQL
      * Gets the concept from database
      *
      * @param int $id Concept ID
-     * @return string[] Associative array of concept
+     * @return string[] Associative array of concept and terms
      */
     public function selectConcept($id) {
-       $qq = 'select_concept';
+        $qq = 'select_concept';
 
-       $sql = "SELECT t.id,
-                      t.value,
-                      t.preferred
-               FROM concept c
-               LEFT JOIN term t
-               ON c.id = t.concept_id
-               WHERE c.id = $1
-               AND c.deprecated = 'f'
-               ORDER BY t.preferred DESC, t.value";
+        $sql = "SELECT t.id
+                    t.value
+                    t.preferred
+                FROM concept c
+                LEFT JOIN term t
+                ON c.id = t.concept_id
+                WHERE c.id = $1
+                AND c.deprecated = 'f'
+                ORDER BY t.preferred DESC, t.value";
 
        $this->sdb->prepare($qq, $sql);
 
@@ -6450,6 +6450,41 @@ class SQL
        }
        return $concept;
    }
+
+    /**
+     * Insert Concept
+     *
+     * Creates a new concept in the database
+     *
+     * @param term $term
+     * @return int $id Concept ID
+     */
+    public function insertConcept() {
+        $row = $this->sdb->query("INSERT INTO concept DEFAULT VALUES RETURNING 'id';", array());
+        $conceptID = $row['id'];
+        return $conceptID;
+    }
+
+    /**
+     * Insert Term
+     *
+     * Creates a new term in the database
+     *
+     * @param term $term
+     * @return int $id Concept ID
+     */
+    public function insertTerm($conceptID, $termValue, $isPreferred) {
+        $qq = "insert_term";
+        $sql = "INSERT INTO term(concept_id, value, preferred)
+                VALUES($1, $2, $3)
+                RETURNING *";
+
+        $this->sdb->prepare($qq, $sql);
+
+        $result = $this->sdb->execute($qq, array($conceptID, $termValue, $isPreferred));
+        $term = $this->sdb->fetchAll($result)[0];
+        return $term;
+    }
 
 
     /**

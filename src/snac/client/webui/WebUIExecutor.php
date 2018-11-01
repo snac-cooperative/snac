@@ -1826,7 +1826,7 @@ class WebUIExecutor {
                 ];
                 if ($id) {
                     $response = $this->connect->query($request);
-                    $display->setData(array("title"=> "View Concept" ,  "response" => $response));
+                    $display->setData(array("title"=> "Concept" ,  "response" => $response));
                     $display->setTemplate("concepts/view");
 
                 } else {
