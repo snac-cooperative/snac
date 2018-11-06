@@ -181,7 +181,7 @@
     <h2>Broader Concepts</h2>
     <div class="form-group">
         {% for broader in concept.broader_concepts %}
-            <h4> <a href="{{snacUrl}}{{broader.id}}"> {{broader.value}}</a></h4>
+             <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span><a href="{{snacUrl}}{{broader.id}}"> {{broader.value}} </a></h4>
         {% endfor %}
     </div>
     {% endif %}
@@ -216,7 +216,7 @@
                             <label class="control-label col-xs-2" for="">Term</label>
                             <div class="col-xs-10">
                                 <input type="text" id="term-input" class="form-control" name="term-value" data-term-id="" required>
-                                <input type="hidden" name="concept-id" value="{{concept.id}}">
+                                <input type="hidden" id="concept-id" name="concept-id" value="{{concept.id}}">
                             </div>
                         </div>
                         <br>

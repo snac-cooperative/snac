@@ -152,6 +152,12 @@ function postTermForm() {
     return false;
 }
 
+
+function deleteConceptRelationship() {
+    if (!confirm( "Are you sure you want to delete this relationship?")) { return; }
+}
+
+
 $('document').ready( function() {
     $('.select').each(function() {
         $(this).select2({
