@@ -1837,6 +1837,7 @@ class DBUtil
     /**
      * Get Detailed Concept
      * Get detailed concept from the database with related, broader and narrower concepts
+     * @return string[] An associative array of the concept, its terms, and related concepts
      */
     public function getDetailedConcept($id) {
         $concept = [];
@@ -1848,6 +1849,54 @@ class DBUtil
         $concept['narrower_concepts'] = $this->sql->selectNarrowerConcepts($id);
 
         return $concept;
+    }
+
+    /**
+     * Create Concept
+     * @param int $conceptID
+     * @param string[] associative array of terms e.g. [[value => "Librarian"], [isPreferred => 'f']]
+     * @return string[] associative array of inserted terms from database
+     */
+    public function createConcept($termValue) {
+        $this->sql->insertConcept();
+    }
+
+    // /**
+    //  * Save Terms
+    //  * @param int $conceptID
+    //  * @param string[] associative array of terms e.g. [[value => "Librarian"], [isPreferred => 'f']]
+    //  * @return string[] associative array of inserted terms from database
+    //  */
+    // public function saveTerms($conceptID, $terms) {
+    //     $inserted = [];
+    //     foreach ($terms as $term) {
+    //         $inserted[] = $this->sql->insertTerm($conceptID, $term['value'], $term['is_preferred']);
+    //     }
+    //
+    //     return $inserted;
+    // }
+
+    /**
+     * Save Term
+     * @param int $conceptID
+     * @param string $value
+     * @param string $isPreferred
+     * @return string[] associative array of inserted term from database
+     */
+    public function saveTerm($conceptID, $value, $isPreferred) {
+        $term =  $this->sql->insertTerm($conceptID, $value, $isPreferred);
+        return $term;
+    }
+
+    /**
+     * Delete Term
+     * @param int $termID
+     * @param int termID
+     * @return bool True if deleted
+     */
+    public function deleteTerm($termID) {
+        $this->sql->deleteTerm($termID);
+        return true;
     }
 
 
