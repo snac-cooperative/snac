@@ -694,7 +694,7 @@ class ServerExecutor {
      * Reads a  vocabulary from the database, based on the input given and returns
      * the result
      *
-     * @param string[] $input Direct server input
+     * @param string $input Direct server input
      * @return string[] The response to send to the client
      */
     public function readDetailedConcept($id) {
@@ -704,6 +704,28 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Save Term
+     * @param int $conceptID
+     * @param string $value
+     * @param string $isPreferred
+     * @return string[] associative array of inserted term from database
+     */
+    public function saveTerm($conceptID, $value, $isPreferred) {
+        $term =  $this->cStore->saveTerm($conceptID, $value, $isPreferred);
+        return $term;
+    }
+
+    /**
+     * Delete Term
+     * @param int $termID
+     * @param int termID
+     * @return bool True if deleted
+     */
+    public function deleteTerm($termID) {
+        $this->cStore->deleteTerm($termID);
+        return true;
+    }
 
     /**
      * Search Resources
