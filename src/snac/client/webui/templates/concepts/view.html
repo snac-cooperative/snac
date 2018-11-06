@@ -91,14 +91,14 @@
 
 
                 {% for term in concept.terms %}
-                {% set isChecked = (term.preferred == "t") ? "checked" : "" %}
+                {% set isChecked = (term.is_preferred == "t") ? "checked" : "" %}
                 <!-- delete isChecked??  -->
-                {% if term.preferred == "t" %}
+                {% if term.is_preferred == "t" %}
                 <h4>Preferred Term</h4>
                 <div class="form-group">
                     <div class="col-xs-8">
                         <div class="input-group">
-                            <p type="text" class="term form-control" data-term-id="{{term.id}}" data-is-preferred="{{term.preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
+                            <p type="text" class="term form-control" data-term-id="{{term.id}}" data-is-preferred="{{term.is_preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#term-modal" title="Edit" onclick="buildTermForm(event)"><i class="fa fa-edit"></i></button>
                             </span>
@@ -110,12 +110,12 @@
 
                 <h4>Alternate Terms</h4>
                 {% for term in concept.terms %}
-                {% set isChecked = (term.preferred == "t") ? "checked" : "" %}
-                {% if term.preferred == "f" %}
+                {% set isChecked = (term.is_preferred == "t") ? "checked" : "" %}
+                {% if term.is_preferred == "f" %}
                 <div class="form-group">
                     <div class="col-xs-8">
                         <div class="input-group">
-                            <p type="text" class="term form-control" data-term-id="{{term.id}}" data-is-preferred="{{term.preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
+                            <p type="text" class="term form-control" data-term-id="{{term.id}}" data-is-preferred="{{term.is_preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#term-modal" title="Edit" onclick="buildTermForm(event)"><i class="fa fa-edit"></i></button>
                             </span>
@@ -172,7 +172,7 @@
     <h2>Related Concepts</h2>
     <div class="form-group">
         {% for related in concept.related_concepts %}
-            <h4> <a href="{{snacUrl}}{{related.concept_id}}"> {{related.value}}</a></h4>
+            <h4> <a href="{{snacUrl}}{{related.id}}"> {{related.value}}</a></h4>
         {% endfor %}
     </div>
     {% endif %}
@@ -181,7 +181,7 @@
     <h2>Broader Concepts</h2>
     <div class="form-group">
         {% for broader in concept.broader_concepts %}
-            <h4> <a href="{{snacUrl}}{{broader.concept_id}}"> {{broader.value}}</a></h4>
+            <h4> <a href="{{snacUrl}}{{broader.id}}"> {{broader.value}}</a></h4>
         {% endfor %}
     </div>
     {% endif %}
@@ -190,14 +190,10 @@
     <h2>Narrower Concepts</h2>
     <div class="form-group">
         {% for narrower in concept.narrower_concepts %}
-            <h4> <a href="{{snacUrl}}{{narrower.concept_id}}"> {{narrower.value}}</a></h4>
+            <h4> <a href="{{snacUrl}}{{narrower.id}}"> {{narrower.value}}</a></h4>
         {% endfor %}
     </div>
     {% endif %}
-
-    <div class="">
-        <h3>LoadVocabSelectOptions</h3>
-    </div>
 
     <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button>
 </div>
@@ -226,7 +222,7 @@
                         <br>
                         <div style="margin-left:100px;">
                             <div class="checkbox col-xs-5">
-                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="isPreferred" value="checked">
+                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="is-preferred" value="checked">
                                 <label for="is-preferred">Preferred </label>
                             </div>
 
@@ -268,7 +264,7 @@
                         <br>
                         <div style="margin-left:100px;">
                             <div class="checkbox col-xs-5">
-                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="isPreferred" value="checked">
+                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="is-preferred" value="checked">
                                 <label for="is-preferred">Preferred </label>
                             </div>
 
