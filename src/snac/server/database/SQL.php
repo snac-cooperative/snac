@@ -6408,7 +6408,7 @@ class SQL
                 LEFT JOIN term t
                 ON c.id = t.concept_id
                 WHERE c.deprecated = 'f'
-                AND t.preferred = 't'
+                AND t.is_preferred = 't'
                 ORDER BY t.value";
         // $sql = "SELECT * FROM term";
 
@@ -6433,13 +6433,13 @@ class SQL
 
         $sql = "SELECT t.id
                     t.value
-                    t.preferred
+                    t.is_preferred
                 FROM concept c
                 LEFT JOIN term t
                 ON c.id = t.concept_id
                 WHERE c.id = $1
                 AND c.deprecated = 'f'
-                ORDER BY t.preferred DESC, t.value";
+                ORDER BY t.is_preferred DESC, t.value";
 
        $this->sdb->prepare($qq, $sql);
 
@@ -6450,6 +6450,22 @@ class SQL
        }
        return $concept;
    }
+
+
+    /**
+    * Delete Concept
+    *
+    * Delete a concept and its dependent terms from the database
+    *
+    * @param int $id Concept ID
+    * @return bool True if the concept is deleted
+    */
+    public function deleteConcept($id) {
+        $this->sdb->query("DELETE FROM term where term.concept_id = $1;", array($id));
+        $this->sdb->query("DELETE FROM concept WHERE id = $1;", array($id));
+
+        return true;
+    }
 
     /**
      * Insert Concept
@@ -6470,22 +6486,34 @@ class SQL
      *
      * Creates a new term in the database
      *
-     * @param term $term
-     * @return int $id Concept ID
+     * @param int $id Concept ID
+     * @param string $termValue Value
+     * @param bool $isPreferred Whether term is preferred term for concept
+     * @return
      */
-    public function insertTerm($conceptID, $termValue, $isPreferred) {
-        $qq = "insert_term";
-        $sql = "INSERT INTO term(concept_id, value, preferred)
-                VALUES($1, $2, $3)
-                RETURNING *";
+    public function insertTerm($conceptID, $value, $isPreferred) {
+        $isPreferred = $this->sdb->boolToPg($isPreferred);
+        $sql = "INSERT INTO term(concept_id, value, is_preferred)
+                VALUES($1, $2, $3) RETURNING *";
 
-        $this->sdb->prepare($qq, $sql);
-
-        $result = $this->sdb->execute($qq, array($conceptID, $termValue, $isPreferred));
-        $term = $this->sdb->fetchAll($result)[0];
+        $result = $this->sdb->query($sql, array($conceptID, $value, $isPreferred));
+        $term = $this->sdb->fetchAll($result);
         return $term;
     }
 
+    /**
+     * Delete Term
+     *
+     * Deletes a term from the database
+     *
+     * @param int $termID
+     * @return int $id Concept ID
+     */
+    public function deleteTerm($termID) {
+        $sql = "DELETE FROM term WHERE id = $1";
+        $this->sdb->query($sql, array($termID));
+        return true;
+    }
 
     /**
      * Select Detailed Concept
@@ -6496,13 +6524,13 @@ class SQL
      * @return string[] Associative array of resource data
      */
     public function selectDetailedConcept($id) {
-        $sql = "SELECT t.id, t.value, t.preferred
+        $sql = "SELECT t.id, t.value, t.is_preferred
                 FROM concept c
                 JOIN term t
                 ON c.id = t.concept_id
                 LEFT JOIN concept_properties cp ON cp.concept_id = c.id
                 WHERE c.id = $1
-                ORDER BY t.preferred DESC, t.value";
+                ORDER BY t.is_preferred DESC, t.value";
 
         $result = $this->sdb->query($sql, array($id));
         $concept = $this->sdb->fetchAll($result);
@@ -6524,7 +6552,7 @@ class SQL
                 JOIN related_concept rc
                 ON rc.related_id = t.concept_id
                 WHERE rc.concept_id = $1
-                AND t.preferred = 't'";
+                AND t.is_preferred = 't'";
 
         $result = $this->sdb->query($sql, array($id));
         $concept = $this->sdb->fetchAll($result);
@@ -6546,7 +6574,7 @@ class SQL
                 JOIN broader_concept bc
                 ON bc.broader_id = t.concept_id
                 WHERE bc.narrower_id = $1
-                AND t.preferred = 't'";
+                AND t.is_preferred = 't'";
 
         $result = $this->sdb->query($sql, array($id));
         $concept = $this->sdb->fetchAll($result);
@@ -6567,7 +6595,7 @@ class SQL
                 JOIN broader_concept bc
                 ON bc.narrower_id = t.concept_id
                 WHERE bc.broader_id = $1
-                AND t.preferred = 't'";
+                AND t.is_preferred = 't'";
 
 
         $result = $this->sdb->query($sql, array($id));
@@ -6585,7 +6613,7 @@ class SQL
      */
     public function updatePreferredTerm($conceptID, $termID) {
         $sql = "UPDATE term t
-                    SET preferred =
+                    SET is_preferred =
                     CASE
                         WHEN t.term_id = $1
                             THEN TRUE
