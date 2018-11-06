@@ -197,10 +197,14 @@ class Display {
 
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array(
+                'debug' => \snac\Config::$DEBUG_MODE,
                 //'cache' => \snac\Config::$TEMPLATE_CACHE,
             ));
         $twig->addExtension(new \Jasny\Twig\PcreExtension());
         $twig->addExtension(new \Twig_Extensions_Extension_Text());
+        if (\snac\Config::$DEBUG_MODE == true) {
+            $twig->addExtension(new \Twig_Extension_Debug());
+        }
 
         return $twig->render($this->templateFileName, $this->data);
     }
