@@ -20,7 +20,7 @@
    .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
    .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
    .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
-   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw
+   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs
    { float: left;
    margin-right: 0.33em; }
 </style>
@@ -548,6 +548,11 @@
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
                                                    </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div class="updated">
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                   </div>
                                                  {% else %}
                                                      <div class="related updated">
                                                          <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
@@ -585,6 +590,11 @@
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
                                                    </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div>
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                   </div>
                                                  {% else %}
                                                      <div class="related">
                                                          <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
@@ -618,6 +628,11 @@
                                                     <div class="older">
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
+                                                   </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div class="older">
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
                                                    </div>
                                                  {% else %}
                                                      <div class="related older">

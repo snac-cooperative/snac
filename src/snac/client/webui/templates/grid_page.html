@@ -44,12 +44,12 @@
         charset="utf-8"
         type="text/javascript"></script>
 <style>
-   .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
-   .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
-   .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
-   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov
-   { float: left;
-   margin-right: 0.33em; }
+    .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
+    .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
+    .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
+    .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs
+    { float: left;
+    margin-right: 0.33em; }
 </style>
 
 <!-- Latest compiled and minified CSS -->
@@ -175,10 +175,10 @@ $(document).ready(function() {
     // Wikidata, we cannot be sure on page render if they still
     // exist on the remote server.
     $("img")
-        .on('error', function() { 
+        .on('error', function() {
             var id = $(this).attr('id');
             $("#thumbnail_" + id).remove();
-            console.log("error loading image"); 
+            console.log("error loading image");
         })
         .attr("src", $(this).attr("src"));
 
