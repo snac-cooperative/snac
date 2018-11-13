@@ -1171,7 +1171,7 @@ class WebUIExecutor {
         $display->setTemplate("stats");
         return true;
     }
-
+    
     /**
      * Display Institution Stats Page
      *
@@ -1940,7 +1940,7 @@ class WebUIExecutor {
 
                 // /resources
                 if (!isset($resourceID)) {
-                    $display->setData(array("title"=> "Search for a Resource", "cart" => $_SESSION['cart']));
+                    $display->setData(array("title"=> "Search for a Resource"));
                     $display->setTemplate("resources/search");
                     break;
                 }

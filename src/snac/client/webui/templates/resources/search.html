@@ -123,14 +123,6 @@
     <div class="container snac" role="main">
         <h1>Resources</h1>
 
-        <h2>CART COUNTER: {{data.cart.counter}}</h2>
-        <h2>RESOURCE IDS: {{data.cart.resource_ids | join(', ')}}</h2>
-
-        {{dump(data.cart)}}
-        {% for item in data.cart%}
-            <p> {{item | join(',')}}</p>
-        {% endfor %}
-
         <ol class="breadcrumb">
             <li>Resources</li>
         </ol>

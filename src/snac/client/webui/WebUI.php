@@ -654,28 +654,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;
 
-            case "cart":
-
-                $_SESSION["cart"]["resource_ids"] = $_SESSION["cart"]["resource_ids"] ?? [];
-                if ($_GET["clear_cart_resources"]) {
-                    $_SESSION["cart"]["resource_ids"] = [];
-                }
-                if ($_GET["add_resource_id"]) {
-                    $_SESSION["cart"]["counter"] += $_GET["add_resource_count"];
-                }
-
-                if ($_GET["remove_resource_id"]) {
-                    $_SESSION["cart"]["counter"] += $_GET["add_resource_id"];
-                    $_SESSION["cart"]["resource_ids"][] = $_GET["add_resource_id"];
-                }
-
-                //remove
-                if ($_GET["remove_resource_id"]) {
-                    $resourceID = $_GET["remove_resource_id"];
-                $cartKey = array_search($resourceID, $_SESSION["cart"]["resource_ids"]);
-                    unset($_SESSION["cart"]["resource_ids"][$cartKey]);
-                };
-                break;
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only
