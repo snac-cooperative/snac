@@ -129,6 +129,7 @@
 
             <br>
 
+<h2>Search</h2>
             <div class="well well-lg text-center">
                 <div class="input-group select2-bootstrap-append">
                     <select id="term-relationship-type-select" name="concept-relationship" class="select" style="width: 25%;">
@@ -172,7 +173,7 @@
     <h2>Related Concepts</h2>
     <div class="form-group">
         {% for related in concept.related_concepts %}
-            <h4> <a href="{{snacUrl}}{{related.id}}"> {{related.value}}</a></h4>
+            <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span> <a href="{{snacUrl}}{{related.id}}"> {{related.value}}</a></h4>
         {% endfor %}
     </div>
     {% endif %}
@@ -190,7 +191,7 @@
     <h2>Narrower Concepts</h2>
     <div class="form-group">
         {% for narrower in concept.narrower_concepts %}
-            <h4> <a href="{{snacUrl}}{{narrower.id}}"> {{narrower.value}}</a></h4>
+            <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span> <a href="{{snacUrl}}{{narrower.id}}"> {{narrower.value}}</a></h4>
         {% endfor %}
     </div>
     {% endif %}

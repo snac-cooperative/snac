@@ -6547,7 +6547,7 @@ class SQL
      * @return string[] Array of concept id and value pairs
      */
     public function selectRelatedConcepts($id) {
-        $sql = "SELECT t.concept_id, t.value
+        $sql = "SELECT t.concept_id as id, t.value
                 FROM term t
                 JOIN related_concept rc
                 ON rc.related_id = t.concept_id
