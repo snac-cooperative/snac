@@ -672,10 +672,12 @@ class ServerExecutor {
             if (isset($response["results"])) {
                 $results = $response["results"];
                 $response["results"] = array();
-                foreach ($results as $result)
-                    array_push(
-                        $response["results"],
-                        $this->cStore->readResource($result["id"])->toArray());
+                foreach ($results as $result) {
+                    $resource = $this->cStore->readResource($result["id"]);
+                    if (isset($resource)) {
+                        $response["results"][] = $resource->toArray();
+                    }
+                }
             }
         }
 
@@ -1464,6 +1466,39 @@ class ServerExecutor {
             $response["error"] = "no resource to write";
         }
         return $response;
+    }
+
+    /**
+     * Merge ResourceS
+     *
+     * Transfer all resource relations from victim resource to target, and delete the victim resource.
+     *
+     * @param int $victimID Id of the resource to be deleted
+     * @param int $targetID Id of the resource to be kept
+     */
+    public function mergeResources($victimID, $targetID) {
+        $victim = $this->cStore->readResource($victimID);
+        $target = $this->cStore->readResource($targetID);
+
+        $this->neo4J->mergeResource($victim, $target);
+
+        // Replace victim's id and version with target's in related_resource.
+        $this->cStore->replaceResourceRelationResource($victim, $target);
+
+        $this->deleteResource($victim);
+    }
+
+    /**
+     * Delete Resource
+     *
+     * Delete Resource from ES, Neo4j and PSQL
+     *
+     * @param \snac\data\Resource
+     */
+    public function deleteResource($resource) {
+        $this->elasticSearch->deleteFromResourceIndices($resource);
+        $this->neo4J->deleteResource($resource);
+        $this->cStore->deleteResource($resource, $this->user);
     }
 
     /**
