@@ -420,6 +420,9 @@ class Server implements \snac\interfaces\ServerInterface {
             case "resource_search":
                 $this->response = $executor->searchResources($this->input);
                 break;
+            case "merge_resource":
+                $this->response = $executor->mergeResources($this->input["victimID"], $this->input["targetID"]);
+                break;
 
             // Reporting
             case "stats":
