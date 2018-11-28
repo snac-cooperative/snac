@@ -291,6 +291,11 @@
                                                      <div class="sprite-icons-fs"></div>
                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
                                                   </div>
+                                                {% elseif 'archives.gov' in sameas.uri %}
+                                                   <div class="updated">
+                                                     <div class="sprite-icons-nara"></div>
+                                                     <a href="{{sameas.uri}}" target="_blank">National Archives</a>
+                                                  </div>
                                                 {% else %}
                                                     <div class="related updated">
                                                         <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
@@ -332,6 +337,11 @@
                                                      <div class="sprite-icons-fs"></div>
                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
                                                   </div>
+                                                {% elseif 'archives.gov' in sameas.uri %}
+                                                   <div>
+                                                     <div class="sprite-icons-nara"></div>
+                                                     <a href="{{sameas.uri}}" target="_blank">National Archives</a>
+                                                  </div>
                                                 {% else %}
                                                     <div class="related">
                                                         <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
@@ -370,6 +380,11 @@
                                                    <div class="older">
                                                      <div class="sprite-icons-fs"></div>
                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                  </div>
+                                                {% elseif 'archives.gov' in sameas.uri %}
+                                                   <div class="older">
+                                                     <div class="sprite-icons-nara"></div>
+                                                     <a href="{{sameas.uri}}" target="_blank">National Archives</a>
                                                   </div>
                                                 {% else %}
                                                     <div class="related older">
