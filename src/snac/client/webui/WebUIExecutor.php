@@ -1171,7 +1171,7 @@ class WebUIExecutor {
         $display->setTemplate("stats");
         return true;
     }
-    
+
     /**
      * Display Institution Stats Page
      *
@@ -1982,7 +1982,7 @@ class WebUIExecutor {
 
                 // /resources
                 if (!isset($resourceID)) {
-                    $display->setData(array("title"=> "Search for a Resource", "cart" => $_SESSION['cart'] ?? ''))
+                    $display->setData(array("title"=> "Search for a Resource", "cart" => $_SESSION['cart'] ?? ''));
                     $display->setTemplate("resources/search");
                     break;
                 }
@@ -1997,7 +1997,7 @@ class WebUIExecutor {
                 if (isset($response, $response["resource"])) {
                     $display->setData(array("title"=> "View Resource",
                                             "resource" => $response["resource"],
-                                   
+
                                             "related_constellations" => $response["related_constellations"]));
                     $display->setTemplate("resources/view");
                 } else {
@@ -3547,7 +3547,7 @@ class WebUIExecutor {
 
         return $response;
     }
-    
+
     /**
      * Handle Cart
      *
