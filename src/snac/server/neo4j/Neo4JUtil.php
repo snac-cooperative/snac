@@ -491,7 +491,7 @@ class Neo4JUtil {
         if ($count > 0)
             $realCount = $count;
 
-        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity) where a.name_lower STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;",
+        $result = $this->connector->run("MATCH p=(:Resource)-[r:HIRELATION]->(a:Identity) where a.name_lower STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;",
             [
                 'name' => strtolower($name)
             ]
@@ -534,14 +534,14 @@ class Neo4JUtil {
     }
 
     /**
-     * Get Holding Institution Statistics 
+     * Get Holding Institution Statistics
      *
      * Returns the statistics of the given Holding Institution.  It currently returns
      * the number of resources connected to the holding repository as well as the number
      * of constellations connected to those resources.
      *
      * @param  \snac\data\Constellation $constellation Constellation to search
-     * @return string[] An associative array of statistical data 
+     * @return string[] An associative array of statistical data
      */
     public function getHoldingInstitutionStats(&$constellation) {
         $return = [];
@@ -761,4 +761,28 @@ class Neo4JUtil {
         }
     }
 
+    /**
+     * Merge Resource
+     *
+     * Removes all RRELATIONS from a victim and copies them to the target resource node
+     *
+     * @param \snac\data\Resource $resource The victim object to be discarded
+     * @param \snac\data\Resource $target The target resource object
+     * @return true
+     */
+    public function mergeResource($victim, $target) {
+            // find all related Identities on the target resource
+            $result = $this->connector->run("MATCH (victim:Resource {id: {victimResourceID}})<-[rel1:RRELATION]-(victims_ic:Identity)
+                                             MATCH (target:Resource {id: {targetResourceID}})
+                                             MERGE (target)<-[rel2:RRELATION]-(victims_ic)
+                                             SET rel2 = rel1
+                                             DETACH DELETE (victim);",
+                [
+                    "victimResourceID" => "{$victim->getID()}",
+                    "targetResourceID" => "{$target->getID()}"
+                ]
+            );
+
+            return true;
+    }
 }

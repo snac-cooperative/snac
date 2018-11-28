@@ -654,6 +654,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;
 
+            case "cart":
+                $response = $executor->handleCartResources($this->input);
+                break;
+
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only

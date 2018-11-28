@@ -1935,12 +1935,54 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
+            case "compare_resource":
+                // :TODO Refactor compare_resource
+                if (isset($this->permissions["EditResources"])) {
+                    $display->setData(array("title"=> "Compare Resources"));
+                    $display->setTemplate("resources/compare.html");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+
+                $request = [
+                    "command" => "read_resource",
+                    "resourceid" => $input["resource1"],
+                    "relationships" => true];
+
+                $request2 = [
+                    "command" => "read_resource",
+                    "resourceid" => $input["resource2"],
+                    "relationships" => true];
+
+                $resources = [];
+                $related = [];
+
+
+                $response = $this->connect->query($request);
+                $resources[] = $response["resource"];
+                $related[] = $response["related_constellations"];
+
+                $response = $this->connect->query($request2);
+                $resources[] = $response["resource"];
+                $related[] = $response["related_constellations"];
+
+
+                if (isset($response, $response["resource"])) {
+                    $display->setData(array("title"=> "Compare Resources",
+                                            "resources" => $resources,
+                                            "related_constellations" => $related));
+                    $display->setTemplate("resources/compare");
+                } else {
+                    $error = ["error" => ["type" => "Not Found", "message" => "The resource you were looking for does not exist."]];
+                    $this->drawErrorPage($error, $display);
+                }
+                break;
             case "resources":
                 $resourceID = $input["constellationid"] ?? null; // id passed is actually resourceID,
 
                 // /resources
                 if (!isset($resourceID)) {
-                    $display->setData(array("title"=> "Search for a Resource"));
+                    $display->setData(array("title"=> "Search for a Resource", "cart" => $_SESSION['cart'] ?? ''))
                     $display->setTemplate("resources/search");
                     break;
                 }
@@ -1955,6 +1997,7 @@ class WebUIExecutor {
                 if (isset($response, $response["resource"])) {
                     $display->setData(array("title"=> "View Resource",
                                             "resource" => $response["resource"],
+                                   
                                             "related_constellations" => $response["related_constellations"]));
                     $display->setTemplate("resources/view");
                 } else {
@@ -1978,6 +2021,22 @@ class WebUIExecutor {
                 } else {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
+                break;
+            case "merge_resource":
+                if (!isset($this->permissions["EditResources"])) {
+                        $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                } elseif (!isset($_GET["victimID"], $_GET["targetID"])) {
+                    $error = ["error" => ["type" => "Not Found", "message" => "Resource ids were not found"]];
+                    $this->drawErrorPage($error, $display);
+
+                }
+
+                    $request = [
+                        "command" => "merge_resource",
+                        "victimID" => $_GET["victimID"],
+                        "targetID" => $_GET["targetID"]
+                    ];
+                    $response = $this->connect->query($request);
                 break;
             case "dashboard":
                 if (isset($this->permissions["ViewVocabDashboard"]) ||  isset($this->permissions["EditResources"])) {
@@ -3485,6 +3544,43 @@ class WebUIExecutor {
                 $response["error"] = $serverResponse["error"];
             }
         }
+
+        return $response;
+    }
+    
+    /**
+     * Handle Cart
+     *
+     * Manages cart
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function handleCartResources($input) {
+        $_GET   = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
+
+        $cart = $_SESSION["cart"];
+
+        $_SESSION["cart"]["resources"] = $_SESSION["cart"]["resources"] ?? [];
+
+        if (isset($_GET["clear_cart_resources"])) {
+            $_SESSION["cart"]["resources"] = [];
+        }
+        if (isset($_GET["add_resource"])) {
+            $_SESSION["cart"]["resources"][] = ["id" =>$_GET["id"], "title" => $_GET["title"]];
+        }
+
+        if (isset($_GET["remove_resource"])) {
+            $_SESSION["cart"]["resources"][] = $_GET["add_resource_id"];
+        }
+
+        if (isset($_GET["remove_resource"])) {
+            $resourceID = $_GET["remove_resource"];
+            $cartKey = array_search($resourceID, $_SESSION["cart"]["resource_ids"]);
+            unset($_SESSION["cart"]["resource_ids"][$cartKey]);
+        };
+        $response = true;
 
         return $response;
     }
