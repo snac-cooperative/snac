@@ -3546,6 +3546,43 @@ class WebUIExecutor {
 
         return $response;
     }
+    
+    /**
+     * Handle Cart
+     *
+     * Manages cart
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function handleCartResources($input) {
+        $_GET   = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
+
+        $cart = $_SESSION["cart"];
+
+        $_SESSION["cart"]["resources"] = $_SESSION["cart"]["resources"] ?? [];
+
+        if (isset($_GET["clear_cart_resources"])) {
+            $_SESSION["cart"]["resources"] = [];
+        }
+        if (isset($_GET["add_resource"])) {
+            $_SESSION["cart"]["resources"][] = ["id" =>$_GET["id"], "title" => $_GET["title"]];
+        }
+
+        if (isset($_GET["remove_resource"])) {
+            $_SESSION["cart"]["resources"][] = $_GET["add_resource_id"];
+        }
+
+        if (isset($_GET["remove_resource"])) {
+            $resourceID = $_GET["remove_resource"];
+            $cartKey = array_search($resourceID, $_SESSION["cart"]["resource_ids"]);
+            unset($_SESSION["cart"]["resource_ids"][$cartKey]);
+        };
+        $response = true;
+
+        return $response;
+    }
 
     /**
      * Create User
