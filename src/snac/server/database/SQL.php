@@ -3711,7 +3711,7 @@ class SQL
     public function replaceResourceRelationResource($victimID, $victimVersion , $targetID, $targetVersion) {
         $query = "UPDATE related_resource
                   SET resource_id = $1,
-                      resource_version = $2,
+                      resource_version = $2
                   WHERE resource_id = $3
                     AND resource_version = $4";
 
