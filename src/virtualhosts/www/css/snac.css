@@ -457,7 +457,7 @@ td.rotate > div > span {
 }
 
 .form-group.required .control-label:after {
-  content:" *";
+  content:"*";
   color: #b40404;
 }
 

@@ -136,9 +136,15 @@ $(document).ready(function() {
      * The following are User Admin Page actions
      */
 
-    // Save  button
+    // Save button
     if($('#save_new_user').exists()) {
         $('#save_new_user').click(function(){
+
+            // trigger html5 form validations
+            if (!$('#userName')[0].checkValidity()) {
+                $("#submit-hidden").click();
+                return;
+            }
 
             // Open up the warning alert box and note that we are saving
             $('#notification-message').html("<p>Saving User... Please wait.</p>");
