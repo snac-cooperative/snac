@@ -119,7 +119,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "visualize",
                 "history",
                 "history_diff",
-                "static",
                 "api_help",
                 "api_test",
                 "contact",
@@ -141,7 +140,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "relations",
             "explore",
             "history_diff",
-            "static",
             "api_help",
             "visualize",
             "stats",
@@ -637,11 +635,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->drawErrorPage($error, $display);
                 break;
 
-            case "static":
-                $found = $executor->displayStaticPage($this->input, $display);
-                if (!$found)
-                    array_push($this->responseHeaders, "HTTP/1.0 404 Not Found");
-                break;
             case "stats":
                 $response = $executor->displayStatsPage($this->input, $display);
                 break;
