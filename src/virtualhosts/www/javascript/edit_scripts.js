@@ -2012,6 +2012,11 @@ $(document).ready(function() {
             // Don't open a second time
             if (sameAsOpen)
                 return;
+            //set sameAs vocab type id
+            $.get(snacUrl+"/vocabulary?type=record_type&q=SameAs", null, function(data) {
+                sameAsTermId = data.results[0].id;
+                $("#sameAs_type_id_ZZ").val(sameAsTermId);
+            });
 
             $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=sameAs", null, function (data) {
                 sameAsOpen = true;

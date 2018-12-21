@@ -106,7 +106,7 @@
                 data-placement="top"> {{X.resourceRepository.display}} </label>
             <div class="col-xs-10">
 
-                <select class="resource-repo" id="resource-repo" name="resources[0][repo]">
+                <select class="resource-repo" id="resource-repo" name="resources[0][repo]" >
                     <option  value="{{resource.repository.id}}" selected>
                         {{resource.repository.nameEntries[0].original }}</option>
                 </select>
@@ -120,12 +120,12 @@
 {% macro expandedResourceRepositorySearch() %}
     <div class="form-horizontal">
         <div class="form-group" id="search_form" onsubmit="return false;" style="display:none;">
-            <label class="control-label col-xs-2"> Expanded Search </label>
+            <label class="control-label col-xs-2"> Search All Constellations </label>
             <div class="well well-lg text-center col-xs-10">
                 <input type="hidden" id="count" name="count" value="10">
                 <input type="hidden" id="start" name="start" value="0">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search for..." id="searchbox" name="term">
+                    <input type="text" class="form-control" placeholder="Designate a new Holding Repository" id="searchbox" name="term">
                     <span class="input-group-btn">
                          <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
                     </span>

@@ -672,10 +672,12 @@ class ServerExecutor {
             if (isset($response["results"])) {
                 $results = $response["results"];
                 $response["results"] = array();
-                foreach ($results as $result)
-                    array_push(
-                        $response["results"],
-                        $this->cStore->readResource($result["id"])->toArray());
+                foreach ($results as $result) {
+                    $resource = $this->cStore->readResource($result["id"]);
+                    if (isset($resource)) {
+                        $response["results"][] = $resource->toArray();
+                    }
+                }
             }
         }
 
@@ -1005,7 +1007,7 @@ class ServerExecutor {
     }
 
     /**
-     * Institutional Information 
+     * Institutional Information
      *
      * Given a constellationid as input or a user object's affiliation, this method
      * will look up institutional information, including the summary constellation,
@@ -1042,7 +1044,7 @@ class ServerExecutor {
         $this->logger->addDebug("Getting stats from postgres");
         $stats = $this->cStore->getInstitutionReportData($affil);
         $this->logger->addDebug("Done with postgres, getting stats from neo4j");
-        $counts = $this->neo4J->getHoldingInstitutionStats($affil); 
+        $counts = $this->neo4J->getHoldingInstitutionStats($affil);
         $this->logger->addDebug("Done with neo4j stats");
         $response = [
             "result" => "success",
@@ -1433,7 +1435,7 @@ class ServerExecutor {
                     $response['resource'] = $resourceCheck->toArray();
                     $response["result"] = "success-notice";
                     $response["message"] = [
-                        "text" => "This resource already exists.",
+                        "text" => "This resource already exists."
                     ];
                     return $response;
                 }
@@ -1464,6 +1466,39 @@ class ServerExecutor {
             $response["error"] = "no resource to write";
         }
         return $response;
+    }
+
+    /**
+     * Merge ResourceS
+     *
+     * Transfer all resource relations from victim resource to target, and delete the victim resource.
+     *
+     * @param int $victimID Id of the resource to be deleted
+     * @param int $targetID Id of the resource to be kept
+     */
+    public function mergeResources($victimID, $targetID) {
+        $victim = $this->cStore->readResource($victimID);
+        $target = $this->cStore->readResource($targetID);
+
+        $this->neo4J->mergeResource($victim, $target);
+
+        // Replace victim's id and version with target's in related_resource.
+        $this->cStore->replaceResourceRelationResource($victim, $target);
+
+        $this->deleteResource($victim);
+    }
+
+    /**
+     * Delete Resource
+     *
+     * Delete Resource from ES, Neo4j and PSQL
+     *
+     * @param \snac\data\Resource
+     */
+    public function deleteResource($resource) {
+        $this->elasticSearch->deleteFromResourceIndices($resource);
+        $this->neo4J->deleteResource($resource);
+        $this->cStore->deleteResource($resource, $this->user);
     }
 
     /**
@@ -3855,5 +3890,55 @@ class ServerExecutor {
 
         return $response;
     }
+
+    /**
+     * Add Constellation SameAs
+     *
+     * Adds External Links to a constellation
+     *
+     * @param integer $constellationID
+     * @param string[] $sameAsUris Array of uris to link this constellation to
+     * @return string[] The response to send to the client
+     */
+    public function addConstellationSameAs($constellationID, $sameAsUris) {
+        $term = new \snac\data\Term;
+        $term->setID(28225); // TODO: query vocab for the 'sameAs' term id
+        $sameAs = new \snac\data\SameAs;
+        $sameAs->setType($term);
+        $sameAs->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+
+        // Make sameAs for each uri
+        $sameAsList = [];
+        foreach ($sameAsUris  as $uri) {
+            $sameAs->setURI($uri);
+            $sameAsList[] = $sameAs;
+        }
+
+        //  Check out constellation and get updated version.
+        $input = [];
+        $input["constellationid"] = $constellationID;
+        $editedConstellation = $this->editConstellation($input);
+        $newVersion = $editedConstellation["constellation"]["version"];
+
+        $constellation = new \snac\data\Constellation;
+        $constellation->setID($constellationID);
+        $constellation->setVersion($newVersion);
+
+         // Add SameAs objects
+        foreach ($sameAsList as $sameAs) {
+            $constellation->addOtherRecordID($sameAs);
+        }
+
+        // Set input for writing SameAs to constellation
+        $input["constellation"] = $constellation->toArray();
+        $this->logger->addDebug("going to write constellation: ", $constellation->toArray());
+        $writtenResult = $this->writeConstellation($input);
+
+        // Publish
+        $result = $this->publishConstellation($writtenResult);
+
+        return $result;
+    }
+
 
 }

@@ -82,10 +82,10 @@
 
                 <h3>Account Information</h3>
 
-                <div class="form-group">
+                <div class="form-group required">
                     <label class="control-label col-xs-2">Username</label>
                     <div class="col-xs-10" id="userNameDiv">
-                        <input type="text" id="userName" name="userName" class="form-control" placeholder="Google Account Email" value="{{data.user.userName}}"/>
+                        <input type="email" id="userName" name="userName" class="form-control" placeholder="Google Account Email" value="{{data.user.userName}}"/>
                     </div>
                 </div>
 
@@ -138,7 +138,7 @@
                 <h3>SNAC Information</h3>
 
 
-                <div class="form-group">
+                <div class="form-group required">
                     <label class="control-label col-xs-2">Affiliation</label>
                     <div class="col-xs-10" id="affiliationDiv">
                         <select id="affiliationid" name="affiliationid" class="form-control">
@@ -217,7 +217,8 @@
                         </p>
                     </div>
                 </div>
-
+                <!-- Hidden submit for validations only -->
+                <input id="submit-hidden" type="submit" style="display: none" />
             </div>
 
         </form>

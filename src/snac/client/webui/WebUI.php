@@ -119,7 +119,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "visualize",
                 "history",
                 "history_diff",
-                "static",
                 "api_help",
                 "api_test",
                 "contact",
@@ -141,7 +140,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "relations",
             "explore",
             "history_diff",
-            "static",
             "api_help",
             "visualize",
             "stats",
@@ -378,7 +376,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayMaybeSameListPage($this->input, $display);
                 break;
             case "add_maybesame":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if ($permissions["MaybeSameAssertion"]) {
                     $response = $executor->addMaybeSameAssertion($this->input);
                 } else {
                     $executor->displayPermissionDeniedPage("Add Maybe Same", $display);
@@ -483,11 +481,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->handleVisualization($this->input, $display);
                 break;
 
-            // Reporting 
+            // Reporting
             case "reports":
                 $response = $executor->handleReporting($this->input, $display, $user);
                 break;
-                
+
             // Administrator command (the sub method handles admin commands)
             case "administrator":
                 $response = $executor->handleAdministrator($this->input, $display, $user);
@@ -637,11 +635,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->drawErrorPage($error, $display);
                 break;
 
-            case "static":
-                $found = $executor->displayStaticPage($this->input, $display);
-                if (!$found)
-                    array_push($this->responseHeaders, "HTTP/1.0 404 Not Found");
-                break;
             case "stats":
                 $response = $executor->displayStatsPage($this->input, $display);
                 break;
@@ -654,6 +647,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;
 
+            case "cart":
+                $response = $executor->handleCartResources($this->input);
+                break;
+
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only
@@ -662,8 +659,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $executor->displayGridPage($this->input, $display);
                 break;
         }
-        
-        
+
+
         // The server will always return a newer version of the user.  So in this case, we'll always
         // serialize to the session the latest version of the user returned to the web ui.  The
         // ServerConnect utility now checks for the user object and updates its copy with the one

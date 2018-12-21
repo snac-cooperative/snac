@@ -3694,6 +3694,33 @@ class SQL
         return $id;
     }
 
+    /**
+     * Replace Resource Relation Resource
+     *
+     * Replace
+     * to sql fields. Note keys in $argList have a fixed order.
+     *
+     * @param int $victimID The resource ID for the discarded resource
+     * @param int $victimVersion The version of the discarded resource
+     * @param int $targetID The resource ID for target resource
+     * @param int $targetVersion The version of target resource
+     *
+     * @return true
+     *
+     */
+    public function replaceResourceRelationResource($victimID, $victimVersion , $targetID, $targetVersion) {
+        $query = "UPDATE related_resource
+                  SET resource_id = $1,
+                      resource_version = $2
+                  WHERE resource_id = $3
+                    AND resource_version = $4";
+
+        $result = $this->sdb->query($query, array( $targetID, $targetVersion, $victimID, $victimVersion));
+
+
+        return true;
+    }
+
 
     /**
      * Insert a Controlled Vocabulary Term
@@ -3818,6 +3845,7 @@ class SQL
      * @param  text|null $date            Text entry date of this resource
      * @param  text|null $displayEntry    Display Entry of resource
      * @param  int $userID               The userid of the user
+     * @param  bool $isDeleted           Whether resource is deleted
      * @return string[]                  Array containing id, version
      */
     public function insertResource(        $resourceID,
@@ -3832,7 +3860,8 @@ class SQL
                                            $objectXMLWrap,
                                            $date,
                                            $displayEntry,
-                                           $userID)
+                                           $userID,
+                                           $isDeleted = false)
     {
         if (! $resourceID)
         {
@@ -3841,12 +3870,15 @@ class SQL
         if (! $resourceVersion) {
             $resourceVersion = $this->selectResourceVersion();
         }
+
+        $isDeleted = $this->sdb->boolToPg($isDeleted);
+
         $qq = 'insert_resource';
         $this->sdb->prepare($qq,
                             'insert into resource_cache
-                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry, user_id)
+                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry, user_id, is_deleted)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
@@ -3862,7 +3894,8 @@ class SQL
                           $objectXMLWrap,     // 10
                           $date,              // 11
                           $displayEntry,      // 12
-                          $userID);          // 13
+                          $userID,            // 13
+                          $isDeleted);        // 14
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return array($resourceID, $resourceVersion);
@@ -6308,10 +6341,10 @@ class SQL
      *
      * @param int $userid The numeric userid for a user
      * @return int The number of messages unread for this user
-     */ 
+     */
     public function selectNumUnreadMessagesByUserID($userid) {
         $retVal = 0;
-        
+
         $result = $this->sdb->query(
             'select count(*) as count from messages m where to_user = $1 and not read',
             array($userid));
@@ -6413,13 +6446,13 @@ class SQL
 
 
     /**
-     * Get Institutional Reporting Data 
+     * Get Institutional Reporting Data
      *
      * Given an ICID, queries through Postgres to get statistical data
      * on the institution denoted by that IC.  This includes the number of recent
      * updates to constellations and the top editors at that institution.
      *
-     * @param int $icid The Constellation ID to query 
+     * @param int $icid The Constellation ID to query
      * @return string[] The statistical data from the database
      */
     public function getInstitutionReportData($icid) {
@@ -6428,9 +6461,9 @@ class SQL
             "month" => []
         ];
 
-        $result = $this->sdb->query("select count(distinct id) from version_history 
-            where timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days' 
-                and status != 'published' and status != 'deleted' 
+        $result = $this->sdb->query("select count(distinct id) from version_history
+            where timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days'
+                and status != 'published' and status != 'deleted'
                 and status != 'tombstoned' and status != 'needs review';", array());
 
         if ($result) {
@@ -6438,36 +6471,36 @@ class SQL
             $return["week"]["allEditCount"] = $all[0]["count"];
         }
 
-        $result = $this->sdb->query("select count(distinct v.id) from 
-            version_history v, appuser u 
-            where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days' 
-                and v.status != 'published' and v.status != 'deleted' 
-                and v.status != 'tombstoned' and v.status != 'needs review' 
+        $result = $this->sdb->query("select count(distinct v.id) from
+            version_history v, appuser u
+            where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days'
+                and v.status != 'published' and v.status != 'deleted'
+                and v.status != 'tombstoned' and v.status != 'needs review'
                 and v.user_id = u.id and u.affiliation = $1", array($icid));
-        
+
         if ($result) {
             $all = $this->sdb->fetchAll($result);
             $return["week"]["instEditCount"] = $all[0]["count"];
         }
-        
+
         $result = $this->sdb->query("select fullname, count(*) from
-                (select distinct u.fullname, v.id from 
-                version_history v, appuser u 
-                where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days' 
-                    and v.status != 'published' and v.status != 'deleted' 
-                    and v.status != 'tombstoned' and v.status != 'needs review' 
+                (select distinct u.fullname, v.id from
+                version_history v, appuser u
+                where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days'
+                    and v.status != 'published' and v.status != 'deleted'
+                    and v.status != 'tombstoned' and v.status != 'needs review'
                     and v.user_id = u.id and u.affiliation = $1) a
-            group by fullname        
+            group by fullname
             order by count desc, fullname asc", array($icid));
-        
+
         if ($result) {
             $all = $this->sdb->fetchAll($result);
             $return["week"]["topEditors"] = $all;
         }
-        
-        $result = $this->sdb->query("select count(distinct id) from version_history 
-            where timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days' 
-                and status != 'published' and status != 'deleted' 
+
+        $result = $this->sdb->query("select count(distinct id) from version_history
+            where timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days'
+                and status != 'published' and status != 'deleted'
                 and status != 'tombstoned' and status != 'needs review';", array());
 
         if ($result) {
@@ -6475,33 +6508,33 @@ class SQL
             $return["month"]["allEditCount"] = $all[0]["count"];
         }
 
-        $result = $this->sdb->query("select count(distinct v.id) from 
-            version_history v, appuser u 
-            where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days' 
-                and v.status != 'published' and v.status != 'deleted' 
-                and v.status != 'tombstoned' and v.status != 'needs review' 
+        $result = $this->sdb->query("select count(distinct v.id) from
+            version_history v, appuser u
+            where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days'
+                and v.status != 'published' and v.status != 'deleted'
+                and v.status != 'tombstoned' and v.status != 'needs review'
                 and v.user_id = u.id and u.affiliation = $1", array($icid));
-        
+
         if ($result) {
             $all = $this->sdb->fetchAll($result);
             $return["month"]["instEditCount"] = $all[0]["count"];
         }
-        
+
         $result = $this->sdb->query("select fullname, count(*) from
-                (select distinct u.fullname, v.id from 
-                version_history v, appuser u 
-                where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days' 
-                    and v.status != 'published' and v.status != 'deleted' 
-                    and v.status != 'tombstoned' and v.status != 'needs review' 
+                (select distinct u.fullname, v.id from
+                version_history v, appuser u
+                where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days'
+                    and v.status != 'published' and v.status != 'deleted'
+                    and v.status != 'tombstoned' and v.status != 'needs review'
                     and v.user_id = u.id and u.affiliation = $1) a
-            group by fullname        
+            group by fullname
             order by count desc, fullname asc", array($icid));
-        
+
         if ($result) {
             $all = $this->sdb->fetchAll($result);
             $return["month"]["topEditors"] = $all;
         }
-        
+
 
         return $return;
     }

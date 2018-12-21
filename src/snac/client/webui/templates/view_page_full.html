@@ -12,15 +12,11 @@
             rel="stylesheet"
             type="text/css"></link>
 <link href="http://bioghist.s3-website-us-east-1.amazonaws.com/build/stylesheets/grunticon/icons.data.svg.css" rel="stylesheet">
-<script data-xsl-asset="javascripts/modernizr.js"
-        src="http://bioghist.s3-website-us-east-1.amazonaws.com/build/javascripts/modernizr.js"
-        charset="utf-8"
-        type="text/javascript"></script>
 <style>
    .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
    .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
    .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
-   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw
+   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs, .sprite-icons-nara
    { float: left;
    margin-right: 0.33em; }
 </style>
@@ -426,6 +422,9 @@
                                          {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                              <div class="related updated" style="margin-top: 10px;">
                                                 {% if relation.resource.link %}
+                                                    {% if relation.resource.documentType.term == 'DigitalArchivalResource' %}
+                                                        <i class="fa fa-desktop" aria-hidden="true"></i>
+                                                    {% endif %}
                                                     <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                 {% else %}
                                                     {{relation.resource.displayEntry|default(relation.resource.title)}}
@@ -440,6 +439,9 @@
                                          {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                              <div class="related" style="margin-top: 10px;">
                                                 {% if relation.resource.link %}
+                                                    {% if relation.resource.documentType.term == 'DigitalArchivalResource' %}
+                                                        <i class="fa fa-desktop" aria-hidden="true"></i>
+                                                    {% endif %}
                                                     <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                 {% else %}
                                                     {{relation.resource.displayEntry|default(relation.resource.title)}}
@@ -548,6 +550,16 @@
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
                                                    </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div class="updated">
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                   </div>
+                                                 {% elseif 'archives.gov' in sameas.uri %}
+                                                    <div class="updated">
+                                                      <div class="sprite-icons-nara"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">National Archives</a>
+                                                   </div>
                                                  {% else %}
                                                      <div class="related updated">
                                                          <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
@@ -585,6 +597,16 @@
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
                                                    </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div>
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                   </div>
+                                                 {% elseif 'archives.gov' in sameas.uri %}
+                                                    <div>
+                                                      <div class="sprite-icons-nara"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">National Archives</a>
+                                                   </div>
                                                  {% else %}
                                                      <div class="related">
                                                          <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
@@ -618,6 +640,16 @@
                                                     <div class="older">
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
+                                                   </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div class="older">
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                   </div>
+                                                 {% elseif 'archives.gov' in sameas.uri %}
+                                                    <div class="older">
+                                                      <div class="sprite-icons-nara"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">National Archives</a>
                                                    </div>
                                                  {% else %}
                                                      <div class="related older">

@@ -2884,6 +2884,41 @@ class DBUtil
         }
     }
 
+
+    /**
+     * Replace Resource Relation Resource
+     *
+     * @param \snac\data\Resource $victim
+     * @param \snac\data\Resource $target
+     */
+    public function replaceResourceRelationResource($victim, $target) {
+        $victimID = $victim->getID();
+        $victimVersion = $victim->getVersion();
+        $targetID = $target->getID();
+        $targetVersion = $target->getVersion();
+
+        $this->sql->replaceResourceRelationResource($victimID, $victimVersion, $targetID, $targetVersion);
+
+    }
+
+    /**
+     * Delete Resource
+     *
+     * Set resource as deleted and save in psql
+     *
+     * @param \snac\data\Resource $resource
+     * @param \snac\data\User $user The user performing the delete
+     */
+    public function deleteResource($resource, $user) {
+        if (!isset($resource)) {
+            return false;
+        }
+        $resource->setVersion(null);
+        $resource->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
+        $this->writeResource($user, $resource);
+
+    }
+
     /**
      * Write a Vocabulary Term
      *
@@ -2958,9 +2993,11 @@ class DBUtil
          $op = $resource->getOperation();
          if ($op == \snac\data\AbstractData::$OPERATION_INSERT) {
              $rid = null;
-         } elseif ($op == \snac\data\AbstractData::$OPERATION_UPDATE) {
+         } else {
              $rid = $resource->getID();
          }
+
+         $isDeleted = ($op == \snac\data\AbstractData::$OPERATION_DELETE) ? true : false;
 
          $version = null;
          $repoID = null;
@@ -2979,7 +3016,8 @@ class DBUtil
                                                    $resource->getSource(), // objectXMLWrap
                                                    $resource->getDate(),
                                                    $resource->getDisplayEntry(),
-                                                   $user->getUserID());
+                                                   $user->getUserID(),
+                                                   $isDeleted);
          $resource->setID($rid);
          $resource->setVersion($version);
          $this->saveOriginationNames($resource);
