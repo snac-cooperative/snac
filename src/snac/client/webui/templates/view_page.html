@@ -140,7 +140,7 @@
       <input id="ark2" name="ark2" type="hidden" value="{{ data.new.ark }}"/>
       {% endif %}
     {% for sameas in data.otherRecordIDs %}
-        {% if sameas.type.term == 'sameAs' and 'wikipedia' in sameas.uri %}
+        {% if sameas.type.term == 'sameAs' and sameas.uri matches '/wiki.*\.org/' %}
             <input id="has_wiki_link" type="hidden" value="true"/>
         {% endif %}
     {% endfor %}
