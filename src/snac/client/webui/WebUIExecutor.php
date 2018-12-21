@@ -2025,7 +2025,7 @@ class WebUIExecutor {
             case "merge_resource":
                 if (!isset($this->permissions["EditResources"])) {
                         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-                } elseif (!isset($_GET["victimID"], $_GET["targetID"])) {
+                } elseif (!isset($input["victimID"], $input["targetID"])) {
                     $error = ["error" => ["type" => "Not Found", "message" => "Resource ids were not found"]];
                     $this->drawErrorPage($error, $display);
 
@@ -2033,8 +2033,8 @@ class WebUIExecutor {
 
                     $request = [
                         "command" => "merge_resource",
-                        "victimID" => $_GET["victimID"],
-                        "targetID" => $_GET["targetID"]
+                        "victimID" => $input["victimID"],
+                        "targetID" => $input["targetID"]
                     ];
                     $response = $this->connect->query($request);
                 break;
@@ -3558,25 +3558,24 @@ class WebUIExecutor {
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
     public function handleCartResources($input) {
-        $_GET   = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
 
         $cart = $_SESSION["cart"];
 
         $_SESSION["cart"]["resources"] = $_SESSION["cart"]["resources"] ?? [];
 
-        if (isset($_GET["clear_cart_resources"])) {
+        if (isset($input["clear_cart_resources"])) {
             $_SESSION["cart"]["resources"] = [];
         }
-        if (isset($_GET["add_resource"])) {
-            $_SESSION["cart"]["resources"][] = ["id" =>$_GET["id"], "title" => $_GET["title"]];
+        if (isset($input["add_resource"])) {
+            $_SESSION["cart"]["resources"][] = ["id" =>$input["id"], "title" => $input["title"]];
         }
 
-        if (isset($_GET["remove_resource"])) {
-            $_SESSION["cart"]["resources"][] = $_GET["add_resource_id"];
+        if (isset($input["remove_resource"])) {
+            $_SESSION["cart"]["resources"][] = $input["add_resource_id"];
         }
 
-        if (isset($_GET["remove_resource"])) {
-            $resourceID = $_GET["remove_resource"];
+        if (isset($input["remove_resource"])) {
+            $resourceID = $input["remove_resource"];
             $cartKey = array_search($resourceID, $_SESSION["cart"]["resource_ids"]);
             unset($_SESSION["cart"]["resource_ids"][$cartKey]);
         };
