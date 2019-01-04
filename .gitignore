@@ -1,6 +1,7 @@
 doc/
 coverage/
 composer.phar
+composer.lock
 vendor/
 log/
 .idea/
