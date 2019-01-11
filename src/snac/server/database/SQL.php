@@ -6623,4 +6623,26 @@ class SQL
 
         $result = $this->sdb->query($sql, array($termID, $conceptID));
     }
+
+    /**
+    * Search Concepts
+    *
+    * Search for a concept by its preferred term
+    *
+    * @param string $query Search query
+    * @return string[] Array of concept id and value pairs
+    */
+    public function searchConcept($query) {
+
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                WHERE value ILIKE $1
+                AND t.is_preferred = 't'";
+
+
+        $result = $this->sdb->query($sql, array("%$query%"));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
 }

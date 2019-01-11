@@ -694,13 +694,26 @@ class ServerExecutor {
      * Reads a  vocabulary from the database, based on the input given and returns
      * the result
      *
-     * @param string $input Direct server input
+     * @param int $id Concept id
      * @return string[] The response to send to the client
      */
     public function readDetailedConcept($id) {
         $response = array();
         $concept = $this->cStore->getDetailedConcept($id);
         $response["concept"] = $concept;
+        return $response;
+    }
+
+    /**
+     * Search Concept
+     *
+     * @param string $input Search query
+     * @return string[] The response to send to the client
+     */
+    public function searchConcept($q) {
+        $response = array();
+        $concepts = $this->cStore->searchConcept($q);
+        $response["concepts"] = $concepts;
         return $response;
     }
 

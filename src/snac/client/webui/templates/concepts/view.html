@@ -129,6 +129,8 @@
 
             <br>
 
+
+
 <h2>Search</h2>
             <div class="well well-lg text-center">
                 <div class="input-group select2-bootstrap-append">
@@ -201,6 +203,47 @@
 
 {{dump(concept)}}
 {{dump(concept.terms[0])}}
+
+<button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
+
+<div class="modal fade" id="resourceSearchPane" tabindex="-1" role="dialog" aria-labelledby="resourceSearchPane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="resourceSearchLabel">Search Resources</h4>
+            </div>
+            <div class="modal-body" id="resourceSearchPaneContent">
+                <form class="form-horizontal" id="resource_search_form" onsubmit="return false;">
+                    <div class="modal-body">
+	                    <input type="hidden" id="resource-search-count" name="count" value="10">
+                        <p>Type or paste the unique URL for the resource in the box below.  If we have a cached copy of the resource, select the version you want to reference by using the radio button to the left, then click "Continue."  If the resource you are looking for is not found, choose "Create New Resource."</p>
+                        <div class="input-group">
+	                        <input type="text" class="form-control"
+	                            placeholder="Resource URL or Title..." id="resource-searchbox" name="q">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="submit" id="resource-searchbutton" onclick='searchResourceIMeanTerm()'><i class="fa fa-search" aria-hidden="true"></i></button>
+                                </span>
+	                    </div>
+
+	                    <div id="resource-results-box">
+	                    </div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <p>OR</p>
+                            <button type="button" class="btn btn-success" id="btn_open_create_resource" data-dismiss="modal">Create New Resource</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
+                <button type="button" class="btn btn-primary" id="btn_create_resourceRelation" data-dismiss="modal">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 <div class="modal fade" id="term-modal" tabindex="-1" role="dialog" aria-labelledby="term-modal-label">
     <div class="modal-dialog" role="document">

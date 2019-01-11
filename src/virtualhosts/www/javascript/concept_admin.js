@@ -158,6 +158,66 @@ function deleteConceptRelationship() {
 }
 
 
+function searchResourceIMeanTerm() {
+    resourceResults = null;
+    $("#resource-results-box").html("<p style='text-align: center'>Loading...</p>");
+    $.post(snacUrl+"/concept_search", $("#resource_search_form").serialize(), function (data) {
+
+        var html = "";
+        html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
+        if (data.results.length > 0) {
+
+            // save them globally for the continue script
+            resourceResults = data.results;
+
+            html += "<p class='search-info'>Showing " + data.results.length + " of " + data.total + " results.</p>";
+
+            // Put the results onto the page
+            for (var key in data.results) {
+                //html += "<div class='input-group'><span class='input-group-addon'><input type='radio'></span><p class='form-static'>Blah</p><span class='input-group-button'><button class='btn btn-default' type='button'>View</button></span></div>";
+                html += "<div class='list-group-item'><div class='row'>";
+                html += "<div class='col-xs-1'><input type='radio' name='resourceChoice' id='resourceChoice' value='"+key+"'></div><div class='col-xs-10'>";
+
+                if (typeof data.results[key].title !== 'undefined') {
+                    html += "<h4 class='list-group-item-heading'>"+data.results[key].title+"</h4>";
+                    html += "<p class='list-group-item-text'>";
+                    if (typeof data.results[key].abstract !== 'undefined')
+                        html += data.results[key].abstract+"<br>";
+                    if (typeof data.results[key].link !== 'undefined')
+                        html += data.results[key].link + " <a class='label label-info' target='_blank' href='"+data.results[key].link+"'>View</a>";
+                    html += "</p>";
+                } else if (typeof data.results[key].link !== 'undefined') {
+                    html += "<h4 class='list-group-item-heading'>Unknown Title</h4>";
+                    html += "<p class='list-group-item-text'>";
+                    html += data.results[key].link + " <a class='label label-info' target='_blank' href='"+data.results[key].link+"'>View</a>";
+                    html += "</p>";
+                } else {
+                    html += "<h4 class='list-group-item-heading'>Ill-formed resource</h4>";
+                }
+                html += "</div>";
+                html += "</div></div>";
+            } // end for
+
+        } else {
+            html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
+        }
+
+        /*
+        html += "<div class='list-group-item list-group-item-warning'><div class='row'>";
+        html += "<div class='col-xs-1'><input type='radio' name='resourceChoice' id='resourceChoice' value='new'></div>";
+        html += "<div class='col-xs-10'>Create New Resource";
+        html += "</div></div>";
+        html += "</div>";
+        */
+
+        // Have pagination (total number of pages) and page (current page number) in data
+        // ... use them to help stepping through the search for multiple pages.
+
+        $("#resource-results-box").html(html);
+    });
+}
+
+
 $('document').ready( function() {
     $('.select').each(function() {
         $(this).select2({
@@ -197,5 +257,4 @@ $('document').ready( function() {
     $('#term-modal').on('hide.bs.modal', function (event) {
             resetTermForm();
     });
-
 });

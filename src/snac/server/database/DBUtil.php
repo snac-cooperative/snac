@@ -1861,6 +1861,15 @@ class DBUtil
         $this->sql->insertConcept();
     }
 
+    /**
+     * Search Concept
+     * @param string Search query
+     * @return string[] associative array of matching concepts from database
+     */
+    public function searchConcept($q) {
+        return $this->sql->searchConcept($q);
+    }
+
     // /**
     //  * Save Terms
     //  * @param int $conceptID

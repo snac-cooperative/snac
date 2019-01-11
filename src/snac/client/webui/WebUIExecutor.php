@@ -1835,6 +1835,23 @@ class WebUIExecutor {
                     $display->setTemplate("concepts/index");
                 }
                 break;
+            case "search_concepts":
+                $query = $input["q"] ?? '';   // actually conceptID ,
+                $request = [
+                    "command" => "search_concepts",
+                    "q" => $query,
+                ];
+                if ($query) {
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "Concept" ,  "response" => $response));
+                    $display->setTemplate("concepts/view");
+
+                } else {
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "Concepts",  "response" => $response));
+                    $display->setTemplate("concepts/index");
+                }
+                break;
             case "add_term_post":
                 if (isset($this->permissions["EditVocabulary"])) {
                     return $this->saveVocabularyTerm($input, $user);
