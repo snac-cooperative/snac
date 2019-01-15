@@ -25,6 +25,10 @@
 <link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
+<!-- Tiny MCE text editor -->
+<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
 
 <!-- Datatables -->
 <link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
@@ -438,16 +442,22 @@ $(document).ready(function() {
                    href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
                     <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source Summary</a>
             </div>
-              <div class="btn-group">
-                    {% if data.status == 'editable' %}
-                    <a class="btn list-group-item-info"
-                       href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><i class="fa fa-fw fa-pencil" aria-hidden="true"></i>
-                       Edit   </a>
-                    <a class="btn list-group-item-danger" id="reserveForEdit"
-                       href="#"><i class="fa fa-fw fa-bookmark" aria-hidden="true"></i>
-                       <span id="reserveForEditText">Reserve for Editing</span></a>
-                    {% endif %}
-              </div>
+
+            {% if user.email and permissions.Edit %}
+            <div class="btn-group">
+                {% if data.status == 'editable' %}
+                <a class="btn list-group-item-info"
+                    href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"> <i class="fa fa-fw fa-pencil" aria-hidden="true"></i> Edit
+                </a>
+                <a class="btn list-group-item-danger" id="reserveForEdit" href="#">
+                    <i class="fa fa-fw fa-bookmark" aria-hidden="true"></i> <span id="reserveForEditText">Reserve for Editing</span>
+                </a>
+                {% else %}
+                <a class="btn list-group-item-info list-group-item-danger disabled" href="#"><i class="fa fa-fw fa-ban"></i> Edit </a>
+                {{ include('_message_current_editor.html')}}
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         <div class="row">
             <div class="col-md-8">
