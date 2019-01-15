@@ -461,10 +461,10 @@ class WebUIExecutor {
      */
     public function displayViewPage(&$input, &$display) {
         $message = null;
-        if (isset($input["part"]) && $input["part"] == "relations")
+        // if (isset($input["part"]) && $input["part"] == "relations")
             $serverResponse = $this->getConstellation($input, $display, false);
-        else
-            $serverResponse = $this->getConstellation($input, $display, "summary");
+        // else
+        //     $serverResponse = $this->getConstellation($input, $display, "summary");
         if (isset($serverResponse["constellation"])) {
             if (isset($serverResponse["constellation"]["dataType"])) {
                 // We have only ONE constellation, so display
@@ -472,14 +472,15 @@ class WebUIExecutor {
                 $editingUser = null;
                 $holdings = array();
 
-                if (isset($input["part"]) && $input["part"] == "relations") {
-                    $display->setTemplate("view_page_relations");
+                // if (isset($input["part"]) && $input["part"] == "relations") {
+                    $display->setTemplate("view_page");
                     $this->logger->addDebug("Getting Holding institution information from the resource relations");
                     $c = new \snac\data\Constellation($constellation);
                     foreach ($c->getResourceRelations() as $resourceRel) {
                         if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
                             $repo = $resourceRel->getResource()->getRepository();
                             $holdings[$repo->getID()] = array(
+                                "id" => $repo->getID(),
                                 "name" => $repo->getPreferredNameEntry()->getOriginal()
                             );
                             foreach ($repo->getPlaces() as $place) {
@@ -495,8 +496,8 @@ class WebUIExecutor {
                         return $a["name"] <=> $b["name"];
                     });
 
-                } else {
-                    $display->setTemplate("view_page");
+                // } else {
+                //     $display->setTemplate("view_page");
                     if (isset($serverResponse["editing_user"]))
                         $editingUser = $serverResponse["editing_user"];
 
@@ -504,8 +505,8 @@ class WebUIExecutor {
                         $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                         $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
                     }
-
-                }
+                //
+                // }
 
                 // Check for a redirect
                 if ($serverResponse["result"] == "success-notice") {

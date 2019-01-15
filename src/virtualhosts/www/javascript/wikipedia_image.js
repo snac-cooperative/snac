@@ -112,6 +112,7 @@ $(document).ready(function() {
 
                         var html = "<img src=\""+imageURL+"?width=300\"/><div>"+caption+"</div>";
                         $('#wikipediaImage').html(html);
+                        $('#wikipediaImage').css("display", "block");
                     }
                 } );
             }
