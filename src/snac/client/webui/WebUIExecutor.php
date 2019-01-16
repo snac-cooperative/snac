@@ -1813,6 +1813,11 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
+            case "add_concept":
+                    $response = $this->testVocabQuery('concepts');
+                    $display->setData(array("title"=> "Test Vocab", "response" => "success"));
+                    $display->setTemplate("concepts/new");
+                break;
             case "edit_concept":
                     $response = $this->testVocabQuery('concepts');
                     $display->setData(array("title"=> "Test Vocab", "response" => $response));
