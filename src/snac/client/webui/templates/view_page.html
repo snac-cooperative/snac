@@ -400,27 +400,36 @@ $(document).ready(function() {
 
 
     <div class="container snac" role="main">
-       <h1 style="margin-bottom: 20px;">
-           <!--
-          {% if data.entityType.term == 'person' %}
-          <span class="fa-stack fa-sm" title="Entity Type: Person">
-              <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
-              <i class="fa fa-user fa-stack-1x fa-inverse"></i>
-          </span>
-          {% elseif data.entityType.term == 'corporateBody' %}
-          <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
-              <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
-              <i class="fa fa-university fa-stack-1x fa-inverse"></i>
-          </span>
-          {% elseif data.entityType.term == 'family' %}
-          <span class="fa-stack fa-sm" title="Entity Type: Family">
-              <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
-              <i class="fa fa-users fa-stack-1x fa-inverse"></i>
-          </span>
-          {% endif %}
-           -->
-            {{data.nameEntries.0.original}}
-       </h1>
+        <div class="name" style="margin-bottom: 15px;">
+            <h1 style="display: inline;">
+                <!--
+               {% if data.entityType.term == 'person' %}
+               <span class="fa-stack fa-sm" title="Entity Type: Person">
+                   <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                   <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+               </span>
+               {% elseif data.entityType.term == 'corporateBody' %}
+               <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                   <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                   <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+               </span>
+               {% elseif data.entityType.term == 'family' %}
+               <span class="fa-stack fa-sm" title="Entity Type: Family">
+                   <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                   <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+               </span>
+               {% endif %}
+                -->
+                 {{data.nameEntries.0.original}}
+            </h1>
+            {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
+            <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative-names" href="#alternative-names">Alternative names</a>
+            {% endif %}
+            {% if 'holdingRepository' in data.flags %}
+                <br><span class="label label-default"><i class="fa fa-archive" aria-hidden="true"></i> Holding Repository</span>
+            {% endif %}
+        </div>
+
 
         <div class="btn-toolbar" style="margin-bottom: 15px;">
             <div class="btn-group">
@@ -484,9 +493,9 @@ $(document).ready(function() {
                     {% if data.functions %}
                     <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
                     {% endif %}
-                    {% if data.nameEntries|length > 1 %}
+                    <!-- {% if data.nameEntries|length > 1 %}
                     <li><a href="#names" role="tab" data-toggle="tab">Alternative Names</a></li>
-                    {% endif %}
+                    {% endif %} -->
                 </ul>
                 <div class="tab-content">
                     {% if data.biogHists.0.text %}
@@ -802,7 +811,7 @@ $(document).ready(function() {
                             </div>
                         </div>
                     </div>
-                    <div class="body-tab-pane tab-pane" id="names">
+                    <!-- <div class="body-tab-pane tab-pane" id="names">
                         <div class="row">
                             <div class="col-md-12">
                                 <table class="listtable">
@@ -813,9 +822,9 @@ $(document).ready(function() {
                                     </thead>
                                     <tbody>
                                         {# ignore the preferred name #}
-                                        {% for nameEntry in data.nameEntries|slice(1) %}
+                                        {# for nameEntry in data.nameEntries|slice(1) #}
                                             <tr><td>{{nameEntry.original}}</td></tr>
-                                        {% endfor %}
+                                        {# endfor #}
                                     </tbody>
                                 </table>
                                 <script>
@@ -827,7 +836,7 @@ $(document).ready(function() {
                                 </script>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
             </div>
@@ -972,6 +981,45 @@ $(document).ready(function() {
                         <p class="list-group-item"><strong>SNAC ID:</strong> {{data.id}}</p>
                     </div>
 
+                </div>
+
+
+                <div class="modal fade" id="alternative-names" tabindex="-1" role="dialog"
+                     aria-hidden="true">
+                   <div class="modal-dialog">
+                      <div class="modal-content">
+                         <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-labelledby="myModalLabel"
+                                    aria-hidden="true">×</button>
+                            <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
+                         </div>
+                         <div title="alternative forms of name" class="extra-names modal-body">
+                            {# ignore the preferred name #}
+                            {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
+                                {% for nameEntry in data.new.nameEntries|slice(1) %}
+                                  <div class="updated">{{nameEntry.original}}</div>
+                                {% endfor %}
+                                {% for nameEntry in data.nameEntries %}
+                                  <div>{{nameEntry.original}}</div>
+                                {% endfor %}
+                            {% else %}
+                                {% for nameEntry in data.new.nameEntries %}
+                                  <div class="updated">{{nameEntry.original}}</div>
+                                {% endfor %}
+                                {% for nameEntry in data.nameEntries|slice(1) %}
+                                  <div>{{nameEntry.original}}</div>
+                                {% endfor %}
+                            {% endif %}
+
+                            {% for nameEntry in data.old.nameEntries %}
+                              <div class="older">{{nameEntry.original}}</div>
+                            {% endfor %}
+                         </div>
+                         <div class="modal-footer">
+                            <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                         </div>
+                      </div>
+                   </div>
                 </div>
             </div>
         </div>
