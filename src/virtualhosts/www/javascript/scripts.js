@@ -45,7 +45,7 @@ function openGeoPlaceViewer(id) {
             setTimeout(function() {
                 // Create the Map and add it
                 geoMapView = L.map('geoPlaceMap').setView([data.term.latitude, data.term.longitude], 6);
-                L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(geoMapView);
@@ -96,7 +96,7 @@ function displayHoldingsMap() {
     // Add a slight delay to the map viewing so that the modal window has time to load
     setTimeout(function() {
         holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
-        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(holdingsMapView);
