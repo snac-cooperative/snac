@@ -682,7 +682,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function readConcept($id) {
-        $response = array();
+        $response = [];
         $concept = $this->cStore->getConcept($id);
         $response["concept"] = $concept;
         return $response;
@@ -698,7 +698,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function readDetailedConcept($id) {
-        $response = array();
+        $response = [];
         $concept = $this->cStore->getDetailedConcept($id);
         $response["concept"] = $concept;
         return $response;
@@ -711,7 +711,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function searchConcept($q) {
-        $response = array();
+        $response = [];
         $concepts = $this->cStore->searchConcept($q);
         $response["concepts"] = $concepts;
         return $response;
@@ -724,9 +724,12 @@ class ServerExecutor {
      * @param string $isPreferred
      * @return string[] associative array of inserted term from database
      */
-    public function saveTerm($conceptID, $value, $isPreferred) {
-        $term =  $this->cStore->saveTerm($conceptID, $value, $isPreferred);
-        return $term;
+    public function saveTerm($termID, $conceptID, $value, $isPreferred) {
+        $response = [];
+        $term =  $this->cStore->saveTerm($termID, $conceptID, $value, $isPreferred);
+        $response["term"] = $term;
+        $response["result"] = "success";
+        return $response;
     }
 
     /**

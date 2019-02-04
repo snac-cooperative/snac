@@ -442,7 +442,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
-            case "search_concept":
+            case "search_concepts":
                 // if (!$executor->hasPermission("Create"))
                     // throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
                 if ($this->input['q']) {
@@ -458,7 +458,21 @@ class Server implements \snac\interfaces\ServerInterface {
                                                       $this->input["is_preferred"]);
 
                 break;
+            case "save_term":
+                //if (!$executor->hasPermission("Create"))
+                  // throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->saveTerm($this->input["term_id"] ?? null,
+                                                      $this->input["concept_id"],
+                                                      $this->input["value"],
+                                                      $this->input["is_preferred"]);
+                break;
             case "delete_term":
+                //if (!$executor->hasPermission("Create"))
+                  // throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->deleteTerm($this->input["id"]);
+
+                break;
+            case "save_concept_relationship":
                 //if (!$executor->hasPermission("Create"))
                   // throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
                 $this->response = $executor->deleteTerm($this->input["id"]);

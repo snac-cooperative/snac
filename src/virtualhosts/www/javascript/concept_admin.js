@@ -115,7 +115,7 @@ function resetTermForm() {
 
 
 
-function postTermForm() {
+function saveTermForm() {
     //validate required fields
     if ($('#is-preferred:checked').length) {
         if (!confirm('Are you sure you want to set this as the sole preferred term for this concept?')) { return; }
@@ -126,29 +126,27 @@ function postTermForm() {
     // edit path
     if ($("#term-input").data("termId")) {
         serialized += "&term-id=" + $("#term-input").data("termId");
-    } else {
-
     }
 
     // new term path
-// Post form and reload page
+    // Post form and reload page
     console.log(serialized);
-    // $.post(snacUrl + "/", serialized)
-    //     .done(function(data) {
-    //         createdResource = data;
-    //         if (typeof(data.resource) === 'undefined')  {
-    //             $('#error-message').slideDown();
-    //             return false;
-    //         }
-    //         $('#notification-message').slideUp();
-    //         $('#success-message').slideDown();
-    //         setTimeout(function() {
-    //             window.location.reload()
-    //         }, 1000);
-    //     })
-    //     .fail(function() {
-    //         $('#error-message').slideDown();
-    //     });
+    $.post(snacUrl + "/vocab_administrator/save_concept_term", serialized)
+        .done(function(data) {
+            createdTerm = data;
+            if (data.result !== "success")  {
+                $('#error-message').slideDown();
+                return false;
+            }
+            $('#notification-message').slideUp();
+            $('#success-message').slideDown();
+            setTimeout(function() {
+                window.location.reload()
+            }, 500);
+        })
+        .fail(function() {
+            $('#error-message').slideDown();
+        });
     return false;
 }
 
@@ -161,7 +159,7 @@ function deleteConceptRelationship() {
 function searchResourceIMeanTerm() {
     resourceResults = null;
     $("#resource-results-box").html("<p style='text-align: center'>Loading...</p>");
-    $.post(snacUrl+"/concept_search", $("#resource_search_form").serialize(), function (data) {
+    $.post(snacUrl+"/vocab_administrator/search_concepts", $("#concept_search_form").serialize(), function (data) {
 
         var html = "";
         html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";

@@ -1813,50 +1813,6 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
-            case "add_concept":
-                    $response = $this->testVocabQuery('concepts');
-                    $display->setData(array("title"=> "Test Vocab", "response" => "success"));
-                    $display->setTemplate("concepts/new");
-                break;
-            case "edit_concept":
-                    $response = $this->testVocabQuery('concepts');
-                    $display->setData(array("title"=> "Test Vocab", "response" => $response));
-                    $display->setTemplate("concepts/edit");
-                break;
-            case "concepts":
-                $id = $input["constellationid"] ?? '';   // actually conceptID ,
-                $request = [
-                    "command" => "concepts",
-                    "id" => $id,
-                ];
-                if ($id) {
-                    $response = $this->connect->query($request);
-                    $display->setData(array("title"=> "Concept" ,  "response" => $response));
-                    $display->setTemplate("concepts/view");
-
-                } else {
-                    $response = $this->connect->query($request);
-                    $display->setData(array("title"=> "Concepts",  "response" => $response));
-                    $display->setTemplate("concepts/index");
-                }
-                break;
-            case "search_concepts":
-                $query = $input["q"] ?? '';   // actually conceptID ,
-                $request = [
-                    "command" => "search_concepts",
-                    "q" => $query,
-                ];
-                if ($query) {
-                    $response = $this->connect->query($request);
-                    $display->setData(array("title"=> "Concept" ,  "response" => $response));
-                    $display->setTemplate("concepts/view");
-
-                } else {
-                    $response = $this->connect->query($request);
-                    $display->setData(array("title"=> "Concepts",  "response" => $response));
-                    $display->setTemplate("concepts/index");
-                }
-                break;
             case "add_term_post":
                 if (isset($this->permissions["EditVocabulary"])) {
                     return $this->saveVocabularyTerm($input, $user);
@@ -1883,6 +1839,83 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
+            // Concepts and Concept Terms
+            case "add_concept":
+                    // $response = $this->testVocabQuery('concepts');
+                    $display->setData(array("title"=> "Test Vocab", "response" => "success"));
+                    $display->setTemplate("concepts/new");
+                break;
+            case "edit_concept":
+                    // $response = $this->testVocabQuery('concepts');
+                    // $display->setData(array("title"=> "Test Vocab", "response" => $response));
+                    // $display->setTemplate("concepts/edit");
+                break;
+            case "concepts":
+                $id = $input["constellationid"] ?? '';   // actually conceptID ,
+                $request = [
+                    "command" => "concepts",
+                    "id" => $id,
+                ];
+                if ($id) {
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "Concept" ,  "response" => $response));
+                    $display->setTemplate("concepts/view");
+
+                } else {
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "Concepts",  "response" => $response));
+                    $display->setTemplate("concepts/index");
+                }
+                break;
+            case "search_concepts_view":
+                $query = $input["q"] ?? '';
+                $request = [
+                    "command" => "search_concepts",
+                    "q" => $query
+                ];
+                if ($query) {
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "Searching - ".$query ,  "response" => $response));
+                    $display->setTemplate("concepts/index");
+
+                } else {
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "Concepts",  "response" => $response));
+                    $display->setTemplate("concepts/index");
+                }
+                break;
+            case "search_concepts":
+                $query = $input["q"] ?? '';
+                $request = [
+                    "command" => "search_concepts",
+                    "q" => $query
+                ];
+                if ($query) {
+                    $response = $this->connect->query($request);
+                    return $response;
+                }
+                break;
+            case "save_concept_term":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    return $this->saveConceptTerm($input, $user);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "save_concept_relationship":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    return $this->saveConceptTerm($input, $user);
+                    $request = [];
+                    $request["command"] = "save_concept_relationship";
+                    $request["concept_id_1"] = $input["concept-id-1"];
+                    $request["concept_id_2"] = $input["concept-id-2"];
+                    $response = $this->connect->query($request);
+                    return $response;
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            // Resources
             case "add_resource":
                 if (isset($this->permissions["EditResources"])) {
                     $display->setData(array("title"=> "Add a Resource"));
@@ -3495,24 +3528,53 @@ class WebUIExecutor {
 
         return true;
     }
-
+    /**
+     * Save Concept Term
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    protected function saveConceptTerm(&$input) {
+        $request = [];
+        $request["command"] = "save_term";
+        $request["term_id"] = $input["term-id"];
+        $request["concept_id"] = $input["concept-id"];
+        $request["value"] = $input["term-value"];
+        $request["is_preferred"] = $input["is-preferred"] == "checked" ? "true" : "false";
+        $response = $this->connect->query($request);
+        return $response;
+    }
+    //
+    // /**
+    //  * Create Concept Relationship
+    //  *
+    //  *
+    //  * @param string[] $input Post/Get inputs from the webui
+    //  * @return string[] The web ui's response to the client (array ready for json_encode)
+    //  */
+    // protected function createConceptRelationship(&$input) {
+    //     return $response;
+    // }
+    //
     /**
     * TestVocab Query
     */
-    public function testVocabQuery($query) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/' . $query);
-        curl_setopt($ch, CURLOPT_HTTPHEADER,
-        array (
-            'Content-Type: application/json',
-            // 'Content-Length: ' . strlen($data)
-        ));
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-        // curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        $this->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        return json_decode($response, true);
-    }
+    // public function testVocabQuery($query) {
+    //     $ch = curl_init();
+    //     curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/' . $query);
+    //     curl_setopt($ch, CURLOPT_HTTPHEADER,
+    //     array (
+    //         'Content-Type: application/json',
+    //         // 'Content-Length: ' . strlen($data)
+    //     ));
+    //     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    //     // curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    //     $response = curl_exec($ch);
+    //     $this->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    //     curl_close($ch);
+    //     return json_decode($response, true);
+    // }
+    //
 }

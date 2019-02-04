@@ -1890,10 +1890,21 @@ class DBUtil
      * @param int $conceptID
      * @param string $value
      * @param string $isPreferred
-     * @return string[] associative array of inserted term from database
+     * @return string[] associative array of saved term from database
      */
-    public function saveTerm($conceptID, $value, $isPreferred) {
-        $term =  $this->sql->insertTerm($conceptID, $value, $isPreferred);
+    public function saveTerm($termID, $conceptID, $value, $isPreferred) {
+        if (!isset($termID)) {
+            $term =  $this->sql->insertTerm($conceptID, $value, $isPreferred);
+        } else {
+            $term =  $this->sql->updateTerm($termID, $conceptID, $value, $isPreferred);
+        }
+
+        if (isset($termID, $conceptID) && $isPreferred === 'true') {
+            $this->sql->updatePreferredTerm($conceptID, $termID);
+        }
+
+
+
         return $term;
     }
 

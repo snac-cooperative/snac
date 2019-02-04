@@ -6486,8 +6486,8 @@ class SQL
      *
      * Creates a new term in the database
      *
-     * @param int $id Concept ID
-     * @param string $termValue Value
+     * @param int $conceptID Concept ID
+     * @param string $value Value
      * @param bool $isPreferred Whether term is preferred term for concept
      * @return
      */
@@ -6498,6 +6498,31 @@ class SQL
 
         $result = $this->sdb->query($sql, array($conceptID, $value, $isPreferred));
         $term = $this->sdb->fetchAll($result);
+        return $term;
+    }
+
+    /**
+     * Save Term
+     *
+     * Updates term value and concept in the database
+     *
+     * @param int $termID Term ID
+     * @param int $conceptID Concept ID
+     * @param string $value Value
+     * @param bool $isPreferred Whether term is preferred term for concept
+     * @return
+     */
+    public function updateTerm($termID, $conceptID, $value, $isPreferred) {
+        $isPreferred = $this->sdb->boolToPg($isPreferred);
+        $sql = "UPDATE term
+                SET concept_id = $1,
+                    value = $2,
+                    is_preferred = $3
+                WHERE id = $4
+                RETURNING *";
+
+        $result = $this->sdb->query($sql, array($conceptID, $value, $isPreferred, $termID));
+        $term = $this->sdb->fetchrow($result);
         return $term;
     }
 
@@ -6615,7 +6640,7 @@ class SQL
         $sql = "UPDATE term t
                     SET is_preferred =
                     CASE
-                        WHEN t.term_id = $1
+                        WHEN t.id = $1
                             THEN TRUE
                             ELSE FALSE
                         END

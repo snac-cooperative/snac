@@ -49,9 +49,17 @@
 {% set concept = data.response.concept %}
 {{ topNavigation(X, user, permissions, control) }}
 
-
-
 <div class="container snac" role="main">
+    <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+        <p>Saving Term...</p>
+    </div><!-- end alert -->
+    <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+        <p>Successfully saved!</p>
+    </div><!-- end alert -->
+    <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
+        <p>An error occured while saving</p>
+    </div><!-- end alert -->
+
     <h1>Vocabulary: {{ data.title }}</h1>
     <ol class="breadcrumb">
         <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
@@ -214,7 +222,7 @@
                 <h4 class="modal-title" id="resourceSearchLabel">Search Resources</h4>
             </div>
             <div class="modal-body" id="resourceSearchPaneContent">
-                <form class="form-horizontal" id="resource_search_form" onsubmit="return false;">
+                <form class="form-horizontal" id="concept_search_form" onsubmit="return false;">
                     <div class="modal-body">
 	                    <input type="hidden" id="resource-search-count" name="count" value="10">
                         <p>Type or paste the unique URL for the resource in the box below.  If we have a cached copy of the resource, select the version you want to reference by using the radio button to the left, then click "Continue."  If the resource you are looking for is not found, choose "Create New Resource."</p>
@@ -280,7 +288,7 @@
             </div>
             <div class="modal-footer" style="margin-top:100px">
                 <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()" disabled><i class="fa fa-minus-circle"></i> Delete</button>
-                <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
+                <button type="button" class="btn btn-primary" onclick="saveTermForm()">Save Term</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
             </div>
         </div>
@@ -322,7 +330,7 @@
             </div>
             <div class="modal-footer" style="margin-top:100px">
                 <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()"><i class="fa fa-minus-circle"></i> Delete</button>
-                <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
+                <button type="button" class="btn btn-primary" onclick="saveTermForm()">Save Term</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
             </div>
         </div>
