@@ -1867,33 +1867,22 @@ class WebUIExecutor {
                     $display->setTemplate("concepts/index");
                 }
                 break;
-            case "search_concepts_view":
+            case "search_concepts":
+                $json = isset($input["json"]) && $input["json"] == "true";
                 $query = $input["q"] ?? '';
                 $request = [
                     "command" => "search_concepts",
                     "q" => $query
                 ];
-                if ($query) {
-                    $response = $this->connect->query($request);
+
+                $response = $this->connect->query($request);
+
+                if (!$json ) {
                     $display->setData(array("title"=> "Searching - ".$query ,  "response" => $response));
                     $display->setTemplate("concepts/index");
+                }
 
-                } else {
-                    $response = $this->connect->query($request);
-                    $display->setData(array("title"=> "Concepts",  "response" => $response));
-                    $display->setTemplate("concepts/index");
-                }
-                break;
-            case "search_concepts":
-                $query = $input["q"] ?? '';
-                $request = [
-                    "command" => "search_concepts",
-                    "q" => $query
-                ];
-                if ($query) {
-                    $response = $this->connect->query($request);
-                    return $response;
-                }
+                return $response;
                 break;
             case "save_concept_term":
                 if (isset($this->permissions["EditVocabulary"])) {
@@ -1910,7 +1899,7 @@ class WebUIExecutor {
                     $request["concept_id_1"] = $input["concept-id-1"];
                     $request["concept_id_2"] = $input["concept-id-2"];
                     $response = $this->connect->query($request);
-                    return $response;
+                    return $response;  // check if needed
                 } else {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
@@ -3552,7 +3541,7 @@ class WebUIExecutor {
         $request["value"] = $input["term-value"];
 
         $preferred = ($input["is-preferred"] ?? null == "checked") ? "true" : "false";;
-        $request["is_preferred"] = $preferred;  
+        $request["is_preferred"] = $preferred;
         $response = $this->connect->query($request);
         return $response;
     }
