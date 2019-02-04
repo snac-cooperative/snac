@@ -740,7 +740,8 @@ class ServerExecutor {
      */
     public function deleteTerm($termID) {
         $this->cStore->deleteTerm($termID);
-        return true;
+        $response["result"] = "success";
+        return $response;
     }
 
     /**

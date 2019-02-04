@@ -1915,6 +1915,14 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
+            case "delete_concept_term":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    return $this->deleteConceptTerm($input);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+
             // Resources
             case "add_resource":
                 if (isset($this->permissions["EditResources"])) {
@@ -3528,6 +3536,7 @@ class WebUIExecutor {
 
         return true;
     }
+
     /**
      * Save Concept Term
      *
@@ -3538,10 +3547,27 @@ class WebUIExecutor {
     protected function saveConceptTerm(&$input) {
         $request = [];
         $request["command"] = "save_term";
-        $request["term_id"] = $input["term-id"];
+        $request["term_id"] = $input["term-id"] ?? null;
         $request["concept_id"] = $input["concept-id"];
         $request["value"] = $input["term-value"];
-        $request["is_preferred"] = $input["is-preferred"] == "checked" ? "true" : "false";
+
+        $preferred = ($input["is-preferred"] ?? null == "checked") ? "true" : "false";;
+        $request["is_preferred"] = $preferred;  
+        $response = $this->connect->query($request);
+        return $response;
+    }
+
+    /**
+     * Delete Concept Term
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    protected function deleteConceptTerm(&$input) {
+        $request = [];
+        $request["command"] = "delete_term";
+        $request["term_id"] = $input["term-id"];
         $response = $this->connect->query($request);
         return $response;
     }

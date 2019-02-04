@@ -69,15 +69,25 @@ function convertToInputField(event) {
 
 function deleteTerm(event) {
     if (!confirm('Are you sure you want to delete this term?')) { return; }
-    // send a DELETE request to Server.
-    // $.ajax({
-    //    url: '/',
-    //    type: 'DELETE',
-    //    success: function(response) {
-    //      //...
-    //    }
-    // });
-    var id = $("#term-input").data("termId");
+
+    var id = { "term-id" : $("#term-input").data("termId") };
+    $.post(snacUrl + "/vocab_administrator/delete_concept_term", id)
+        .done(function(data) {
+            createdTerm = data;
+            if (data.result !== "success")  {
+                $('#error-message').slideDown();
+                return false;
+            }
+            $('#notification-message').slideUp();
+            $('#success-message').slideDown();
+            setTimeout(function() {
+                window.location.reload()
+            }, 500);
+        })
+        .fail(function() {
+            $('#error-message').slideDown();
+        });
+
     console.log("deleting term: ", id);
 
 }

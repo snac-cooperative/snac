@@ -469,7 +469,7 @@ class Server implements \snac\interfaces\ServerInterface {
             case "delete_term":
                 //if (!$executor->hasPermission("Create"))
                   // throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
-                $this->response = $executor->deleteTerm($this->input["id"]);
+                $this->response = $executor->deleteTerm($this->input["term_id"]);
 
                 break;
             case "save_concept_relationship":
