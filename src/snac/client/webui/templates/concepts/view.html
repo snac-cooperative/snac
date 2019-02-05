@@ -178,40 +178,43 @@
         </div>
     </div>
 
-    {% if concept.related_concepts %}
-    <h2>Related Concepts</h2>
-    <div class="form-group">
-        {% for related in concept.related_concepts %}
-            <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span> <a href="{{snacUrl}}{{related.id}}"> {{related.value}}</a></h4>
-        {% endfor %}
-    </div>
-    {% endif %}
+    <div class="row">
+        {% if concept.related_concepts %}
+        <div class="form-group col-xs-6">
+        <h2>Related Concepts</h2>
+            {% for related in concept.related_concepts %}
+                <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span> <a href="{{snacUrl}}{{related.id}}"> {{related.value}}</a></h4>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-    {% if concept.broader_concepts %}
-    <h2>Broader Concepts</h2>
-    <div class="form-group">
-        {% for broader in concept.broader_concepts %}
-             <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span><a href="{{snacUrl}}{{broader.id}}"> {{broader.value}} </a></h4>
-        {% endfor %}
-    </div>
-    {% endif %}
 
-    {% if concept.narrower_concepts %}
-    <h2>Narrower Concepts</h2>
-    <div class="form-group">
-        {% for narrower in concept.narrower_concepts %}
-            <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span> <a href="{{snacUrl}}{{narrower.id}}"> {{narrower.value}}</a></h4>
-        {% endfor %}
+        {% if concept.narrower_concepts %}
+        <div class="form-group  col-xs-6">
+        <h2>Narrower Concepts</h2>
+            {% for narrower in concept.narrower_concepts %}
+                <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span> <a href="{{snacUrl}}{{narrower.id}}"> {{narrower.value}}</a></h4>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if concept.broader_concepts %}
+        <div class="form-group  col-xs-6">
+            <h2>Broader Concepts</h2>
+            {% for broader in concept.broader_concepts %}
+            <h4><span><button type="button" class="btn-xs btn-danger" name="button" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span><a href="{{snacUrl}}{{broader.id}}"> {{broader.value}} </a></h4>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 
     <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button>
 </div>
-
+<a href="#"></a>
 {{dump(concept)}}
 {{dump(concept.terms[0])}}
 
-<button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
+<button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Concept Relation</button>
 
 <div class="modal fade" id="resourceSearchPane" tabindex="-1" role="dialog" aria-labelledby="resourceSearchPane">
     <div class="modal-dialog" role="document">
@@ -221,23 +224,43 @@
                 <h4 class="modal-title" id="resourceSearchLabel">Search Resources</h4>
             </div>
             <div class="modal-body" id="resourceSearchPaneContent">
-                <form class="form-horizontal" id="concept_search_form" onsubmit="return false;">
+                <form class="form-horizontal" id="concept-search-form" onsubmit="return false;">
                     <div class="modal-body">
-	                    <input type="hidden" id="resource-search-count" name="count" value="10">
-                        <p>Type or paste the unique URL for the resource in the box below.  If we have a cached copy of the resource, select the version you want to reference by using the radio button to the left, then click "Continue."  If the resource you are looking for is not found, choose "Create New Resource."</p>
+	                    <input type="hidden" name="json" value="true">
+                        <p>Search for concepts by their preferred term.</p>
+
+                        <h3>{{concept.terms[0].value}}</h3>
+
                         <div class="input-group">
 	                        <input type="text" class="form-control"
-	                            placeholder="Resource URL or Title..." id="resource-searchbox" name="q">
+	                            placeholder="Resource URL or Title..." id="concept-searchbox" name="q">
                                 <span class="input-group-btn">
                                     <button class="btn btn-default" type="submit" id="resource-searchbutton" onclick='searchResourceIMeanTerm()'><i class="fa fa-search" aria-hidden="true"></i></button>
                                 </span>
 	                    </div>
+                        <!-- Relationship Types -->
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="concept-relationship-type" id="concept-relationship-type1" value=""> Broader
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="concept-relationship-type" id="concept-relationship-type2" value=""> Narrower
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="concept-relationship-type" id="concept-relationship-type3" value="">Related
+                            </label>
+                        </div>
 
-	                    <div id="resource-results-box">
+
+	                    <div id="concept-results-box">
 	                    </div>
                         <div style="text-align: center; margin-top: 10px;">
-                            <p>OR</p>
-                            <button type="button" class="btn btn-success" id="btn_open_create_resource" data-dismiss="modal">Create New Resource</button>
+                            <p>Relationship:</p>
+                            <button type="button" class="btn btn-success" id="relate-concepts-btn" data-dismiss="modal">Relate Concepts</button>
                         </div>
                     </div>
                 </form>
