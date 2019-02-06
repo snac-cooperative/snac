@@ -736,10 +736,64 @@ class ServerExecutor {
      * Delete Term
      * @param int $termID
      * @param int termID
-     * @return bool True if deleted
+     * @return string[] $response
      */
     public function deleteTerm($termID) {
         $this->cStore->deleteTerm($termID);
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Save Related Concepts
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return string[] $response
+     */
+    public function saveRelatedConcepts($id1, $id2) {
+        $response = [];
+        $response = $this->cStore->saveRelatedConcept($id1, $id2);
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Remove Related Concepts
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return string[] $response
+     */
+    public function removeRelatedConcepts($id1, $id2) {
+        $this->cStore->removeRelatedConcepts($id1, $id2);
+        $response["result"] = "success";
+        return $response;
+    }
+
+
+    /**
+     * Save Broader Concepts
+     *
+     * Relate a narrower and broader concept
+     *
+     * @param string $narrowerID Narrower Concept id
+     * @param string $broaderID Broader Concept id
+     * @return string[] $response
+     */
+    public function saveBroaderConcepts($narrowerID, $broaderID) {
+        $response = $this->cStore->saveBroaderConcept($narrowerID, $broaderID);
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Delete Broader Concepts
+     *
+     * @param string $id1 Narrower Concept id
+     * @param string $id2 Broader Concept id
+     * @return string[] $response
+     */
+    public function removeBroaderConcepts($narrowerID, $broaderID) {
+        $response = $this->cStore->removeBroaderConcept($narrowerID, $broaderID);
         $response["result"] = "success";
         return $response;
     }

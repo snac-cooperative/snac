@@ -1902,20 +1902,70 @@ class DBUtil
         if (isset($termID, $conceptID) && $isPreferred === 'true') {
             $this->sql->updatePreferredTerm($conceptID, $termID);
         }
-
-
-
         return $term;
     }
 
     /**
      * Delete Term
      * @param int $termID
-     * @param int termID
      * @return bool True if deleted
      */
     public function deleteTerm($termID) {
         $this->sql->deleteTerm($termID);
+        return true;
+    }
+
+    /**
+     * Save Related Concepts
+     *
+     * Relate two concepts
+     *
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return string[] Array of related concept ids
+     */
+    public function saveRelatedConcepts($id1, $id2) {
+        if (!isset($id1, $id2)) { return false;}
+        $this->sql->insertRelatedConcepts($id1, $id2);
+        return true;
+    }
+
+    /**
+     * Remove Related Concepts
+     *
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return bool True if deleted
+     */
+    public function removeRelatedConcepts($id1, $id2) {
+        $this->sql->deleteRelatedConcepts($id1, $id2);
+        return true;
+    }
+
+    /**
+     * Save Broader Concepts
+     *
+     * Relate a narrower and broader concept
+     *
+     * @param string $narrowerID Narrower Concept id
+     * @param string $broaderID Broader Concept id
+     * @return bool True if saved
+     */
+    public function saveBroaderConcept($narrowerID, $broaderID) {
+        if (!isset($narrowerID, $broaderID)) { return false;}
+        $this->sql->insertBroaderConcepts($narrowerID, $broaderID);
+        return true;
+    }
+
+    /**
+     * Remove Broader Concepts
+     *
+     * @param string $narrowerID Narrower Concept id
+     * @param string $broaderID Broader Concept id
+     * @return bool True if deleted
+     */
+    public function removeBroaderConcepts($narrowerID, $broaderID) {
+        $this->sql->deleteBroaderConcepts($narrowerID, $broaderID);
         return true;
     }
 

@@ -6670,4 +6670,71 @@ class SQL
         return $concepts;
     }
 
+
+    /**
+    * Insert Related Concepts
+    *
+    * Relate two concepts
+    *
+    * @param string $id1 Related Concept id
+    * @param string $id2 Related Concept id
+    * @return string[] Array of related concept ids
+    */
+    public function insertRelatedConcepts($id1, $id2) {
+        $sql = "INSERT INTO related_concept VALUES ($1, $2), ($2,$1)";
+        $result = $this->sdb->query($sql, array($id1, $id2));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
+    /**
+    * Delete Related Concepts
+    *
+    * Remove relationship between two related concepts
+    *
+    * @param string $id1 Related Concept id
+    * @param string $id2 Related Concept id
+    * @return
+    */
+    public function deleteRelatedConcepts($id1, $id2) {
+        $sql = "DELETE FROM related_concept WHERE concept_id = $1 OR concept_id = $2";
+        $result = $this->sdb->query($sql, array($id1, $id2));
+        $deleteCount = $this->sdb->row($result);
+        return $deleteCount;
+    }
+
+    /**
+    * Insert Broader Concepts
+    *
+    * Relate a narrower and broader concept
+    *
+    * @param string $id1 Narrower Concept id
+    * @param string $id2 Broader Concept id
+    * @return
+    */
+    public function insertBroaderConcepts($narrowerID, $broaderID) {
+        $sql = "INSERT INTO broader_concept VALUES ($1, $2)";
+        $result = $this->sdb->query($sql, array($narrowerID, $broaderID));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
+
+    /**
+    * Delete Broader Concepts
+    *
+    * Remove relationship between two related concepts
+    *
+    * @param string $id1 Broader Concept id
+    * @param string $id2 Broader Concept id
+    * @return
+    */
+    public function deleteBroaderConcepts($narrowerID, $broaderID) {
+        $sql = "DELETE FROM broader_concept WHERE narrower_id = $1 AND broader_id = $2";
+        $result = $this->sdb->query($sql, array($narrowerID, $broaderID));
+        $deleteCount = $this->sdb->fetchAll($result);
+        return $deleteCount;
+    }
+
+
 }
