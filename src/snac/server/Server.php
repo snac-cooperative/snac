@@ -481,19 +481,19 @@ class Server implements \snac\interfaces\ServerInterface {
             case "delete_related_concepts":
                 if (!$executor->hasPermission("Create"))
                   throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
-                $this->response = $executor->deleteRelatedConcepts($this->input["id1"], $this->input["id2"]);
+                $this->response = $executor->removeRelatedConcepts($this->input["id1"], $this->input["id2"]);
 
                 break;
             case "save_broader_concepts":
                 if (!$executor->hasPermission("Create"))
                   throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
-                $this->response = $executor->saveRelatedConcepts($this->input["narrower_id"], $this->input["broader_id"]);
+                $this->response = $executor->saveBroaderConcepts($this->input["narrower_id"], $this->input["broader_id"]);
 
                 break;
             case "delete_broader_concepts":
                 if (!$executor->hasPermission("Create"))
                   throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
-                $this->response = $executor->deleteRelatedConcepts($this->input["narrower_id"], $this->input["broader_id"]);
+                $this->response = $executor->removeBroaderConcepts($this->input["narrower_id"], $this->input["broader_id"]);
 
                 break;
 

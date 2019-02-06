@@ -6699,7 +6699,7 @@ class SQL
     public function deleteRelatedConcepts($id1, $id2) {
         $sql = "DELETE FROM related_concept WHERE concept_id = $1 OR concept_id = $2";
         $result = $this->sdb->query($sql, array($id1, $id2));
-        $deleteCount = $this->sdb->row($result);
+        $deleteCount = $this->sdb->fetchAll($result);
         return $deleteCount;
     }
 

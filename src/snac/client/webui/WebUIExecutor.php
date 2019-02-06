@@ -1891,22 +1891,57 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
-            case "save_concept_relationship":
+            case "delete_concept_term":
                 if (isset($this->permissions["EditVocabulary"])) {
-                    return $this->saveConceptTerm($input, $user);
+                    return $this->deleteConceptTerm($input);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "save_related_concepts":
+                if (isset($this->permissions["EditVocabulary"])) {
                     $request = [];
-                    $request["command"] = "save_concept_relationship";
-                    $request["concept_id_1"] = $input["concept-id-1"];
-                    $request["concept_id_2"] = $input["concept-id-2"];
+                    $request["command"] = "save_related_concepts";
+                    $request["id1"] = $input["id1"];
+                    $request["id2"] = $input["id2"];
                     $response = $this->connect->query($request);
                     return $response;  // check if needed
                 } else {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
-            case "delete_concept_term":
+            case "delete_related_concepts":
                 if (isset($this->permissions["EditVocabulary"])) {
-                    return $this->deleteConceptTerm($input);
+                    $request = [];
+                    $request["command"] = "delete_related_concepts";
+                    $request["id1"] = $input["id1"];
+                    $request["id2"] = $input["id2"];
+                    $response = $this->connect->query($request);
+                    return $response;  // check if needed
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "save_broader_concepts":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $request = [];
+                    $request["command"] = "save_broader_concepts";
+                    $request["narrower_id"] = $input["narrower_id"];
+                    $request["broader_id"] = $input["broader_id"];
+                    $response = $this->connect->query($request);
+                    return $response;  // check if needed
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "delete_broader_concepts":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $request = [];
+                    $request["command"] = "delete_broader_concepts";
+                    $request["narrower_id"] = $input["narrower_id"];
+                    $request["broader_id"] = $input["broader_id"];
+                    $response = $this->connect->query($request);
+                    return $response;  // check if needed
                 } else {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }

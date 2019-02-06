@@ -165,6 +165,61 @@ function saveTermForm() {
 
 function deleteConceptRelationship() {
     if (!confirm( "Are you sure you want to delete this relationship?")) { return; }
+    var conceptID = $("#concept-id").val();
+    var narrowerID = "";
+    var broaderID = "";
+    var endpoint = "delete_broader_concepts";
+    var $secondConcept = $(event.target.parentElement);
+    var secondID = $secondConcept.data("conceptId");
+
+    // broader/narrower/related
+
+
+
+
+
+    // if broader, conceptID is narrower
+    if ($secondConcept.hasClass('narrower_concept')) {
+        narrowerID = secondID;
+        broaderID = conceptID;
+    }
+    // if narrower, conceptID is narrower
+    if ($secondConcept.hasClass('broader_concept')) {
+        narrowerID = secondID;
+        broaderID = conceptID;
+    }
+
+    var params = `?narrower_id=${narrowerID}&broader_id=${broaderID}`;
+    // if related, related url, id1, id2
+    if ($secondConcept.hasClass('related_concept')) {
+        // id1, id2, delete related concept
+        var relatedID = secondID;
+        endpoint = "delete_related_concepts";
+        var params = `?id1=${conceptID}&id2=${relatedID}`;    
+    }
+
+
+    // var id = { "term-id" : $("#term-input").data("termId") };
+    $.post(snacUrl + "/vocab_administrator/" + endpoint + params)
+        .done(function(data) {
+            createdTerm = data;
+            if (data.result !== "success")  {
+                $('#error-message').slideDown();
+                return false;
+            }
+            $('#notification-message').slideUp();
+            $('#success-message').slideDown();
+            $('#term-modal').modal('hide');
+            setTimeout(function() {
+                window.location.reload()
+            }, 500);
+        })
+        .fail(function() {
+            $('#error-message').slideDown();
+        });
+
+    console.log("deleting relationship with concept id ", secondID );
+
 }
 
 
