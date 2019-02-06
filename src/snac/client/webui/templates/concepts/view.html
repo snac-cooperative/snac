@@ -137,12 +137,11 @@
             <br>
 
 
-
-<h2>Search</h2>
+<!--  -->
+            <!-- <h2>Search</h2>
             <div class="well well-lg text-center">
                 <div class="input-group select2-bootstrap-append">
                     <select id="term-relationship-type-select" name="concept-relationship" class="select" style="width: 25%;">
-                        <!--TODO: load options   -->
                         <option>Broader</option>
                         <option>Narrower</option>
                         <option>Related</option>
@@ -170,8 +169,8 @@
                 <label>
                     <input type="radio" name="concept-relationship-type" id="concept-relationship-type3" value="">Related
                 </label>
-            </div>
-
+            </div> -->
+<!--  -->
 
 
 
@@ -208,13 +207,11 @@
         {% endif %}
     </div>
 
-    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button>
+    <!-- <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button> -->
+    <button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Concept Relation</button>
 </div>
-<a href="#"></a>
-{{dump(concept)}}
-{{dump(concept.terms[0])}}
 
-<button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Concept Relation</button>
+
 
 <div class="modal fade" id="resourceSearchPane" tabindex="-1" role="dialog" aria-labelledby="resourceSearchPane">
     <div class="modal-dialog" role="document">
