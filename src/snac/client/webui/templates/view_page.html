@@ -286,7 +286,7 @@ function displayHoldingsMapInteractive() {
         holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 7,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(holdingsMapView);
         var bounds = new L.LatLngBounds();
 
@@ -350,7 +350,7 @@ function displayPlacesMapInteractive() {
         placesMapView = L.map('placesMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 7,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(placesMapView);
         var bounds = new L.LatLngBounds();
 
@@ -1004,7 +1004,7 @@ $(document).ready(function() {
                         <a class="list-group-item" href="https://beta.worldcat.org/archivegrid/?p=1&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}" target="_blank">
                             <span class="sprite-icons-archivegrid"></span>
                             ArchiveGrid Search</a>
-                        <a class="list-group-item" href="http://dp.la/search?utf8=%E2%9C%93&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}" target="_blank">
+                        <a class="list-group-item" href="https://dp.la/search?utf8=%E2%9C%93&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}" target="_blank">
                             <span class="sprite-icons-dpla"></span>
                             DPLA Search</a>
                     </div>

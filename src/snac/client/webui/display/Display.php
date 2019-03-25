@@ -5,7 +5,7 @@
  * File for the display interface
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -171,7 +171,7 @@ class Display {
         $this->data["control"] = array();
 
         // Put some PHP variables into the control section
-        $this->data["control"]["currentURL"] = $this->cleanString("http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
+        $this->data["control"]["currentURL"] = $this->cleanString("https://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
         $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
         $this->data["control"]["snacURL"] = \snac\Config::$WEBUI_URL;
 

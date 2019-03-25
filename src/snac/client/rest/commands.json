@@ -1222,7 +1222,7 @@
     "download_constellation" : {
         "category": "constellation",
         "title" : "Download Constellation",
-        "description" : "Returns the full Constellation in the requested format.  To perform a direct download, without JSON wrapping, submit a request to the webUI interface, <code>http://snaccooperative.org/download/{constellationid}?type={type}</code> or <code>http://snaccooperative.org/download?arkid={ark}&type={type}</code>.",
+        "description" : "Returns the full Constellation in the requested format.  To perform a direct download, without JSON wrapping, submit a request to the webUI interface, <code>https://snaccooperative.org/download/{constellationid}?type={type}</code> or <code>https://snaccooperative.org/download?arkid={ark}&type={type}</code>.",
         "parameters" : {
             "constellationid" : {
                 "type" : "Integer",
@@ -2440,7 +2440,7 @@
                     "resource": {
                         "dataType": "Resource",
                         "title": "My Title",
-                        "link": "http://mylink.com",
+                        "link": "https://mylink.com",
                         "abstract": "This is a full abstract",
                         "source": "My full citation",
                         "documentType": {
@@ -3125,7 +3125,7 @@
                 "query" : {
                    "command" : "add_sameas",
                    "constellationid" : 73093297,
-                   "sameas_uris": ["https://en.wikipedia.org/wiki/Franciscus_Gomarus", "http://id.loc.gov/authorities/names/nb98048106.html"],
+                   "sameas_uris": ["https://en.wikipedia.org/wiki/Franciscus_Gomarus", "https://id.loc.gov/authorities/names/nb98048106.html"],
                    "user" : { "...":"..." }
                 },
                 "response":{
@@ -3138,7 +3138,7 @@
                                 "type": {
                                     "id": 28225
                                 },
-                                "uri": "http://id.loc.gov/authorities/names/nb98048106.html",
+                                "uri": "https://id.loc.gov/authorities/names/nb98048106.html",
                                 "id": "83129381",
                                 "version": "11258569",
                                 "operation": "insert"
@@ -3148,7 +3148,7 @@
                                 "type": {
                                     "id": 28225
                                 },
-                                "uri": "http://id.loc.gov/authorities/names/nb98048106.html",
+                                "uri": "https://id.loc.gov/authorities/names/nb98048106.html",
                                 "id": "83129382",
                                 "version": "11258569",
                                 "operation": "insert"

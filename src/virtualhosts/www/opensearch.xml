@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+<OpenSearchDescription xmlns="https://a9.com/-/spec/opensearch/1.1/" xmlns:moz="https://www.mozilla.org/2006/browser/search/">
     <ShortName>SNAC Search</ShortName>
     <Description>Search for identities in SNAC</Description>
     <Tags>snac</Tags>
     <Contact>snaccooperative@gmail.com</Contact>
     <Url type="text/html" 
-        template="http://snaccooperative.org/search?count=10&amp;start=0&amp;entity_type=&amp;term={searchTerms}"/>
+        template="https://snaccooperative.org/search?count=10&amp;start=0&amp;entity_type=&amp;term={searchTerms}"/>
     <LongName>SNAC Identity Search</LongName>
-    <Image height="64" width="64" type="image/png">http://snaccooperative.org/icons/websearch.png</Image>
-    <Image height="16" width="16" type="image/x-icon">http://snaccooperative.org/icons/websearch.ico</Image>
+    <Image height="64" width="64" type="image/png">https://snaccooperative.org/icons/websearch.png</Image>
+    <Image height="16" width="16" type="image/x-icon">https://snaccooperative.org/icons/websearch.ico</Image>
     <Query role="example" searchTerms="washington" />
     <Developer>SNAC Development Team</Developer>
     <Attribution>
@@ -19,5 +19,5 @@
     <Language>en-us</Language>
     <OutputEncoding>UTF-8</OutputEncoding>
     <InputEncoding>UTF-8</InputEncoding>
-    <moz:SearchForm>http://snaccooperative.org/search</moz:SearchForm>
+    <moz:SearchForm>https://snaccooperative.org/search</moz:SearchForm>
 </OpenSearchDescription>

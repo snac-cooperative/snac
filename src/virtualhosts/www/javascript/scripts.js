@@ -4,7 +4,7 @@
  * Collection of generic scripts used throughout the interface.
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -47,7 +47,7 @@ function openGeoPlaceViewer(id) {
                 geoMapView = L.map('geoPlaceMap').setView([data.term.latitude, data.term.longitude], 6);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
-                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(geoMapView);
                 var marker = L.marker([data.term.latitude, data.term.longitude]).addTo(geoMapView);
 
@@ -98,7 +98,7 @@ function displayHoldingsMap() {
         holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(holdingsMapView);
         var bounds = new L.LatLngBounds();
 

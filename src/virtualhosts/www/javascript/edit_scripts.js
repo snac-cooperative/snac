@@ -4,7 +4,7 @@
  * Scripts used in the edit page
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -2199,7 +2199,7 @@ $(document).ready(function() {
                         $('#resource-create-box').html(html);
                         var $resourceForm = $("#resource_create_form");
                         // Copy the search contents to title or href
-                        if ($("#resource-searchbox").val().indexOf("http:") == -1)
+                        if ($("#resource-searchbox").val().indexOf("http") == -1)
                             $resourceForm.find("#resource-title").val($("#resource-searchbox").val());
                         else
                             $resourceForm.find("#resource-url").val($("#resource-searchbox").val());
