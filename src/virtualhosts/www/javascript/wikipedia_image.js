@@ -44,7 +44,7 @@ $(document).ready(function() {
         $.get("https://query.wikidata.org/sparql?format=json&query="+query, null, function (data) {
             if (data.results && data.results.bindings
                     && data.results.bindings[0] && data.results.bindings[0]["_image"]) {
-                var imageURL = data.results.bindings[0]["_image"].value;
+                var imageURL = data.results.bindings[0]["_image"].value.replace("http://", "https://");
 
                 var parts = imageURL.split("/Special:FilePath/");
                 var file = parts[1];
