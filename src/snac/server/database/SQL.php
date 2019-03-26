@@ -405,7 +405,7 @@ class SQL
      *
      * I'm sure there are Postgres docs for extract(), epoch from, at time zone 'utc', but this is a nice example.
      *
-     * http://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
+     * https://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
      *
      * @param integer $appUserID The user id
      *
