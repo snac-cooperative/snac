@@ -9,7 +9,7 @@
  *
  *
  * @author Tom Laudeman
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -405,7 +405,7 @@ class SQL
      *
      * I'm sure there are Postgres docs for extract(), epoch from, at time zone 'utc', but this is a nice example.
      *
-     * http://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
+     * https://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
      *
      * @param integer $appUserID The user id
      *
