@@ -106,7 +106,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                     // build the CSV line to print
                     $output = array(
                         "name" => $result["identity"]["nameEntries"][0]["original"],
-                        "id" => $result["identity"]["id"],
+                        "id" => (string) $result["identity"]["id"],
                         "type" => [ 
                             $result["identity"]["entityType"]["term"] 
                         ],
@@ -155,7 +155,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                         // build the results line
                         $output = array(
                             "name" => $result["identity"]["nameEntries"][0]["original"],
-                            "id" => $result["identity"]["id"],
+                            "id" => (string) $result["identity"]["id"],
                             "type" => [$result["identity"]["entityType"]["term"]],
                             "score" => round($result["strength"], 2),
                             "match" => ($result["strength"] > 11 ? true : false)
