@@ -35,6 +35,11 @@ ErrorDocument 510 /index.php?command=error&type=510
 RewriteEngine on
 RewriteBase /
 
+# Redirect to HTTPS
+RewriteCond %{HTTPS} !on
+RewriteCond %{HTTP_HOST} !=localhost
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
 # Store the current location in an environment variable CWD
 RewriteCond $0#%{REQUEST_URI} ([^#]*)#(.*)\1$
 RewriteRule ^.*$ - [E=CWD:%2]
