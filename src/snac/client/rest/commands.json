@@ -571,7 +571,7 @@
                 "title": "Update a simple Constellation",
                 "description": "Update a Constellation with only one nameEntry",
                 "query": {
-                    "command": "insert_constellation",
+                    "command": "update_constellation",
                     "user": { "..." : "..." },
                     "constellation": {
                         "dataType": "Constellation",
@@ -1309,6 +1309,9 @@
                 "title": "",
                 "description": "",
                 "query": {
+                    "command" : "constellation_list_maybesame",
+                    "user" : { "...":"..." },
+                    "constellationid" : 66598997
                 },
                 "response" : {
                     "mergeable": true,
