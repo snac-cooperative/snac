@@ -237,3 +237,11 @@ function shortenIfLong(str, maxLength, pretty=true) {
     var cutoff = pretty ? str.lastIndexOf(' ', maxLength) : maxLength
     return str.slice(0, cutoff) + '...'
 }
+
+function toggleProfile() {
+
+    // $("#sidebar").collapse("toggle");
+    $("#profile-sidebar").toggleClass("collapsed");
+    $("#content-column").toggleClass("col-md-12 col-md-8");
+
+}

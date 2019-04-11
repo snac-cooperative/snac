@@ -52,6 +52,34 @@
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 
 <style>
+#profile-sidebar {
+  /* for the animation */
+  transition: margin 0.3s ease;
+}
+
+#row-main {
+  /* necessary to hide collapsed profile-sidebar */
+  overflow-x: hidden;
+}
+
+#content-column {
+  /* for the animation */
+  transition: width 0.3s ease;
+}
+
+.collapsed {
+    display: none;
+}
+
+@media (min-width: 992px) {
+  .collapsed {
+    display: block;
+    /* same width as profile-sidebar */
+    margin-right: -40%;
+  }
+}
+
+
 .wikipedia_thumbnail {
     text-align: center;
     padding: 15px;
@@ -519,9 +547,20 @@ $(document).ready(function() {
                 {% endif %}
             </div>
             {% endif %}
+
+            <div class="btn-group" style="float:right">
+                <button id="show-profile-btn" class="btn list-group-item-info" type="button" onclick="toggleProfile()"
+                    <i class="fa fa-fw fa-pencil" aria-hidden="true"></i> Toggle Profile
+                </button>
+                <!-- <button id="hide-profile-btn" class="btn list-group-item-info" type="button" onclick="toggleProfile()"
+                    <i class="fa fa-fw fa-pencil" aria-hidden="true"></i> Hide Profile
+                </button> -->
+
+            </div>
+
         </div>
-        <div class="row">
-            <div class="col-md-8">
+        <div class="row" id="row-main">
+            <div id="content-column" class="col-md-8">
                 <ul class="nav nav-tabs" role="tablist">
                     {% if data.biogHists.0.text %}
                     <li class="{{ data.biogHists.0.text ? 'active' }}">
@@ -547,6 +586,10 @@ $(document).ready(function() {
                     <!-- {% if data.nameEntries|length > 1 %}
                     <li><a href="#names" role="tab" data-toggle="tab">Alternative Names</a></li>
                     {% endif %} -->
+                    <button id="show-profile-btn" class="btn list-group-item-info" type="button" style="float:right;" onclick="toggleProfile()"
+                        <i class="fa fa-fw fa-pencil" aria-hidden="true"></i> Toggle Profile
+                    </button>
+
                 </ul>
                 <div class="tab-content">
                     {% if data.biogHists.0.text %}
@@ -878,7 +921,7 @@ $(document).ready(function() {
                 </div>
 
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4" id="profile-sidebar">
                 <div class="panel wikipedia_thumbnail_container">
                     <div class="wikipedia_thumbnail" id="wikipediaImage"></div>
                 </div>
@@ -1034,7 +1077,7 @@ $(document).ready(function() {
                          <div title="alternative forms of name" class="extra-names modal-body">
                             {# ignore the preferred name #}
                             {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
-                                {% for nameEntry in data.new.nameEntries|slice(1) %}
+                                {% for nameEntry in data.new.nameEntries|slice(1) | sort %}
                                   <div class="updated">{{nameEntry.original}}</div>
                                 {% endfor %}
                                 {% for nameEntry in data.nameEntries %}
@@ -1044,7 +1087,7 @@ $(document).ready(function() {
                                 {% for nameEntry in data.new.nameEntries %}
                                   <div class="updated">{{nameEntry.original}}</div>
                                 {% endfor %}
-                                {% for nameEntry in data.nameEntries|slice(1) %}
+                                {% for nameEntry in data.nameEntries|slice(1) | sort %}
                                   <div>{{nameEntry.original}}</div>
                                 {% endfor %}
                             {% endif %}
