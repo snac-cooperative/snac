@@ -550,42 +550,30 @@ $(document).ready(function() {
         <div class="row" id="row-main">
             <div id="content-column" class="col-md-8">
                 <ul class="nav nav-tabs" role="tablist">
+
+                    <!-- Build enabled and disabled tabs <li> and <a> -->
+                    {% set disabledtab %}
+                        <li class="disabled"><a class="grayedout"
+                    {% endset %}
+                    {% set enabledtab %}
+                        <li><a  role="tab" data-toggle="tab"
+                    {% endset %}
+
                     {% if data.biogHists.0.text %}
-                    <li class="{{ data.biogHists.0.text ? 'active' }}">
-                        <a href="#biography" role="tab" data-toggle="tab">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a>
-                    </li>
+                        <li class="{{ data.biogHists.0.text ? 'active' }}">
+                            <a href="#biography" role="tab" data-toggle="tab">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a>
+                        </li>
                     {% else %}
-                    <li class="disabled" ><a class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
+                        <li class="disabled"><a class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
                     {% endif %}
+
                     <li class="{{ data.biogHists.0.text ? '' : 'active' }}"><a href="#artifacts" role="tab" data-toggle="tab" onClick="displayHoldingsMapInteractive();">Resources</a></li>
-                    {% if data.relations %}
-                    <li><a href="#relationships" role="tab" data-toggle="tab">Relationships</a></li>
-                    {% else %}
-                    <li class="disabled" ><a class="grayedout">Relationships</a></li>
-                    {% endif %}
-                    {% if data.places %}
-                    <li><a href="#places" role="tab" data-toggle="tab" onClick="displayPlacesMapInteractive();">Places</a></li>
-                    {% else %}
-                    <li class="disabled" ><a class="grayedout">Places</a></li>
-                    {% endif %}
-                    {% if data.subjects %}
-                    <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
-                    {% else %}
-                    <li class="disabled" ><a class="grayedout">Subjects</a></li>
-                    {% endif %}
-                    {% if data.occupations %}
-                    <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
-                    {% else %}
-                    <li class="disabled" ><a class="grayedout">Occupations</a></li>
-                    {% endif %}
-                    {% if data.functions %}
-                    <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
-                    {% else %}
-                    <li class="disabled" ><a class="grayedout">Functions</a></li>
-                    {% endif %}
-                    <!-- {% if data.nameEntries|length > 1 %}
-                    <li><a href="#names" role="tab" data-toggle="tab">Alternative Names</a></li>
-                    {% endif %} -->
+
+                    {{ data.relations ? enabledtab : disabledtab}} href="#relationships">Relationships</a></li>
+                    {{ data.places ? enabledtab : disabledtab}} href="#places" onClick="displayPlacesMapInteractive();">Places</a></li>
+                    {{ data.subjects ? enabledtab : disabledtab}} href="#subjects">Subjects</a></li>
+                    {{ data.occupations ? enabledtab : disabledtab}} href="#occupations">Occupations</a></li>
+                    {{ data.functions ? enabledtab : disabledtab}} href="#functions">Functions</a></li>
                 </ul>
                 <div class="tab-content">
                     {% if data.biogHists.0.text %}
