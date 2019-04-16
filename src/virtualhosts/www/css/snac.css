@@ -286,6 +286,10 @@ div.snac {
     margin-bottom: 0;
 }
 
+.nav>li.disabled>a.grayedout{
+    color: #c1c1c1;
+}
+
 .scm-modal {
     color: #000000;
 }
