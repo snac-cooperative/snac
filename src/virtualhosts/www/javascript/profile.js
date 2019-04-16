@@ -58,6 +58,13 @@ $(document).ready(function() {
         });
     };
 
+    $(".user-preferences").find("input[type=checkbox]").each(function() {
+        $(this).on('change', function() {
+            localStorage.setItem(this.name, this.checked);
+        })
+
+    });
+
     // Save and Continue button
     if($('#update').exists()) {
         $('#update').click(function(){
