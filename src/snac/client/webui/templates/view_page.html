@@ -397,7 +397,8 @@ function displayPlacesMapInteractive() {
 
 $(document).ready(function() {
     if (localStorage.getItem('hide_profile') === 'true') {
-        toggleProfile()
+        $("#profile-toggle").prop("checked", true);
+        toggleProfile();
     }
 
     if ($("#artifacts").hasClass("active"))

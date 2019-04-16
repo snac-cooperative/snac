@@ -837,10 +837,10 @@ input[type='checkbox']:checked + .toggle-switch {
 
 .hidebar {
     position:absolute;
-    width:100%;
+    width:99.5%;
     height:25px;
-    border-top-right-radius: 35px;
-    border-bottom-right-radius: 35px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
     z-index: 1;
     font-size: large;
     font-family: 'Glyphicons Halflings';
