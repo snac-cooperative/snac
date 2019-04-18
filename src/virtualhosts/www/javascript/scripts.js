@@ -239,9 +239,9 @@ function shortenIfLong(str, maxLength, pretty=true) {
 }
 
 function toggleProfile() {
-
-    // $("#sidebar").collapse("toggle");
     $("#profile-sidebar").toggleClass("collapsed");
     $("#content-column").toggleClass("col-md-12 col-md-8");
 
+    var profileButtonText = ($("#profile-toggle-text").text() === "Hide") ? "Show" : "Hide";
+    $("#profile-toggle-text").text(profileButtonText);
 }
