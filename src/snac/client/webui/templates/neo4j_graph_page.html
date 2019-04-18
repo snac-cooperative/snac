@@ -78,8 +78,8 @@
                 <div class="col-md-3">
                     <div class="checkbox">
                         <input type="hidden" id="constellationid" name="constellationid" value="{{ data.id }}">
-                        <label for="names"  class="checkbox-inline"><input type="checkbox" id="names" name="names" onchange="toggle_names(this)"> Names</label>
-                        <label for="movement"  class="checkbox-inline"><input type="checkbox" checked id="movement" name="movement" onchange="toggle_movement(this)">Movement</label>
+                        <label for="names" class="checkbox-inline"><input type="checkbox" id="names" name="names" onchange="toggle_names(this)" checked> Names</label>
+                        <label for="movement" class="checkbox-inline"><input type="checkbox" id="movement" name="movement" onchange="toggle_movement(this)">Movement</label>
                     </div>
                 </div>
                 <div class="col-md-9">
@@ -88,13 +88,15 @@
                             <h4>Relationships: </h4>
                         </div>
                         <label>Degree: </label>
-                        <label for="degree_1" class="radio-inline"> <input onchange="load_data()" type="radio" id="degree_1" name="degree" value="1"> 1 </label>
-                        <label for="degree_2" class="radio-inline"> <input onchange="load_data()" type="radio" checked id="degree_2" name="degree" value="2"> 2 </label>
+                        <label for="degree_1" class="radio-inline"> <input onchange="load_data()" type="radio" id="degree_1" name="degree" value="1" checked> 1 </label>
+                        <label for="degree_2" class="radio-inline"> <input onchange="load_data()" type="radio" id="degree_2" name="degree" value="2"> 2 </label>
                         <label for="degree_3" class="radio-inline"> <input onchange="load_data()" type="radio" id="degree_3" name="degree" value="3"> 3 </label>
                     </div>
-                    <label for="delta">Show more</label>
-                    <input type="range" id="delta" name="delta" min="0" max="20" step="1" value="10" style="width:300px;display:inline-block;vertical-align:middle;">
-                    <label for="delta">Show fewer</label>
+
+                    <label for="delta" data-content="Filter out smaller nodes" data-toggle="popover" data-placement="top">Show less</label>
+                    <!-- Flipped for UI convenience, so left = less, right = more -->
+                    <input type="range" id="delta" name="delta" min="0" max="20" step="1" value="5" style="width:300px;display:inline-block;vertical-align:middle;transform: rotate(180deg)">
+                    <label for="delta" data-content="Show all nodes" data-toggle="popover" data-placement="top">Show more</label>
                     <input type="button" class="btn btn-primary" id="graph_button" name="graph_button" style="margin-left:15px;" value="Apply Filter" onClick="load_data()">
 
             </div>
@@ -105,6 +107,13 @@
 
         <script type="text/javascript">
             <!--
+
+
+            $('[data-toggle="popover"]').popover({
+                trigger: 'hover',
+            container: 'body'
+            })
+
 
             function lookup(dbid) {
                 var the_url = '{{control.snacURL}}/view/' + dbid;
@@ -151,8 +160,7 @@
                                 dataSource: data,
                                 forceLocked: false,
                                 directedEdges: true,
-                                nodeCaptionsOnByDefault: $("#names").prop("checked") ? true :
-                                    false,
+                                nodeCaptionsOnByDefault: $("#names").prop("checked") ? true : false,
                                 nodeTypes: {
                                     "dgr": ["x0", "x1", "x2", "x3", "x4"]
                                 },
@@ -272,9 +280,13 @@
 
                             alchemy.begin(config);
 
-                            $("#movement").prop("checked", "true");
-
                             $("#graph_button").prop("disabled", false).val("Apply Filter");
+
+                            if (!$("#movement").prop("checked") === true) {
+                                setTimeout(function() {
+                                    alchemy.force.stop()
+                                }, 1500)
+                            }
                         }
                     });
 
