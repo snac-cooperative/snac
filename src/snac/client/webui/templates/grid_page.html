@@ -12,21 +12,25 @@
 <meta name="viewport" content="width=device-width">
 {% if control.interfaceVersion == "development" %}
 <link rel="apple-touch-icon" href="images/snacdev-icon.png"/>
+<meta property="og:image" content="{{control.snacURL}}/images/snacdev-icon.png">
 {% elseif control.interfaceVersion == "demo" %}
 <link rel="apple-touch-icon" href="images/snacdemo-icon.png"/>
+<meta property="og:image" content="{{control.snacURL}}/images/snacdemo-icon.png">
 {% else %}
 <link rel="apple-touch-icon" href="images/snac-icon.png"/>
 {% endif %}
 
 <meta property="og:title" content="Social Networks and Archival Context">
-{% if control.interfaceVersion == "development" %}
-<meta property="og:image" content="{{control.snacURL}}/images/snacdev-icon.png">
-{% elseif control.interfaceVersion == "demo" %}
-<meta property="og:image" content="{{control.snacURL}}/images/snacdemo-icon.png">
-{% else %}
 <meta property="og:image" content="{{control.snacURL}}/images/snac-icon.png">
-{% endif %}
-<meta property="og:description" content="SNAC is an aggregate of biographical information about people, both individuals and groups, who created or are documented in historical resources. Users can search for names of individual people, organizations, and families; browse featured descriptions; and discover and locate connected historical resources.">
+<meta property="og:description" content="SNAC is an aggregate of biographical information about people, both individuals and groups, who created or are documented in historical resources. Users can search for names of individual people, organizations, and families, browse featured descriptions, and discover and locate connected historical resources.">
+
+<!-- SNAC Icons -->
+<link rel="apple-touch-icon" sizes="180x180" href="{{control.snacURL}}/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="{{control.snacURL}}/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="{{control.snacURL}}/images/favicon-16x16.png">
+<link rel="mask-icon" href="{{control.snacURL}}/images/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#5bbad5">
+<meta name="theme-color" content="#ffffff">
 
 <link rel="search"
       type="application/opensearchdescription+xml"
@@ -77,6 +81,9 @@
 
 
 <meta name="viewport" content="initial-scale = 1.0" />
+
+
+
 
 <style>
 .theme-dropdown .dropdown-menu {

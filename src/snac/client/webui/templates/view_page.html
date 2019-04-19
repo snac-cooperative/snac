@@ -52,6 +52,7 @@
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 
 <style>
+
 .wikipedia_thumbnail {
     text-align: center;
     padding: 15px;
@@ -195,6 +196,13 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
 .panel-collapsible {
     cursor: pointer;
 }
+
+@media (max-width: 992px) {
+    #profile-togglebox {
+        display:none
+    }
+}
+
 /*
 .wikipedia_thumbnail_container {
     text-align: center;
@@ -271,13 +279,16 @@ function unHighlightHoldingMarker(id) {
     }
 }
 function displayHoldingsMapInteractive() {
-    if (holdingsMapView != null) {
-        return;
-    }
-
     if ($(".holdings_location_lat").length == 0) {
         holdingsMapView = true; // just not null!
         $('#holdingsMap').css("display", "none");
+        return;
+    }
+
+    $("#holdings-map-wrapper").show()
+    $("#display-holdings-map-btn").hide()
+
+    if (holdingsMapView != null) {
         return;
     }
 
@@ -345,6 +356,7 @@ function displayPlacesMapInteractive() {
         return;
     }
 
+
     // Add a slight delay to the map viewing so that the modal window has time to load
     setTimeout(function() {
         placesMapView = L.map('placesMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
@@ -387,9 +399,28 @@ function displayPlacesMapInteractive() {
     }, 400);
 }
 
-$(document).ready(function() {
-    if ($("#artifacts").hasClass("active"))
+function resourceTabActions() {
+    if ($(".holdings_location_lat").length == 0) {
+        $('#display-holdings-map-btn').hide();
+        return
+    }
+
+    if (localStorage.getItem("hide_map") !== "true") {
         displayHoldingsMapInteractive();
+    } else if (!holdingsMapView) {
+            $("#display-holdings-map-btn").show()
+    }
+}
+
+
+$(document).ready(function() {
+    if (localStorage.getItem('hide_profile') === 'true') {
+        $("#profile-toggle").prop("checked", true);
+        toggleProfile();
+    }
+
+    if ($("#artifacts").hasClass("active"))
+        resourceTabActions();
 
     var relationTable = $('#relation-table').DataTable({
         "searching" : true,
@@ -438,6 +469,12 @@ $(document).ready(function() {
     })
 
 
+    $("#profile-togglebox").hover(function() {
+            $("#profilebar").addClass("hidebar");
+        }, function() {
+            $("#profilebar").removeClass("hidebar");
+        }
+    )
 
 
 });
@@ -519,34 +556,43 @@ $(document).ready(function() {
                 {% endif %}
             </div>
             {% endif %}
+
+            <div class="btn-group" id="profile-togglebox" style="float:right">
+                <input type="checkbox" id="profile-toggle" class="snac-hidden"  aria-hidden="true"/>
+                <label for="profile-toggle" class="toggle-switch" onclick="toggleProfile()" style="float:right;"></label>
+                <div  style="float:right; margin-right:5px;">
+                    <p> <span id=profile-toggle-text>Hide</span> Profile</p>
+                </div>
+            </div>
+
         </div>
-        <div class="row">
-            <div class="col-md-8">
+        <div class="row" id="row-main">
+            <div id="content-column" class="col-md-8">
                 <ul class="nav nav-tabs" role="tablist">
+
+                    <!-- Build enabled and disabled tabs <li> and <a> -->
+                    {% set disabledtab %}
+                        <li class="disabled"><a class="grayedout"
+                    {% endset %}
+                    {% set enabledtab %}
+                        <li><a  role="tab" data-toggle="tab"
+                    {% endset %}
+
                     {% if data.biogHists.0.text %}
-                    <li class="{{ data.biogHists.0.text ? 'active' }}">
-                        <a href="#biography" role="tab" data-toggle="tab">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a>
-                    </li>
+                        <li class="{{ data.biogHists.0.text ? 'active' }}">
+                            <a href="#biography" role="tab" data-toggle="tab">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a>
+                        </li>
+                    {% else %}
+                        <li class="disabled"><a class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
                     {% endif %}
-                    <li class="{{ data.biogHists.0.text ? '' : 'active' }}"><a href="#artifacts" role="tab" data-toggle="tab" onClick="displayHoldingsMapInteractive();">Resources</a></li>
-                    {% if data.relations %}
-                    <li><a href="#relationships" role="tab" data-toggle="tab">Relationships</a></li>
-                    {% endif %}
-                    {% if data.places %}
-                    <li><a href="#places" role="tab" data-toggle="tab" onClick="displayPlacesMapInteractive();">Places</a></li>
-                    {% endif %}
-                    {% if data.subjects %}
-                    <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
-                    {% endif %}
-                    {% if data.occupations %}
-                    <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
-                    {% endif %}
-                    {% if data.functions %}
-                    <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
-                    {% endif %}
-                    <!-- {% if data.nameEntries|length > 1 %}
-                    <li><a href="#names" role="tab" data-toggle="tab">Alternative Names</a></li>
-                    {% endif %} -->
+
+                    <li class="{{ data.biogHists.0.text ? '' : 'active' }}"><a href="#artifacts" role="tab" data-toggle="tab" onClick="resourceTabActions()">Resources</a></li>
+
+                    {{ data.relations ? enabledtab : disabledtab}} href="#relationships">Relationships</a></li>
+                    {{ data.places ? enabledtab : disabledtab}} href="#places" onClick="displayPlacesMapInteractive();">Places</a></li>
+                    {{ data.subjects ? enabledtab : disabledtab}} href="#subjects">Subjects</a></li>
+                    {{ data.occupations ? enabledtab : disabledtab}} href="#occupations">Occupations</a></li>
+                    {{ data.functions ? enabledtab : disabledtab}} href="#functions">Functions</a></li>
                 </ul>
                 <div class="tab-content">
                     {% if data.biogHists.0.text %}
@@ -571,7 +617,15 @@ $(document).ready(function() {
                     <div class="body-tab-pane tab-pane {{ data.biogHists.0.text ? '' : 'active' }}" id="artifacts">
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="geoplace-map" id="holdingsMap">
+                                <div class="text-center">
+                                    <a class="btn list-group-item-success" id="display-holdings-map-btn" style="display:none;margin-bottom:10px;" onclick="displayHoldingsMapInteractive()">
+                                        <i class="fa fa-fw fa-globe" aria-hidden="true"></i> View Collection Locations
+                                    </a>
+                                </div>
+                                <div id="holdings-map-wrapper"  style="display:none;">
+                                    <a href="#" class="list-group-item circle-close" onclick="$('#holdings-map-wrapper').hide();$('#display-holdings-map-btn').show();" style="z-index:500;border:"><span class="fa fa-2x fa-times" aria-hidden="true"></span></a>
+                                    <div class="geoplace-map" id="holdingsMap">
+                                    </div>
                                 </div>
                                 {% if data.holdings|length > 0 %}
                                 <div id="holdingsList">
@@ -878,9 +932,15 @@ $(document).ready(function() {
                 </div>
 
             </div>
-            <div class="col-md-4">
-                <div class="panel wikipedia_thumbnail_container">
-                    <div class="wikipedia_thumbnail" id="wikipediaImage"></div>
+            <div class="col-md-4" id="profile-sidebar">
+                <div class="row profilehover">
+                    <div class="panel wikipedia_thumbnail_container">
+                        <div id="profilebar">
+                            <span></span>
+                        </div>
+                        <div class="wikipedia_thumbnail" id="wikipediaImage">
+                        </div>
+                    </div>
                 </div>
                 <div class="well well-md">
                     <div class="row">
@@ -1034,7 +1094,7 @@ $(document).ready(function() {
                          <div title="alternative forms of name" class="extra-names modal-body">
                             {# ignore the preferred name #}
                             {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
-                                {% for nameEntry in data.new.nameEntries|slice(1) %}
+                                {% for nameEntry in data.new.nameEntries|slice(1) | sort %}
                                   <div class="updated">{{nameEntry.original}}</div>
                                 {% endfor %}
                                 {% for nameEntry in data.nameEntries %}
@@ -1044,7 +1104,7 @@ $(document).ready(function() {
                                 {% for nameEntry in data.new.nameEntries %}
                                   <div class="updated">{{nameEntry.original}}</div>
                                 {% endfor %}
-                                {% for nameEntry in data.nameEntries|slice(1) %}
+                                {% for nameEntry in data.nameEntries|slice(1) | sort %}
                                   <div>{{nameEntry.original}}</div>
                                 {% endfor %}
                             {% endif %}
