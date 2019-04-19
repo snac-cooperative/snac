@@ -282,9 +282,10 @@
 
                             $("#graph_button").prop("disabled", false).val("Apply Filter");
 
-                            if (!$("#movement").prop("checked") === true) {
+                            if (($("#movement").prop("checked") === false)) {
                                 setTimeout(function() {
                                     alchemy.force.stop()
+                                    alchemy.conf.forceLocked = true;
                                 }, 1500)
                             }
                         }
