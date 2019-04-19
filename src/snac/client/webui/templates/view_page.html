@@ -279,13 +279,16 @@ function unHighlightHoldingMarker(id) {
     }
 }
 function displayHoldingsMapInteractive() {
-    if (holdingsMapView != null) {
-        return;
-    }
-
     if ($(".holdings_location_lat").length == 0) {
         holdingsMapView = true; // just not null!
         $('#holdingsMap').css("display", "none");
+        return;
+    }
+
+    $("#holdings-map-wrapper").show()
+    $("#display-holdings-map-btn").hide()
+
+    if (holdingsMapView != null) {
         return;
     }
 
@@ -353,6 +356,7 @@ function displayPlacesMapInteractive() {
         return;
     }
 
+
     // Add a slight delay to the map viewing so that the modal window has time to load
     setTimeout(function() {
         placesMapView = L.map('placesMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
@@ -395,6 +399,20 @@ function displayPlacesMapInteractive() {
     }, 400);
 }
 
+function resourceTabActions() {
+    if ($(".holdings_location_lat").length == 0) {
+        $('#display-holdings-map-btn').hide();
+        return
+    }
+
+    if (localStorage.getItem("hide_map") !== "true") {
+        displayHoldingsMapInteractive();
+    } else if (!holdingsMapView) {
+            $("#display-holdings-map-btn").show()
+    }
+}
+
+
 $(document).ready(function() {
     if (localStorage.getItem('hide_profile') === 'true') {
         $("#profile-toggle").prop("checked", true);
@@ -402,7 +420,7 @@ $(document).ready(function() {
     }
 
     if ($("#artifacts").hasClass("active"))
-        displayHoldingsMapInteractive();
+        resourceTabActions();
 
     var relationTable = $('#relation-table').DataTable({
         "searching" : true,
@@ -568,7 +586,7 @@ $(document).ready(function() {
                         <li class="disabled"><a class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
                     {% endif %}
 
-                    <li class="{{ data.biogHists.0.text ? '' : 'active' }}"><a href="#artifacts" role="tab" data-toggle="tab" onClick="displayHoldingsMapInteractive();">Resources</a></li>
+                    <li class="{{ data.biogHists.0.text ? '' : 'active' }}"><a href="#artifacts" role="tab" data-toggle="tab" onClick="resourceTabActions()">Resources</a></li>
 
                     {{ data.relations ? enabledtab : disabledtab}} href="#relationships">Relationships</a></li>
                     {{ data.places ? enabledtab : disabledtab}} href="#places" onClick="displayPlacesMapInteractive();">Places</a></li>
@@ -599,7 +617,15 @@ $(document).ready(function() {
                     <div class="body-tab-pane tab-pane {{ data.biogHists.0.text ? '' : 'active' }}" id="artifacts">
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="geoplace-map" id="holdingsMap">
+                                <div class="text-center">
+                                    <a class="btn list-group-item-success" id="display-holdings-map-btn" style="display:none;margin-bottom:10px;" onclick="displayHoldingsMapInteractive()">
+                                        <i class="fa fa-fw fa-globe" aria-hidden="true"></i> View Collection Locations
+                                    </a>
+                                </div>
+                                <div id="holdings-map-wrapper"  style="display:none;">
+                                    <a href="#" class="list-group-item circle-close" onclick="$('#holdings-map-wrapper').hide();$('#display-holdings-map-btn').show();" style="z-index:500;border:"><span class="fa fa-2x fa-times" aria-hidden="true"></span></a>
+                                    <div class="geoplace-map" id="holdingsMap">
+                                    </div>
                                 </div>
                                 {% if data.holdings|length > 0 %}
                                 <div id="holdingsList">

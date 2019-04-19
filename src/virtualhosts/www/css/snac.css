@@ -795,6 +795,19 @@ button.list-group-item-sources.active:focus {
     border-radius: 50%;
 }
 
+a.circle-close {
+    position:absolute;
+    right:0px;
+    top:-5%;
+    width: 45px;
+    height: 45px;
+    text-align: center;
+    padding: 11px;
+    font-size: 11px;
+    line-height: 1.42;
+    border-radius: 50%!important;
+}
+
 /* Profile Sidebar */
 .toggle-switch {
   position: relative;
