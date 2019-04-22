@@ -278,6 +278,31 @@ function unHighlightHoldingMarker(id) {
             holdingsMarkers[id].setIcon(defaultIcon);
     }
 }
+
+function resourceTabActions() {
+    if ($(".holdings_location_lat").length == 0) {
+        $("#display-holdings-map-btn").hide();
+        return
+    }
+
+    // hide map if user has manually closed map
+    if ($("#holdings-map-wrapper").hasClass("snac-hidden")) {
+        $("#display-holdings-map-btn").show();
+        return;
+    }
+
+    if ((localStorage.getItem("hide_map") !== "true")) {
+        displayHoldingsMapInteractive();
+    } else if (!holdingsMapView) {
+            $("#display-holdings-map-btn").show()
+    }
+}
+
+function closeHoldingsMap() {
+    $("#holdings-map-wrapper").hide().addClass("snac-hidden");
+    $("#display-holdings-map-btn").show();
+}
+
 function displayHoldingsMapInteractive() {
     if ($(".holdings_location_lat").length == 0) {
         holdingsMapView = true; // just not null!
@@ -286,6 +311,7 @@ function displayHoldingsMapInteractive() {
     }
 
     $("#holdings-map-wrapper").show()
+    $("#holdings-map-wrapper").removeClass("snac-hidden")
     $("#display-holdings-map-btn").hide()
 
     if (holdingsMapView != null) {
@@ -399,22 +425,9 @@ function displayPlacesMapInteractive() {
     }, 400);
 }
 
-function resourceTabActions() {
-    if ($(".holdings_location_lat").length == 0) {
-        $('#display-holdings-map-btn').hide();
-        return
-    }
-
-    if (localStorage.getItem("hide_map") !== "true") {
-        displayHoldingsMapInteractive();
-    } else if (!holdingsMapView) {
-            $("#display-holdings-map-btn").show()
-    }
-}
-
 
 $(document).ready(function() {
-    if (localStorage.getItem('hide_profile') === 'true') {
+    if (localStorage.getItem("hide_profile") === "true") {
         $("#profile-toggle").prop("checked", true);
         toggleProfile();
     }
@@ -623,7 +636,7 @@ $(document).ready(function() {
                                     </a>
                                 </div>
                                 <div id="holdings-map-wrapper"  style="display:none;">
-                                    <a href="#" class="list-group-item circle-close" onclick="$('#holdings-map-wrapper').hide();$('#display-holdings-map-btn').show();" style="z-index:500;border:"><span class="fa fa-2x fa-times" aria-hidden="true"></span></a>
+                                    <a href="#" class="list-group-item circle-close" onclick="closeHoldingsMap()" style="z-index:500;border:"><span class="fa fa-2x fa-times" aria-hidden="true"></span></a>
                                     <div class="geoplace-map" id="holdingsMap">
                                     </div>
                                 </div>
