@@ -848,26 +848,6 @@ input[type='checkbox']:checked + .toggle-switch {
   transition: width 0.3s ease;
 }
 
-.hidebar {
-    position:absolute;
-    width:99.5%;
-    height:25px;
-    border-top-right-radius: 20px;
-    border-bottom-right-radius: 20px;
-    z-index: 1;
-    font-size: large;
-    font-family: 'Glyphicons Halflings';
-    background: linear-gradient(to right, #ffffff, rgba(0,0,0,.4));
-}
-
-.hidebar span:after {
-    content: "\e080";
-    float: right;
-    color: white;
-    margin-right: 10px;
-}
-
-
 @media (min-width: 992px) {
   #profile-sidebar.collapsed {
     display: block;
