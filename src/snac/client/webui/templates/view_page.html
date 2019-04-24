@@ -427,13 +427,47 @@ function displayPlacesMapInteractive() {
 
 
 $(document).ready(function() {
+    $('#view-nav-tabs a').click(function(e) {
+        if ($(this).parent().hasClass("disabled")) {
+            e.preventDefault();
+            return;
+        }
+        $(this).tab('show');
+    });
+
+    $("#view-nav-tabs a[href='#artifacts']").on("show.bs.tab", function() {
+        resourceTabActions();
+    })
+
+    $("#view-nav-tabs a[href='#places']").on("show.bs.tab", function() {
+        displayPlacesMapInteractive();
+    })
+
+    // store the currently selected tab in the hash value
+    $("#view-nav-tabs > li > a").on("shown.bs.tab", function(e) {
+        var hash = $(e.target).attr("href")
+        if (history.pushState) {
+            history.replaceState(null, null, hash);
+        } else {
+            window.location.hash = hash;
+        }
+    });
+
+    // on load of the page: switch to the currently selected tab
+    var hash = window.location.hash;
+    if (hash.length) {
+        $("#view-nav-tabs a[href='" + hash + "']").tab("show");
+    } else {
+        // load Resources if no bioghist
+        if (($("#view-nav-tabs a[href='#biography']").parent().hasClass("disabled"))) {
+            $("#view-nav-tabs a[href='#artifacts']").tab("show");
+        }
+    }
+
     if (localStorage.getItem("hide_profile") === "true") {
         $("#profile-toggle").prop("checked", true);
         toggleProfile();
     }
-
-    if ($("#artifacts").hasClass("active"))
-        resourceTabActions();
 
     var relationTable = $('#relation-table').DataTable({
         "searching" : true,
@@ -578,7 +612,7 @@ $(document).ready(function() {
         </div>
         <div class="row" id="row-main">
             <div id="content-column" class="col-md-8">
-                <ul class="nav nav-tabs" role="tablist">
+                <ul class="nav nav-tabs" role="tablist" id="view-nav-tabs">
 
                     <!-- Build enabled and disabled tabs <li> and <a> -->
                     {% set disabledtab %}
@@ -589,17 +623,17 @@ $(document).ready(function() {
                     {% endset %}
 
                     {% if data.biogHists.0.text %}
-                        <li class="{{ data.biogHists.0.text ? 'active' }}">
+                        <li class="active">
                             <a href="#biography" role="tab" data-toggle="tab">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a>
                         </li>
                     {% else %}
-                        <li class="disabled"><a class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
+                        <li class="disabled"><a  href="#biography" class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
                     {% endif %}
 
-                    <li class="{{ data.biogHists.0.text ? '' : 'active' }}"><a href="#artifacts" role="tab" data-toggle="tab" onClick="resourceTabActions()">Resources</a></li>
+                    <li><a href="#artifacts" role="tab" data-toggle="tab" >Resources</a></li>
 
                     {{ data.relations ? enabledtab : disabledtab}} href="#relationships">Relationships</a></li>
-                    {{ data.places ? enabledtab : disabledtab}} href="#places" onClick="displayPlacesMapInteractive();">Places</a></li>
+                    {{ data.places ? enabledtab : disabledtab}} href="#places">Places</a></li>
                     {{ data.subjects ? enabledtab : disabledtab}} href="#subjects">Subjects</a></li>
                     {{ data.occupations ? enabledtab : disabledtab}} href="#occupations">Occupations</a></li>
                     {{ data.functions ? enabledtab : disabledtab}} href="#functions">Functions</a></li>
@@ -624,7 +658,7 @@ $(document).ready(function() {
                         </div>
                     </div>
                     {% endif %}
-                    <div class="body-tab-pane tab-pane {{ data.biogHists.0.text ? '' : 'active' }}" id="artifacts">
+                    <div class="body-tab-pane tab-pane " id="artifacts">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="text-center">
