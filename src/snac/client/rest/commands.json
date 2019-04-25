@@ -1718,6 +1718,11 @@
                 "type" : "String",
                 "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'",
                 "optional": true
+            },
+            "sameas" : {
+                "type" : "String",
+                "description" : "One of the Constellation's external links, for example 'http:\/\/en.wikipedia.org\/wiki\/Harriet_Tubman'",
+                "optional": true
             }
         },
         "returns" : {
