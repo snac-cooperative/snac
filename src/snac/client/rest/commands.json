@@ -3128,7 +3128,7 @@
                 "query" : {
                    "command" : "add_sameas",
                    "constellationid" : 73093297,
-                   "sameas_uris": ["https://en.wikipedia.org/wiki/Franciscus_Gomarus", "https://id.loc.gov/authorities/names/nb98048106.html"],
+                   "sameas_uris": ["https://en.wikipedia.org/wiki/Franciscus_Gomarus", "https://id.loc.gov/authorities/names/nb98048106"],
                    "user" : { "...":"..." }
                 },
                 "response":{
@@ -3141,7 +3141,7 @@
                                 "type": {
                                     "id": 28225
                                 },
-                                "uri": "https://id.loc.gov/authorities/names/nb98048106.html",
+                                "uri": "https://id.loc.gov/authorities/names/nb98048106",
                                 "id": "83129381",
                                 "version": "11258569",
                                 "operation": "insert"
@@ -3151,7 +3151,7 @@
                                 "type": {
                                     "id": 28225
                                 },
-                                "uri": "https://id.loc.gov/authorities/names/nb98048106.html",
+                                "uri": "https://id.loc.gov/authorities/names/nb98048106",
                                 "id": "83129382",
                                 "version": "11258569",
                                 "operation": "insert"
