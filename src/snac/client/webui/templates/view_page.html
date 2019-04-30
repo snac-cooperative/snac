@@ -611,6 +611,22 @@ $(document).ready(function() {
                 </div>
             </div>
 
+            <div class="btn-group">
+                <div class="dropdown">
+                    <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Export
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="export-btn" style="background:#ecdef2;margin-top:36px;">
+                        <li>
+                            <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class=""><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> JSON</a>
+                        </li>
+                        <li>
+                            <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class=""><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
         <div class="row" id="row-main">
             <div id="content-column" class="col-md-8">
