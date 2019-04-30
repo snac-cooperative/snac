@@ -48,8 +48,8 @@ function loadUserPreferences() {
     if (localStorage.getItem("hide_profile") === "true") {
         $("#hide_profile").prop("checked", true);
     }
-    if (localStorage.getItem("hide_map") === "true") {
-        $("#hide_map").prop("checked", true);
+    if (localStorage.getItem("show_map") === "true") {
+        $("#show_map").prop("checked", true);
     }
 }
 

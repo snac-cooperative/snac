@@ -291,7 +291,7 @@ function resourceTabActions() {
         return;
     }
 
-    if ((localStorage.getItem("hide_map") !== "true")) {
+    if ((localStorage.getItem("show_map") === "true")) {
         displayHoldingsMapInteractive();
     } else if (!holdingsMapView) {
             $("#display-holdings-map-btn").show()
