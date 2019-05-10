@@ -1879,7 +1879,6 @@ function removeParserButton(i) {
  * Things to do when the page finishes loading
  */
 $(document).ready(function() {
-
     // Load the place cache, if needed
     loadGeoPlaceResultCache();
 
@@ -2841,5 +2840,11 @@ $(document).ready(function() {
     }
 
     turnOnTooltipsForTab();
+
+
+    $("#info-dropdown").click(function(e) {
+        $(this).parent().toggleClass("open");
+        e.stopPropagation();
+    });
 
 });
