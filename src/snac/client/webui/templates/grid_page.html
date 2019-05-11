@@ -184,16 +184,6 @@ $(document).ready(function() {
         })
         .attr("src", $(this).attr("src"));
 
-        if (sessionStorage.getItem("hide_redesign_notice") !== "true") {
-            $("#redesign-notice").show();
-        }
-
-        $("#redesign-notice-btn").click(function() {
-            $('#redesign-notice').fadeOut();
-            sessionStorage.setItem("hide_redesign_notice", true)
-        })
-
-
 });
 </script>
 
@@ -202,10 +192,6 @@ $(document).ready(function() {
 
 {% from 'page_navigation.html' import topNavigation, footer %}
 {{ topNavigation(X, user, permissions, control) }}
-
-<div class="alert alert-info" id="redesign-notice" style="position: fixed; width: 100%; text-align: center; z-index: 9999; margin-top: -32px; opacity:0.95; display:none;">
-    <p>SNAC is going to look a little different! Our new design will be rolling out on May 10th. <a id="redesign-notice-btn" href="#" style="font-weight:bold;text-decoration:underline;margin-left:10px;"> Dismiss</a></p>
-</div>
 
 <div class="container snac" role="main">
     <h1>Social Networks and Archival Context</h1>
