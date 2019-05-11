@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{data.nameEntries.0.original}} - Social Networks and Archival Context</title>
+
+<meta property="og:title" content="{{data.nameEntries.0.original}} @ SNAC">
+<meta property="og:image" content="{{control.snacURL}}/images/snac-icon.png">
+{% if data.biogHists.0.text %}
+    <meta property="og:description" content="{{data.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}">
+{% else %}
+    <meta property="og:description" content="No biographical history available for this identity.">
+{% endif %}
+<meta property="og:description" content="">
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- SNAC HRT Template code -->
+<link href="{{control.snacURL}}/css/hrt/hrt.css"
+            media="all"
+            rel="stylesheet"
+            type="text/css"></link>
+<style>
+   .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
+   .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
+   .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
+   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs, .sprite-icons-nara
+   { float: left;
+   margin-right: 0.33em; }
+
+    .date {
+        font-weight: bold;
+    }
+
+    ul.chronlist {
+        list-style-type: none;
+        margin-left: 0;
+        padding-left: 0;
+    }
+</style>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
+<!-- Tiny MCE text editor -->
+<script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/wikipedia_image.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/message_current_editor.js{{control.noCache}}"></script>
+
+<meta name="viewport" content="initial-scale = 1.0" />
+<style>
+.theme-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.snac > p > .btn {
+    margin: 5px 0;
+}
+
+.snac .navbar .container {
+    width: auto;
+}
+.tab-pane {
+
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-radius: 0px 0px 5px 5px;
+    padding: 10px;
+}
+
+.nav-tabs {
+    margin-bottom: 0;
+}
+
+.older a {
+    color: #660000;
+}
+.updated a {
+    color: #006600;
+}
+.older {
+    color: #990000;
+}
+.updated {
+    color: #009900;
+}
+</style>
+
+
+</head>
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation, footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+
+      <!-- Constellation Data -->
+      <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
+      <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+      <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
+      <input id="page_type" name="page_type" type="hidden" value="view_page"/>
+      {% if data.old %}
+      <input id="constellationid1" name="constellationid1" type="hidden" value="{{ data.old.id }}"/>
+      <input id="version1" name="version1" type="hidden" value="{{ data.old.version }}"/>
+      <input id="ark1" name="ark1" type="hidden" value="{{ data.old.ark }}"/>
+      {% endif %}
+      {% if data.new %}
+      <input id="constellationid2" name="constellationid2" type="hidden" value="{{ data.new.id }}"/>
+      <input id="version2" name="version2" type="hidden" value="{{ data.new.version }}"/>
+      <input id="ark2" name="ark2" type="hidden" value="{{ data.new.ark }}"/>
+      {% endif %}
+    {% for sameas in data.otherRecordIDs %}
+        {% if sameas.type.term == 'sameAs' and sameas.uri matches '/wiki.*\.org/' %}
+            <input id="has_wiki_link" type="hidden" value="true"/>
+        {% endif %}
+    {% endfor %}
+
+
+      <div class="main_content">
+          {% if data.message %}
+              <div class="alert alert-warning alert-dismissible" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <strong>Notice:</strong> Please update your bookmarks.  The Constellation you requested has been merged into a new identifier, <a href="{{data.message.info.redirect}}">{{data.message.info.redirect}}</a>, displayed below.
+              </div>
+          {% endif %}
+
+         <div id="identity">
+            <div class="name">
+               <h1 style="display:inline;">
+                  <span style="font-size: 20px; vertical-align: top; display: inline-block;">
+                      {% if data.entityType.term == 'person' %}
+                      <span class="fa-stack fa-sm" title="Entity Type: Person">
+                          <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                          <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+                      </span>
+                      {% elseif data.entityType.term == 'corporateBody' %}
+                      <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                          <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                          <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+                      </span>
+                      {% elseif data.entityType.term == 'family' %}
+                      <span class="fa-stack fa-sm" title="Entity Type: Family">
+                          <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                          <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+                      </span>
+                      {% endif %}
+                      <!--
+                      <span class="fa-stack fa-sm">
+                          <i class="fa fa-square fa-stack-2x" style="color: #888;"></i>
+                          <i class="fa fa-archive fa-stack-1x fa-inverse"></i>
+                      </span>
+                      -->
+                  </span>
+                  <span title="authorized form of name" class="person" data-xsl="identity">
+                      {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
+                          <span class="updated">{{data.new.nameEntries.0.original}}</span>
+                      {% else %}
+                        {{data.nameEntries.0.original}}
+                      {% endif %}
+                  </span>
+               </h1>
+               {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
+               <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
+               {% endif %}
+
+               {% if 'holdingRepository' in data.flags %}
+                   <br><span class="label label-default"><i class="fa fa-archive" aria-hidden="true"></i> Holding Repository</span>
+               {% endif %}
+
+            </div>
+            <div>
+               <div class="biog">
+                  <div class="facts">
+                     <div class="life">
+                        {% if data.dates or data.new.dates or data.old.dates %}
+                            <dt>Dates:</dt>
+                            {% for date in data.new.dates %}
+                                <dd><span class="updated">{{date.fromType.term}} {{date.fromDate}}</span></dd>
+                                {% if date.toDate %}
+                                    <dd><span class="updated">{{date.toType.term}} {{date.toDate}}</span></dd>
+                                {% endif %}
+                            {% endfor %}
+                            {% for date in data.dates %}
+                                <dd>{{date.fromType.term}} {{date.fromDate}}</dd>
+                                {% if date.toDate %}
+                                    <dd>{{date.toType.term}} {{date.toDate}}</dd>
+                                {% endif %}
+                            {% endfor %}
+                            {% for date in data.old.dates %}
+                                <dd><span class="older">{{date.fromType.term}} {{date.fromDate}}</span></dd>
+                                {% if date.toDate %}
+                                    <dd><span class="older">{{date.toType.term}} {{date.toDate}}</span></dd>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if data.genders or data.new.genders or data.old.genders%}
+                            <dt>Gender:</dt>
+                            {% for gender in data.new.genders %}
+                                <dd><span class="updated">{{gender.term.term}}</span></dd>
+                            {% endfor %}
+                            {% for gender in data.genders %}
+                                <dd>{{gender.term.term}}</dd>
+                            {% endfor %}
+                            {% for gender in data.old.genders %}
+                                <dd><span class="older">{{gender.term.term}}</span></dd>
+                            {% endfor %}
+                        {% endif %}
+                     </div>
+                     <div>
+                        {% if data.nationalities or data.new.nationalities or data.old.nationalities %}
+                        <div data-xsl="nationality">
+                           <label>Nationality: </label>
+                           {% for nat in data.new.nationalities %}
+                               <span class="updated">{{ nat.term.term }},</span>
+                           {% endfor %}
+                           {% for nat in data.nationalities %}
+                               {{ nat.term.term }}{{loop.last ? '' : ','}}
+                           {% endfor %}
+                           {% for nat in data.old.nationalities %}
+                               <span class="older">{{ nat.term.term }},</span>
+                           {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if data.languagesUsed or data.new.languagesUsed or data.old.languagesUsed %}
+                        <div data-xsl="language">
+                           <label>Language: </label>
+                            {% for lang in data.new.languagesUsed %}
+                                <span class="updated">{{ lang.language.description }},</span>
+                            {% endfor %}
+                            {% for lang in data.languagesUsed %}
+                                {{ lang.language.description }}{{loop.last ? '' : ','}}
+                            {% endfor %}
+                            {% for lang in data.old.languagesUsed %}
+                                <span class="older">{{ lang.language.description }},</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                     </div>
+                  </div>
+                  {% if data.entityType.term == 'corporateBody' %}
+                      <h2>History notes:</h2>
+                  {% else %}
+                      <h2>Biographical notes:</h2>
+                  {% endif %}
+                  <div class="wikipedia_thumbnail" id="wikipediaImage">
+                  </div>
+                  {% if data.new.biogHists.0.text %}
+                      <div class="biogHist updated">
+                          {{ data.new.biogHists.0.text|replace({
+                             '<citation ':"<p class='source' ",
+                             '</citation>':"</p>",
+                             'chronList':"ul class='chronlist'",
+                             'chronItem':"li",
+                             '<date':"<span class='date'",
+                             '</date>':"</span>: ",
+                             '</fromDate>':"</fromDate> -",
+                             '<dateRange': "<span class='date'",
+                             '</dateRange>':"</span>: ",
+                             '<daterange':"<span class='date'",
+                             '</daterange>':"</span>: "
+                          })|raw }}
+                      </div>
+                  {% elseif data.old.biogHists.0.text %}
+                      <div class="biogHist older">
+                      {{ data.old.biogHists.0.text|replace({
+                             '<citation ':"<p class='source' ",
+                             '</citation>':"</p>",
+                             'chronList':"ul class='chronlist'",
+                             'chronItem':"li",
+                             '<date':"<span class='date'",
+                             '</date>':"</span>: ",
+                             '</fromDate>':"</fromDate> -",
+                             '<dateRange': "<span class='date'",
+                             '</dateRange>':"</span>: ",
+                             '<daterange':"<span class='date'",
+                             '</daterange>':"</span>: "
+                          })|raw }}
+                      </div>
+                  {% else %}
+                      <div class="biogHist">
+                      {% if data.biogHists.0.text %}
+                        {{ data.biogHists.0.text|replace({
+                             '<citation ':"<p class='source' ",
+                             '</citation>':"</p>",
+                             'chronList':"ul class='chronlist'",
+                             'chronItem':"li",
+                             '<date':"<span class='date'",
+                             '</date>':"</span>: ",
+                             '</fromDate>':"</fromDate> -",
+                             '<dateRange': "<span class='date'",
+                             '</dateRange>':"</span>: ",
+                             '<daterange':"<span class='date'",
+                             '</daterange>':"</span>: "
+                          })|raw }}
+                      {% else %}
+                        <div class="alert alert-info" style="clear: both;">not available for this record</div>
+                      {% endif %}
+                      </div>
+                  {% endif %}
+               </div>
+               <div class="relations" id="relations_pane">
+                   <p class="text-center" style="padding-top:50px">
+                   <i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i>
+                   <span class="sr-only">Loading...</span>
+                   </p>
+                   <p class="text-center" style="padding-bottom: 250px;">Loading Relationships</p>
+               </div>
+               <div class="others">
+                   {% if data.preview %}
+                   <div class="alert alert-success" style="margin-top: 15px;">
+                       <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><i class='fa fa-eye'></i> Preview</h3>
+                       <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
+                   </div>
+                   {% elseif data.comparison %}
+                   <div class="alert alert-info" style="margin-top: 15px;">
+                       <h3 class="text-center" style="margin-top:0px;"><i class='fa fa-eye'></i> Comparison</h3>
+                       <p>This is only a preview comparison of Constellations.  It will only exist until this window is closed.</p>
+                       <ul>
+                           <li class="updated">Added or updated</li>
+                           <li class="older">Deleted or outdated</li>
+                       </ul>
+                   </div>
+                   {% else %}
+                   <div class="panel panel-info" style="margin-top: 15px;">
+                       <div class="panel-heading">
+                           <h3 class="panel-title">Options</h3>
+                       </div>
+                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                          <h5>Information</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                                <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap">
+                                    <i class="fa fa-fw fa-globe" aria-hidden="true"></i> Collection Locations</a>
+                                <a class="list-group-item list-group-item-warning"
+                                   href="{{control.snacURL}}/details/{{data.id}}/{{data.version}}">
+                                    <i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View</a>
+                                {% if data.maybeSameCount > 0 %}
+                                <a href="{{control.snacURL}}/maybesame/{{data.id}}/{{data.version}}"
+                                       class="list-group-item list-group-item-merge" id="merge">
+                                    <i class="fa fa-fw fa-random" aria-hidden="true"></i> Similarity Assertions
+                                    <span class="badge">{{ data.maybeSameCount }}</span></a>
+                                {% endif %}
+                                   <a class="list-group-item list-group-item-history"
+                                      href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
+                                       <i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History</a>
+                                   <a class="list-group-item list-group-item-sources"
+                                      href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
+                                       <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source Summary</a>
+                          </div>
+                          <h5>Visualizations</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a class="list-group-item list-group-item-visualize"
+                                 href="{{control.snacURL}}/visualize/connection_graph/{{data.id}}/{{data.version}}">
+                                  <i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
+                              <a class="list-group-item list-group-item-visualize"
+                                 href="{{control.snacURL}}/visualize/radial_graph/{{data.id}}/{{data.version}}">
+                                  <i class="fa fa-fw fa-bullseye" aria-hidden="true"></i> Radial Graph</a>
+                          </div>
+                          <h5>Export As</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> JSON</a>
+                                  <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
+                          </div>
+                      </div>
+                  </div>
+                    {% endif %}
+
+
+                  {% if user.email and (permissions.Edit or debug) and not data.preview and not data.comparison %}
+                   <div class="panel panel-warning" style="margin-top: 15px;">
+                       <div class="panel-heading">
+                           <h3 class="panel-title">Actions</h3>
+                       </div>
+                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                           {% if user.email and permissions.Edit %}
+                          <div class="list-group" style="margin-bottom: 0px;">
+                                {% if data.status == 'editable' %}
+                                <a class="list-group-item list-group-item-info"
+                                   href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><i class="fa fa-fw fa-pencil" aria-hidden="true"></i>
+                                   Edit</a>
+                                <a class="list-group-item list-group-item-danger" id="reserveForEdit"
+                                   href="#"><i class="fa fa-fw fa-bookmark" aria-hidden="true"></i>
+                                   <span id="reserveForEditText">Reserve for Editing</span></a>
+                                {% else %}
+                                    <a class="list-group-item list-group-item-danger disabled"
+                                       href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
+                                        <i class="fa fa-fw fa-ban"></i> Edit
+                                    </a>
+                                    {% if data.editingUser %}
+                                        <div class="list-group-item">
+                                            <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
+                                            {{ include('_message_current_editor.html')}}
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+
+                          </div>
+                          {% endif %}
+                          {% if false %}
+                          <h5>Debug Actions</h3>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><i class="fa fa-fw fa-align-left"></i> View Full Server Response</a>
+
+                          </div>
+                          {% endif %}
+                      </div>
+                  </div>
+                  {% endif %}
+
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                          <h3 class="panel-title">Information</h3>
+                      </div>
+                      <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                          <dt><strong>Permalink:</strong></dt>
+                          <dd>{{data.ark}}</dd>
+                          <dt><strong>Ark ID:</strong></dt>
+                          <dd>{{data.ark|replace({'http://n2t.net/ark:/99166/': ''})}}</dd>
+                          <dt><strong>SNAC ID:</strong></dt>
+                          <dd>{{data.id}}</dd>
+                      </div>
+
+                  </div>
+
+                  <h4>Subjects:</h4>
+                  {% if data.subjects|length > 0 or data.new.subjects|length > 0 or data.old.subjects|length > 0 %}
+                    <ul>
+                    <!-- {% for subject in data.new.subjects %} -->
+                        <li class="updated">{{subject.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    <!-- {% for subject in data.subjects %} -->
+                        <li>{{subject.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    <!-- {% for subject in data.old.subjects %} -->
+                        <li class="older">{{subject.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    </ul>
+                  {% else %}
+                    <div class="alert alert-info">not available for this record</div>
+                  {% endif %}
+
+                  <h4>Occupations:</h4>
+                  {% if data.occupations|length > 0 or data.new.occupations|length > 0 or data.old.occupations|length > 0 %}
+                    <ul>
+                    <!-- {% for occupation in data.new.occupations %} -->
+                        <li class="updated">{{occupation.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    <!-- {% for occupation in data.occupations %} -->
+                        <li>{{occupation.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    <!-- {% for occupation in data.old.occupations %} -->
+                        <li class="older">{{occupation.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    </ul>
+                  {% else %}
+                    <div class="alert alert-info">not available for this record</div>
+                  {% endif %}
+
+                  {% if data.entityType.term == 'corporateBody' %}
+                      <h4>Functions:</h4>
+                      {% if data.functions|length > 0 or data.new.functions|length > 0 or data.old.functions|length > 0 %}
+                        <ul>
+                        <!-- {% for function in data.new.functions %} -->
+                            <li class="updated">{{function.term.term}}</li>
+                        <!-- {% endfor %} -->
+                        <!-- {% for function in data.functions %} -->
+                            <li>{{function.term.term}}</li>
+                        <!-- {% endfor %} -->
+                        <!-- {% for function in data.old.functions %} -->
+                            <li class="older">{{function.term.term}}</li>
+                        <!-- {% endfor %} -->
+                        </ul>
+                      {% else %}
+                        <div class="alert alert-info">not available for this record</div>
+                      {% endif %}
+                  {% endif %}
+
+
+                  <h4>Places:</h4>
+                  {% if data.places|length > 0 or data.new.places|length > 0 or data.old.places|length > 0 %}
+                    <ul>
+                    <!-- {% for place in data.new.places %} -->
+                        {% if place.confirmed and place.geoplace.id %}
+                            <li class="updated">{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
+                        {% elseif place.original and place.original != "" %}
+                            <li class="updated">{{place.original}} <em>(as recorded)</em></li>
+                        {% endif %}
+                    <!-- {% endfor %} -->
+                    <!-- {% for place in data.places %} -->
+                        {% if place.confirmed and place.geoplace.id %}
+                            <li>{{place.geoplace.name}}, {{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
+                        {% elseif place.original and place.original != "" %}
+                            <li>{{place.original}} <em>(as recorded)</em></li>
+                        {% endif %}
+                    <!-- {% endfor %} -->
+                    <!-- {% for place in data.old.places %} -->
+                        {% if place.confirmed and place.geoplace.id %}
+                            <li class="older">{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
+                        {% elseif place.original and place.original != "" %}
+                            <li class="older">{{place.original}} <em>(as recorded)</em></li>
+                        {% endif %}
+                    <!-- {% endfor %} -->
+                    </ul>
+                  {% else %}
+                    <div class="alert alert-info">not available for this record</div>
+                  {% endif %}
+
+              </div> <!-- end of others -->
+               <div>
+                  <div class="modal fade" id="alternative_names" tabindex="-1" role="dialog"
+                       aria-hidden="true">
+                     <div class="modal-dialog">
+                        <div class="modal-content">
+                           <div class="modal-header">
+                              <button type="button" class="close" data-dismiss="modal" aria-labelledby="myModalLabel"
+                                      aria-hidden="true">×</button>
+                              <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
+                           </div>
+                           <div title="alternative forms of name" class="extra-names modal-body">
+                              {# ignore the preferred name #}
+                              {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
+                                  {% for nameEntry in data.new.nameEntries|slice(1) %}
+                                    <div class="updated">{{nameEntry.original}}</div>
+                                  {% endfor %}
+                                  {% for nameEntry in data.nameEntries %}
+                                    <div>{{nameEntry.original}}</div>
+                                  {% endfor %}
+                              {% else %}
+                                  {% for nameEntry in data.new.nameEntries %}
+                                    <div class="updated">{{nameEntry.original}}</div>
+                                  {% endfor %}
+                                  {% for nameEntry in data.nameEntries|slice(1) %}
+                                    <div>{{nameEntry.original}}</div>
+                                  {% endfor %}
+                              {% endif %}
+
+                              {% for nameEntry in data.old.nameEntries %}
+                                <div class="older">{{nameEntry.original}}</div>
+                              {% endfor %}
+                           </div>
+                           <div class="modal-footer">
+                              <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      {% if false %}
+    <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
+        <div class="modal-dialog" role="document" style="width:90%;">
+            <div class="modal-content">
+                <div class="modal-header primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
+                </div>
+                <div class="modal-body">
+                    <pre>{{debug.serverResponse}}
+                    </pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {{ footer(X, user, permissions, control) }}
+
+    </body>
+    </html>

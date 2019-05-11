@@ -4,7 +4,7 @@
 <title>SNAC User Profile</title>
 
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -20,7 +20,7 @@
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
@@ -30,6 +30,9 @@
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
+<div class="alert alert-01 alert-success" id="notification-message" style="display:none;position:fixed;width:100%;z-index:99;margin-top:-32px;">
+    <p style="text-align: center">Preferences saved!</p>
+</div>
 
 <div class="container snac" role="main">
 <form id="profile_form">
@@ -163,8 +166,22 @@
                     </div>
                 </div>
 
+                <hr>
 
+                <h3>User Preferences</h3>
+                <div class="user-preferences">
+                    <div class="checkbox">
+                        <label>
+                            <input id="hide_profile" name="hide_profile" type="checkbox"> Hide SNAC Profile right-handed column by default on this browser
+                        </label>
+                    </div>
 
+                    <div class="checkbox">
+                        <label>
+                            <input id="show_map" name="show_map" type="checkbox"> Show Map on Resources tab by default on this browser
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

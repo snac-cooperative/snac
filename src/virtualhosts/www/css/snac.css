@@ -286,6 +286,10 @@ div.snac {
     margin-bottom: 0;
 }
 
+.nav>li.disabled>a.grayedout{
+    color: #c1c1c1;
+}
+
 .scm-modal {
     color: #000000;
 }
@@ -425,6 +429,82 @@ td.rotate > div > span {
 .edited-field {
     background: #d9edf7
 }
+
+.snac-toolbar {
+    top: 50px;
+    min-height: 0px;
+    background: #efefef;
+    z-index: 1020;
+}
+.snac-toolbar .navbar-nav li a {
+    padding-top: 8px;
+    padding-bottom: 6px;
+    color: #555;
+}
+.snac-toolbar .navbar-nav li.highlight {
+    padding-bottom: 0px;
+}
+.snac-toolbar .navbar-nav li.highlight a {
+    padding-bottom: 6px;
+}
+.snac-toolbar .navbar-nav li.highlight a:hover {
+    border-bottom: 2px solid #333;
+    padding-bottom: 4px;
+}
+.snac-toolbar .navbar-nav li:hover {
+    background: #dedede;
+}
+.snac-toolbar .navbar-nav li.dropdown-header:hover {
+    background: inherit;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-save a.save-active {
+    border-bottom: 2px solid #31708f;
+    padding-bottom: 4px;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-save a:hover {
+    border-bottom: 2px solid #31708f;
+    padding-bottom: 4px;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-dashboard a:hover {
+    border-bottom: 2px solid #3c763d;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-review a:hover ,
+.snac-toolbar .navbar-nav li.toolbar-send a:hover {
+    border-bottom: 2px solid #AE5A0B;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-publish a:hover {
+    border-bottom: 2px solid #C6AE17;
+}
+
+.snac-toolbar .navbar-nav li.toolbar-cancel a:hover {
+    border-bottom: 2px solid #a94442;
+}
+
+.snac-toolbar .navbar {
+    min-height: 0px;
+    margin-bottom: 0px;
+}
+
+.snac-toolbar .alert {
+    border-radius: 0px!important;
+    margin-bottom: 0px!important;
+    padding-left: 20%;
+    padding-right: 20%;
+}
+
+.snac-toolbar-inner {
+    border: 0px;
+}
+
+.snac-toolbar-info {
+    min-width: 300px;
+}
+
 
 /* centered columns styles */
 .row-centered {
@@ -789,6 +869,67 @@ button.list-group-item-sources.active:focus {
 
 .btn-circle {
     border-radius: 50%;
+}
+
+a.circle-close {
+    position:absolute;
+    right:0px;
+    top:-5%;
+    width: 45px;
+    height: 45px;
+    text-align: center;
+    padding: 11px;
+    font-size: 11px;
+    line-height: 1.42;
+    border-radius: 50%!important;
+}
+
+/* Profile Sidebar */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  background-color: #7983ff;
+  border-radius: 20px;
+  transition: all 0.3s;
+}
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 18px;
+  background-color: white;
+  top: 1px;
+  left: 1px;
+  transition: all 0.3s;
+}
+input[type='checkbox']:checked + .toggle-switch::after {
+  transform: translateX(20px);
+}
+input[type='checkbox']:checked + .toggle-switch {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+#profile-sidebar {
+  transition: margin 0.3s ease;
+}
+
+#row-main {
+  /* necessary to hide collapsed profile-sidebar */
+  overflow-x: hidden;
+}
+
+#content-column {
+  transition: width 0.3s ease;
+}
+
+@media (min-width: 992px) {
+  #profile-sidebar.collapsed {
+    display: block;
+    /* same width as profile-sidebar */
+    margin-right: -40%;
+  }
 }
 
 /* Phones */

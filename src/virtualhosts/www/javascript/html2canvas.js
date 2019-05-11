@@ -1,5 +1,5 @@
 /*
-  html2canvas 0.5.0-alpha1 <http://html2canvas.hertzen.com>
+  html2canvas 0.5.0-alpha1 <https://html2canvas.hertzen.com>
   Copyright (c) 2015 Niklas von Hertzen
 
   Released under MIT License
@@ -248,7 +248,7 @@ if (typeof(document) === "undefined" || typeof(Object.create) !== "function" || 
 
 	/**
 	 * Bias adaptation function as per section 3.4 of RFC 3492.
-	 * http://tools.ietf.org/html/rfc3492#section-3.4
+	 * https://tools.ietf.org/html/rfc3492#section-3.4
 	 * @private
 	 */
 	function adapt(delta, numPoints, firstTime) {
@@ -855,7 +855,7 @@ function absoluteUrl(url) {
     return link;
 }
 
-// http://dev.w3.org/csswg/css-color/
+// https://dev.w3.org/csswg/css-color/
 
 function Color(value) {
     this.r = 0;
@@ -1357,7 +1357,7 @@ ImageLoader.prototype.isSameOrigin = function(url) {
 ImageLoader.prototype.getOrigin = function(url) {
     var link = this.link || (this.link = document.createElement("a"));
     link.href = url;
-    link.href = link.href; // IE9, LOL! - http://jsfiddle.net/niklasvh/2e48b/
+    link.href = link.href; // IE9, LOL! - https://jsfiddle.net/niklasvh/2e48b/
     return link.protocol + link.hostname + link.port;
 };
 
@@ -1910,7 +1910,7 @@ function NodeParser(element, renderer, support, imageLoader, options) {
         renderer.rectangle(0, 0, renderer.width, renderer.height, new Color(options.background));
     }
     if (element === element.ownerDocument.documentElement) {
-        // http://www.w3.org/TR/css3-background/#special-backgrounds
+        // https://www.w3.org/TR/css3-background/#special-backgrounds
         var canvasBackground = new NodeContainer(parent.color('backgroundColor').isTransparent() ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
         renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.color('backgroundColor'));
     }
@@ -2148,7 +2148,7 @@ NodeParser.prototype.getRangeBounds = function(node, offset, length) {
 function ClearTransform() {}
 
 NodeParser.prototype.parse = function(stack) {
-    // http://www.w3.org/TR/CSS21/visuren.html#z-index
+    // https://www.w3.org/TR/CSS21/visuren.html#z-index
     var negativeZindex = stack.contexts.filter(negativeZIndex); // 2. the child stacking contexts with negative stack levels (most negative first).
     var descendantElements = stack.children.filter(isElement);
     var descendantNonFloats = descendantElements.filter(not(isFloating));
@@ -3022,7 +3022,7 @@ Support.prototype.testSVG = function() {
     var img = new Image();
     var canvas = document.createElement("canvas");
     var ctx =  canvas.getContext("2d");
-    img.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'></svg>";
+    img.src = "data:image/svg+xml,<svg xmlns='https://www.w3.org/2000/svg'></svg>";
 
     try {
         ctx.drawImage(img, 0, 0);

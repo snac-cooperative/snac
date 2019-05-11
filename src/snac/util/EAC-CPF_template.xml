@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eac-cpf xmlns="urn:isbn:1-931666-33-4"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xlink="https://www.w3.org/1999/xlink"
          xmlns:snac="http://socialarchive.iath.virginia.edu/">
     {#
     Author: Tom Laudeman, Robbie Hott
@@ -438,7 +438,7 @@
                         <origination>
 
                             {# TODO Once ONames come from relations: For each CPF linked to the resource with arcrole of CreatorOf
-                                 repeatable <pername>, <corpname>, <famname> with the preferred name in each. 
+                                 repeatable <pername>, <corpname>, <famname> with the preferred name in each.
                             <persname authfilenumber="ARK of the CPF entity">[preferred name of]</persname>
                             <corpname authfilenumber="ARK of the CPF entity">[preferred name of]</corpname>
                             <famname  authfilenumber="ARK of the CPF entity">[preferred name of]</famname>

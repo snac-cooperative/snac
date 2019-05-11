@@ -518,17 +518,17 @@ class Neo4JUtil {
      * @return boolean  Returns true if it's a holding repository, false otherwise
      */
     public function checkHoldingInstitutionStatus(&$constellation) {
-        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;",
+        $result = $this->connector->run("RETURN EXISTS((:Resource)-[:HIRELATION]-(:Identity {id: {icid}}));",
             [
                 'icid' => $constellation->getID()
             ]
         );
 
-        if (count($result->getRecords()) == 1) {
-            if ($result->firstRecord()->get('count') > 0) {
+        $isHoldingInstitution = $result->firstRecord()->values()[0];
+
+        if ($isHoldingInstitution === true) {
                 $constellation->setFlag("holdingRepository");
                 return true;
-            }
         }
         return false;
     }
