@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSearchDescription xmlns="https://a9.com/-/spec/opensearch/1.1/" xmlns:moz="https://www.mozilla.org/2006/browser/search/">
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="https://www.mozilla.org/2006/browser/search/">
     <ShortName>SNAC Search</ShortName>
     <Description>Search for identities in SNAC</Description>
     <Tags>snac</Tags>
     <Contact>snaccooperative@gmail.com</Contact>
-    <Url type="text/html" 
+    <Url type="text/html"
         template="https://snaccooperative.org/search?count=10&amp;start=0&amp;entity_type=&amp;term={searchTerms}"/>
     <LongName>SNAC Identity Search</LongName>
     <Image height="64" width="64" type="image/png">https://snaccooperative.org/icons/websearch.png</Image>

@@ -105,15 +105,32 @@
                     <span class="sr-only">{{data.reports["Number of Identity Constellations by Type"].result.person / total * 100}}%</span>
                     Person
                 </div>
-                <div class="progress-bar progress-bar-success" style="width: {{data.reports["Number of Identity Constellations by Type"].result.corporateBody / total * 100}}%">
+                <div class="progress-bar" style="background:#ff7f0d; width: {{data.reports["Number of Identity Constellations by Type"].result.corporateBody / total * 100}}%">
                     <span class="sr-only">{{data.reports["Number of Identity Constellations by Type"].result.corporateBody / total * 100}}%</span>
                     Corporate Body
                 </div>
-                <div class="progress-bar progress-bar-danger" style="width: {{data.reports["Number of Identity Constellations by Type"].result.family / total * 100}}%">
+                <div class="progress-bar" style="background:#2ca02b; width: {{data.reports["Number of Identity Constellations by Type"].result.family / total * 100}}%">
                     <span class="sr-only">{{data.reports["Number of Identity Constellations by Type"].result.family / total * 100}}%</span>
                     Family
                 </div>
             </div>
+            <div id="cpfPie"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        columns: [
+                            ["Person", {{data.reports["Number of Identity Constellations by Type"].result.person}}],
+                            ["Corporate Body", {{data.reports["Number of Identity Constellations by Type"].result.corporateBody}}],
+                            ["Family", {{data.reports["Number of Identity Constellations by Type"].result.family}}],
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#cpfPie',
+                        size: {
+                            height: 350
+                        }
+                });
+            </script>
         </div>
     </div>
     <div class="row">

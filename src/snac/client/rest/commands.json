@@ -153,7 +153,7 @@
                 "response": {
                     "term": {
                         "id": "2358",
-                        "uri": "http:\/\/www.geonames.org\/4752031",
+                        "uri": "https:\/\/www.geonames.org\/4752031",
                         "name": "Charlottesville",
                         "latitude": "38.0293100",
                         "longitude": "-78.4766800",
@@ -1721,6 +1721,11 @@
                 "type" : "String",
                 "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'",
                 "optional": true
+            },
+            "sameas" : {
+                "type" : "String",
+                "description" : "One of the Constellation's external links, for example 'http:\/\/en.wikipedia.org\/wiki\/Harriet_Tubman'",
+                "optional": true
             }
         },
         "returns" : {
@@ -2470,7 +2475,7 @@
                             "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                             "type": "document_type"
                         },
-                        "link": "http:\/\/mylink.com",
+                        "link": "https:\/\/mylink.com",
                         "source": "My full citation",
                         "title": "My Title",
                         "abstract": "This is a full abstract",
@@ -2643,7 +2648,7 @@
                             "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                             "type": "document_type"
                         },
-                        "link": "http:\/\/www.worldcat.org\/oclc\/25756829",
+                        "link": "https:\/\/www.worldcat.org\/oclc\/25756829",
                         "source": "...",
                         "title": "Papers, 1881-1958.",
                         "abstract": "This collection contains business papers, political papers, and family papers. ",
@@ -2829,7 +2834,7 @@
                                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                                 "type": "document_type"
                             },
-                            "link": "http:\/\/www.worldcat.org\/oclc\/25756829",
+                            "link": "https:\/\/www.worldcat.org\/oclc\/25756829",
                             "source": "...",
                             "title": "Papers, 1881-1958.",
                             "abstract": "This collection contains business papers, political papers, and family papers. ",
@@ -3141,7 +3146,9 @@
                                 "type": {
                                     "id": 28225
                                 },
+
                                 "uri": "https://id.loc.gov/authorities/names/nb98048106",
+
                                 "id": "83129381",
                                 "version": "11258569",
                                 "operation": "insert"
@@ -3151,6 +3158,7 @@
                                 "type": {
                                     "id": 28225
                                 },
+
                                 "uri": "https://id.loc.gov/authorities/names/nb98048106",
                                 "id": "83129382",
                                 "version": "11258569",
