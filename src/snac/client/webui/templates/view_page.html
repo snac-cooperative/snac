@@ -249,6 +249,29 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
 
 </style>
 <script>
+
+/**
+ * Prevent automatic scrolling of page to anchor by browser after page load.
+ */
+function preventAnchorScroll() {
+    var scrollToTop = function () {
+        $(window).scrollTop(0);
+    };
+
+    $(window).one('scroll', scrollToTop);
+    $(function () {
+        setTimeout(
+            function () {
+                $(window).off('scroll', scrollToTop);
+            },
+            1000
+        );
+    });
+}
+
+preventAnchorScroll();
+
+
 var archivalTable = null;
 var lumpTable = null;
 var holdingsMarkers = {};
