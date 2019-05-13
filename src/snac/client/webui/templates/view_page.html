@@ -566,10 +566,8 @@ $(document).ready(function() {
 
         <div class="btn-toolbar" style="margin-bottom: 15px;">
             <div class="btn-group">
-                {% if ("/view/" not in control.currentURL) %}
-                <a href="#" class="btn list-group-item-success">
-                    <i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> Basic View</a>
-                {% endif %}
+                <!-- <a href="#" class="btn list-group-item-success"> -->
+                    <!-- <i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> Basic View</a> -->
                 <a class="btn list-group-item-warning"
                    href="{{control.snacURL}}/details/{{data.id}}/{{data.version}}">
                     <i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View</a>
