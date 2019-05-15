@@ -701,7 +701,12 @@ $(document).ready(function() {
                                                              <tr>
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
-                                                             <td><a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a></td>
+                                                             <td>
+                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                     <i class="fa fa-external-link"> </i>
+                                                                 </a>
+                                                             </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                          </tr>
                                                      {% endif %}
@@ -738,7 +743,12 @@ $(document).ready(function() {
                                                              <tr>
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
-                                                             <td>{{relation.content|default(relation.resource.title)}}</a></td>
+                                                             <td>
+                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                     <i class="fa fa-external-link"> </i>
+                                                                 </a>
+                                                             </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                          </tr>
                                                      {% endif %}
