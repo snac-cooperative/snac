@@ -192,7 +192,7 @@
                 <p class="search-empty">No results found</p>
             {% else %}
                 {% for result in data.results %}
-                    <h4><a href="{{control.snacURL}}/view/{{result.id}}">{{result.nameEntries.0.original}}</a></h4>
+                    <h4><a href="{{control.snacURL}}/view/{{result.id}}">{{result.nameEntries.0.original}}</a> <span style="color:#6666"> ({{result.resource_count}})</span> </h4>
                     <p class="identity-info">
                         <span>{{result.ark}}</span>
                         <span>({{"holdingRepository" in result.flags ? 'Holding Repository' : result.entityType.term}})</span>

@@ -67,7 +67,8 @@ function setAjaxResultsIntoPage(data) {
 
         // Update the search results list
         data.results.forEach(function(result) {
-            var html = "<h4><a href=\""+snacUrl+"/view/"+result.id+"\">"+result.nameEntries[0].original+"</a></h4>"
+            var html = "<h4><a href=\""+snacUrl+"/view/"+result.id+"\">"+result.nameEntries[0].original
+                    + " </a> <span style='color:#6666'> (" + result.resource_count + ")</span></h4>";
                     + "<p class=\"identity-info\">"
                     + "    <span>"+result.ark+"</span>";
             if (typeof result.flags != "undefined" && result.flags.indexOf("holdingRepository") != -1)
