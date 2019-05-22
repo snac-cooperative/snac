@@ -777,6 +777,65 @@ class Neo4JUtil {
 
         }
     }
+
+    /**
+     * Count Holdings
+     *
+     * Given a constellation id, returns count of its holdings.
+     *
+     * @param $icid The constellation id of the holding reposity
+     * @return int $count Count of resources
+     */
+    public function countHoldings($icid) {
+        $result = $this->connector->run("MATCH (c:Identity {id: '{$icid}'}) RETURN size((c)<-[:HIRELATION]-(:Resource)) as count");
+        $count = $result->getRecord()->get("count");
+        return $count;
+    }
+
+
+    /**
+     * Get Relations
+     *
+     * Given a constellation id, returns an array of its linked constellations.
+     *
+     * @param $icid The constellation id
+     * @return string[] $constellations' id, entity_type, and name
+     */
+    public function getICRelations($icid) {
+        $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})-[:ICRELATION]-(i:Identity) return i.id, i.entity_type, i.name;");
+        $relations = [];
+        foreach ($result->getRecords() as $record) {
+            $relations[] = [ "id" => $record->get("i.id"),
+                             "entity_type" => $record->get("i.entity_type"),
+                             "name" => $record->get("i.name")
+                           ];
+        }
+        return $relations;
+    }
+
+    /**
+     * Get Resources
+     *
+     * Given a constellation id, returns all its linked resources.
+     *
+     * @param $icid The constellation id
+     * @return string[] Resources
+     */
+    public function getResources($icid) {
+        $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})-[:RRELATION]->(r:Resource)
+            return r.id as id, r.title as title, r.href as href order by r.title");
+        $resources = [];
+
+        foreach ($result->getRecords() as $record) {
+            $id = $record->get('id');
+            $title = $record->get('title');
+            $href = $record->get('href');
+            $resources[] = ["id" => $id, "title" => $title, "href" => $href];
+        }
+        return $resources;
+    }
+
+
     /**
      * Merge Resource
      *
