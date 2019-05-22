@@ -3943,4 +3943,32 @@ class ServerExecutor {
     }
 
 
+
+    /**
+     * Get Holdings
+     *
+     * Get array of all resources held by a Holding Institution
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function getHoldings(&$input) {
+        if (!isset($input["constellationid"])) {
+            $response = ["result" => "failure",
+                         "error" => "Must provide a constellation id"
+                        ];
+            return $response;
+        }
+
+        $this->logger->addDebug("Retrieving holdings from Neo4J");
+
+        $icid = $input["constellationid"];
+        $resources = $this->neo4J->getHoldings($icid);
+
+        $response["resources"] = $resources;
+        $response["result"] = "success";
+
+        return $response;
+    }
+
 }

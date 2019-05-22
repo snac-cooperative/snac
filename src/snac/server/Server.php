@@ -403,6 +403,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->elasticSearchQuery($this->input);
                 break;
 
+            case "get_holdings":
+                $this->response = $executor->getHoldings($this->input);
+                break;
+
             // Resource Management
             case "insert_resource":
                 if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))

@@ -752,6 +752,32 @@ class Neo4JUtil {
     }
 
     /**
+     * Get Holdings
+     *
+     * Given a constellation id, returns an array of resources held by that holding repository.
+     *
+     * @param $icid The constellation id of the holding reposit
+     * @return array $holdings  An array of resources' with id, title, href and count of resource relationships.
+     */
+    public function getHoldings($icid) {
+        if ($this->connector != null) {
+            $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})<-[:HIRELATION]-(r:Resource)
+                return r.id as id, r.title as title, r.href as href, size((r)<-[:RRELATION]-(:Identity)) as relation_count
+                order by r.title");
+            $holdings = [];
+
+            foreach ($result->getRecords() as $record) {
+                $id = $record->get('id');
+                $title = $record->get('title');
+                $href = $record->get('href');
+                $relation_count = $record->get('relation_count');
+                $holdings[] = ["id" => $id, "title" => $title, "href" => $href, "relation_count" => $relation_count];
+            }
+        return $holdings;
+
+        }
+    }
+    /**
      * Merge Resource
      *
      * Removes all RRELATIONS from a victim and copies them to the target resource node
