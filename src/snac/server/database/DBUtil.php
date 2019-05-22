@@ -2887,6 +2887,7 @@ class DBUtil
 
     /**
      * Replace Resource Relation Resource
+     * Does not maintain version history
      *
      * @param \snac\data\Resource $victim
      * @param \snac\data\Resource $target
@@ -2898,7 +2899,6 @@ class DBUtil
         $targetVersion = $target->getVersion();
 
         $this->sql->replaceResourceRelationResource($victimID, $victimVersion, $targetID, $targetVersion);
-
     }
 
     /**
@@ -2916,7 +2916,6 @@ class DBUtil
         $resource->setVersion(null);
         $resource->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $this->writeResource($user, $resource);
-
     }
 
     /**

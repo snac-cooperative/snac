@@ -742,21 +742,11 @@ class Neo4JUtil {
      * @param $resource_id The id of the resource
      * @return string[]    An array of related constellation ids
      */
-    public function getResourceRelationships($resourceID) {
+    public function getResourcesRelatedConstellationIDs($resourceID) {
         if ($this->connector != null) {
             // Returning a single array of ids using collect()
             $result = $this->connector->run("MATCH (r:Resource {id: '{$resourceID}' })-[:RRELATION]-(i:Identity) return collect(i.id) as ids ");
-            $relatedConstellationIDs = $result->getRecord()->get('ids');
-
-            // // Returning multiple rows and dealing with each record individually
-            // $relatedConstellationIDs = [];
-            // $result = $this->connector->run("MATCH (r:Resource {id: '{$resource_id}' })--(i:Identity) return i, i.id as id, i.name as name ");
-            // foreach ($result->getRecords() as $record) {
-            //     $id = $record->get('id');
-            //     $name = $record->get('name');
-            //     $relatedConstellationIDs[] = $id;
-            //     $relatedConstellationIDs[] = $name;
-            // }
+            $relatedConstellationIDs = $result->getRecord()->get("ids");
             return $relatedConstellationIDs;
         }
     }
