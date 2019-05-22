@@ -61,6 +61,8 @@
     /*margin-bottom: 10px;*/
     position:relative;
     display: none;
+    background: white;
+
 }
 
 .wikipedia_thumbnail img {
@@ -221,6 +223,54 @@ function preventAnchorScroll() {
 
 preventAnchorScroll();
 
+
+function holdingsTabActions() {
+    if (! $.fn.DataTable.isDataTable("#holding-repository-table")) {
+        loadHoldings();
+    }
+}
+
+function loadHoldings() {
+    var constellationid = $("#constellationid").val()
+    var command = '{"command":"get_holdings", "constellationid":"' + constellationid + '"}'
+    var resturl = 'http://localhost/~josephglass/snac/rest/'
+
+$("#holding-repository-table").dataTable({
+    "ajax": {
+        "type": "PUT",
+        "url": "http://localhost/~josephglass/snac/rest/",
+        "data": function(d) {
+            return command;
+        },
+        "dataType": "json",
+        "dataSrc": "resources"
+    },
+    "columns": [{
+            "data": null,
+            "render": function(data, type, row, meta) {
+                var cell = data.title;
+                if (data.href) {
+                    cell += "<a target='_blank' style='float:right' href='{{control.snacURL}}/vocab_administrator/resources/" +
+                        data.id + "' title='View in SNAC'> <i class='fa fa-external-link'> </i> </a>";
+                }
+                return cell;
+            }
+        },
+        // { "data": "title"},
+        {
+            "data": "href",
+            "render": function(data, type, row, meta) {
+                if (data) {
+                    var cell = "<a href='" + data + "'>" + data + "</a>"
+                }
+                return cell;
+            }
+        },
+        {
+            "data": "relation_count"
+        }
+    ]
+})}
 
 var archivalTable = null;
 var lumpTable = null;
@@ -416,6 +466,10 @@ $(document).ready(function() {
         displayPlacesMapInteractive();
     })
 
+    $("#view-nav-tabs a[href='#holding-repository']").on("show.bs.tab", function() {
+        holdingsTabActions();
+    })
+
     // store the currently selected tab in the hash value
     $("#view-nav-tabs > li > a").on("shown.bs.tab", function(e) {
         var hash = $(e.target).attr("href")
@@ -445,6 +499,7 @@ $(document).ready(function() {
     var relationTable = $('#relation-table').DataTable({
         "searching" : true,
         "autoWidth": false,
+        "deferRender": true,
         "columnDefs": [
             {"visible": false, "targets":2},
             {"width": "75%", "targets":1}
@@ -464,6 +519,7 @@ $(document).ready(function() {
     archivalTable = $('#archival').DataTable({
                     dataSrc: 2,
                     "autoWidth": false,
+                    "deferRender": true,
                     "columnDefs": [
                         {"width": "5%", "targets":0},
                         {"width": "60%", "targets":1},
@@ -626,6 +682,9 @@ $(document).ready(function() {
                     {{ data.subjects ? enabledtab : disabledtab}} href="#subjects">Subjects</a></li>
                     {{ data.occupations ? enabledtab : disabledtab}} href="#occupations">Occupations</a></li>
                     {{ data.functions ? enabledtab : disabledtab}} href="#functions">Functions</a></li>
+                    {% if 'holdingRepository' in data.flags %}
+                        {{ enabledtab}} href="#holding-repository">Holdings</a></li>
+                    {% endif %}
                 </ul>
                 <div class="tab-content">
                     {% if data.biogHists.0.text %}
@@ -953,6 +1012,24 @@ $(document).ready(function() {
                             </div>
                         </div>
                     </div>
+                    {% if 'holdingRepository' in data.flags %}
+                    <div class="body-tab-pane tab-pane" id="holding-repository">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table id="holding-repository-table" class="table table-striped table-bordered table-hover dataTable no-footer" style="width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <!-- <th>Id</th> -->
+                                            <th>Title</th>
+                                            <th>Href</th>
+                                            <th>Relation Count</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                     <!-- <div class="body-tab-pane tab-pane" id="names">
                         <div class="row">
                             <div class="col-md-12">

@@ -3173,5 +3173,37 @@
                 }
             }
         ]
+    },
+    "get_holdings": {
+        "title": "Get Holdings",
+        "description": "Get an array of resources held by a Holding Repository",
+        "category": "resource",
+        "parameters" : {
+            "constellationid" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Get Holdings",
+                "description": "Get an array of resources held by a Holding Repository",
+                "query" : {
+                   "command" : "get_holdings",
+                   "constellationid" : 76778184
+                   },
+                "response":{
+                    "resources": [{
+                        "id": "7677119",
+                        "title": "Report of a focused visit to Oakland Community College ...",
+                        "href": "http:\/\/www.worldcat.org\/oclc\/54358612",
+                        "relation_count": 2
+                        }],
+	                    "result": "success",
+                        "timing": 792.5
+                    }
+            }
+        ]
     }
+
 }
