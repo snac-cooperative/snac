@@ -254,21 +254,19 @@ $("#holding-repository-table").dataTable({
                         data.id + "' title='View in SNAC'> <i class='fa fa-external-link'> </i> </a>";
                 }
                 return cell;
-            }
+            },
+            "defaultContent": ""
         },
         // { "data": "title"},
-        {
-            "data": "href",
-            "render": function(data, type, row, meta) {
-                if (data) {
-                    var cell = "<a href='" + data + "'>" + data + "</a>"
-                }
-                return cell;
-            }
+        { "data": "href",
+          "render": function(data, type, row, meta) {
+                        var data = data || '';
+                        var cell = "<a href='" + data + "'>" + data + "</a>";
+                        return cell;
+                    },
+
         },
-        {
-            "data": "relation_count"
-        }
+        { "data": "relation_count" }
     ]
 })}
 
