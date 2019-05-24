@@ -802,14 +802,9 @@ class Neo4JUtil {
      * @return string[] $constellations' id, entity_type, and name
      */
     public function getICRelations($icid) {
-        $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})-[:ICRELATION]-(i:Identity) return i.id, i.entity_type, i.name;");
-        $relations = [];
-        foreach ($result->getRecords() as $record) {
-            $relations[] = [ "id" => $record->get("i.id"),
-                             "entity_type" => $record->get("i.entity_type"),
-                             "name" => $record->get("i.name")
-                           ];
-        }
+        $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})-[:ICRELATION]-(i:Identity) return i.id as id,
+                                        i.entity_type as entity_type, i.name as name;");
+        $relations = $this->extractConstellations($result);
         return $relations;
     }
 
@@ -860,4 +855,45 @@ class Neo4JUtil {
 
             return true;
     }
+
+
+    /**
+    * Get getHoldingsResourcesRelations
+    *
+    * Given a holding institution's constellation id, find its held resources and return a list of constellations linked to those resources.
+    *
+    * @param $icid The constellation id
+    * @return string[] $constellations' id, entity_type, and name
+    */
+    public function getHoldingsResourceRelations($icid) {
+        $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})<-[:HIRELATION]-(r:Resource)-[:RRELATION]-(i:Identity)
+                                         RETURN i.id as id, i.entity_type as entity_type, i.name as name;");
+        $constellations = $this->extractConstellations($result);
+        return $constellations;
+    }
+
+
+
+    /**
+    * Extract Constellations
+    *
+    * Turns a graphaware query result returning constellation id, entity_type, and name into an array.
+    *
+    * @param $result The object returned by the graphaware query
+    * @return string[] $constellations' id, entity_type, and name
+    */
+    public function extractConstellations($result) {
+        $constellations = [];
+        foreach ($result->getRecords() as $record) {
+            $constellations[] = ["id" => $record->get('id'),
+                                 "entity_type" => $record->get('entity_type'),
+                                 "name" => $record->get('name'),
+                            ];
+        }
+        return $constellations;
+    }
+
+
+
+
 }
