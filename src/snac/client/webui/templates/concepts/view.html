@@ -132,6 +132,13 @@
                 {% endif %}
                 {% endfor %}
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#term-modal"> <i class="fa fa-plus"></i> Add Term</button>
+                <h4>Properties</h4>
+                <div class="form-group">
+                    <div class="col-xs-8">
+                        <textarea class="form-control" rows="3" style="width:475px;"> {{term.value}}</textarea>
+                    </div>
+                </div>
+
             </form>
 
             <br>
@@ -187,6 +194,10 @@
         </div>
         {% endif %}
 
+    </div>
+
+    <div class="row">
+
 
         {% if concept.narrower_concepts %}
         <div class="form-group  col-xs-6">
@@ -236,20 +247,23 @@
                                 </span>
 	                    </div>
                         <!-- Relationship Types -->
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="concept-relationship-type" id="concept-relationship-type1" value=""> Broader
-                            </label>
-                        </div>
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="concept-relationship-type" id="concept-relationship-type2" value=""> Narrower
-                            </label>
-                        </div>
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="concept-relationship-type" id="concept-relationship-type3" value="">Related
-                            </label>
+                        <div id="concept-relationship-options">
+
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type1" value="broader"> Broader
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type2" value="narrower"> Narrower
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type3" value="related">Related
+                                </label>
+                            </div>
                         </div>
 
 
@@ -257,14 +271,14 @@
 	                    </div>
                         <div style="text-align: center; margin-top: 10px;">
                             <p>Relationship:</p>
-                            <button type="button" class="btn btn-success" id="relate-concepts-btn" data-dismiss="modal">Relate Concepts</button>
+                            <button type="button" class="btn btn-success" id="relate-concepts-btn" data-dismiss="modal" onclick="postConceptRelationship()">Relate Concepts</button>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
-                <button type="button" class="btn btn-primary" id="btn_create_conceptRelation" data-dismiss="modal">Continue</button>
+                <button type="button" class="btn btn-primary" id="btn_create_conceptRelationship" onclick="postConceptRelationship()"data-dismiss="modal">Continue</button>
                 <!-- Define CreateConceptRelation? ^^ -->
             </div>
         </div>

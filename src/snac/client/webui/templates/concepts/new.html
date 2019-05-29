@@ -201,9 +201,6 @@
     <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button> -->
 </div>
 
-{{dump(concept)}}
-{{dump(concept.terms[0])}}
-
 <!-- <button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button> -->
 
 <div class="modal fade" id="resourceSearchPane" tabindex="-1" role="dialog" aria-labelledby="resourceSearchPane">
@@ -280,7 +277,7 @@
             </div>
             <div class="modal-footer" style="margin-top:100px">
                 <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()" disabled><i class="fa fa-minus-circle"></i> Delete</button>
-                <button type="button" class="btn btn-primary" onclick="postNewConcept()">Save Term</button>
+                <button type="button" class="btn btn-primary" onclick="postNew()">Save Term</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
             </div>
         </div>
@@ -307,10 +304,10 @@
                         </div>
                         <br>
                         <div style="margin-left:100px;">
-                            <div class="checkbox col-xs-5">
-                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="is-preferred" value="checked">
-                                <label for="is-preferred">Preferred </label>
-                            </div>
+                            <!-- <div class="checkbox col-xs-5"> -->
+                                <!-- <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="is-preferred" value="checked"> -->
+                                <!-- <label for="is-preferred">Preferred </label> -->
+                            <!-- </div> -->
 
                             <div class="col-xs-6" style="margin-top:10px;">
                                 <!-- <button type="button" class="btn btn-primary " ><i class="fa fa-fw fa-floppy-o"></i> Save</button> -->

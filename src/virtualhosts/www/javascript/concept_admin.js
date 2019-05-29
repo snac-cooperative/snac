@@ -193,24 +193,22 @@ function deleteConceptRelationship() {
     var narrowerID = "";
     var broaderID = "";
     var endpoint = "delete_broader_concepts";
-    var $secondConcept = $(event.target.parentElement);
+    // var $secondConcept = $(event.target.parentElement);
+    var $secondConcept = $(event.target).closest('button')
     var secondID = $secondConcept.data("conceptId");
 
     // broader/narrower/related
 
 
-
-
-
-    // if broader, conceptID is narrower
+    // if clicked concept is narrower, conceptID should be broaderID
     if ($secondConcept.hasClass('narrower_concept')) {
         narrowerID = secondID;
         broaderID = conceptID;
     }
-    // if narrower, conceptID is narrower
+    // if clicked concept is broader, conceptID should be narrowerID
     if ($secondConcept.hasClass('broader_concept')) {
-        narrowerID = secondID;
-        broaderID = conceptID;
+        narrowerID = conceptID;
+        broaderID =  secondID;
     }
 
     var params = `?narrower_id=${narrowerID}&broader_id=${broaderID}`;
@@ -219,8 +217,10 @@ function deleteConceptRelationship() {
         // id1, id2, delete related concept
         var relatedID = secondID;
         endpoint = "delete_related_concepts";
-        var params = `?id1=${conceptID}&id2=${relatedID}`;
+        params = `?id1=${conceptID}&id2=${relatedID}`;
     }
+
+    console.log("Endpoint: ", endpoint + params)
 
 
     // var id = { "term-id" : $("#term-input").data("termId") };
@@ -274,8 +274,52 @@ function searchResourceIMeanTerm() {
     });
 }
 
-function relateConcepts() {
+function postConceptRelationship() {
+    var conceptID = $("#concept-id").val();
+    var relatedConceptID = $("#concept-results-box").find("input:checked").data("conceptId")
+    var endpoint = "save_broader_concepts";
+    var relationship = $("#concept-relationship-options").find("input:checked").val();
+    var narrowerID;
+    var broaderID;
 
+    // if clicked concept is narrower, conceptID should be broaderID
+    if (relationship === "narrower") {
+        narrowerID = relatedConceptID;
+        broaderID = conceptID;
+    }
+    // if clicked concept is broader, conceptID should be narrowerID
+    if (relationship === "broader") {
+        narrowerID = conceptID;
+        broaderID =  relatedConceptID;
+    }
+
+    var params = `?narrower_id=${narrowerID}&broader_id=${broaderID}`;
+
+    // if related, related url, id1, id2
+    if (relationship === "related") {
+        // id1, id2, save related concept
+        var relatedID = relatedConceptID;
+        endpoint = "save_related_concepts";
+        params = `?id1=${conceptID}&id2=${relatedID}`;
+    }
+    console.log("Endpoint: ", endpoint + params)
+    $.post(snacUrl + "/vocab_administrator/" + endpoint + params)
+        .done(function(data) {
+            createdConceptRelationship = data;
+            if (data.result !== "success")  {
+                $('#error-message').slideDown();
+                return false;
+            }
+            $('#notification-message').slideUp();
+            $('#success-message').slideDown();
+            $('#term-modal').modal('hide');
+            setTimeout(function() {
+                window.location.reload()
+            }, 500);
+        })
+        .fail(function() {
+            $('#error-message').slideDown();
+        });
 }
 
 

@@ -766,9 +766,8 @@ class ServerExecutor {
      * @return string[] $response
      */
     public function saveRelatedConcepts($id1, $id2) {
-        $response = [];
-        $response = $this->cStore->saveRelatedConcept($id1, $id2);
-        $response["result"] = "success";
+        $response = $this->cStore->saveRelatedConcepts($id1, $id2);
+        $response = ["result" => "success"];
         return $response;
     }
 
@@ -780,7 +779,7 @@ class ServerExecutor {
      */
     public function removeRelatedConcepts($id1, $id2) {
         $this->cStore->removeRelatedConcepts($id1, $id2);
-        $response["result"] = "success";
+        $response = ["result" => "success"];
         return $response;
     }
 
@@ -795,8 +794,8 @@ class ServerExecutor {
      * @return string[] $response
      */
     public function saveBroaderConcepts($narrowerID, $broaderID) {
-        $response = $this->cStore->saveBroaderConcept($narrowerID, $broaderID);
-        $response["result"] = "success";
+        $this->cStore->saveBroaderConcept($narrowerID, $broaderID);
+        $response = ["result" => "success"];
         return $response;
     }
 
@@ -808,8 +807,8 @@ class ServerExecutor {
      * @return string[] $response
      */
     public function removeBroaderConcepts($narrowerID, $broaderID) {
-        $response = $this->cStore->removeBroaderConcept($narrowerID, $broaderID);
-        $response["result"] = "success";
+        $response = $this->cStore->removeBroaderConcepts($narrowerID, $broaderID);
+        $response = ["result" => "success"];
         return $response;
     }
 
