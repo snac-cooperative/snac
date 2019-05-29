@@ -446,10 +446,81 @@ class Server implements \snac\interfaces\ServerInterface {
 
             // Ingest and Parsing tasks
             case "parse_eac":
-                //if (!$executor->hasPermission("Create"))
-                //   throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
                 $this->response = $executor->parseEACCPFToConstellation($this->input);
                 break;
+
+            case "concepts":
+                if (!$executor->hasPermission("Create"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                if ($this->input['id']) {
+                    $this->response = $executor->readDetailedConcept($this->input['id']);
+                } else {
+                    $this->response = $executor->readConcepts();
+                }
+                break;
+
+            case "search_concepts":
+                if (!$executor->hasPermission("Create"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                if ($this->input['q']) {
+                    $this->response = $executor->searchConcept($this->input['q']);
+                }
+                break;
+
+            case "add_concept":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->createConcept($this->input["value"]);
+                break;
+            case "add_term":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->saveTerm($this->input["concept_id"],
+                                                      $this->input["value"],
+                                                      $this->input["is_preferred"]);
+
+                break;
+            case "save_term":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->saveTerm($this->input["term_id"] ?? null,
+                                                      $this->input["concept_id"],
+                                                      $this->input["value"],
+                                                      $this->input["is_preferred"]);
+                break;
+            case "delete_term":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->deleteTerm($this->input["term_id"]);
+
+                break;
+            case "save_related_concepts":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->saveRelatedConcepts($this->input["id1"], $this->input["id2"]);
+
+                break;
+            case "delete_related_concepts":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->removeRelatedConcepts($this->input["id1"], $this->input["id2"]);
+
+                break;
+            case "save_broader_concepts":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->saveBroaderConcepts($this->input["narrower_id"], $this->input["broader_id"]);
+
+                break;
+            case "delete_broader_concepts":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->removeBroaderConcepts($this->input["narrower_id"], $this->input["broader_id"]);
+
+                break;
+
 
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"], 400);

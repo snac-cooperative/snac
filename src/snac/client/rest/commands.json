@@ -3108,6 +3108,37 @@
         "title": "Parse EAC-CPF XML to Constellation (Pre-Alpha)",
         "description": "Parses a given EAC-CPF file into a Constellation JSON object using the SNAC profile."
     },
+    "concepts" : {
+        "category": "vocabulary",
+        "title" : "Get Concepts",
+        "description" : "Get all concepts.",
+        "parameters" : {
+            "term_id" : {
+                "optional": true,
+                "type": "Integer",
+                "description" : "Term ID, if known.  If given a term id, that vocabulary term is directly returned."
+            }
+        },
+        "returns" : {
+            "term" : {
+                "type": "Object",
+                "description": "SNAC Concept Term of the requested term"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": []
+    },
+    "search_concepts": {
+        "title": "Search concept",
+        "description": "Searches concept vocabulary"
+
     "add_sameas": {
         "title": "Add external links to a constellation",
         "description": "Links a constellation to an external identity on sites such as Wikipedia, VIAF, etc.",
