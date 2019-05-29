@@ -717,6 +717,21 @@ class ServerExecutor {
         return $response;
     }
 
+
+    /**
+     * Create Concept
+     *
+     * @param string $value Initial term value of concept
+     * @return string[] The response to send to the client
+     */
+    public function createConcept($value) {
+        $conceptID = $this->cStore->createConcept();
+
+        $response = $this->saveTerm(null, $conceptID, $value, true);
+        $response["concept_id"] = $response["term"]["concept_id"];
+        return $response;
+    }
+
     /**
      * Save Term
      * @param int $conceptID

@@ -450,6 +450,11 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
+            case "add_concept":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->createConcept($this->input["value"]);
+                break;
             case "add_term":
                 if (!$executor->hasPermission("Create"))
                   throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");

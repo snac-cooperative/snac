@@ -6498,7 +6498,7 @@ class SQL
                 VALUES($1, $2, $3) RETURNING *";
 
         $result = $this->sdb->query($sql, array($conceptID, $value, $isPreferred));
-        $term = $this->sdb->fetchAll($result);
+        $term = $this->sdb->fetchrow($result);
         return $term;
     }
 

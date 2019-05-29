@@ -1853,12 +1853,11 @@ class DBUtil
 
     /**
      * Create Concept
-     * @param int $conceptID
-     * @param string[] associative array of terms e.g. [[value => "Librarian"], [isPreferred => 'f']]
-     * @return string[] associative array of inserted terms from database
+     * @return int $conceptID associative array of inserted terms from database
      */
-    public function createConcept($termValue) {
-        $this->sql->insertConcept();
+    public function createConcept() {
+        $conceptID = $this->sql->insertConcept();
+        return $conceptID;
     }
 
     /**
