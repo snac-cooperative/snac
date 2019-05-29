@@ -131,11 +131,11 @@
 
 
 
-<h2>Search</h2>
+<!-- <h2>Search</h2>
             <div class="well well-lg text-center">
                 <div class="input-group select2-bootstrap-append">
                     <select id="term-relationship-type-select" name="concept-relationship" class="select" style="width: 25%;">
-                        <!--TODO: load options   -->
+
                         <option>Broader</option>
                         <option>Narrower</option>
                         <option>Related</option>
@@ -163,14 +163,14 @@
                 <label>
                     <input type="radio" name="concept-relationship-type" id="concept-relationship-type3" value="">Related
                 </label>
-            </div>
+            </div> -->
 
 
 
 
         </div>
     </div>
-
+<!--
     {% if concept.related_concepts %}
     <h2>Related Concepts</h2>
     <div class="form-group">
@@ -198,13 +198,13 @@
     </div>
     {% endif %}
 
-    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button>
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button> -->
 </div>
 
 {{dump(concept)}}
 {{dump(concept.terms[0])}}
 
-<button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
+<!-- <button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button> -->
 
 <div class="modal fade" id="resourceSearchPane" tabindex="-1" role="dialog" aria-labelledby="resourceSearchPane">
     <div class="modal-dialog" role="document">
@@ -260,7 +260,7 @@
                             <label class="control-label col-xs-2" for="">Term</label>
                             <div class="col-xs-10">
                                 <input type="text" id="term-input" class="form-control" name="term-value" data-term-id="" required>
-                                <input type="hidden" id="concept-id" name="concept-id" value="{{concept.id}}">
+                                <!-- <input type="hidden" id="concept-id" name="concept-id" value="{{concept.id}}"> -->
                             </div>
                         </div>
                         <br>
@@ -280,7 +280,7 @@
             </div>
             <div class="modal-footer" style="margin-top:100px">
                 <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()" disabled><i class="fa fa-minus-circle"></i> Delete</button>
-                <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
+                <button type="button" class="btn btn-primary" onclick="postNewConcept()">Save Term</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
             </div>
         </div>
@@ -322,7 +322,7 @@
             </div>
             <div class="modal-footer" style="margin-top:100px">
                 <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()"><i class="fa fa-minus-circle"></i> Delete</button>
-                <button type="button" class="btn btn-primary" onclick="postTermForm()">Save Term</button>
+                <button type="button" class="btn btn-primary" onclick="saveTermForm()">Save Term</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
             </div>
         </div>

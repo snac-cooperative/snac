@@ -162,6 +162,30 @@ function saveTermForm() {
     return false;
 }
 
+function postNewConcept() {
+    var serialized = $("#term-form").serialize();
+    console.log(serialized);
+    $.post(snacUrl + "/vocab_administrator/add_concept_post", serialized)
+        .done(function(data) {
+            createdTerm = data;
+            if (data.result !== "success")  {
+                $('#error-message').slideDown();
+                return false;
+            }
+
+            $('#term-modal').modal('hide');
+            $('#notification-message').slideUp();
+            $('#success-message').slideDown();
+            setTimeout(function() {
+                window.location = snacUrl + "/vocab_administrator/concepts/" + createdTerm.concept_id
+            }, 500);
+        })
+        .fail(function() {
+            $('#error-message').slideDown();
+        });
+    return false;
+}
+
 
 function deleteConceptRelationship() {
     if (!confirm( "Are you sure you want to delete this relationship?")) { return; }
@@ -195,7 +219,7 @@ function deleteConceptRelationship() {
         // id1, id2, delete related concept
         var relatedID = secondID;
         endpoint = "delete_related_concepts";
-        var params = `?id1=${conceptID}&id2=${relatedID}`;    
+        var params = `?id1=${conceptID}&id2=${relatedID}`;
     }
 
 

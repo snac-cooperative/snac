@@ -1845,6 +1845,13 @@ class WebUIExecutor {
                     $display->setData(array("title"=> "Test Vocab", "response" => "success"));
                     $display->setTemplate("concepts/new");
                 break;
+            case "add_concept_post":
+                    // $response = $this->testVocabQuery('concepts');
+
+                    return $response = $this->postNewConcept($input, $user);
+                    // $display->setData(array("title"=> "Concept" ,  "response" => $response));
+
+                break;
             case "edit_concept":
                     // $response = $this->testVocabQuery('concepts');
                     // $display->setData(array("title"=> "Test Vocab", "response" => $response));
@@ -3560,6 +3567,22 @@ class WebUIExecutor {
 
         return true;
     }
+
+    /**
+     * Post New Concept
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    protected function postNewConcept(&$input) {
+        $request = [];
+        $request["command"] = "add_concept";
+        $request["value"] = $input["term-value"];
+        $response = $this->connect->query($request);
+        return $response;
+    }
+
 
     /**
      * Save Concept Term
