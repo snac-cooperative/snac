@@ -208,19 +208,19 @@
     </div>
 
     <!-- <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button> -->
-    <button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Concept Relation</button>
+    <button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#conceptSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Concept Relation</button>
 </div>
 
 
 
-<div class="modal fade" id="resourceSearchPane" tabindex="-1" role="dialog" aria-labelledby="resourceSearchPane">
+<div class="modal fade" id="conceptSearchPane" tabindex="-1" role="dialog" aria-labelledby="conceptSearchPane">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header primary">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="resourceSearchLabel">Search Resources</h4>
+                <h4 class="modal-title" id="conceptSearchLabel">Create New Concept Relation</h4>
             </div>
-            <div class="modal-body" id="resourceSearchPaneContent">
+            <div class="modal-body" id="conceptSearchPaneContent">
                 <form class="form-horizontal" id="concept-search-form" onsubmit="return false;">
                     <div class="modal-body">
 	                    <input type="hidden" name="json" value="true">
@@ -230,7 +230,7 @@
 
                         <div class="input-group">
 	                        <input type="text" class="form-control"
-	                            placeholder="Resource URL or Title..." id="concept-searchbox" name="q">
+	                            placeholder="Concept term" id="concept-searchbox" name="q">
                                 <span class="input-group-btn">
                                     <button class="btn btn-default" type="submit" id="resource-searchbutton" onclick='searchResourceIMeanTerm()'><i class="fa fa-search" aria-hidden="true"></i></button>
                                 </span>
@@ -264,7 +264,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
-                <button type="button" class="btn btn-primary" id="btn_create_resourceRelation" data-dismiss="modal">Continue</button>
+                <button type="button" class="btn btn-primary" id="btn_create_conceptRelation" data-dismiss="modal">Continue</button>
+                <!-- Define CreateConceptRelation? ^^ -->
             </div>
         </div>
     </div>
