@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reviewer's Dashboard - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script>
+// Inline script to help out the pop-up menu for constellations
+var permissions = {
+    {% for permission, value in permissions %}
+        {{permission}}: {{value}},
+    {% endfor %}
+    FakeHolder: false
+};
+</script>
+<script>
+$.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+</script>
+
+<meta name="viewport" content="initial-scale = 1.0" />
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+
+
+    <div class="row">
+        <div class="alert alert-01 alert-info" id="status-message" style="display: none">
+            <p></p>
+        </div><!-- end alert -->
+    </div>
+    <div class="row dashboard-title">
+        <div class="col-md-4">
+            <div>
+                <div class="large-icon-box">
+                    <p class="text-center background-icon">
+                        <i class="fa fa-folder" style="color: #FAE1C6;" ></i>
+                    </p>
+                    <p class="text-right overlay-icon" >
+                        <i class="fa fa-check-circle" style="color: #E0892B;"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+                <h1 class="title">Reviewer's Dashboard</h1>
+                <div class="well-md">
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Reviewer's dashboard.  From here you can see and pick-up the Constellations that have been sent directly to you for reviewing.  You also have the option of picking up Constellations that have been sent to any reviewer.</p>
+                </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Left column -->
+            {% if data.messages|length > 0 %}
+            <div class="alert alert-warning">
+                <div class="">
+                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
+                    <a class="list-group-item list-group-item-warning" href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messaging Center</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <form class="form-horizontal" id="search_form" onsubmit="return false;">
+                <div class="well well-lg text-center">
+                        <input type="hidden" id="count" name="count" value="10">
+                        <input type="hidden" id="start" name="start" value="0">
+                        <div class="input-group">
+                            <input type="text" class="form-control"
+                                placeholder="Search for..." id="searchbox" name="term">
+                                <span class="input-group-btn">
+                                     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+                                </span>
+                        </div>
+
+                        <div id="search-results-box">
+                        </div>
+
+                        <div>
+                            <p style="margin-top: 10px; margin-bottom: 0px;"><a href="{{control.snacURL}}/search?search_type=advanced">Advanced Search</a></p>
+                        </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
+            {% if permissions.ChangeLocks %}
+            <div class="panel panel-review">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Sent Directly to You</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following Constellations were sent directly to you for review.  Select one to check it out and begin editing.</p>
+                    <div class="list-group" style="margin-bottom: 0px;">
+                        {% if not data.review %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
+                        {% for link in data.review %}
+                        <a href="{{control.snacURL}}/edit/{{link.id}}/{{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
+            {% if permissions.ChangeLocks %}
+            <div class="panel panel-review">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Sent to Any Reviewer</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following Constellations were sent to any reviewers.  Select one to check it out and begin editing.</p>
+                    <div class="list-group" style="margin-bottom: 0px;">
+                        {% if not data.needs_review %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
+                        {% for link in data.needs_review %}
+                        <a href="{{control.snacURL}}/edit/{{link.id}}/{{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>

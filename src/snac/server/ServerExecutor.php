@@ -6,7 +6,7 @@
  * Contains the ServerExector class that performs all the tasks for the main Server
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2016 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -835,8 +835,12 @@ class ServerExecutor {
             if (isset($response["results"])) {
                 $results = $response["results"];
                 $response["results"] = array();
-                foreach ($results as $result)
-                        $response["results"][] = $this->cStore->readResource($result["id"])->toArray();
+                foreach ($results as $result) {
+                    $resource = $this->cStore->readResource($result["id"]);
+                    if (isset($resource)) {
+                        $response["results"][] = $resource->toArray();
+                    }
+                }
             }
         }
 
@@ -873,7 +877,7 @@ class ServerExecutor {
             $response["related_constellations"] = [];
 
             if (isset($input["relationships"])) {
-                $icids = $this->neo4J->getResourceRelationships($input["resourceid"]);
+                $icids = $this->neo4J->getResourcesRelatedConstellationIDs($input["resourceid"]);
                 foreach ($icids as $icid) {
                     $response["related_constellations"][] = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY)->toArray();
                 }
@@ -1166,6 +1170,55 @@ class ServerExecutor {
     }
 
     /**
+     * Institutional Information
+     *
+     * Given a constellationid as input or a user object's affiliation, this method
+     * will look up institutional information, including the summary constellation,
+     * the editing stats, and the connectivity of that institution as a holding
+     * repository in SNAC.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function institutionInformation(&$input) {
+        $icid = null;
+        if (isset($input["constellationid"]) && $this->hasPermission("Modify Users")) {
+            $icid = $input["constellationid"];
+        } else {
+            if ($this->user == null || $this->user->getAffiliation() == null) {
+                $response["result"] = "failure";
+                $response["error"] = "The user does not exist.";
+                return $response;
+            }
+            $icid = $this->user->getAffiliation()->getID();
+        }
+
+        if ($icid == null) {
+            $response["result"] = "failure";
+            $response["error"] = "The institution does not exist.";
+            return $response;
+        }
+
+        // Reading the published version will look up the correct Constellation through the Lookup table, in case the
+        // affiliation has been merged
+        $affil = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+
+        $this->logger->addDebug("Getting stats from postgres");
+        $stats = $this->cStore->getInstitutionReportData($affil);
+        $this->logger->addDebug("Done with postgres, getting stats from neo4j");
+        $counts = $this->neo4J->getHoldingInstitutionStats($affil);
+        $this->logger->addDebug("Done with neo4j stats");
+        $response = [
+            "result" => "success",
+            "constellation" => $affil->toArray(),
+            "stats" => $stats,
+            "counts" => $counts
+        ];
+        return $response;
+    }
+
+    /**
      * Get User Information
      *
      * Gets the user information, including their user information from the database as well
@@ -1184,11 +1237,13 @@ class ServerExecutor {
          */
 
         $user = null;
+        $otherUser = false;
         if ($input == null) {
             $user = $this->user;
         } else {
             if (isset($input["user_edit"])) {
                 $user = $this->uStore->readUser(new \snac\data\User($input["user_edit"]));
+                $otherUser = true;
             }
         }
 
@@ -1199,24 +1254,27 @@ class ServerExecutor {
         }
         $response["result"] = "success";
 
-        $response["user"] = $user->toArray();
+        // User Information array
+        $info = [];
+
+        $info["user"] = $user->toArray();
 
         /*
          * Get the list of Groups the User is a member of
          */
-        $response["groups"] = array();
+        $info["groups"] = array();
         $groups = $this->uStore->listGroupsForUser($user);
         foreach ($groups as $group) {
-            array_push($response["groups"], $group->toArray());
+            array_push($info["groups"], $group->toArray());
         }
 
         /*
          * Get the list of Messages for the user
          */
-        $response["messages"] = array();
+        $info["messages"] = array();
         $messages = $this->uStore->listMessagesToUser($user, true, true);
         foreach ($messages as $message) {
-            array_push($response["messages"], $message->toArray());
+            array_push($info["messages"], $message->toArray());
         }
 
         /*
@@ -1231,21 +1289,21 @@ class ServerExecutor {
         // First look for constellations editable
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "locked editing");
 
-        $response["editing"] = array ();
+        $info["editing"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User has checked out", $item);
-                array_push($response["editing"], $item);
+                array_push($info["editing"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["editing"],
+        usort($info["editing"],
                 function ($a, $b) {
                     return $a['nameEntry'] <=> $b['nameEntry'];
                 });
@@ -1253,21 +1311,21 @@ class ServerExecutor {
         // Next look for currently editing constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "currently editing");
 
-        $response["editing_lock"] = array ();
+        $info["editing_lock"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User was currently editing", $item);
-                array_push($response["editing_lock"], $item);
+                array_push($info["editing_lock"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["editing_lock"],
+        usort($info["editing_lock"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
@@ -1275,21 +1333,21 @@ class ServerExecutor {
         // Next look for sent for review constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "needs review");
 
-        $response["review_lock"] = array ();
+        $info["review_lock"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User had for review", $item);
-                array_push($response["review_lock"], $item);
+                array_push($info["review_lock"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["review_lock"],
+        usort($info["review_lock"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
@@ -1297,38 +1355,46 @@ class ServerExecutor {
         // Next look for needs review by this user constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "needs review", null, null, true);
 
-        $response["review"] = array ();
+        $info["review"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User needed to review", $item);
-                array_push($response["review"], $item);
+                array_push($info["review"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["review"],
+        usort($info["review"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
 
         $editList = $this->cStore->listRecentConstellationsForUser($user, 10);
-        $response["recent"] = array ();
+        $info["recent"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 if ($constellation->getPreferredNameEntry() != null) {
                     $item = array (
                             "id" => $constellation->getID(),
                             "version" => $constellation->getVersion(),
-                            "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                            "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                     );
-                    array_push($response["recent"], $item);
+                    array_push($info["recent"], $item);
                 }
             }
+        }
+
+
+        // Check to see if we're editing a different user
+        if ($otherUser) {
+            $response["user_edit"] = $info;
+        } else {
+            $response = array_merge($response, $info);
         }
 
         return $response;
@@ -1532,7 +1598,7 @@ class ServerExecutor {
                     $response['resource'] = $resourceCheck->toArray();
                     $response["result"] = "success-notice";
                     $response["message"] = [
-                        "text" => "This resource already exists.",
+                        "text" => "This resource already exists."
                     ];
                     return $response;
                 }
@@ -1563,6 +1629,39 @@ class ServerExecutor {
             $response["error"] = "no resource to write";
         }
         return $response;
+    }
+
+    /**
+     * Merge ResourceS
+     *
+     * Transfer all resource relations from victim resource to target, and delete the victim resource.
+     *
+     * @param int $victimID Id of the resource to be deleted
+     * @param int $targetID Id of the resource to be kept
+     */
+    public function mergeResources($victimID, $targetID) {
+        $victim = $this->cStore->readResource($victimID);
+        $target = $this->cStore->readResource($targetID);
+
+        $this->neo4J->mergeResource($victim, $target);
+
+        // Replace victim's id and version with target's in related_resource.
+        $this->cStore->replaceResourceRelationResource($victim, $target);
+
+        $this->deleteResource($victim);
+    }
+
+    /**
+     * Delete Resource
+     *
+     * Delete Resource from ES, Neo4j and PSQL
+     *
+     * @param \snac\data\Resource
+     */
+    public function deleteResource($resource) {
+        $this->elasticSearch->deleteFromResourceIndices($resource);
+        $this->neo4J->deleteResource($resource);
+        $this->cStore->deleteResource($resource, $this->user);
     }
 
     /**
@@ -3397,7 +3496,7 @@ class ServerExecutor {
                 $item = array (
                     "id" => $constellation->getID(),
                     "version" => $constellation->getVersion(),
-                    "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                    "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("Listing (".$status.")", $item);
                 array_push($response["results"], $item);
@@ -3720,7 +3819,9 @@ class ServerExecutor {
                 if (\snac\Config::$USE_NEO4J) {
                     $this->neo4J->checkHoldingInstitutionStatus($constellation);
                 }
-                array_push($searchResults, $constellation->toArray());
+                $constellation = $constellation->toArray();
+                $constellation["resource_count"] = $result["resources"];
+                array_push($searchResults, $constellation);
             }
             $response["results"] = $searchResults;
             $response["count"] = $input["count"];
@@ -3951,6 +4052,84 @@ class ServerExecutor {
             $response["result"] = "success";
         else
             $response["result"] = "failure";
+
+        return $response;
+    }
+
+    /**
+     * Add Constellation SameAs
+     *
+     * Adds External Links to a constellation
+     *
+     * @param integer $constellationID
+     * @param string[] $sameAsUris Array of uris to link this constellation to
+     * @return string[] The response to send to the client
+     */
+    public function addConstellationSameAs($constellationID, $sameAsUris) {
+        $term = new \snac\data\Term;
+        $term->setID(28225); // TODO: query vocab for the 'sameAs' term id
+        $sameAs = new \snac\data\SameAs;
+        $sameAs->setType($term);
+        $sameAs->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+
+        // Make sameAs for each uri
+        $sameAsList = [];
+        foreach ($sameAsUris  as $uri) {
+            $sameAs->setURI($uri);
+            $sameAsList[] = $sameAs;
+        }
+
+        //  Check out constellation and get updated version.
+        $input = [];
+        $input["constellationid"] = $constellationID;
+        $editedConstellation = $this->editConstellation($input);
+        $newVersion = $editedConstellation["constellation"]["version"];
+
+        $constellation = new \snac\data\Constellation;
+        $constellation->setID($constellationID);
+        $constellation->setVersion($newVersion);
+
+         // Add SameAs objects
+        foreach ($sameAsList as $sameAs) {
+            $constellation->addOtherRecordID($sameAs);
+        }
+
+        // Set input for writing SameAs to constellation
+        $input["constellation"] = $constellation->toArray();
+        $this->logger->addDebug("going to write constellation: ", $constellation->toArray());
+        $writtenResult = $this->writeConstellation($input);
+
+        // Publish
+        $result = $this->publishConstellation($writtenResult);
+
+        return $result;
+    }
+
+
+
+    /**
+     * Get Holdings
+     *
+     * Get array of all resources held by a Holding Institution
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function getHoldings(&$input) {
+        if (!isset($input["constellationid"])) {
+            $response = ["result" => "failure",
+                         "error" => "Must provide a constellation id"
+                        ];
+            return $response;
+        }
+
+        $this->logger->addDebug("Retrieving holdings from Neo4J");
+
+        $icid = $input["constellationid"];
+        $resources = $this->neo4J->getHoldings($icid);
+
+        $response["resources"] = $resources;
+        $response["result"] = "success";
 
         return $response;
     }

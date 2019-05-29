@@ -5,7 +5,7 @@
    * License:
    *
    * @author Tom Laudeman
-   * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+   * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
    * @copyright 2015 the Rector and Visitors of the University of Virginia, and
    *            the Regents of the University of California
    */
@@ -17,6 +17,7 @@ use phpDocumentor\Plugin\Scrybe\Converter\Metadata\TableOfContents\BaseEntry;
 use \snac\server\validation\validators\IDValidator;
 use \snac\server\validation\validators\HasOperationValidator;
 use \snac\server\validation\validators\ResourceValidator;
+use \snac\data\Resource;
 
 
 /**
@@ -3037,6 +3038,40 @@ class DBUtil
         }
     }
 
+
+    /**
+     * Replace Resource Relation Resource
+     * Does not maintain version history
+     *
+     * @param \snac\data\Resource $victim
+     * @param \snac\data\Resource $target
+     */
+    public function replaceResourceRelationResource($victim, $target) {
+        $victimID = $victim->getID();
+        $victimVersion = $victim->getVersion();
+        $targetID = $target->getID();
+        $targetVersion = $target->getVersion();
+
+        $this->sql->replaceResourceRelationResource($victimID, $victimVersion, $targetID, $targetVersion);
+    }
+
+    /**
+     * Delete Resource
+     *
+     * Set resource as deleted and save in psql
+     *
+     * @param \snac\data\Resource $resource
+     * @param \snac\data\User $user The user performing the delete
+     */
+    public function deleteResource($resource, $user) {
+        if (!isset($resource)) {
+            return false;
+        }
+        $resource->setVersion(null);
+        $resource->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
+        $this->writeResource($user, $resource);
+    }
+
     /**
      * Write a Vocabulary Term
      *
@@ -3111,9 +3146,11 @@ class DBUtil
          $op = $resource->getOperation();
          if ($op == \snac\data\AbstractData::$OPERATION_INSERT) {
              $rid = null;
-         } elseif ($op == \snac\data\AbstractData::$OPERATION_UPDATE) {
+         } else {
              $rid = $resource->getID();
          }
+
+         $isDeleted = ($op == \snac\data\AbstractData::$OPERATION_DELETE) ? true : false;
 
          $version = null;
          $repoID = null;
@@ -3132,7 +3169,8 @@ class DBUtil
                                                    $resource->getSource(), // objectXMLWrap
                                                    $resource->getDate(),
                                                    $resource->getDisplayEntry(),
-                                                   $user->getUserID());
+                                                   $user->getUserID(),
+                                                   $isDeleted);
          $resource->setID($rid);
          $resource->setVersion($version);
          $this->saveOriginationNames($resource);
@@ -3149,9 +3187,9 @@ class DBUtil
      * @param  \snac\data\Resource $resource Resource object to read
      * @return \snac\data\Resource|boolean The resource object or false if not in database
      */
-    public function readResourceByData($resource){
+    public function readResourceByData(Resource $resource) {
         if ($resource === null)
-            false;
+            return false;
         // check if resource exists in database
         $documentType = null;
         if ($resource->getDocumentType() != null)
@@ -5124,5 +5162,9 @@ class DBUtil
      */
     public function deleteFromNameIndex(&$constellation) {
         return $this->sql->deleteFromNameIndex($constellation->getID());
+    }
+
+    public function getInstitutionReportData(&$constellation) {
+        return $this->sql->getInstitutionReportData($constellation->getID());
     }
 }

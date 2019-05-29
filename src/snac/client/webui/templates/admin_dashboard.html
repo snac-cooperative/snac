@@ -4,11 +4,11 @@
 <title>Admin Dashboard - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
@@ -36,7 +36,26 @@
 
 <div class="container snac" role="main">
 
-    <h1>Administrator Dashboard</h1>
+    <div class="row dashboard-title">
+        <div class="col-md-4">
+            <div>
+                <div class="large-icon-box">
+                    <p class="text-center background-icon">
+                        <i class="fa fa-folder" style="color: #EAE8EE;" ></i>
+                    </p>
+                    <p class="text-right overlay-icon" >
+                        <i class="fa fa-cog" style="color: #7B7484"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+                <h1 class="title">Administrator's Dashboard</h1>
+                <div class="well-md">
+                    <p>Welcome to the Administrator's dashboard.  This dashboard provides system-level controls for user accounts, user groups, and roles and privileges.</p>
+                </div>
+        </div>
+    </div>
 
     <ol class="breadcrumb">
         <li>Administrator</a></li>
@@ -51,26 +70,6 @@
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
-            <h3>Overview</h3>
-
-            <p>Welcome to the Administrator's dashboard.  The first column provides access to administrative settings and user accounts.  The second column gives quick access to reports on the system.</p>
-            <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
-
-
-            <div class="panel panel-success">
-                <div class="panel-heading">
-                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
-                </div>
-                <div class="panel-body">
-                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
-                    <div class="list-group">
-                        <a href="#" class="list-group-item disabled">Coming Soon</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <!-- Middle column -->
             {% if permissions.AddUsers or permissions.ModifyUsers or permissions.AssignRoles %}
             <div class="panel panel-info">
                 <div class="panel-heading">
@@ -90,6 +89,9 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
             {% if permissions.ManageGroups %}
             <div class="panel panel-info">
                 <div class="panel-heading">
@@ -104,6 +106,9 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Role Management</h3>
@@ -112,24 +117,6 @@
                     <p>Use the following links to administer roles and permissions.</p>
                     <div class="list-group">
                         <a href="{{control.snacURL}}/administrator/roles" class="list-group-item"><i class="fa fa-shield fa-fw" aria-hidden="true"></i> Manage Roles</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <!-- Right column -->
-            <div class="panel panel-warning">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Reports</h3>
-                </div>
-                <div class="panel-body">
-                    <p>Reports generated weekly</p>
-                    <div class="list-group">
-                        <a href="{{control.snacURL}}/administrator/report_general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
-                    </div>
-                    <p>Reports generated monthly</p>
-                    <div class="list-group">
-                        <a href="{{control.snacURL}}/administrator/report_holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
                     </div>
                 </div>
             </div>

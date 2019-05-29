@@ -9,7 +9,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -151,6 +151,10 @@ class Server implements \snac\interfaces\ServerInterface {
             case "user_information":
                 $this->response = $executor->userInformation();
                 break;
+            case "institution_information":
+                $this->response = $executor->institutionInformation($this->input);
+                break;
+
 
             case "search_users":
                 if (!$executor->hasPermission("Edit"))
@@ -359,7 +363,15 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->removeMaybeSameConstellation($this->input);
                 break;
 
+            case "add_sameas":
+                if (!$executor->hasPermission("Publish"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to Edit and Publish.", 403);
 
+                if (!isset($this->input["sameas_uris"], $this->input["constellationid"]) || count($this->input["sameas_uris"]) == 0)
+                    throw new \snac\exceptions\SNACInputException("Incorrect input.", 400);
+
+                $this->response = $executor->addConstellationSameAs($this->input["constellationid"], $this->input["sameas_uris"]);
+                break;
 
             case "read":
                 $this->response = $executor->readConstellation($this->input);
@@ -391,6 +403,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->elasticSearchQuery($this->input);
                 break;
 
+            case "get_holdings":
+                $this->response = $executor->getHoldings($this->input);
+                break;
+
             // Resource Management
             case "insert_resource":
                 if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
@@ -407,6 +423,9 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
             case "resource_search":
                 $this->response = $executor->searchResources($this->input);
+                break;
+            case "merge_resource":
+                $this->response = $executor->mergeResources($this->input["victimID"], $this->input["targetID"]);
                 break;
 
             // Reporting

@@ -4,7 +4,7 @@
  * Contains code that handles what happens in the admin GUI
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -136,9 +136,15 @@ $(document).ready(function() {
      * The following are User Admin Page actions
      */
 
-    // Save  button
+    // Save button
     if($('#save_new_user').exists()) {
         $('#save_new_user').click(function(){
+
+            // trigger html5 form validations
+            if (!$('#userName')[0].checkValidity()) {
+                $("#submit-hidden").click();
+                return;
+            }
 
             // Open up the warning alert box and note that we are saving
             $('#notification-message').html("<p>Saving User... Please wait.</p>");

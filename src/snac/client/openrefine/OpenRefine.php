@@ -6,7 +6,7 @@
  * Contains the main OpenRefine class that responds to OpenRefine requests
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2017 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -106,7 +106,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                     // build the CSV line to print
                     $output = array(
                         "name" => $result["identity"]["nameEntries"][0]["original"],
-                        "id" => $result["identity"]["id"],
+                        "id" => (string) $result["identity"]["id"],
                         "type" => [ 
                             $result["identity"]["entityType"]["term"] 
                         ],
@@ -155,7 +155,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                         // build the results line
                         $output = array(
                             "name" => $result["identity"]["nameEntries"][0]["original"],
-                            "id" => $result["identity"]["id"],
+                            "id" => (string) $result["identity"]["id"],
                             "type" => [$result["identity"]["entityType"]["term"]],
                             "score" => round($result["strength"], 2),
                             "match" => ($result["strength"] > 11 ? true : false)

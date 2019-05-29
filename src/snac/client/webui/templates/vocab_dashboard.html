@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Vocabulary Dashboard</title>
+<title>Other Entities Dashboard - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
@@ -36,11 +36,26 @@
 
 <div class="container snac" role="main">
 
-    <h1>Vocabulary Dashboard</h1>
-
-    <ol class="breadcrumb">
-        <li>Vocabulary Dashboard</a></li>
-    </ol>
+    <div class="row dashboard-title">
+        <div class="col-md-4">
+            <div>
+                <div class="large-icon-box">
+                    <p class="text-center background-icon">
+                        <i class="fa fa-folder" style="color: #FAD5D5" ></i>
+                    </p>
+                    <p class="text-right overlay-icon" >
+                        <i class="fa fa-link" style="color: #BE3434"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+                <h1 class="title">Other Entities Dashboard</h1>
+                <div class="well-md">
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Other Entities dashboard!  This dashboard provides access to search, add, and manage non-CPF objects in SNAC.  Here, you'll find concept (vocabulary) terms, geographic places, and our cache of Resources.</p>
+                </div>
+        </div>
+    </div>
 
 
     <div class="row">
@@ -49,42 +64,27 @@
         </div><!-- end alert -->
     </div>
     <div class="row">
+        {% if permissions.EditVocabulary %}
         <div class="col-md-4">
             <!-- Left column -->
-            <h3>Overview</h3>
-
-            <p>Welcome to the Vocabulary Administrator's dashboard.</p>
-            <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
-
-
-            <div class="panel panel-success">
+            <div class="panel panel-info">
                 <div class="panel-heading">
-                    <h3 class="panel-title"><i class="fa fa-fw fa-question-circle"></i> Help</h3>
+                    <h3 class="panel-title">Concept Management</h3>
                 </div>
                 <div class="panel-body">
-                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
+                    <p>Use the following links to administer controlled concept vocabularies.</p>
                     <div class="list-group">
-                        <a href="#" class="list-group-item disabled">Coming Soon</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Concept Term</a>
+
+                        <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Concepts</a>
                     </div>
                 </div>
             </div>
         </div>
+        {% endif %}
+        {% if permissions.EditVocabulary %}
         <div class="col-md-4">
             <!-- Middle column -->
-            {% if permissions.EditVocabulary %}
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Vocabulary Management</h3>
-                </div>
-                <div class="panel-body">
-                    <p>Use the following links to administer controlled vocabularies.</p>
-                    <div class="list-group">
-                        <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Vocabulary Term</a>
-
-                        <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Vocabularies</a>
-                    </div>
-                </div>
-            </div>
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Geographic Vocabulary Management</h3>
@@ -97,11 +97,11 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
+        {% endif %}
+        {% if permissions.EditResources %}
         <div class="col-md-4">
             <!-- Right column -->
-            {% if permissions.EditResources %}
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Resource Cache Management</h3>
@@ -114,38 +114,11 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
+        {% endif %}
     </div>
 </div>
 
-<div class="modal fade" id="constellation-settings" tabindex="-1"
-	role="dialog" aria-labelledby="constellation-settings">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="settings-title">Constellation Settings</h4>
-			</div>
-			<div class="modal-body col-xs-12">
-				<ol class="breadcrumb">
-					<li id="settings-name"></li>
-					<li>Settings</li>
-				</ol>
-				<div class="col-xs-12">
-				    <p>You may perform the following actions on this constellation</p>
-
-                    <div class="list-group" id="settings-actions">
-
-                    </div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
-			</div>
-		</div>
-	</div>
-</div>
 {{ footer(X, user, permissions, control) }}
 </body>
 </html>

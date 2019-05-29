@@ -4,9 +4,9 @@
 <title>New Constellation - Editing - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
-<link href="//code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
-<script type='text/javascript' src="//code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<link href="https://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<script type='text/javascript' src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -22,7 +22,7 @@
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 
 <!-- Tiny MCE text editor
-<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
 <script>
 //tinymce.init(X, {selector:'#biogHist', plugins:'code', min_height: 300});
 </script>
@@ -34,11 +34,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
 
 <!-- Select Upgrades -->
-<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
-<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Javascript -->
 <script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
@@ -49,6 +49,7 @@
 <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/name_parser.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -111,7 +112,7 @@ $(document).ready(function() {
                         </div>
 
                         <div class="panel panel-default">
-                        	<div class="panel-heading">Constellation Information</div>
+                        	<div class="panel-heading">Information</div>
                             <div class="panel-body">
                                 <div class="col-xs-10">
                                     <div class="form-group">
@@ -272,6 +273,9 @@ $(document).ready(function() {
                 </div>
             </div>
         </div>
+
+        {% include '_name_parser.html' %}
+
     </div>
     {{ footer(X, user, permissions, control) }}
     </body>

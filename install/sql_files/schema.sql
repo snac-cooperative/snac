@@ -186,6 +186,7 @@ create table version_history (
 create index version_history_idx1 on version_history(status);
 create index version_history_idx2 on version_history(user_id);
 create index version_history_idx5 on version_history(user_id_secondary);
+create index version_history_idx6 on version_history(timestamp);
 
 -- Users of the system (editors, authors, researchers, admins etc)
 -- SQL reserved word 'user', instead of always quoting it, change table name to appuser.

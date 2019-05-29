@@ -4,7 +4,7 @@
  * Contains code that handles Resource creation and editing
  *
  * @author Joseph Glass
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -37,7 +37,7 @@ function saveResource(event) {
             $('#notification-message').slideUp();
             $('#success-message').slideDown();
             setTimeout(function() {
-                window.location = (snacUrl + "/vocab_administrator/resource/" + data.resource.id);
+                window.location = (snacUrl + "/vocab_administrator/resources/" + data.resource.id);
             }, 1000);
         })
         .fail(function() {

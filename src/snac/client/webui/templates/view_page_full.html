@@ -4,23 +4,18 @@
 <title>{{data.nameEntries.0.original}} - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- SNAC HRT Template code -->
 <link href="{{control.snacURL}}/css/hrt/hrt.css"
             media="all"
             rel="stylesheet"
             type="text/css"></link>
-<link href="http://bioghist.s3-website-us-east-1.amazonaws.com/build/stylesheets/grunticon/icons.data.svg.css" rel="stylesheet">
-<script data-xsl-asset="javascripts/modernizr.js"
-        src="http://bioghist.s3-website-us-east-1.amazonaws.com/build/javascripts/modernizr.js"
-        charset="utf-8"
-        type="text/javascript"></script>
 <style>
    .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
    .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
    .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
-   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw
+   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs, .sprite-icons-nara
    { float: left;
    margin-right: 0.33em; }
 </style>
@@ -35,11 +30,11 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
 <!-- Helper Scripts -->
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Tiny MCE text editor -->
-<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
 
 <!-- Leaflet JS Javascript and Styles-->
 <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
@@ -113,7 +108,7 @@
       <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
       <input id="page_type" name="page_type" type="hidden" value="view_page_full"/>
     {% for sameas in data.otherRecordIDs %}
-        {% if sameas.type.term == 'sameAs' and 'wikipedia' in sameas.uri %}
+        {% if sameas.type.term == 'sameAs' and sameas.uri matches '/wiki.*\.org/' %}
             <input id="has_wiki_link" type="hidden" value="true"/>
         {% endif %}
     {% endfor %}
@@ -313,7 +308,7 @@
                                          {% for relation in data.new.resourceRelations %}
                                          {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related updated">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
                                          {% endif %}
@@ -321,7 +316,7 @@
                                          {% for relation in data.resourceRelations %}
                                          {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
                                          {% endif %}
@@ -329,7 +324,7 @@
                                          {% for relation in data.old.resourceRelations %}
                                          {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related older">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
                                          {% endif %}
@@ -339,7 +334,7 @@
                                          {% for relation in data.new.resourceRelations %}
                                          {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related updated">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
                                          {% endif %}
@@ -347,7 +342,7 @@
                                          {% for relation in data.resourceRelations %}
                                          {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
                                          {% endif %}
@@ -355,7 +350,7 @@
                                          {% for relation in data.old.resourceRelations %}
                                          {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related older">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
                                          {% endif %}
@@ -365,7 +360,7 @@
                                          {% for relation in data.new.resourceRelations %}
                                          {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related updated">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.role.term}}</div>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
@@ -374,7 +369,7 @@
                                          {% for relation in data.resourceRelations %}
                                          {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.role.term}}</div>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
@@ -383,7 +378,7 @@
                                          {% for relation in data.old.resourceRelations %}
                                          {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                              <div class="related older">
-                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                  <div>{{relation.role.term}}</div>
                                                  <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                              </div>
@@ -426,9 +421,12 @@
                                          {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                              <div class="related updated" style="margin-top: 10px;">
                                                 {% if relation.resource.link %}
-                                                    <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                    {% if relation.resource.documentType.term == 'DigitalArchivalResource' %}
+                                                        <i class="fa fa-desktop" aria-hidden="true"></i>
+                                                    {% endif %}
+                                                    <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                 {% else %}
-                                                    {{relation.content|default(relation.resource.title)}}
+                                                    {{relation.resource.displayEntry|default(relation.resource.title)}}
                                                 {% endif %}
                                                  <!--<span class="arcrole">{{relation.role.term}}</span>-->
                                                  <div>{{relation.role.term}}</div>
@@ -440,9 +438,12 @@
                                          {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                              <div class="related" style="margin-top: 10px;">
                                                 {% if relation.resource.link %}
-                                                    <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                    {% if relation.resource.documentType.term == 'DigitalArchivalResource' %}
+                                                        <i class="fa fa-desktop" aria-hidden="true"></i>
+                                                    {% endif %}
+                                                    <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                 {% else %}
-                                                    {{relation.content|default(relation.resource.title)}}
+                                                    {{relation.resource.displayEntry|default(relation.resource.title)}}
                                                 {% endif %}
                                                  <!--<span class="arcrole">{{relation.role.term}}</span>-->
                                                  <div>{{relation.role.term}}</div>
@@ -454,9 +455,9 @@
                                          {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                              <div class="related older" style="margin-top: 10px;">
                                                 {% if relation.resource.link %}
-                                                    <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                    <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                 {% else %}
-                                                    {{relation.content|default(relation.resource.title)}}
+                                                    {{relation.resource.displayEntry|default(relation.resource.title)}}
                                                 {% endif %}
                                                  <!--<span class="arcrole">{{relation.role.term}}</span>-->
                                                  <div>{{relation.role.term}}</div>
@@ -498,27 +499,27 @@
                          <!--
                                <div>
                                   <div class="sprite-icons-archivegrid"></div>
-                                  <a href="http://beta.worldcat.org/archivegrid/?p=1&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}">ArchiveGrid search</a>
+                                  <a href="https://beta.worldcat.org/archivegrid/?p=1&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}">ArchiveGrid search</a>
                                </div>
                                <div>
                                   <div class="sprite-icons-dpla"></div>
-                                  <a href="http://dp.la/search?utf8=%E2%9C%93&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}">DPLA search</a>
+                                  <a href="https://dp.la/search?utf8=%E2%9C%93&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}">DPLA search</a>
                                </div>
                                <div>
                                   <div class="sprite-icons-wikipedia"></div>
-                                  <a href="http://en.wikipedia.org/wiki/Charles_S._Fairchild">Wikipedia</a>
+                                  <a href="https://en.wikipedia.org/wiki/Charles_S._Fairchild">Wikipedia</a>
                                </div>
                                <div>
                                   <div class="sprite-icons-idlocgov"></div>
-                                  <a href="http://id.loc.gov/authorities/names/n88071278">LC Name Authority File</a>
+                                  <a href="https://id.loc.gov/authorities/names/n88071278">LC Name Authority File</a>
                                </div>
                                <div>
                                   <div class="sprite-icons-viaf"></div>
-                                  <a href="http://viaf.org/viaf/60627856">Virtual International Authority File</a>
+                                  <a href="https://viaf.org/viaf/60627856">Virtual International Authority File</a>
                                </div>
                                <div>
                                   <div class="sprite-icons-worldcat"></div>
-                                  <a href="http://www.worldcat.org/wcidentities/lccn-n88-071278">WorldCat Identities</a>
+                                  <a href="https://www.worldcat.org/wcidentities/lccn-n88-071278">WorldCat Identities</a>
                                </div>
                          -->
                                          {% for sameas in data.new.otherRecordIDs %}
@@ -547,6 +548,16 @@
                                                     <div class="updated">
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
+                                                   </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div class="updated">
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                   </div>
+                                                 {% elseif 'archives.gov' in sameas.uri %}
+                                                    <div class="updated">
+                                                      <div class="sprite-icons-nara"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">National Archives</a>
                                                    </div>
                                                  {% else %}
                                                      <div class="related updated">
@@ -585,6 +596,16 @@
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
                                                    </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div>
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                   </div>
+                                                 {% elseif 'archives.gov' in sameas.uri %}
+                                                    <div>
+                                                      <div class="sprite-icons-nara"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">National Archives</a>
+                                                   </div>
                                                  {% else %}
                                                      <div class="related">
                                                          <a href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
@@ -618,6 +639,16 @@
                                                     <div class="older">
                                                       <div class="sprite-icons-cbw"></div>
                                                       <a href="{{sameas.uri}}" target="_blank">Collective Biographies of Women</a>
+                                                   </div>
+                                                 {% elseif 'familysearch.org' in sameas.uri %}
+                                                    <div class="older">
+                                                      <div class="sprite-icons-fs"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">Family Search</a>
+                                                   </div>
+                                                 {% elseif 'archives.gov' in sameas.uri %}
+                                                    <div class="older">
+                                                      <div class="sprite-icons-nara"></div>
+                                                      <a href="{{sameas.uri}}" target="_blank">National Archives</a>
                                                    </div>
                                                  {% else %}
                                                      <div class="related older">
@@ -955,7 +986,7 @@
                    {% else %}
                    <div class="panel panel-info" style="margin-top: 15px;">
                        <div class="panel-heading">
-                           <h3 class="panel-title">Constellation Options</h3>
+                           <h3 class="panel-title">Options</h3>
                        </div>
                        <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
                           <h5>Information</h5>
@@ -973,7 +1004,7 @@
                                 {% endif %}
                                    <a class="list-group-item list-group-item-history"
                                       href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
-                                       <i class="fa fa-fw fa-history" aria-hidden="true"></i> Constellation History</a>
+                                       <i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History</a>
                           </div>
                           <h5>Visualizations</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
@@ -986,7 +1017,7 @@
                           </div>
                           <h5>Export As</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
-                              <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> Constellation JSON</a>
+                              <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> JSON</a>
                                   <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="list-group-item list-group-item-download"><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
                           </div>
                       </div>
@@ -1001,19 +1032,18 @@
                        </div>
                        <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
                            {% if user.email and permissions.Edit %}
-                          <h5>Constellation Actions</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
                                 {% if data.status == 'editable' %}
                                 <a class="list-group-item list-group-item-info"
                                    href="{{control.snacURL}}/edit/{{data.id}}/{{data.version}}"><i class="fa fa-fw fa-pencil" aria-hidden="true"></i>
-                                   Edit Constellation</a>
+                                   Edit</a>
                                 <a class="list-group-item list-group-item-danger" id="reserveForEdit"
                                    href="#"><i class="fa fa-fw fa-bookmark" aria-hidden="true"></i>
                                    <span id="reserveForEditText">Reserve for Editing</span></a>
                                 {% else %}
                                     <a class="list-group-item list-group-item-danger disabled"
                                        href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
-                                        <i class="fa fa-fw fa-ban"></i> Edit Constellation
+                                        <i class="fa fa-fw fa-ban"></i> Edit
                                     </a>
                                     {% if data.editingUser %}
                                         <div class="list-group-item">
@@ -1038,7 +1068,7 @@
 
                   <div class="panel panel-default">
                       <div class="panel-heading">
-                          <h3 class="panel-title">Constellation Information</h3>
+                          <h3 class="panel-title">Information</h3>
                       </div>
                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
                           <dt><strong>Permalink:</strong></dt>

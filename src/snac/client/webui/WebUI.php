@@ -5,7 +5,7 @@
  * Contains the main web interface class that instantiates the web ui
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -110,6 +110,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "download",
                 "error",
                 "vocabulary",
+                "vocab_administrator",
                 "quicksearch",
                 "relations",
                 "maybesame",
@@ -118,12 +119,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "visualize",
                 "history",
                 "history_diff",
-                "static",
                 "api_help",
                 "api_test",
                 "contact",
                 "stats",
-                "feedback"
+                "feedback",
+                "resource_search"
         );
 
         // These are read-only commands that are allowed in read-only mode
@@ -139,7 +140,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "relations",
             "explore",
             "history_diff",
-            "static",
             "api_help",
             "visualize",
             "stats",
@@ -158,7 +158,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Code to take the site into read-only mode (destroys login session)
         if (\snac\Config::$READ_ONLY) {
             // Make sure there is no session to keep track of anymore
-            session_name("SNACWebUI");
+            session_name(\snac\Config::$SESSION_NAME);
             session_start();
             session_destroy();
 
@@ -179,7 +179,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // *****************************************
 
         // Start the session
-        session_name("SNACWebUI");
+        session_name(\snac\Config::$SESSION_NAME);
         session_start();
 
         // Google OAuth Settings (from Config)
@@ -261,7 +261,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Destroy the old session
                 session_destroy();
                 // Restart the session
-                session_name("SNACWebUI");
+                session_name(\snac\Config::$SESSION_NAME);
                 session_start();
 
                 if (isset($this->input["r"])) {
@@ -329,7 +329,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Destroy the old session
                 session_destroy();
                 // Restart the session
-                session_name("SNACWebUI");
+                session_name(\snac\Config::$SESSION_NAME);
                 session_start();
                 $_SESSION = array();
 
@@ -376,7 +376,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayMaybeSameListPage($this->input, $display);
                 break;
             case "add_maybesame":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if ($permissions["MaybeSameAssertion"]) {
                     $response = $executor->addMaybeSameAssertion($this->input);
                 } else {
                     $executor->displayPermissionDeniedPage("Add Maybe Same", $display);
@@ -440,7 +440,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // User and messaging commands
             case "dashboard":
-                $executor->displayDashboardPage($display);
+                $executor->displayDashboardPage($this->input, $display);
                 break;
             case "profile":
                 $executor->displayProfilePage($display);
@@ -479,6 +479,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // visualization commands
 			case "visualize":
                 $response = $executor->handleVisualization($this->input, $display);
+                break;
+
+            // Reporting
+            case "reports":
+                $response = $executor->handleReporting($this->input, $display, $user);
                 break;
 
             // Administrator command (the sub method handles admin commands)
@@ -630,17 +635,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->drawErrorPage($error, $display);
                 break;
 
-            case "static":
-                $found = $executor->displayStaticPage($this->input, $display);
-                if (!$found)
-                    array_push($this->responseHeaders, "HTTP/1.0 404 Not Found");
-                break;
             case "stats":
                 $response = $executor->displayStatsPage($this->input, $display);
                 break;
 
+            case "institution":
+                $response = $executor->displayInstitutionPage($this->input, $display);
+                break;
+
             case "upload":
                 $response = $executor->displayUploadPage($this->input, $display);
+                break;
+
+            case "cart":
+                $response = $executor->handleCartResources($this->input);
                 break;
 
             // If dropping through, then show the landing page
@@ -651,6 +659,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $executor->displayGridPage($this->input, $display);
                 break;
         }
+
+
+        // The server will always return a newer version of the user.  So in this case, we'll always
+        // serialize to the session the latest version of the user returned to the web ui.  The
+        // ServerConnect utility now checks for the user object and updates its copy with the one
+        // returned from the server rather than keeping the initial one sent by WebUI when the
+        // ServerConnect object was created.
+        if ($executor->getUser() != null)
+            $_SESSION['snac_user'] = serialize($executor->getUser());
 
         // If the display has been given a template, then use it.  Else, print out JSON.
         if ($display->hasTemplate()) {

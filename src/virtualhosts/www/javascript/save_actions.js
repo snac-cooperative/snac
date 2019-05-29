@@ -6,7 +6,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -40,7 +40,7 @@ $(document).ready(function() {
                 setTimeout(function(){
                     $('#error-message').slideUp();
                 }, 10000);
-        		return;
+        		return false;
         	}
 
 
@@ -53,7 +53,7 @@ $(document).ready(function() {
                 setTimeout(function(){
                     $('#notification-message').slideUp();
                 }, 7000);
-        		return;
+        		return false;
         	}
 
             // Open up the warning alert box and note that we are saving
@@ -156,7 +156,8 @@ $(document).ready(function() {
                 	});
 
                     // Everything's been saved, so mark not in editing
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     // Clear the undo set
                     undoSet = new Array();
@@ -177,6 +178,7 @@ $(document).ready(function() {
                     displayErrorMessage(data.error,data);
                 }
             });
+            return false;
         });
     }
 
@@ -198,7 +200,7 @@ $(document).ready(function() {
                 setTimeout(function(){
                     $('#error-message').slideUp();
                 }, 10000);
-        		return;
+        		return false;
         	}
 
         	// If nothing has changed, alert the user and unlock
@@ -211,7 +213,8 @@ $(document).ready(function() {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
-		                somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+		                //somethingHasBeenEdited = false;
 
 		                $('#notification-message').slideUp();
 
@@ -232,6 +235,7 @@ $(document).ready(function() {
                         displayErrorMessage(data.error,data);
 		            }
 		        });
+                return false;
         	} else {
 
 	            // Open up the warning alert box and note that we are saving
@@ -276,7 +280,8 @@ $(document).ready(function() {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // No longer in editing, save succeeded
-	                    somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+	                    //somethingHasBeenEdited = false;
 
 	                    $('#notification-message').slideUp();
 
@@ -297,6 +302,7 @@ $(document).ready(function() {
                         displayErrorMessage(data.error,data);
 	                }
 	            });
+                return false;
         	}
         });
     }
@@ -319,7 +325,7 @@ $(document).ready(function() {
                 setTimeout(function(){
                     $('#error-message').slideUp();
                 }, 10000);
-        		return;
+        		return false;
         	}
 
         	// If nothing has changed, alert the user and publish
@@ -332,7 +338,8 @@ $(document).ready(function() {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
-		                somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+		                //somethingHasBeenEdited = false;
 
 		                $('#notification-message').slideUp();
 
@@ -398,7 +405,8 @@ $(document).ready(function() {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // Edit succeeded, so save mode off
-	                    somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+	                    //somethingHasBeenEdited = false;
 
 	                    $('#notification-message').slideUp();
 
@@ -420,6 +428,7 @@ $(document).ready(function() {
 	                }
 	            });
         	}
+            return false;
         });
     }
 
@@ -438,7 +447,7 @@ $(document).ready(function() {
             setTimeout(function(){
                 $('#error-message').slideUp();
             }, 10000);
-            return;
+            return false;
         }
 
         // Copy the review message from the modal into the form body
@@ -454,7 +463,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -519,7 +529,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -541,6 +552,7 @@ $(document).ready(function() {
                 }
             });
         }
+        return false;
     }
 
     function save_and_send_editor(){
@@ -558,8 +570,11 @@ $(document).ready(function() {
             setTimeout(function(){
                 $('#error-message').slideUp();
             }, 10000);
-            return;
+            return false;
         }
+        
+        // Copy the review message from the modal into the form body
+        $("#reviewmessage").val($("#reviewerNotebook").val());
 
         // If nothing has changed, alert the user and publish
         if (somethingHasBeenEdited == false) {
@@ -571,7 +586,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -637,7 +653,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -659,12 +676,14 @@ $(document).ready(function() {
                 }
             });
         }
+        return false;
     }
 
     // Save and Send Back to Editor button
     if($('#save_and_send_back').exists()) {
         $('#save_and_send_back').click(function() {
             save_and_send_editor();
+            return false;
         });
     }
 
@@ -674,6 +693,7 @@ $(document).ready(function() {
         $('#save_and_review_touser').click(function() {
             $("#reviewer").val($("#reviewersearchbox").val());
             save_and_review();
+            return false;
         });
     }
 
@@ -681,6 +701,7 @@ $(document).ready(function() {
         $('#save_and_review_general').click(function() {
             $("#reviewer").val("");
             save_and_review();
+            return false;
         });
     }
 
@@ -693,12 +714,13 @@ $(document).ready(function() {
             if(somethingHasBeenEdited){
                 if (!confirm('You may have unsaved changes on this Constellation.  Are you sure you want to cancel and lose those edits?')) {
                     // Don't want to cancel, so exit!
-                    return;
+                    return false;
                 }
             }
 
             // By setting this to false, the page will not prompt on exit
-            somethingHasBeenEdited = false;
+            setEditedFlag(false);
+            //somethingHasBeenEdited = false;
 
         	// If Constellation ID or EntityType or NameEntry do not have values, don't update state and go to dashboard
         	var noNameEntryText = true;
@@ -718,7 +740,8 @@ $(document).ready(function() {
 	        $.post(snacUrl+"/unlock", $("#constellation_form").serialize(), function (data) {
 	            // Check the return value from the ajax. If success, then go to dashboard
 	            if (data.result == "success") {
-	                somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+	                //somethingHasBeenEdited = false;
 	                $('#success-message').html("<p>Constellation unlocked. Going to dashboard.</p>");
 	                setTimeout(function(){
 	                    $('#success-message').slideDown();
@@ -736,6 +759,7 @@ $(document).ready(function() {
                     displayErrorMessage(data.error,data);
 	            }
 	        });
+            return false;
         });
     }
 
@@ -783,7 +807,7 @@ $(document).ready(function() {
                 setTimeout(function(){
                     $('#error-message').slideUp();
                 }, 10000);
-                return;
+                return false;
             }
 
 
@@ -830,7 +854,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -872,6 +897,8 @@ $(document).ready(function() {
                     displayErrorMessage(data.error,data);
                 }
             });
+
+            return false;
         });
     }
 
@@ -880,6 +907,7 @@ $(document).ready(function() {
         $('#confirm_create_new').click(function(){
             // Send the data back by AJAX call
             $("#constellation_form").submit();
+            return false;
         });
     }
 

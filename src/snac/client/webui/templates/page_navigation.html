@@ -15,6 +15,7 @@
 
     <script>
         var snacUrl = "{{control.snacURL}}";
+        var snacRest = "{{control.restURL}}";
     </script>
 
     {% if control.interfaceVersion == "development" %}
@@ -39,24 +40,52 @@
                 <li><a href="{{control.snacURL}}/search"><i class="fa fa-search" aria-hidden="true"></i> Search</a></li>
                 <!-- {% if user.userName %} -->
                 <li><a href="{{control.snacURL}}/browse"><i class="fa fa-book" aria-hidden="true"></i> Browse</a></li>
-                <li><a href="{{control.snacURL}}/dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
-                <li class="navbar-hideable"><a href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messages</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-tachometer" aria-hidden="true"></i> Dashboards <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-header">CPF Dashboards</li>
+                        <li><a href="{{control.snacURL}}/dashboard/explore"><i class="fa fa-fw fa-globe" aria-hidden="true"></i> Explore</a></li>
+                        <li><a href="{{control.snacURL}}/dashboard/editor"><i class="fa fa-fw fa-pencil" aria-hidden="true"></i> Editor</a></li>
+                        {% if permissions.ChangeLocks %}
+                        <li><a href="{{control.snacURL}}/dashboard/reviewer"><i class="fa fa-fw fa-check-circle" aria-hidden="true"></i> Reviewer</a></li>
+                        {% endif %}
+                        {% if permissions.EditResources or permissions.ViewVocabDashboard %}
+                        <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">non-CPF Dashboards</li>
+                        <li><a href="{{control.snacURL}}/vocab_administrator"><i class="fa fa-fw fa-link" aria-hidden="true"></i> Other Entities</a></li>
+                        {% endif %}
+                        <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">System Dashboards</li>
+                        <li><a href="{{control.snacURL}}/reports/dashboard"><i class="fa fa-fw fa-pie-chart" aria-hidden="true"></i> Reporting</a></li>
+                        {% if permissions.ViewAdminDashboard %}
+                        <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cog" aria-hidden="true"></i> Administrator</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+                <li class="navbar-hideable"><a href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messages
+                        {% if user.unreadMessageCount > 0 %}
+                            <span class='badge'>{{ user.unreadMessageCount }}</span>
+                        {% endif %}
+                    </a></li>
                 <!-- {% endif %} -->
             </ul>
             <div class="navbar-right">
                 <ul class="nav navbar-nav">
-                    <li><a href="{{control.snacURL}}/static/about/about.html"><i class="fa fa-info-circle" aria-hidden="true"></i> About</a></li>
+                    <li><a href="https://portal.snaccooperative.org/about"><i class="fa fa-info-circle" aria-hidden="true"></i> About</a></li>
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-question-circle"></i> Help <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{control.snacURL}}/api_help">Rest API Commands</a></li>
+                        <li><a href="{{control.snacURL}}/api_help"><i class="fa fa-fw fa-list" aria-hidden="true"></i> Rest API Commands</a></li>
                     <!-- {% if user.userName %} -->
-                        <li><a href="{{control.snacURL}}/api_test">Rest API Test Area</a></li>
+                        <li><a href="{{control.snacURL}}/api_test"><i class="fa fa-fw fa-terminal" aria-hidden="true"></i> Rest API Test Area</a></li>
+                        <li><a href="{{control.snacURL}}/stats"><i class="fa fa-fw fa-bar-chart" aria-hidden="true"></i> SNAC Statistics</a></li>
                     <!-- {% endif %} -->
                         <li role="separator" class="divider"></li>
-                        <li><a href="{{control.snacURL}}/contact">Contact Us</a></li>
+                        <li><a href="{{control.snacURL}}/contact"><i class="fa fa-fw fa-envelope" aria-hidden="true"></i> Contact Us</a></li>
                     </ul>
                     </li>
 
@@ -66,29 +95,8 @@
                         <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.fullName }} <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{control.snacURL}}/dashboard"><i class="fa fa-fw fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
-                        <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
-                        <li><a href="{{control.snacURL}}/stats"><i class="fa fa-fw fa-bar-chart" aria-hidden="true"></i> SNAC Statistics</a></li>
-                        {% if permissions.EditResources or permissions.ViewVocabDashboard %}
-                        <li role="separator" class="divider"></li>
-                        <li class="dropdown-header">Vocabulary</li>
-                        {% if permissions.EditResources %}
-                        <li><a href="{{control.snacURL}}/vocab_administrator/resources"><i class="fa fa-fw fa-book" aria-hidden="true"></i> Resources</a></li>
-                        {% endif %}
-                        {% if permissions.ViewVocabDashboard %}
-                        <li><a href="{{control.snacURL}}/vocab_administrator"><i class="fa fa-fw fa-list-alt" aria-hidden="true"></i> Vocabulary Admin</a></li>
-                        {% endif %}
-                        {% endif %}
-                        {% if permissions.ViewAdminDashboard %}
-                        <li role="separator" class="divider"></li>
-                        <li class="dropdown-header">Administration</li>
-                        {% if permissions.ViewAdminDashboard %}
-                        <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cogs" aria-hidden="true"></i> Admin Dashboard</a></li>
-                        {% endif %}
-                        {% endif %}
-                        <li role="separator" class="divider"></li>
-                        <li class="dropdown-header">User Options</li>
                         <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
+                        <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         <li><a href="{{control.snacURL}}/api_key"><i class="fa fa-fw fa-key" aria-hidden="true"></i> Rest API Key</a></li>
                         <li><a href="{{control.snacURL}}/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
                     </ul>
@@ -130,30 +138,77 @@
                                   <i class="fa fa-square fa-stack-2x"></i>
                                     <i class="fa fa-envelope fa-stack-1x" style="color: #000"></i>
                             </span></a>
-                        <a href="{{control.snacURL}}/static/terms.html" title="Terms and Information"><span class="fa-stack fa-sm">
+                        <a href="https://portal.snaccooperative.org/terms_and_privacy" title="Terms and Information"><span class="fa-stack fa-sm">
                                   <i class="fa fa-square fa-stack-2x"></i>
                                     <i class="fa fa-life-ring fa-stack-1x" style="color: #000"></i>
                             </span></a>
                     </p>
                 </div>
                 <div class="col-md-4 footer-content">
-                    <p style="font-size: medium; margin-top: 30px;">SNAC is a discovery service for persons, families, and corporations found within archival collections at cultural heritage institutions.</p>
+                    <p style="font-size: medium; margin-top: 30px;">SNAC is a discovery service for persons, families, and organizations found within archival collections at cultural heritage institutions.</p>
                 </div>
                 <div class="col-md-4 footer-content">
                     <div class="row">
                         <h4 class="">Sponsors</h4>
                         <p>
-                            <a href="http://www.mellon.org" target="_blank">The Andrew W. Mellon Foundation</a><br>
-                            <a href="http://www.imls.gov" target="_blank">Institute of Museum and Library Services</a><br>
-                            <a href="http://www.neh.gov" target="_blank">National Endowment for the Humanities</a>
+                            <a href="https://www.mellon.org" target="_blank">The Andrew W. Mellon Foundation</a><br>
+                            <a href="https://www.imls.gov" target="_blank">Institute of Museum and Library Services</a><br>
+                            <a href="https://www.neh.gov" target="_blank">National Endowment for the Humanities</a>
                         </p>
                         <h4 class="">Hosts</h4>
                         <p>
-                            <a href="http://library.virginia.edu" target="_blank">University of Virginia Library</a><br>
-                            <a href="http://www.archives.gov" target="_blank">National Archives and Records Administration</a>
+                            <a href="https://library.virginia.edu" target="_blank">University of Virginia Library</a><br>
+                            <a href="https://www.archives.gov" target="_blank">National Archives and Records Administration</a>
                         </p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    {% import _self as page_navigation %}
+    {{ page_navigation.acceptCookies() }}
+
+{% endmacro %}
+
+
+{% macro acceptCookies() %}
+    <script>
+        function setCookie(name,value,days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+        }
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(";");
+            for(var i=0;i < ca.length;i++) {
+                var c = ca[i];
+                while (c.charAt(0)==" ") c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+        function eraseCookie(name) {
+            document.cookie = name+"=; Max-Age=-99999999;";
+        }
+
+        $(document).ready(function() {
+            if (!getCookie("acceptprivacy"))
+                $("#privacyDisplay").show();
+        });
+    </script>
+    <div id="privacyDisplay" style="display: none; min-height: 30px; width: 100%; position: fixed; bottom: 0px; left: 0px; padding: 10px; background: #111111; color: #ffffff; z-index: 99999;">
+        <div class="row">
+            <div class="col-md-6">
+                We use cookies to understand how you use our site and to improve your experience. By continuing to use our site, you accept our use of cookies, <a href="https://portal.snaccooperative.org/terms_and_privacy">Privacy Policy and Terms of Use</a>.
+            </div>
+            <div class="col-md-6 text-right">
+                <button class="btn btn-info" id="privacyAccept" onClick="setCookie('acceptprivacy', 'true', 90); $('#privacyDisplay').remove();">Accept and Continue</button>
             </div>
         </div>
     </div>

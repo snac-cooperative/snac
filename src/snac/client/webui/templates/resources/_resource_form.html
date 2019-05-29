@@ -9,9 +9,9 @@
         <input name="resources[0][extent]" type="hidden" value="">
 
         <div class="form-group required">
-            <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceDocumentType.display}} </label>
-            <div class="col-xs-8">
+            <div class="col-xs-10">
                 <select id="resource-type-select" name="resources[0][documentType][id]" class="form-control" style="width: 100%;"
                     required>
                     <option value="{{resource.documentType.id}}" selected>
@@ -21,62 +21,61 @@
         </div>
 
         <div class="form-group required">
-            <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
-            <div class="col-xs-8">
-                <input type="text" name="resources[0][displayEntry]" class="form-control" value="{{resource.displayEntry}}"
-                    placeholder="Proper name. Title. Date." required>
+            <div class="col-xs-10">
+                <textarea name="resources[0][displayEntry]" class="form-control"
+                    placeholder="Proper name. Title. Date." required>{{resource.displayEntry}}</textarea>
             </div>
         </div>
 
         <div class="form-group required">
-            <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceTitle.display}} </label>
-            <div class="col-xs-8">
-                <input id="resource-title" type="text" name="resources[0][title]" class="form-control" value="{{resource.title}}"
-                    pattern="^((?![hH][tT][tT][pP][sS]?:).)*$" required>
+            <div class="col-xs-10">
+                <textarea id="resource-title" name="resources[0][title]" class="form-control" required>{{resource.title}}</textarea>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceDate.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceDate.display}} </label>
-            <div class="col-xs-8">
+            <div class="col-xs-10">
                 <input type="text" name="resources[0][date]" class="form-control" value="{{resource.date}}" placeholder="YYYY or YYYY-YYYY">
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceURI.display}} </label>
-            <div class="col-xs-8">
+            <div class="col-xs-10">
                 <input id="resource-url" type="url" name="resources[0][link]" class="form-control" value="{{resource.link}}"
-                    placeholder="http://full/URL/path"/>
+                    placeholder="https://full/URL/path"/>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceAbstract.display}} </label>
-            <div class="col-xs-8">
-                <textarea name="resources[0][abstract]" class="form-control" rows="3"> {{resource.abstract}}</textarea>
+            <div class="col-xs-10">
+                <textarea name="resources[0][abstract]" class="form-control" rows="3">{{resource.abstract}}</textarea>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceExtent.display}} </label>
-            <div class="col-xs-8">
+            <div class="col-xs-10">
                 <input type="text" name="resources[0][extent]" class="form-control" value="{{resource.extent}}">
             </div>
         </div>
 
         <!--  LANGUAGES -->
         <div class="form-group" id="resource-languages">
-            <label class="control-label col-xs-4" data-content="{{X.resourceLanguages.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceLanguages.tooltip}}" data-toggle="popover"
                 data-placement="top">
                 {{X.resourceLanguages.display}} </label>
-            <div class="col-xs-8 well well-sm">
+            <div class="col-xs-10 well well-sm">
 
                 <!-- Existing Languages   -->
                 {% if resource %}
@@ -103,11 +102,11 @@
         </div>
 
         <div class="form-group">
-            <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover"
+            <label class="control-label col-xs-2" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceRepository.display}} </label>
-            <div class="col-xs-8">
+            <div class="col-xs-10">
 
-                <select class="resource-repo" id="resource-repo" name="resources[0][repo]">
+                <select class="resource-repo" id="resource-repo" name="resources[0][repo]" >
                     <option  value="{{resource.repository.id}}" selected>
                         {{resource.repository.nameEntries[0].original }}</option>
                 </select>
@@ -121,12 +120,12 @@
 {% macro expandedResourceRepositorySearch() %}
     <div class="form-horizontal">
         <div class="form-group" id="search_form" onsubmit="return false;" style="display:none;">
-            <label class="control-label col-xs-4"> Expanded Search </label>
-            <div class="well well-lg text-center col-xs-8">
+            <label class="control-label col-xs-2"> Search All Constellations </label>
+            <div class="well well-lg text-center col-xs-10">
                 <input type="hidden" id="count" name="count" value="10">
                 <input type="hidden" id="start" name="start" value="0">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search for..." id="searchbox" name="term">
+                    <input type="text" class="form-control" placeholder="Designate a new Holding Repository" id="searchbox" name="term">
                     <span class="input-group-btn">
                          <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
                     </span>
@@ -180,13 +179,13 @@
         {% endif %}
         <input type="hidden" class="operation" id="languages_{{lang_count}}[operation]" name="resources[0][languages][{{lang_count}}][operation]" value=""=>
         <input type="hidden" name="resources[0][languages][{{lang_count}}][dataType]" value="Language">
-        <div class="input-group">
-            <div style="width: 50%">
+        <div class="input-group" style="margin-left: 25%;display:block">
+            <div style="width: 25%">
                 <select name="resources[0][languages][{{lang_count}}][language]" data-placeholder="Language" tabindex="-1" >
                     <option value="{{lang.language.id}}" selected> {{lang.language.term}} </option>
                 </select>
             </div>
-            <div style="width:50%; clear: none; float: left;">
+            <div style="width:25%; clear: none; float: left;">
                 <select name="resources[0][languages][{{lang_count}}][script]" data-placeholder="Script" tabindex="-1">
                     <option value="{{lang.script.id}}" selected> {{lang.script.term}} </option>
                 </select>

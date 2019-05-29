@@ -462,6 +462,7 @@
                     <input id="sameAs_id_{{i}}" name="sameAs_id_{{i}}" type="hidden" value="{{ other.id }}"/>
                     <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
                     <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value="{{ other.operation }}"/>
+                    <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" value="{{ other.type.id }}"/>
                     <div class="form-group">
                         <label for="sameAs_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsText.tooltip}}" data-toggle="popover" data-placement="top">
                            {{ X.sameAsText.display }}
@@ -469,18 +470,6 @@
                         <div class="col-xs-8" id="text_sameAs_text_{{i}}">
                             <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="hidden" class="form-control" value="{{ other.text }}"/>
                             <p class="form-control-static">{{ other.text }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsRole.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.sameAsRole.display }}
-                        </label>
-                        <div class="col-xs-8" id="select_sameAs_type_{{i}}">
-                            <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
-                            <input id="sameAs_type_term_{{i}}" name="sameAs_type_term_{{i}}" type="hidden" class="form-control" value="{{ other.type.term }}"/>
-                            <input id="sameAs_type_vocabtype_{{i}}" name="sameAs_type_vocabtype_{{i}}" type="hidden" class="form-control" value="record_type"/>
-                            <input id="sameAs_type_minlength_{{i}}" name="sameAs_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ other.type.term }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -665,7 +654,7 @@
 {% endmacro %}
 
 
-{% macro displayResourceRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName) %}
+{% macro displayResourceRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName, control) %}
     {% import 'widgets.html' as widgets %}
     {% import _self as components %}
         <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
@@ -733,12 +722,14 @@
                                 <span id="resourceRelation_documentTypeText_{{i}}">{{relation.resource.documentType.term}}</span>:
                                 <span id="resourceRelation_extentText_{{i}}">{{relation.resource.extent ? relation.resource.extent : ''}}</span>
                             </p>
-                            <p id="resourceRelation_LinkText_{{i}}">
-                                <span id="resourceRelation_linkText_{{i}}">{{relation.resource.link}}
+                            <p id="resourceRelation_linkText_{{i}}">
                                 {% if relation.resource.link %}
-                                    <a class="label label-info" target="_blank" href="{{relation.resource.link}}">View</a>
+                                    <a target="_blank" href="{{relation.resource.link}}">{{relation.resource.link}}</a> <a class="label label-info" target="_blank" href="{{relation.resource.link}}">View</a>
                                 {% endif %}
                             </p>
+                            {% if relation.resource.id %}
+                                <a class="control-label-subtext" target="_blank" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}}">View in SNAC</a>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="form-group">

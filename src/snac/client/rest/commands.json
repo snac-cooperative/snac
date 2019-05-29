@@ -153,7 +153,7 @@
                 "response": {
                     "term": {
                         "id": "2358",
-                        "uri": "http:\/\/www.geonames.org\/4752031",
+                        "uri": "https:\/\/www.geonames.org\/4752031",
                         "name": "Charlottesville",
                         "latitude": "38.0293100",
                         "longitude": "-78.4766800",
@@ -571,7 +571,7 @@
                 "title": "Update a simple Constellation",
                 "description": "Update a Constellation with only one nameEntry",
                 "query": {
-                    "command": "insert_constellation",
+                    "command": "update_constellation",
                     "user": { "..." : "..." },
                     "constellation": {
                         "dataType": "Constellation",
@@ -1222,7 +1222,7 @@
     "download_constellation" : {
         "category": "constellation",
         "title" : "Download Constellation",
-        "description" : "Returns the full Constellation in the requested format.  To perform a direct download, without JSON wrapping, submit a request to the webUI interface, <code>http://snaccooperative.org/download/{constellationid}?type={type}</code> or <code>http://snaccooperative.org/download?arkid={ark}&type={type}</code>.",
+        "description" : "Returns the full Constellation in the requested format.  To perform a direct download, without JSON wrapping, submit a request to the webUI interface, <code>https://snaccooperative.org/download/{constellationid}?type={type}</code> or <code>https://snaccooperative.org/download?arkid={ark}&type={type}</code>.",
         "parameters" : {
             "constellationid" : {
                 "type" : "Integer",
@@ -1309,6 +1309,9 @@
                 "title": "",
                 "description": "",
                 "query": {
+                    "command" : "constellation_list_maybesame",
+                    "user" : { "...":"..." },
+                    "constellationid" : 66598997
                 },
                 "response" : {
                     "mergeable": true,
@@ -1717,6 +1720,11 @@
             "arkid" : {
                 "type" : "String",
                 "description" : "ARK ID for Constellation to read, of the form 'http://n2t.net/ark:/99166/xxxxxxxx'",
+                "optional": true
+            },
+            "sameas" : {
+                "type" : "String",
+                "description" : "One of the Constellation's external links, for example 'http:\/\/en.wikipedia.org\/wiki\/Harriet_Tubman'",
                 "optional": true
             }
         },
@@ -2440,7 +2448,7 @@
                     "resource": {
                         "dataType": "Resource",
                         "title": "My Title",
-                        "link": "http://mylink.com",
+                        "link": "https://mylink.com",
                         "abstract": "This is a full abstract",
                         "source": "My full citation",
                         "documentType": {
@@ -2467,7 +2475,7 @@
                             "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                             "type": "document_type"
                         },
-                        "link": "http:\/\/mylink.com",
+                        "link": "https:\/\/mylink.com",
                         "source": "My full citation",
                         "title": "My Title",
                         "abstract": "This is a full abstract",
@@ -2640,7 +2648,7 @@
                             "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                             "type": "document_type"
                         },
-                        "link": "http:\/\/www.worldcat.org\/oclc\/25756829",
+                        "link": "https:\/\/www.worldcat.org\/oclc\/25756829",
                         "source": "...",
                         "title": "Papers, 1881-1958.",
                         "abstract": "This collection contains business papers, political papers, and family papers. ",
@@ -2826,7 +2834,7 @@
                                 "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                                 "type": "document_type"
                             },
-                            "link": "http:\/\/www.worldcat.org\/oclc\/25756829",
+                            "link": "https:\/\/www.worldcat.org\/oclc\/25756829",
                             "source": "...",
                             "title": "Papers, 1881-1958.",
                             "abstract": "This collection contains business papers, political papers, and family papers. ",
@@ -3127,9 +3135,106 @@
         },
         "examples": []
     },
-    "search_concept": {
-        "title": "Parse EAC-CPF XML to Constellation (Pre-Alpha)",
-        "description": "Parses a given EAC-CPF file into a Constellation JSON object using the SNAC profile."
+    "search_concepts": {
+        "title": "Search concept",
+        "description": "Searches concept vocabulary"
+
+    "add_sameas": {
+        "title": "Add external links to a constellation",
+        "description": "Links a constellation to an external identity on sites such as Wikipedia, VIAF, etc.",
+        "category": "modification",
+        "parameters" : {
+            "user" : {
+                "type": "Object",
+                "description": "User object"
+            },
+            "constellationid" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            },
+            "sameas_uris" : {
+                "type": "Array",
+                "description": "An array of URIs to link this constellation to."
+            }
+        },
+        "examples" : [
+            {
+                "title": "Add sameAs links",
+                "description": "Checks out a given constellation, adds external links and publishes the constellation",
+                "query" : {
+                   "command" : "add_sameas",
+                   "constellationid" : 73093297,
+                   "sameas_uris": ["https://en.wikipedia.org/wiki/Franciscus_Gomarus", "https://id.loc.gov/authorities/names/nb98048106"],
+                   "user" : { "...":"..." }
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "currently editing",
+                        "ark": "http://n2t.net/ark:/99166/w6vz535m",
+                        "otherRecordIDs": [{
+                                "dataType": "SameAs",
+                                "type": {
+                                    "id": 28225
+                                },
+
+                                "uri": "https://id.loc.gov/authorities/names/nb98048106",
+
+                                "id": "83129381",
+                                "version": "11258569",
+                                "operation": "insert"
+                            },
+                            {
+                                "dataType": "SameAs",
+                                "type": {
+                                    "id": 28225
+                                },
+
+                                "uri": "https://id.loc.gov/authorities/names/nb98048106",
+                                "id": "83129382",
+                                "version": "11258569",
+                                "operation": "insert"
+                            }
+                        ],
+                        "id": 73093297,
+                        "version": "11258570"
+                    },
+                    "result": "success",
+                    "timing": 3052.06
+                }
+            }
+        ]
+    },
+    "get_holdings": {
+        "title": "Get Holdings",
+        "description": "Get an array of resources held by a Holding Repository",
+        "category": "resource",
+        "parameters" : {
+            "constellationid" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Get Holdings",
+                "description": "Get an array of resources held by a Holding Repository",
+                "query" : {
+                   "command" : "get_holdings",
+                   "constellationid" : 76778184
+                   },
+                "response":{
+                    "resources": [{
+                        "id": "7677119",
+                        "title": "Report of a focused visit to Oakland Community College ...",
+                        "href": "http:\/\/www.worldcat.org\/oclc\/54358612",
+                        "relation_count": 2
+                        }],
+	                    "result": "success",
+                        "timing": 792.5
+                    }
+            }
+        ]
     }
 
 }

@@ -9,7 +9,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -113,6 +113,14 @@ class User implements \Serializable {
     private $preferredRules = null;
 
     /**
+     * Number of Unread Messages
+     *
+     * @var int Number of unread messages in the system
+     */
+    private $numUnreadMessages = 0;
+
+
+    /**
      * Whether the user is active
      *
      * @var boolean User is active
@@ -172,6 +180,15 @@ class User implements \Serializable {
     }
 
     /**
+     * Get the number of unread messages
+     * @return string the username
+     */
+    public function getNumUnreadMessages()
+    {
+        return $this->numUnreadMessages;
+    }
+
+    /**
      * Get the list of roles
      *
      * Return the role list
@@ -220,6 +237,16 @@ class User implements \Serializable {
     public function setUserID($id) {
 
         $this->userid = $id;
+    }
+
+    /**
+     * Set the number of unread messages
+     *
+     * @param int $count The number of unread messages
+     */
+    public function setNumUnreadMessages($count) {
+
+        $this->numUnreadMessages = $count;
     }
 
     /**
@@ -520,6 +547,7 @@ class User implements \Serializable {
                 "email" => $this->email,
                 "workEmail" => $this->workEmail,
                 "workPhone" => $this->workPhone,
+                "unreadMessageCount" => $this->numUnreadMessages,
                 "active" => $this->active,
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token,
@@ -550,76 +578,27 @@ class User implements \Serializable {
      * @return boolean true on success, false on failure
      */
     public function fromArray($data) {
+        $this->userid = $data["userid"] ?? null;
+        $this->userName = $data["userName"] ?? null;
+        $this->firstName = $data["firstName"] ?? null;
+        $this->lastName = $data["lastName"] ?? null;
+        $this->fullName = $data["fullName"] ?? null;
+        $this->avatar = $data["avatar"] ?? null;
+        $this->avatarSmall = $data["avatarSmall"] ?? null;
+        $this->avatarLarge = $data["avatarLarge"] ?? null;
+        $this->email = $data["email"] ?? null;
+        $this->workEmail = $data["workEmail"] ?? null;
+        $this->workPhone = $data["workPhone"] ?? null;
+        $this->numUnreadMessages = $data["unreadMessageCount"] ?? 0;
+        $this->token = $data["token"] ?? null;
+        $this->active = $data["active"] ?? false;
 
-        if (isset($data["userid"]))
-            $this->userid = $data["userid"];
-        else
-            $this->userid = null;
-
-        if (isset($data["userName"]))
-            $this->userName = $data["userName"];
-        else
-            $this->userName = null;
-
-        if (isset($data["firstName"]))
-            $this->firstName = $data["firstName"];
-        else
-            $this->firstName = null;
-
-        if (isset($data["lastName"]))
-            $this->lastName = $data["lastName"];
-        else
-            $this->lastName = null;
-
-        if (isset($data["fullName"]))
-            $this->fullName = $data["fullName"];
-        else
-            $this->fullName = null;
-
-        if (isset($data["avatar"]))
-            $this->avatar = $data["avatar"];
-        else
-            $this->avatar = null;
-
-        if (isset($data["avatarSmall"]))
-            $this->avatarSmall = $data["avatarSmall"];
-        else
-            $this->avatarSmall = null;
-
-        if (isset($data["avatarLarge"]))
-            $this->avatarLarge = $data["avatarLarge"];
-        else
-            $this->avatarLarge = null;
-
-        if (isset($data["email"]))
-            $this->email = $data["email"];
-        else
-            $this->email = null;
-
-        if (isset($data["workEmail"]))
-            $this->workEmail = $data["workEmail"];
-        else
-            $this->workEmail = null;
-
-        if (isset($data["workPhone"]))
-            $this->workPhone = $data["workPhone"];
-        else
-            $this->workPhone = null;
-
-        if (isset($data["affiliation"]) && $data['affiliation'] != null)
+        if (isset($data["affiliation"]) && $data['affiliation'] != null) {
             $this->affiliation = new \snac\data\Constellation($data["affiliation"]);
-        else
+        } else {
             $this->affiliation = null;
+        }
 
-        if (isset($data["token"]))
-            $this->token = $data["token"];
-        else
-            $this->token = null;
-
-        if (isset($data["active"]))
-            $this->active = $data["active"];
-        else
-            $this->active = false;
 
         unset($this->roleList);
         $this->roleList = array();

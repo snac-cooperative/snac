@@ -4,7 +4,7 @@
  * Interactions with the Dashboard
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -107,6 +107,12 @@ function getParam(val) {
     return result;
 }
 
+function collapsePanel(event) {
+    var $panel = $(event.target).closest('.panel');
+    $panel.find('.panel-body').slideToggle();
+    $panel.find('.hideicon').toggle();
+}
+
 $(document).ready(function() {
     if (getParam("message")) {
         $('#status-message').html("<p>"+getParam("message")+"</p>");
@@ -125,4 +131,10 @@ $(document).ready(function() {
         reviewPayload.reviewer = null;
         sendReview();
     });
+
+
+    $(".accordion-panel").click(function(event) {
+        collapsePanel(event);
+    });
+
 });

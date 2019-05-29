@@ -4,9 +4,9 @@
     <title>{{ data.title }} - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
-<link href="//code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
-<script type='text/javascript' src="//code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<link href="https://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<script type='text/javascript' src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -22,11 +22,11 @@
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 
 <!-- Select Upgrades -->
-<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
-<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
@@ -73,7 +73,7 @@
     <div class="container snac" role="main">
         <h1>{{ data.title }}</h1>
         <ol class="breadcrumb">
-            <li><a href="{{control.snacURL}}/vocab_administrator/resources">Resource Management</a></li>
+            <li><a href="{{control.snacURL}}/vocab_administrator/resources">Resources</a></li>
             <li>{{data.title}}</li>
         </ol>
         <div class="well well-lg">
@@ -82,11 +82,11 @@
 
         <form id="resource-form">
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-9">
                     {{ resources.resourceForm(X, data.resource) }}
                     {{ resources.expandedResourceRepositorySearch() }}
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                 {{ resources.displayResourceActions() }}
             </div>
             </div>
