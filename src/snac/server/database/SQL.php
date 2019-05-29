@@ -6476,7 +6476,8 @@ class SQL
      * @return int $id Concept ID
      */
     public function insertConcept() {
-        $row = $this->sdb->query("INSERT INTO concept DEFAULT VALUES RETURNING 'id';", array());
+        $result = $this->sdb->query("INSERT INTO concept DEFAULT VALUES RETURNING id;", array());
+        $row = $this->sdb->fetchrow($result);
         $conceptID = $row['id'];
         return $conceptID;
     }
