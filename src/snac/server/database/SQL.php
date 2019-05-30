@@ -6713,7 +6713,7 @@ class SQL
     * @param string $query Search query
     * @return string[] Array of concept id and value pairs
     */
-    public function searchConcept($query) {
+    public function searchConcepts($query) {
 
         $sql = "SELECT t.concept_id as id, t.value
                 FROM term t

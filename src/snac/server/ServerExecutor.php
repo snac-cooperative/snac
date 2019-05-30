@@ -705,15 +705,16 @@ class ServerExecutor {
     }
 
     /**
-     * Search Concept
+     * Search Concepts
      *
      * @param string $input Search query
      * @return string[] The response to send to the client
      */
-    public function searchConcept($q) {
+    public function searchConcepts($q) {
         $response = [];
-        $concepts = $this->cStore->searchConcept($q);
+        $concepts = $this->cStore->searchConcepts($q);
         $response["concepts"] = $concepts;
+        $response["result"] = "success";
         return $response;
     }
 

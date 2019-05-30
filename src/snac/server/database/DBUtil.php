@@ -1862,12 +1862,12 @@ class DBUtil
     }
 
     /**
-     * Search Concept
+     * Search Concepts
      * @param string Search query
      * @return string[] associative array of matching concepts from database
      */
-    public function searchConcept($q) {
-        return $this->sql->searchConcept($q);
+    public function searchConcepts($q) {
+        return $this->sql->searchConcepts($q);
     }
 
     // /**
