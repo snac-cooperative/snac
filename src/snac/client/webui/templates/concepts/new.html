@@ -39,7 +39,6 @@
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 
-<script src="{{control.snacURL}}/javascript/test_vocab_admin.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/concept_admin.js{{control.noCache}}"></script>
 
 
@@ -63,46 +62,22 @@
     <div class="row">
         <div class="col-md-8">
             <p>Create a preferred term for this new concept.</p>
-                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#term-modal"> <i class="fa fa-plus"></i> Add Term</button>
-            <br>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="term-modal" tabindex="-1" role="dialog" aria-labelledby="term-modal-label">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="term-modal-label">Add Term</h4>
-            </div>
-            <div class="modal-body">
-                <form id="term-form">
-
-                    <div class="term form-group required">
-                        <div class="form-group" style="margin-bottom:100px">
-                            <label class="control-label col-xs-2" for="">Term</label>
-                            <div class="col-xs-10">
-                                <input type="text" id="term-input" class="form-control" name="term-value" data-term-id="" required>
-                                <!-- <input type="hidden" id="concept-id" name="concept-id" value="{{concept.id}}"> -->
-                            </div>
+            <!-- <h4>Add Term</h4> -->
+            <form id="term-form">
+                <div class="term form-group required">
+                    <div class="form-group">
+                        <label class="control-label col-xs-2" for="">Term</label>
+                        <div class="col-xs-6">
+                            <input type="text" id="term-input" class="form-control" name="term-value" data-term-id="" required>
                         </div>
-                        <br>
-                        <!-- <div style="margin-left:100px;"> -->
-                            <!-- <div class="checkbox col-xs-5"> -->
-                                <!-- <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="is-preferred" value="checked"> -->
-                                <!-- <label for="is-preferred">Preferred </label> -->
-                            <!-- </div> -->
-                        <!-- </div> -->
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer" style="margin-top:100px">
-                <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()" disabled><i class="fa fa-minus-circle"></i> Delete</button>
-                <button type="button" class="btn btn-primary" onclick="postNewConcept()">Save Term</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
-            </div>
+                    <br>
+                </div>
+            </form>
         </div>
+
+        <button type="button" class="btn btn-primary" onclick="postNewConcept()">Save Term</button>
+        <br>
     </div>
 </div>
 
