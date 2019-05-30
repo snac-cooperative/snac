@@ -1937,12 +1937,11 @@ class WebUIExecutor {
                     return $response = $this->postNewConcept($input, $user);
                 break;
             case "concepts":
-                $id = $input["constellationid"] ?? '';   // actually conceptID ,
-                $request = [
-                    "command" => "concepts",
-                    "id" => $id,
-                ];
+                $id = $input["constellationid"] ?? null;   // actually conceptID
+                $request = [ "command" => "concepts" ];
+
                 if ($id) {
+                    $request["id"] = $id;
                     $response = $this->connect->query($request);
                     $display->setData(array("title"=> "Concept" ,  "response" => $response));
                     $display->setTemplate("concepts/view");
@@ -1955,7 +1954,7 @@ class WebUIExecutor {
                 break;
             case "search_concepts":
                 $json = isset($input["json"]) && $input["json"] == "true";
-                $query = $input["q"] ?? '';
+                $query = $input["q"] ?? null;
                 $request = [
                     "command" => "search_concepts",
                     "q" => $query

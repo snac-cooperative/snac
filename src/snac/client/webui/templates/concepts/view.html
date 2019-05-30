@@ -96,9 +96,9 @@
                     <!-- TODO: Distinguish between preferred and nonpreferred -->
 
 
+                <!-- delete isChecked??  -->
                 {% for term in concept.terms %}
                 {% set isChecked = (term.is_preferred == "t") ? "checked" : "" %}
-                <!-- delete isChecked??  -->
                 {% if term.is_preferred == "t" %}
                 <h4>Preferred Term</h4>
                 <div class="form-group">
@@ -131,12 +131,12 @@
                 {% endif %}
                 {% endfor %}
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#term-modal"> <i class="fa fa-plus"></i> Add Term</button>
-                <h4>Properties</h4>
-                <div class="form-group">
-                    <div class="col-xs-8">
-                        <textarea class="form-control" rows="3" style="width:475px;"> {{term.value}}</textarea>
-                    </div>
-                </div>
+                <!-- <h4>Properties</h4> -->
+                <!-- <div class="form-group"> -->
+                    <!-- <div class="col-xs-8"> -->
+                        <!-- <textarea class="form-control" rows="3" style="width:475px;"> {{term.value}}</textarea> -->
+                    <!-- </div> -->
+                <!-- </div> -->
 
             </form>
 
@@ -218,7 +218,7 @@
     </div>
 
     <!-- <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button> -->
-    <button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#conceptSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Concept Relation</button>
+    <button class="btn btn-success" id="btn_add_conceptRelation" data-toggle="modal" data-target="#conceptSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Concept Relation</button>
 </div>
 
 
@@ -242,7 +242,7 @@
 	                        <input type="text" class="form-control"
 	                            placeholder="Concept term" id="concept-searchbox" name="q">
                                 <span class="input-group-btn">
-                                    <button class="btn btn-default" type="submit" id="resource-searchbutton" onclick='searchResourceIMeanTerm()'><i class="fa fa-search" aria-hidden="true"></i></button>
+                                    <button class="btn btn-default" type="submit" id="concept-searchbutton" onclick='searchConcepts()'><i class="fa fa-search" aria-hidden="true"></i></button>
                                 </span>
 	                    </div>
                         <!-- Relationship Types -->

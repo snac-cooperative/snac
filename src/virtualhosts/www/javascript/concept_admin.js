@@ -247,7 +247,7 @@ function deleteConceptRelationship() {
 }
 
 
-function searchResourceIMeanTerm() {
+function searchConcepts() {
     if (!$("#concept-searchbox").val().trim().length) { return false; }
 
     $("#concept-results-box").html("<p style='text-align: center'>Loading...</p>");
