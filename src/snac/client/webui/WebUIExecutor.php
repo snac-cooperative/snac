@@ -1930,21 +1930,11 @@ class WebUIExecutor {
                 break;
             // Concepts and Concept Terms
             case "add_concept":
-                    // $response = $this->testVocabQuery('concepts');
                     $display->setData(array("title"=> "Test Vocab", "response" => "success"));
                     $display->setTemplate("concepts/new");
                 break;
             case "add_concept_post":
-                    // $response = $this->testVocabQuery('concepts');
-
                     return $response = $this->postNewConcept($input, $user);
-                    // $display->setData(array("title"=> "Concept" ,  "response" => $response));
-
-                break;
-            case "edit_concept":
-                    // $response = $this->testVocabQuery('concepts');
-                    // $display->setData(array("title"=> "Test Vocab", "response" => $response));
-                    // $display->setTemplate("concepts/edit");
                 break;
             case "concepts":
                 $id = $input["constellationid"] ?? '';   // actually conceptID ,
@@ -3836,36 +3826,4 @@ class WebUIExecutor {
         $response = $this->connect->query($request);
         return $response;
     }
-    //
-    // /**
-    //  * Create Concept Relationship
-    //  *
-    //  *
-    //  * @param string[] $input Post/Get inputs from the webui
-    //  * @return string[] The web ui's response to the client (array ready for json_encode)
-    //  */
-    // protected function createConceptRelationship(&$input) {
-    //     return $response;
-    // }
-    //
-    /**
-    * TestVocab Query
-    */
-    // public function testVocabQuery($query) {
-    //     $ch = curl_init();
-    //     curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/' . $query);
-    //     curl_setopt($ch, CURLOPT_HTTPHEADER,
-    //     array (
-    //         'Content-Type: application/json',
-    //         // 'Content-Length: ' . strlen($data)
-    //     ));
-    //     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-    //     // curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    //     $response = curl_exec($ch);
-    //     $this->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    //     curl_close($ch);
-    //     return json_decode($response, true);
-    // }
-    //
 }
