@@ -3111,18 +3111,22 @@
     "concepts" : {
         "category": "vocabulary",
         "title" : "Get Concepts",
-        "description" : "Get all concepts.",
+        "description" : "Get all concepts, or a single detailed concept.",
         "parameters" : {
-            "term_id" : {
+            "id" : {
                 "optional": true,
                 "type": "Integer",
-                "description" : "Term ID, if known.  If given a term id, that vocabulary term is directly returned."
+                "description" : "Concept ID. If given a concept id, that detailed concept is directly returned."
             }
         },
-        "returns" : {
-            "term" : {
+        "returns": {
+            "concepts" : {
+                "type": "Array",
+                "description": "Array of SNAC Concept ids and preferred terms."
+            },
+            "concept" : {
                 "type": "Object",
-                "description": "SNAC Concept Term of the requested term"
+                "description": "Detailed SNAC Concept, if requested with id parameter"
             },
             "result": {
                 "type": "String",
@@ -3133,12 +3137,102 @@
                 "description": "Number of milliseconds spent to produce the result"
             }
         },
-        "examples": []
+        "examples": [
+            {
+                "query": {
+                    "command" : "concepts"
+                },
+                "response" : {
+                    	"concepts": [
+                    		{ "id": "835", "value": "Abbots"},
+                    		{ "id": "1", "value": "Academic librarians"},
+                    		{ "id": "2", "value": "Accountants"},
+                    		{ "id": "573", "value": "Actors"},
+                            "..."
+                        ],
+                    	"result": "success",
+                    	"timing": 35.46
+                }
+            },
+            {
+                "query": {
+                    "command" : "concepts",
+                    "id" : "835"
+                },
+                "response" : {
+                    	"concept": {
+                    		"id": "835",
+                    		"terms": [
+                    			{
+                    				"id": "2187",
+                    				"value": "Abbots",
+                    				"is_preferred": "t"
+                    			}
+                    		],
+                    		"related_concepts": false,
+                    		"broader_concepts": [
+                    			{
+                    				"id": "158",
+                    				"value": "Monks"
+                    			}
+                    		],
+                    		"narrower_concepts": false
+                    	},
+                    	"timing": 34.67
+                    }                }
+        ]
     },
-    "search_concepts": {
-        "title": "Search concept",
-        "description": "Searches concept vocabulary"
-
+    "search_concepts" : {
+        "category": "vocabulary",
+        "title" : "Search Concepts",
+        "description" : "Search concepts.",
+        "parameters" : {
+            "q" : {
+                "type": "String",
+                "description" : "Search query to use."
+            }
+        },
+        "returns": {
+            "concepts" : {
+                "type": "Array",
+                "description": "Array of SNAC Concept ids and preferred terms that match the search query."
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "query": {
+                    "command" : "search_concepts",
+                    "q" : "librarian"
+                },
+                "response" : {
+                    "concepts": [
+                		{
+                			"id": "130",
+                			"value": "Librarians"
+                		},
+                		{
+                			"id": "208",
+                			"value": "Reference librarians"
+                		},
+                		{
+                			"id": "403",
+                			"value": "Law librarians"
+                		},
+                        "..."
+                	],
+                	"timing": 24.31
+                }
+            }
+        ]
+    },
     "add_sameas": {
         "title": "Add external links to a constellation",
         "description": "Links a constellation to an external identity on sites such as Wikipedia, VIAF, etc.",
