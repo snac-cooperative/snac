@@ -36,36 +36,6 @@
 //     });
 // }
 
-/**
- * Mark Edited Fields
- *
- * Adds edited-field class to altered inputs. Sets altered resource language to update.
- * @param jqueryObject $resourceForm jQuery object to modify
- *
- */
-function markEditedFields($resourceForm) {
-    $resourceForm.find("input, select, textarea").on("change", function(e) {
-        $(e.target).addClass('edited-field');
-
-        if ($(e.target).closest('.language').length) {
-            setOperations($(e.target).closest('.language'), "update");
-        }
-    });
-}
-
-
-function convertToInputField(event) {
-    $element = $(event.target);
-    $element.addClass('edited-field');
-    var inputField = "<input "+ $element[0].outerHTML.slice(2, $element[0].outerHTML.indexOf('>') +1);
-    $element.replaceWith(inputField);
-}
-// jQuery.fn.visibilityToggle = function() {
-//     return this.css('visibility', function(i, visibility) {
-//         return (visibility == 'visible') ? 'hidden' : 'visible';
-//     });
-// };
-
 
 function deleteTerm(event) {
     if (!confirm('Are you sure you want to delete this term?')) { return; }
@@ -248,7 +218,7 @@ function deleteConceptRelationship() {
 
 
 function searchConcepts() {
-    if (!$("#concept-searchbox").val().trim().length) { return false; }
+    if (!$("#concept-searchbar").val().trim().length) { return false; }
 
     $("#concept-results-box").html("<p style='text-align: center'>Loading...</p>");
     $.post(snacUrl+"/vocab_administrator/search_concepts", $("#concept-search-form").serialize(), function (data) {
@@ -322,7 +292,6 @@ function postConceptRelationship() {
         });
 }
 
-
 function describeRelation() {
     "broader than"
     "narrower than"
@@ -347,26 +316,13 @@ $('document').ready( function() {
     //     width: '25%',
     // });
 
-    // $("#term-modal").modal()
-
-    // $('#term-modal').on('show.bs.modal', function (event) {
-    //   var button = $(event.relatedTarget) // Button that triggered the modal
-    //   var recipient = button.data('whatever') // Extract info from data-* attributes
-    //   // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
-    //   // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-    //   var modal = $(this)
-    //
-    //   var term = $(event.target).closest('term');
-    //   console.log(term.data('id'));
-    //   console.log(term.data('is-preferred'));
-    //   console.log(term.data('value'));
-    //   console.log("hello");
-    //   modal.find('.modal-title').text('New message to ' + recipient);
-    //   modal.find('.modal-body input').val(recipient);
-    // })
-
 
     $('#term-modal').on('hide.bs.modal', function (event) {
-            resetTermForm();
+        resetTermForm();
     });
+    $("#conceptSearchPane").on("hide.bs.modal", function(event) {
+        $("#concept-results-box").html("")
+        $("#concept-searchbar").val("")
+    });
+
 });
