@@ -446,7 +446,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $executor->displayProfilePage($display);
                 break;
             case "api_key":
-                $executor->displayAPIInfoPage($display, $user);
+                $executor->displayAPIInfoPage($this->input, $display, $user);
                 break;
             case "api_help":
                 $executor->displayAPIHelpPage($display, $user);

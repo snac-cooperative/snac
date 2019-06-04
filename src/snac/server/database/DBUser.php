@@ -455,6 +455,10 @@ class DBUser
         }
 
         $user->setPreferredRules($record['preferred_rules']);
+        
+        
+        $user->setAPIKeyList($this->listUserAPIKeys($user));
+
         return $user;
     }
 
@@ -685,6 +689,57 @@ class DBUser
                 array_push($roleObjList, $roleObj);
             }
         return $roleObjList;
+    }
+
+    public function listUserAPIKeys($user) {
+        $keyData = $this->sql->selectUserKeys($user->getUserID());
+        $keyList = [];
+        foreach ($keyData as $key) {
+            $obj = new \snac\data\APIKey();
+            $obj->setLabel($key["label"]);
+            $obj->setExpires($key["expires"]);
+            $obj->setGenerated($key["generated"]);
+            array_push($keyList, $obj);
+        }
+        return $keyList;
+    }
+    
+    public function generateUserAPIKey($user) {
+        $key = \snac\server\authentication\APIKeyGenerator::generateKey($user->getUserID());
+        $this->logger->addDebug("Generated Key ", [$key]);
+        $label = substr($key, 0, 8);
+        $this->logger->addDebug("Generated Key's label ", [$label]);
+        $keyData = $this->sql->saveUserKey($user->getUserID(), $key, $label);
+        $this->logger->addDebug("Saved Key Data", [$keyData]);
+        if (isset($keyData["key"])) {
+            $obj = new \snac\data\APIKey();
+            $obj->setKey($key);
+            $obj->setLabel($label);
+            $obj->setExpires($keyData["expires"]);
+            $obj->setGenerated($keyData["generated"]);
+            return $obj;
+        }
+
+        return null;
+    }
+
+    public function authenticateUserByAPIKey($key) {
+        $label = substr($key, 0, 8);
+        $keyData = $this->sql->selectAPIKeyByKey($key, $label);
+        if ($keyData == null)
+            throw new \snac\exceptions\SNACUserException("API Key is not authorized", 403);
+        if (strtotime($keyData["expires"]) - time() < 0)
+            throw new \snac\exceptions\SNACUserException("API Key has expired", 403);
+
+        $userid = $keyData["uid"];
+        $tmpUser = new \snac\data\User();
+        $tmpUser->setUserID($userid);
+        $user = $this->readUser($tmpUser);
+
+        if ($user === false)
+            throw new \snac\exceptions\SNACUserException("API Key is not authorized for a user", 403);
+
+        return $user;
     }
 
     /**

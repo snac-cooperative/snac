@@ -948,6 +948,50 @@ class SQL
     }
 
 
+    public function selectUserKeys($appUserID)
+    {
+        $result = $this->sdb->query("select * from api_keys
+                                    where uid=$1 order by generated asc",
+                                    array($appUserID));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    public function saveUserKey($appUserID, $key, $label)
+    {
+        // encrypt the key in the database
+        $encrypt = password_hash($key, PASSWORD_DEFAULT);
+        if ($encrypt === false)
+            return null;
+
+        $result = $this->sdb->query("insert into api_keys (uid, label, key) values ($1, $2, $3)
+                                        returning *;", [$appUserID, $label, $encrypt]);
+
+        // Return only the data returned (one row);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $all = $row;
+        }
+        return $all;
+    }
+
+    public function selectAPIKeyByKey($key, $label)
+    {
+        $result = $this->sdb->query("select * from api_keys where label = $1;", [$label]);
+
+        while($row = $this->sdb->fetchrow($result))
+        {
+            if (password_verify($key, $row["key"])) 
+                return $row;
+        }
+        return null;
+    }
+
 
 
     /**

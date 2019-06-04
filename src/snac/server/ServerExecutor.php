@@ -58,6 +58,7 @@ class ServerExecutor {
      */
     private $permissions = null;
 
+    private $authType = null;
 
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -69,7 +70,7 @@ class ServerExecutor {
      *
      * @param string[] $user The user array from the Server's input
      */
-    public function __construct($user = null) {
+    public function __construct($user = null, $apikey = null) {
         global $log;
 
         // create a log channel
@@ -105,8 +106,32 @@ class ServerExecutor {
             $this->logger->addDebug("User authenticated successfully");
 
             $this->getUserPermissions();
+
+            $this->authType = "user";
+        } else if ($user == null && $apikey != null) {
+            // authenticate and get user
+            $userObj = $this->uStore->authenticateUserByAPIKey($apikey);
+            // create a temporary session
+            $userObj->generateTemporarySession();
+
+            // authenticateUser sets $this->user
+            if (!$this->authenticateUser($userObj)) {
+                throw new \snac\exceptions\SNACUserException("User is not authorized", 403);
+            }
+            $this->logger->addDebug("User authenticated successfully");
+
+            $this->getUserPermissions();
+            $this->authType = "apikey";
         }
 
+    }
+
+    public function isAPIKeyAuth() {
+        return $this->authType == "apikey";
+    }
+
+    public function isUserAuth() {
+        return $this->authType == "user";
     }
 
     /**
@@ -1218,6 +1243,29 @@ class ServerExecutor {
         ];
         return $response;
     }
+
+    public function generateUserAPIKey() {
+        // can only generate an API key for logged-in users
+        if ($this->user != null && $this->user !== false) {
+            $key = $this->uStore->generateUserAPIKey($this->user);
+
+            if ($key == null) {
+                //error
+                throw new \snac\exceptions\SNACDatabaseException("User API key could not be generated.");
+            }
+
+            $response = [
+                "result" => "success",
+                "key" => $key->toArray()
+            ];
+            return $response;
+        } 
+    }
+
+    public function revokeUserAPIKey($input) {
+
+    }
+
 
     /**
      * Get User Information

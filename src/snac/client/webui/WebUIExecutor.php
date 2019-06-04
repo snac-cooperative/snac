@@ -2222,24 +2222,38 @@ class WebUIExecutor {
     }
 
     /**
-     * Display API Info Page
+     * Display API Key Management 
      *
      * Fills the display with the API information page for the given user.
      *
      * @param \snac\client\webui\display\Display $display The display object for page creation
      * @param \snac\data\User $user The current user object
      */
-    public function displayAPIInfoPage(&$display, &$user) {
-        $display->setTemplate("api_info_page");
-        $smallUser = new \snac\data\User();
-        $smallUser->setUserID($user->getUserID());
-        $smallUser->setUserName($user->getUserName());
-        $smallUser->setFullName($user->getFullName());
-        $smallUser->setToken($user->getToken());
-        $display->setData([
-            "restURL" => \snac\Config::$REST_URL,
-            "user" => json_encode($smallUser->toArray(), JSON_PRETTY_PRINT)
-        ]);
+    public function displayAPIInfoPage(&$input, &$display, &$user) {
+        $command = "view";
+        if (isset($input["subcommand"])) 
+            $command = $input["subcommand"];
+        switch($command) {
+            case "generate":
+                $display->setTemplate("api_key_generate");
+                $ask = array("command"=>"generate_key_user");
+                $this->logger->addDebug("Sending query to the server", $ask);
+                $serverResponse = $this->connect->query($ask);
+                $this->logger->addDebug("Received server response", [$serverResponse]);
+                $this->logger->addDebug("Setting api key data into the page template");
+                $display->setData($serverResponse);
+                $this->logger->addDebug("Finished setting api key data into the page template");
+                break;
+            case "revoke":
+
+                break;
+            default:   
+                $display->setTemplate("api_keys");
+                $display->setData([
+                    "restURL" => \snac\Config::$REST_URL,
+                    "user" => json_encode($user->toArray(), JSON_PRETTY_PRINT)
+                ]);
+        }
     }
 
     /**

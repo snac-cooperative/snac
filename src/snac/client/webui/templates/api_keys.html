@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>API Keys - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC includes -->
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+</head>
+
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+
+		<h1>API Connection Information</h1>
+
+        <p>The SNAC {{control.interfaceVersion}} RestAPI is available at the following URL.</p>
+
+        <div class="well well-lg text-center">
+            <p><strong>{{data.restURL}}</strong></p>
+        </div>
+
+        <p>Rest API commands are documented <a href="{{control.snacURL}}/api_help">here</a>.  To perform any actions requiring a log-in, i.e. anything that affects change to the system, you must use an API key.  API keys are available for any user, they expire after 1 year, and allows the ...</p>
+
+        {% if user.apikeys|length > 0 %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>API Key Name</th>
+                    <th>Generated</th>
+                    <th>Expires</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for key in user.apikeys %}
+            <tr>
+                <td><p>{{ key.label }}</p></td>
+                <td><p>{{ key.generated|date('Y-m-d h:ia') }}</p></td>
+                <td><p>{{ key.expires|date('Y-m-d h:ia') }}</p></td>
+                <td><p><a href="#" class="btn btn-xs btn-danger">Revoke</a></p></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-center" style="font-weight: bold;">You have no API keys at this time</p>
+        {% endif %}
+
+
+        <p class="text-center">
+        <a href="{{control.snacURL}}/api_key/generate" class="btn btn-success"><i class="fa fa-fw fa-plus"></i>  Generate New Key</a>
+        </p>
+
+</div>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>
+
