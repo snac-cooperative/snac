@@ -203,6 +203,13 @@ class ServerConnect {
         return false;
     }
 
+    /**
+     * Reload User
+     *
+     * Queries the server for the newest version of the currently logged-in user
+     * by requesting user_information.  This can be helpful if API keys are updated,
+     * messaging counts are updated, etc.
+     */
     public function reloadUser() {
         $ask = array("command"=>"user_information"
         );

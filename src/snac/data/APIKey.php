@@ -18,13 +18,26 @@ namespace snac\data;
  */
 class APIKey extends AbstractData {
 
+    /**
+     * string $expires The expiration time of this key
+     */
     private $expires = null;
+
+    /**
+     * string $label The clear-text label for this key
+     */
     private $label = null;
+
+    /**
+     * string $generated The generation time of this key
+     */
     private $generated = null;
 
     /**
-     * The Key string.  It should NEVER be set except when generating the key
+     * string $key The Key string.  It should NEVER be set except when generating the key
      * for the first time.  Else, it should be null!
+     *
+     * WARNING: This should NEVER be logged on production!
      */
     private $keyString = null;
 
@@ -42,35 +55,83 @@ class APIKey extends AbstractData {
             $this->fromArray($data);
     }
 
-    
+    /**
+     * Set Label
+     *
+     * @param string $lbl the new label value
+     */ 
     public function setLabel($lbl) {
         $this->label = $lbl; 
     }
 
+    /**
+     * Set Generated
+     * 
+     * @param string $gen The new generated time for this key
+     */
     public function setGenerated($gen) {
         $this->generated = $gen; 
     }
 
+    /**
+     * Set Expires
+     *
+     * @param string $exp The new expiration time for this key
+     */
     public function setExpires($exp) {
         $this->expires = $exp; 
     }
 
+    /**
+     * Set Key
+     *
+     * WARNING: This function should NEVER be used except when generating a
+     * key for the first time.  And then, the value of the key field should NEVER be logged.
+     *
+     * @param string $key The clear-text key
+     */
     public function setKey($key) {
         $this->keyString = $key;
     }
 
+    /**
+     * Get Label
+     *
+     * @return string The label of this key
+     */
     public function getLabel() {
         return $this->label;
     }
 
+    /**
+     * Get Generated Time
+     *
+     * @return string The generation time of this key
+     */
     public function getGenerated() {
         return $this->generated;
     }
 
+    /**
+     * Get Expiration Time
+     *
+     * @return string The expiration time of this key
+     */
     public function getExpires() {
         return $this->expires;
     }
 
+    /**
+     * Get Key
+     *
+     * This method returns the clear text value of the key.  It should rarely be set.
+     *
+     * WARNING: This method should NEVER be used except on key generation.  In all other
+     * circumstances, the key field MUST be null.  The return value of this method
+     * must NEVER be logged on production.
+     *
+     * @return string The API key in clear-text
+     */
     public function getKey() {
         return $this->keyString;
     }

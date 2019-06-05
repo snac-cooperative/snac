@@ -657,7 +657,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
 
-        // The server will always return a newer version of the user.  So in this case, we'll always
+        // The server MAY return a newer version of the user, or the WebUI may request
+        // an updated version of the user through its processes.  So in this case, we'll always
         // serialize to the session the latest version of the user returned to the web ui.  The
         // ServerConnect utility now checks for the user object and updates its copy with the one
         // returned from the server rather than keeping the initial one sent by WebUI when the

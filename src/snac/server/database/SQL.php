@@ -948,6 +948,15 @@ class SQL
     }
 
 
+    /**
+     * Select user API key data 
+     *
+     * Selects all API key data for the given user id
+     *
+     * @param int $appUserID The numeric ID for the user
+     *
+     * @return string[][] A 2-d associative array of the user's API-key data out of Postgres
+     */
     public function selectUserKeys($appUserID)
     {
         $result = $this->sdb->query("select * from api_keys
@@ -961,6 +970,21 @@ class SQL
         return $all;
     }
 
+    /**
+     * Save User Key 
+     *
+     * Save the given API key with provided label for the given user.  This method will
+     * also have Postgres auto-generate an expiration time and unique database ID for the
+     * key.  The key is stored using PHP's built-in password hashing scheme, which is
+     * cryptographically secure; the key is unrecoverable from the database since this method
+     * is a one-way hash.
+     *
+     * @param int $appUserID The numeric ID for the user
+     * @param string $key The clear-text key to save (encrypted)
+     * @param string $label The label for the key (stored in clear text)
+     *
+     * @return string[] All data for the inserted key as an associative array (includes expires and generated time) 
+     */
     public function saveUserKey($appUserID, $key, $label)
     {
         // encrypt the key in the database
@@ -980,6 +1004,16 @@ class SQL
         return $all;
     }
     
+    /**
+     * Revoke User Key 
+     *
+     * Deletes the key in the database associtated with the given user id and label.
+     *
+     * @param int $appUserID The numeric ID for the user
+     * @param string $label The label for the key
+     *
+     * @return boolean True if successfully removed, false otherwise 
+     */
     public function revokeUserKey($appUserID, $label)
     {
         // Check to see if the key exists for the user first
@@ -1011,6 +1045,24 @@ class SQL
         return false;
     }
 
+    /**
+     * Select Key Data by Key
+     *
+     * This method is used for authentication purposes, when we have the clear-text key
+     * (which can NOT be used to index the database) and the label (which can be used
+     * to index the database).  This method gets all keys matching the provided label (which
+     * may be multiple).  Then, for each key, it uses PHP's built-in cryptographically
+     * secure password verifier to see if the encrypted key in the database matches the
+     * provided clear-text key.  If the keys match, it returns that row's data (including
+     * userID, expires, and generated times).
+     *
+     * WARNING: No part of this method should be logged on production! It contains clear-text
+     * API keys.
+     *
+     * @param string $key The CLEAR-TEXT API Key
+     * @param string $label The label for the API Key
+     * @return string[]|null The associated data for the key (userid, expires, generated) or null if not found
+     */
     public function selectAPIKeyByKey($key, $label)
     {
         $result = $this->sdb->query("select * from api_keys where label = $1;", [$label]);

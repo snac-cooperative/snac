@@ -95,7 +95,11 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $db = new \snac\server\database\DBUtil();
 
-        // First, authenticate the user (every time to ensure they are still valid), if user information has been supplied
+        // --------------------------
+        // Authentication
+        // --------------------------
+        // Capture any user information given to the system through inputs.  This might be the
+        // OAuth-authenticated user object or an API key.
         $user = null;
         if (isset($this->input["user"])) {
             $user = $this->input["user"];
@@ -106,7 +110,7 @@ class Server implements \snac\interfaces\ServerInterface {
             $apikey = $this->input["apikey"];
         }
 
-
+        // Executor's constructor will then handle appropriate authentication
         $executor = new \snac\server\ServerExecutor($user, $apikey);
 
 

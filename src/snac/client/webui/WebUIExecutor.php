@@ -86,6 +86,13 @@ class WebUIExecutor {
         return $this->connect->getUser();
     }
 
+    /**
+     * Reload User
+     *
+     * Ask the server connector to reload the user from the server.  This will
+     * generate a user_information call to the server to get the newest version
+     * of the user object.
+     */
     public function reloadUser() {
         $this->connect->reloadUser();
     }
@@ -103,6 +110,15 @@ class WebUIExecutor {
         $this->permissions = $data;
     }
 
+    /**
+     * Get User Permissions Data
+     *
+     * Gets the permissions bitfield (as an associative array) for the user connected
+     * to this session. To maintain compatibility with Twig and other client-side scripts,
+     * permission/privielege labels have spaces and special characters removed.
+     *
+     * @return boolean[] Associative array of Permission to boolean flag
+     */
     public function getPermissionData() {
         return $this->permissions;
     }
@@ -2231,8 +2247,10 @@ class WebUIExecutor {
     /**
      * Display API Key Management 
      *
-     * Fills the display with the API information page for the given user.
+     * API Key management function.  Displays the API key information page and handles subcommands
+     * for generating and revoking API keys. 
      *
+     * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      * @param \snac\data\User $user The current user object
      */

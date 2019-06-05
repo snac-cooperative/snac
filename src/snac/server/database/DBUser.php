@@ -691,6 +691,18 @@ class DBUser
         return $roleObjList;
     }
 
+    /**
+     * List User API Keys
+     *
+     * Lists all the API keys for the given user.
+     *
+     * NOTE: The API Keys do NOT have the 'key' attribute set, since that is generated at
+     * creation time and NEVER stored in clear text in the database.
+     *
+     * @param \snac\data\User $user The user
+     *
+     * @return \snac\data\APIKey[] A list of API Key objects.
+     */
     public function listUserAPIKeys($user) {
         $keyData = $this->sql->selectUserKeys($user->getUserID());
         $keyList = [];
@@ -703,14 +715,31 @@ class DBUser
         }
         return $keyList;
     }
-    
+
+
+    /**
+     * Generate API Key for user
+     *
+     * Generates an API Key for the given user and returns it.  API key generation
+     * is handled by the APIKeyGenerator, but the expiration time is handled by Postgres
+     * directly by default values (currently 1 year).  That could be overridden.
+     *
+     * The first 8 characters of the key are maintained as the label to show to the user.
+     * The rest of the key is stored only as an encrypted password, meaning that it cannot
+     * be recovered for the user.  If a key is lost, a new one must be generated.
+     *
+     * WARNING: This method sets the 'key' value in the associative array to the generated
+     * key.  This SHOULD NOT be logged on production in any capacity.  It should NEVER be
+     * saved to the database or anywhere else, but only returned to the user once.
+     *
+     * @param \snac\data\User $user The user
+     *
+     * @return \snac\data\APIKey The generated API key WITH THE CLEAR-TEXT KEY INSIDE!
+     */
     public function generateUserAPIKey($user) {
         $key = \snac\server\authentication\APIKeyGenerator::generateKey($user->getUserID());
-        $this->logger->addDebug("Generated Key ", [$key]);
         $label = substr($key, 0, 8);
-        $this->logger->addDebug("Generated Key's label ", [$label]);
         $keyData = $this->sql->saveUserKey($user->getUserID(), $key, $label);
-        $this->logger->addDebug("Saved Key Data", [$keyData]);
         if (isset($keyData["key"])) {
             $obj = new \snac\data\APIKey();
             $obj->setKey($key);
@@ -723,12 +752,38 @@ class DBUser
         return null;
     }
     
+    /**
+     * Revoke API Key for user 
+     *
+     * Revokes the API key given by the provided $label, if it exists. 
+     *
+     * @param \snac\data\User $user The user
+     * @param string $label The label of the key to be revoked
+     *
+     * @return boolean Whether the key was successfully revoked
+     */
     public function revokeUserAPIKey($user, $label) {
         $this->logger->addDebug("Attempting to revoke key for user", [$label]);
         $success = $this->sql->revokeUserKey($user->getUserID(), $label);
         return $success;
     }
 
+    /**
+     * Authenticate User by API Key
+     *
+     * This method is the heart of the API key authentication protocol.  Given
+     * an API key ($key), this method grabs the label off of the key, then tries
+     * to find the API key that matches that label and can be correctly validated
+     * using the full key (i.e., the encryption scheme built into PHP can verify
+     * that the stored encrypted full-key given by the label matches the key).
+     *
+     * If it can be found, it then reads the user object out of the database for
+     * the user and returns it.
+     *
+     * @param string $key The API key to authenticate
+     * @return \snac\data\User $user The user for the authenticated key
+     * @throws \snac\exceptions\SNACUserException
+     */
     public function authenticateUserByAPIKey($key) {
         $label = substr($key, 0, 8);
         $keyData = $this->sql->selectAPIKeyByKey($key, $label);
