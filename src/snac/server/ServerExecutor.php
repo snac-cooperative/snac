@@ -1263,7 +1263,16 @@ class ServerExecutor {
     }
 
     public function revokeUserAPIKey($input) {
-
+        $response = [
+            "result" => "failure"
+        ];
+        // can only generate an API key for logged-in users
+        if ($this->user != null && $this->user !== false && isset($input["apikey_label"])) {
+            $success = $this->uStore->revokeUserAPIKey($this->user, $input["apikey_label"]);
+            if ($success)
+                $response["result"] = "success";
+        }
+        return $response;
     }
 
 

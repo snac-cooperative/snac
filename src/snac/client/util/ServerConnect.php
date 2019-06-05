@@ -202,4 +202,19 @@ class ServerConnect {
 
         return false;
     }
+
+    public function reloadUser() {
+        $ask = array("command"=>"user_information"
+        );
+        $this->logger->addDebug("Sending user information query to the server", $ask);
+        $serverResponse = $this->query($ask);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+
+        if (isset($serverResponse["user"]) && $serverResponse["user"] != null) {
+            $tmpUser = new \snac\data\User($serverResponse["user"]);
+            if ($tmpUser != null) {
+                $this->user = $tmpUser;
+            }
+        }
+    }
 }

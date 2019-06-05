@@ -229,8 +229,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Create the PHP User object
             // $user = $executor->createUser($ownerDetails, $token);
 
-            // Set the user information into the display object
-            $display->setUserData($user->toArray());
 
             // Pull out permissions from the $user object and make them available to the template. This could
             // be done faster by storing them in the session variables along with the user object
@@ -240,8 +238,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $permissions[str_replace(" ", "", $privilege->getLabel())] = true;
                 }
             }
-            // NOTE: For use in Twig, the spaces HAVE BEEN REMOVED from the permission labels
-            $display->setPermissionData($permissions);
 
             // Set the user information into the executor and server connection object
             $executor->setUser($user);
@@ -666,8 +662,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // ServerConnect utility now checks for the user object and updates its copy with the one
         // returned from the server rather than keeping the initial one sent by WebUI when the
         // ServerConnect object was created.
-        if ($executor->getUser() != null)
+        if ($executor->getUser() != null) {
             $_SESSION['snac_user'] = serialize($executor->getUser());
+        
+            // Set the user information into the display object
+            $display->setUserData($executor->getUser()->toArray());
+
+            // NOTE: For use in Twig, the spaces HAVE BEEN REMOVED from the permission labels
+            $display->setPermissionData($executor->getPermissionData());
+        }
 
         // If the display has been given a template, then use it.  Else, print out JSON.
         if ($display->hasTemplate()) {

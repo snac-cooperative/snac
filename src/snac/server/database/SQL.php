@@ -979,6 +979,37 @@ class SQL
         }
         return $all;
     }
+    
+    public function revokeUserKey($appUserID, $label)
+    {
+        // Check to see if the key exists for the user first
+        $result = $this->sdb->query("select id from api_keys where uid=$1 and label=$2;", [$appUserID, $label]);
+
+        // Return only the data returned (one row);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $all = $row;
+        }
+
+        // If key exists for the user, then delete it
+        if (!empty($all) && isset($all["id"])) {
+            $result = $this->sdb->query("delete from api_keys where id=$1 returning *;", [$all["id"]]);
+            // Return only the data returned (one row);
+            $check = array();
+            while($row = $this->sdb->fetchrow($result))
+            {
+                $check = $row;
+            }
+
+            // Sanity check: did we actually delete something?
+            if (empty($all))
+                return false;
+            return true;
+        }
+
+        return false;
+    }
 
     public function selectAPIKeyByKey($key, $label)
     {

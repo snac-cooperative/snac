@@ -55,6 +55,11 @@
 
         <p>Rest API commands are documented <a href="{{control.snacURL}}/api_help">here</a>.  To perform any actions requiring a log-in, i.e. anything that affects change to the system, you must use an API key.  API keys are available for any user, they expire after 1 year, and allows the ...</p>
 
+        <h2>Your API Keys</h2>
+        {% if data.message %}
+        <p class="alert alert-warning">{{data.message|raw}}</p>
+        {% endif %}
+
         {% if user.apikeys|length > 0 %}
         <table class="table">
             <thead>
@@ -71,7 +76,7 @@
                 <td><p>{{ key.label }}</p></td>
                 <td><p>{{ key.generated|date('Y-m-d h:ia') }}</p></td>
                 <td><p>{{ key.expires|date('Y-m-d h:ia') }}</p></td>
-                <td><p><a href="#" class="btn btn-xs btn-danger">Revoke</a></p></td>
+                <td><p><a href="{{control.snacURL}}/api_key/revoke?label={{key.label}}" class="btn btn-xs btn-danger">Revoke</a></p></td>
             </tr>
             {% endfor %}
             </tbody>

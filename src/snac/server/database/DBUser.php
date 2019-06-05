@@ -722,6 +722,12 @@ class DBUser
 
         return null;
     }
+    
+    public function revokeUserAPIKey($user, $label) {
+        $this->logger->addDebug("Attempting to revoke key for user", [$label]);
+        $success = $this->sql->revokeUserKey($user->getUserID(), $label);
+        return $success;
+    }
 
     public function authenticateUserByAPIKey($key) {
         $label = substr($key, 0, 8);

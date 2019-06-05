@@ -54,7 +54,7 @@ class WebUIExecutor {
 
         // set up server connection
         $this->connect = new ServerConnect($user);
-        $this->user = $user;
+        $this->setUser($user);
 
         // create a log channel
         $this->logger = new \Monolog\Logger('WebUIExec');
@@ -72,7 +72,7 @@ class WebUIExecutor {
      */
     public function setUser(&$user = null) {
         $this->connect->setUser($user);
-        $this->user = $user;
+        //$this->user = $user;
     }
 
     /**
@@ -84,6 +84,10 @@ class WebUIExecutor {
      */
     public function getUser() {
         return $this->connect->getUser();
+    }
+
+    public function reloadUser() {
+        $this->connect->reloadUser();
     }
 
     /**
@@ -99,6 +103,9 @@ class WebUIExecutor {
         $this->permissions = $data;
     }
 
+    public function getPermissionData() {
+        return $this->permissions;
+    }
 
 	/**
      * Get Connection Graph Data
@@ -1534,8 +1541,8 @@ class WebUIExecutor {
                 $message = new \snac\data\Message();
                 $message->setSubject($input["subject"]);
                 $message->setBody($input["body"]);
-                if (isset($this->user) && $this->user !== null) {
-                    $message->setFromUser($this->user);
+                if ($this->getUser() !== null) {
+                    $message->setFromUser($this->getUser());
                 } else {
                     // set this message from the IP address:
                     if (isset($input["email"]) && isset($input["name"])) {
@@ -1585,7 +1592,7 @@ class WebUIExecutor {
             $message = new \snac\data\Message();
             $message->setSubject($input["subject"]);
             $message->setBody($input["body"]);
-            $message->setFromUser($this->user);
+            $message->setFromUser($this->getUser());
 
             $errors = array();
 
@@ -2243,15 +2250,41 @@ class WebUIExecutor {
                 $this->logger->addDebug("Setting api key data into the page template");
                 $display->setData($serverResponse);
                 $this->logger->addDebug("Finished setting api key data into the page template");
+                $this->reloadUser();
                 break;
             case "revoke":
-
+                $display->setTemplate("api_keys");
+                $data = [
+                    "restURL" => \snac\Config::$REST_URL
+                ];
+                if (isset($input["label"])) {
+                    $ask = array(
+                        "command"=>"revoke_key_user",
+                        "apikey_label" => $input["label"]
+                    );
+                    $this->logger->addDebug("Sending query to the server", $ask);
+                    $serverResponse = $this->connect->query($ask);
+                    $this->logger->addDebug("Received server response", [$serverResponse]);
+                    $this->logger->addDebug("Setting data into the page template");
+                    if (isset($serverResponse["result"]) && $serverResponse["result"] == "success") {
+                        $data["message"] = "Successfully revoked key <strong>" . $input["label"] . "</strong>";
+                        $data["messageType"] = "success";
+                    } else {
+                        $data["message"] = "Error revoking key <strong>" . $input["label"] . "</strong>";
+                        $data["messageType"] = "danger";
+                    }
+                } else {
+                    $data["message"] = "No API Key label given to revoke";
+                    $data["messageType"] = "warning";
+                }
+                $display->setData($data);
+                $this->reloadUser();
+                $this->logger->addDebug("Finished setting api key data into the page template");
                 break;
             default:   
                 $display->setTemplate("api_keys");
                 $display->setData([
-                    "restURL" => \snac\Config::$REST_URL,
-                    "user" => json_encode($user->toArray(), JSON_PRETTY_PRINT)
+                    "restURL" => \snac\Config::$REST_URL
                 ]);
         }
     }
