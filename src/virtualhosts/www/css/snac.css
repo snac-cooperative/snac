@@ -197,7 +197,9 @@ h1 {
 .faceted-search .form-group {
     margin-bottom: 3px;
 }
-
+.navbar-brand {
+    padding-right: 5px;
+}
 .snac-name-header {
     font-family: "Crimson Text";
     font-weight: 800;
@@ -205,14 +207,15 @@ h1 {
     line-height: .35em;
 }
 .snac-fullname-header {
-    font-family: Roboto;
+    font-family: Arial;
     font-weight: 300;
     font-size: 15px;
-    line-height: .5em;
+    line-height: 20px;
     padding-top: 15px;
     padding-bottom: 15px;
-
-    color: #fff;
+    float: left;
+    display: block;
+    color: #D6E5F4;
 }
 .navbar-inverse .navbar-brand,
 .navbar-inverse .navbar-nav li a {
