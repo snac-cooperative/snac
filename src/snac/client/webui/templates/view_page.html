@@ -42,7 +42,7 @@
 
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
-<link rel="stylesheet" href="{{control.snacURL}}/css//hrt/icons.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/hrt/icons.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
 <script src="{{control.snacURL}}/javascript/wikipedia_image.js{{control.noCache}}"></script>
@@ -107,22 +107,16 @@
 screen and (min--moz-device-pixel-ratio: 1),
 screen and (-o-min-device-pixel-ratio: 100 / 100),
 screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
-    .sprite-icons-worldcat,.sprite-icons-wikipedia,.sprite-icons-viaf,
-    .sprite-icons-idlocgov,.sprite-icons-dpla,.sprite-icons-archivegrid,
-    .sprite-icons-cbw {
+    .sprite-icons-archivegrid,.sprite-icons-cbw,.sprite-icons-dpla,.sprite-icons-fs,.sprite-icons-idlocgov,.sprite-icons-nara,
+    .sprite-icons-viaf,.sprite-icons-wikipedia,.sprite-icons-worldcat,.sprite-icons-nara,.sprite-icons-wikidata {
         background-image:url('{{control.snacURL}}/css/hrt/icons.png');
-        -webkit-background-size:48px 48px;
-        -moz-background-size:48px 48px;
-        background-size:48px 48px
+        -webkit-background-size:64px 64px;
+        -moz-background-size:64px 64px;
+        background-size:64px 64px
     }
 }
 
 
-.sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
-.sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs, .sprite-icons-nara, .sprite-icons-wikidata {
-    float: left;
-    margin-right: 0.33em;
-}
 
 .geoplace-map {
     width: 100%;
@@ -1170,7 +1164,7 @@ $(document).ready(function() {
                                     National Archives and Records Administration</a>
                             {% elseif 'wikidata.org' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <img class="sprite-icons-wikidata" src="https://www.wikidata.org/favicon.ico">
+                                    <span class="sprite-icons-wikidata"></span>
                                     Wikidata</a>
                             {% else %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
@@ -1252,7 +1246,7 @@ $(document).ready(function() {
     <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
     <input id="page_type" name="page_type" type="hidden" value="view_page_full"/>
     {% for sameas in data.otherRecordIDs %}
-        {% if sameas.type.term == 'sameAs' and 'wikipedia' in sameas.uri %}
+        {% if sameas.type.term == 'sameAs' and (('wikipedia' in sameas.uri) or ('wikidata' in sameas.uri)) %}
             <input id="has_wiki_link" type="hidden" value="true"/>
         {% endif %}
     {% endfor %}
