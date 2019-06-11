@@ -407,6 +407,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->getHoldings($this->input);
                 break;
 
+            case "shared_resources":
+                $this->response = $executor->getSharedResources($this->input);
+                break;
+
             // Resource Management
             case "insert_resource":
                 if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))

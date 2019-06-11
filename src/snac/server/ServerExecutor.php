@@ -4135,4 +4135,32 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Get Shared Resources
+     *
+     * Get array of all resources held by a Holding Institution
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function getSharedResources(&$input) {
+        if (!isset($input["icid1"], $input["icid2"])) {
+            $response = ["result" => "failure",
+                         "error" => "Must provide constellation ids"
+                        ];
+            throw new \snac\exceptions\SNACInputException("Must provide constellation ids", 400);
+            return $response;
+        }
+
+        $this->logger->addDebug("Retrieving shared resources from Neo4J");
+
+
+        $resources = $this->neo4J->getSharedResources($input["icid1"], $input["icid2"]);
+
+        $response["resources"] = $resources;
+        $response["result"] = "success";
+
+        return $response;
+    }
+
 }

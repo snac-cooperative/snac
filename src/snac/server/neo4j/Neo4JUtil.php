@@ -860,4 +860,28 @@ class Neo4JUtil {
 
             return true;
     }
+
+    /**
+    * Get Shared Resources
+    *
+    * Given a constellation id, returns all its linked resources.
+    *
+    * @param $icid The constellation id
+    * @return string[] Resources
+    */
+    public function getSharedResources($icid1, $icid2) {
+        $result = $this->connector->run("MATCH (:Identity {id: '{$icid1}'})-[:RRELATION]->(r:Resource)<-[rr:RRELATION]-(:Identity {id: '${icid2}'})
+        return r.id as id, r.title as title, r.href as href, rr.role as arcrole order by r.title");
+        $resources = [];
+
+        foreach ($result->getRecords() as $record) {
+            $id = $record->get("id");
+            $title = $record->get("title");
+            $href = $record->get("href");
+            $arcrole = $record->get("arcrole");
+            $resources[] = ["id" => $id, "title" => $title, "href" => $href, "arcrole" => $arcrole];
+        }
+        return $resources;
+    }
+
 }
