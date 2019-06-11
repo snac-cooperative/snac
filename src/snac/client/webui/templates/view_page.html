@@ -42,6 +42,7 @@
 
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css/hrt/icons.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
 <script src="{{control.snacURL}}/javascript/wikipedia_image.js{{control.noCache}}"></script>
@@ -99,78 +100,21 @@
     padding: 20px;
 }
 
-.sprite-icons-worldcat,.sprite-icons-wikipedia,.sprite-icons-viaf,
-.sprite-icons-idlocgov,.sprite-icons-dpla,.sprite-icons-archivegrid,
-.sprite-icons-cbw, .sprite-icons-fs, .sprite-icons-nara {
-    background-image:url('{{control.snacURL}}/css/hrt/icons.png');
-    background-repeat:no-repeat;
-}
-.sprite-icons-worldcat {
-    background-position:0 0;
-    width:16px;
-    height:16px;
-}
-.sprite-icons-wikipedia {
-    background-position:-16px 0;
-    width:16px;
-    height:16px;
-}
-.sprite-icons-viaf {
-    background-position:0 -16px;
-    width:16px;
-    height:16px;
-}
-.sprite-icons-idlocgov {
-    background-position:-16px -16px;
-    width:16px;
-    height:16px;
-}
-.sprite-icons-dpla {
-    background-position:-32px 0;
-    width:16px;
-    height:16px;
-}
-.sprite-icons-archivegrid {
-    background-position:-32px -16px;
-    width:16px;
-    height:16px;
-}
-.sprite-icons-cbw {
-    background-position:0 -32px;
-    width:16px;
-    height:16px;
-}
-.sprite-icons-fs {
-    background-position:-16px -32px;
-    width:16px;
-    height:16px;
-}
-.sprite-icons-cbw {
-    background-position:-32px -32px;
-    width:16px;
-    height:16px;
-}
 
 @media screen and (-webkit-min-device-pixel-ratio: 1),
 screen and (min--moz-device-pixel-ratio: 1),
 screen and (-o-min-device-pixel-ratio: 100 / 100),
 screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
-    .sprite-icons-worldcat,.sprite-icons-wikipedia,.sprite-icons-viaf,
-    .sprite-icons-idlocgov,.sprite-icons-dpla,.sprite-icons-archivegrid,
-    .sprite-icons-cbw {
+    .sprite-icons-archivegrid,.sprite-icons-cbw,.sprite-icons-dpla,.sprite-icons-fs,.sprite-icons-idlocgov,.sprite-icons-nara,
+    .sprite-icons-viaf,.sprite-icons-wikipedia,.sprite-icons-worldcat,.sprite-icons-nara,.sprite-icons-wikidata {
         background-image:url('{{control.snacURL}}/css/hrt/icons.png');
-        -webkit-background-size:48px 48px;
-        -moz-background-size:48px 48px;
-        background-size:48px 48px
+        -webkit-background-size:64px 64px;
+        -moz-background-size:64px 64px;
+        background-size:64px 64px
     }
 }
 
 
-.sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
-.sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs, .sprite-icons-nara {
-    float: left;
-    margin-right: 0.33em;
-}
 
 .geoplace-map {
     width: 100%;
@@ -751,7 +695,12 @@ $(document).ready(function() {
                                                              <tr>
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
-                                                             <td><a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a></td>
+                                                             <td>
+                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                     <i class="fa fa-external-link"> </i>
+                                                                 </a>
+                                                             </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                          </tr>
                                                      {% endif %}
@@ -788,7 +737,12 @@ $(document).ready(function() {
                                                              <tr>
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
-                                                             <td>{{relation.content|default(relation.resource.title)}}</a></td>
+                                                             <td>
+                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                     <i class="fa fa-external-link"> </i>
+                                                                 </a>
+                                                             </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                          </tr>
                                                      {% endif %}
@@ -1128,10 +1082,13 @@ $(document).ready(function() {
                                     <span class="sprite-icons-fs"></span>
                                     FamilySearch</a>
                             {% elseif 'archives.gov' in sameas.uri %}
-
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
                                     <span class="sprite-icons-nara"></span>
                                     National Archives and Records Administration</a>
+                            {% elseif 'wikidata.org' in sameas.uri %}
+                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
+                                    <span class="sprite-icons-wikidata"></span>
+                                    Wikidata</a>
                             {% else %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
                             {% endif %}
@@ -1212,7 +1169,7 @@ $(document).ready(function() {
     <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
     <input id="page_type" name="page_type" type="hidden" value="view_page_full"/>
     {% for sameas in data.otherRecordIDs %}
-        {% if sameas.type.term == 'sameAs' and 'wikipedia' in sameas.uri %}
+        {% if sameas.type.term == 'sameAs' and (('wikipedia' in sameas.uri) or ('wikidata' in sameas.uri)) %}
             <input id="has_wiki_link" type="hidden" value="true"/>
         {% endif %}
     {% endfor %}

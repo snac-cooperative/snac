@@ -3656,7 +3656,9 @@ class ServerExecutor {
                 if (\snac\Config::$USE_NEO4J) {
                     $this->neo4J->checkHoldingInstitutionStatus($constellation);
                 }
-                array_push($searchResults, $constellation->toArray());
+                $constellation = $constellation->toArray();
+                $constellation["resource_count"] = $result["resources"];
+                array_push($searchResults, $constellation);
             }
             $response["results"] = $searchResults;
             $response["count"] = $input["count"];
