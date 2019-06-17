@@ -52,7 +52,7 @@ function deleteTerm(event) {
             $('#success-message').slideDown();
             $('#term-modal').modal('hide');
             setTimeout(function() {
-                window.location.reload()
+                window.location.reload();
             }, 500);
         })
         .fail(function() {
@@ -123,7 +123,7 @@ function saveTermForm() {
             $('#notification-message').slideUp();
             $('#success-message').slideDown();
             setTimeout(function() {
-                window.location.reload()
+                window.location.reload();
             }, 500);
         })
         .fail(function() {
@@ -147,7 +147,7 @@ function postNewConcept() {
             $('#notification-message').slideUp();
             $('#success-message').slideDown();
             setTimeout(function() {
-                window.location = snacUrl + "/vocab_administrator/concepts/" + createdTerm.concept_id
+                window.location = snacUrl + "/vocab_administrator/concepts/" + createdTerm.concept_id;
             }, 500);
         })
         .fail(function() {
@@ -164,7 +164,7 @@ function deleteConceptRelationship() {
     var broaderID = "";
     var endpoint = "delete_broader_concepts";
     // var $secondConcept = $(event.target.parentElement);
-    var $secondConcept = $(event.target).closest('button')
+    var $secondConcept = $(event.target).closest('button');
     var secondID = $secondConcept.data("conceptId");
 
     // broader/narrower/related
@@ -205,7 +205,7 @@ function deleteConceptRelationship() {
             $('#success-message').slideDown();
             $('#term-modal').modal('hide');
             setTimeout(function() {
-                window.location.reload()
+                window.location.reload();
             }, 500);
         })
         .fail(function() {
@@ -222,7 +222,6 @@ function searchConcepts() {
 
     $("#concept-results-box").html("<p style='text-align: center'>Loading...</p>");
     $.post(snacUrl+"/vocab_administrator/search_concepts", $("#concept-search-form").serialize(), function (data) {
-    // $.post("http://localhost/~josephglass/snac/www/vocab_administrator/search_concepts?q=Flight&json=true", function(data) {
 
         var html = "";
         html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
@@ -246,7 +245,7 @@ function searchConcepts() {
 
 function postConceptRelationship() {
     var conceptID = $("#concept-id").val();
-    var relatedConceptID = $("#concept-results-box").find("input:checked").data("conceptId")
+    var relatedConceptID = $("#concept-results-box").find("input:checked").data("conceptId");
     var endpoint = "save_broader_concepts";
     var relationship = $("#concept-relationship-options").find("input:checked").val();
     var narrowerID;
@@ -272,7 +271,7 @@ function postConceptRelationship() {
         endpoint = "save_related_concepts";
         params = `?id1=${conceptID}&id2=${relatedID}`;
     }
-    console.log("Endpoint: ", endpoint + params)
+    console.log("Endpoint: ", endpoint + params);
     $.post(snacUrl + "/vocab_administrator/" + endpoint + params)
         .done(function(data) {
             createdConceptRelationship = data;
@@ -284,7 +283,7 @@ function postConceptRelationship() {
             $('#success-message').slideDown();
             $('#term-modal').modal('hide');
             setTimeout(function() {
-                window.location.reload()
+                window.location.reload();
             }, 500);
         })
         .fail(function() {
@@ -293,9 +292,9 @@ function postConceptRelationship() {
 }
 
 function describeRelation() {
-    "broader than"
-    "narrower than"
-    "related to"
+    "broader than";
+    "narrower than";
+    "related to";
 }
 
 
@@ -321,8 +320,8 @@ $('document').ready( function() {
         resetTermForm();
     });
     $("#conceptSearchPane").on("hide.bs.modal", function(event) {
-        $("#concept-results-box").html("")
-        $("#concept-searchbar").val("")
+        $("#concept-results-box").html("");
+        $("#concept-searchbar").val("");
     });
 
 });

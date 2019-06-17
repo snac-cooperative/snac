@@ -222,6 +222,22 @@ function getSharedResources(icid1, icid2) {
     })
 }
 
+function loadSharedResourcesModal(target) {
+    // grab info on clicked table row to load the Shared Resources Modal
+    var relatedConstellationName = $(target).closest('td').find('a')[0].innerHTML;
+    $(".compared-constellation-name").html(relatedConstellationName)
+    var iconClasses = ""
+    if ($(target).closest('td').find('i.fa-stack-1x').hasClass("fa-university")) {
+        iconClasses = "fa fa-university";
+    } else if ($(target).closest('td').find('i.fa-stack-1x').hasClass("fa-users")) {
+        iconClasses = "fa fa-users"
+    } else {
+        iconClasses = "fa fa-user"
+    }
+    $("#compared-constellation-icon").removeClass();
+    $("#compared-constellation-icon").addClass(iconClasses);
+};
+
 /**
  * Prevent automatic scrolling of page to anchor by browser after page load.
  */
@@ -283,7 +299,8 @@ function loadHoldings() {
                         var cell = "<a href='" + data + "'>" + data + "</a>"
                     }
                     return cell;
-                }
+                },
+                "defaultContent": ""
             },
             {
                 "data": "relation_count"
@@ -575,28 +592,10 @@ $(document).ready(function() {
     })
 
     $("#relation-table").on("click", "a[href='#relations-modal']", function() {
-        debugger
         var icid1 = $("#constellationid").val();
         var icid2 = $(this).closest('tr').data('id');
         getSharedResources(icid1, icid2);
-
-        var relatedConstellationName = $(this).closest('td').find('a')[0].innerHTML;
-        // var relatedConstellationIcon =
-        $(".compared-constellation-name").html(relatedConstellationName)
-        // $("#shared-resources-table").find('th').last().html(relatedConstellationName)
-
-        var iconClasses = ""
-        if ($(this).closest('td').find('i.fa-stack-1x').hasClass("fa-university")) {
-            iconClasses = "fa fa-university";
-
-        } else if ($(this).closest('td').find('i.fa-stack-1x').hasClass("fa-users")) {
-            iconClasses = "fa fa-users"
-        } else {
-            iconClasses = "fa fa-user"
-        }
-        $("#compared-constellation-icon").removeClass();
-        $("#compared-constellation-icon").addClass(iconClasses);
-
+        loadSharedResourcesModal(this);
     })
 
 });
