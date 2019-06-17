@@ -870,16 +870,29 @@ class Neo4JUtil {
     * @return string[] Resources
     */
     public function getSharedResources($icid1, $icid2) {
-        $result = $this->connector->run("MATCH (:Identity {id: '{$icid1}'})-[:RRELATION]->(r:Resource)<-[rr:RRELATION]-(:Identity {id: '${icid2}'})
-        return r.id as id, r.title as title, r.href as href, rr.role as arcrole order by r.title");
+        $result = $this->connector->run("MATCH (i1:Identity {id: {icid1}})-[rr1:RRELATION]->(r:Resource)<-[rr2:RRELATION]-(i2:Identity {id: {icid2}})
+            USING INDEX i1:Identity(id) USING INDEX i2:Identity(id)
+            return r.id as id, r.title as title, r.href as href, rr1.role as arcrole_1, rr2.role as arcrole_2 order by r.title",
+            [
+                "icid1" => "{$icid1}",
+                "icid2" => "{$icid2}"
+            ]
+        );
         $resources = [];
 
         foreach ($result->getRecords() as $record) {
             $id = $record->get("id");
             $title = $record->get("title");
             $href = $record->get("href");
-            $arcrole = $record->get("arcrole");
-            $resources[] = ["id" => $id, "title" => $title, "href" => $href, "arcrole" => $arcrole];
+            $arcrole_1 = $record->get("arcrole_1");
+            $arcrole_2 = $record->get("arcrole_2");
+            $resources[] = [
+                             "id" => $id,
+                             "title" => $title,
+                             "href" => $href,
+                             "arcrole_1" => $arcrole_1,
+                             "arcrole_2" => $arcrole_2
+                            ];
         }
         return $resources;
     }
