@@ -2387,7 +2387,7 @@ class ServerExecutor {
             $flags = 0;
             if (isset($input["type"]) && $input["type"] == "summary")
                 $flags = \snac\server\database\DBUtil::$READ_ALL_BUT_RELATIONS_AND_META;
-            else if (isset($input["type"]) && $input["type"] == "summary_meta")
+            else if (isset($input["type"]) && ($input["type"] == "summary_meta" || $input["type"] == "readonly"))
                 $flags = \snac\server\database\DBUtil::$READ_ALL_BUT_RELATIONS;
             $constellations = $this->readConstellationFromDatabase($input, false, $flags);
             if ($constellations === null) {
@@ -2412,6 +2412,15 @@ class ServerExecutor {
 
                 if (\snac\Config::$USE_NEO4J) {
                     $this->neo4J->checkHoldingInstitutionStatus($constellation);
+
+                    // If user wants a read-only version, then we can pull the data from Neo4J instead of
+                    // Postgres to (hopefully) save time.
+                    if (isset($input["type"]) && $input["type"] == "readonly") {
+                        $relations = $this->neo4J->listConstellationOutEdges($constellation);
+                        foreach ($relations as $rdata) {
+                            $constellation->addRelation($rdata["relation"]);
+                        }
+                    }
                 }
 
                 $editable = false;

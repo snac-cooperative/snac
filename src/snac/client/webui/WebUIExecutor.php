@@ -462,7 +462,7 @@ class WebUIExecutor {
     public function displayViewPage(&$input, &$display) {
         $message = null;
         // if (isset($input["part"]) && $input["part"] == "relations")
-            $serverResponse = $this->getConstellation($input, $display, false);
+            $serverResponse = $this->getConstellation($input, $display, "readonly");
         // else
         //     $serverResponse = $this->getConstellation($input, $display, "summary");
         if (isset($serverResponse["constellation"])) {

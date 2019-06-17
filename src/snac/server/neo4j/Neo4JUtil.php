@@ -627,6 +627,10 @@ class Neo4JUtil {
             $type = new \snac\data\Term();
             $type->setTerm($path->relationships()[0]->value('arcrole'));
             $relation->setType($type);
+            $relation->setContent($path->end()->value("name"));
+            $et = new \snac\data\Term();
+            $et->setTerm($path->end()->value('entity_type'));
+            $relation->setTargetEntityType($et);
 
             array_push($rels, [
                 "constellation" => $target,
