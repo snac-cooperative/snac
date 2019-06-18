@@ -452,6 +452,41 @@ class WebUIExecutor {
     }
 
     /**
+     * Display Snippet Page
+     *
+     * Loads the snippet page for a given constellation input into the display.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySnippetPage(&$input, &$display) {
+        $message = null;
+        $serverResponse = $this->getConstellation($input, $display, "summary");
+        if (isset($serverResponse["constellation"])) {
+            if (isset($serverResponse["constellation"]["dataType"])) {
+                // We have only ONE constellation, so display
+                $constellation = $serverResponse["constellation"];
+                $editingUser = null;
+                $holdings = array();
+
+                $display->setTemplate("snippet_page");
+
+                $this->logger->addDebug("Setting constellation data into the page template");
+
+                $display->setData(
+                    $constellation
+                );
+            } else {
+                // We have multiple constellations, so redirect to split page
+                $this->displaySplitChoicePage($serverResponse, $display);
+            }
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+
+    /**
      * Display View Page
      *
      * Loads the view page for a given constellation input into the display.

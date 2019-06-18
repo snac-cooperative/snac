@@ -105,6 +105,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "login2",
                 "search",
                 "view",
+                "snippet",
                 "details",
                 "sources",
                 "download",
@@ -131,6 +132,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $readOnlyCommands = array(
             "search",
             "view",
+            "snippet",
             "details",
             "sources",
             "download",
@@ -362,6 +364,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
             case "view":
                 $executor->displayViewPage($this->input, $display);
+                break;
+            case "snippet":
+                $executor->displaySnippetPage($this->input, $display);
                 break;
             case "details":
                 $executor->displayDetailedViewPage($this->input, $display);
