@@ -3317,18 +3317,52 @@
                    "command" : "get_holdings",
                    "constellationid" : 76778184
                    },
-                "response":{
+                "response": {
                     "resources": [{
                         "id": "7677119",
                         "title": "Report of a focused visit to Oakland Community College ...",
                         "href": "http:\/\/www.worldcat.org\/oclc\/54358612",
                         "relation_count": 2
-                        }],
+                    }],
 	                    "result": "success",
                         "timing": 792.5
-                    }
+                }
+            }
+        ]
+    },
+    "shared_resources": {
+        "title": "Shared Resources",
+        "description": "Get an array of resources related to both constellations ",
+        "category": "resource",
+        "parameters" : {
+            "icid1" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            },
+            "icid2" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Shared Resources",
+                "description": "Get an array of resources held by a Holding Repository",
+                "query" : {
+                   "command" : "shared_resources",
+                   "icid1" : 29260863,
+                   "icid2" : 50307952
+                },
+                "response": {
+                    "resources": [{
+                        "id": "7960925",
+                        "title": "C.S. Lewis collection. [1939].",
+                        "href": "http:\/\/www.worldcat.org\/oclc\/667850821"
+                    }],
+                        "result": "success",
+                        "timing": 792.5
+                }
             }
         ]
     }
-
 }

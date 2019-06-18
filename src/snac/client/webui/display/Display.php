@@ -174,7 +174,7 @@ class Display {
         $this->data["control"]["currentURL"] = $this->cleanString("https://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
         $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
         $this->data["control"]["snacURL"] = \snac\Config::$WEBUI_URL;
-        $this->data["control"]["snacRest"] = \snac\Config::$REST_URL;
+        $this->data["control"]["restURL"] = \snac\Config::$REST_URL;
 
         if (isset(\snac\Config::$INTERFACE_VERSION)) {
             if (\snac\Config::$INTERFACE_VERSION === "development")
