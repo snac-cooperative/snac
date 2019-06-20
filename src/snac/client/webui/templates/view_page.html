@@ -68,6 +68,7 @@
 .wikipedia_thumbnail img {
     z-index:1;
     padding:4px;
+    padding-bottom:0px;
     border-radius: 8px;
     line-height:1.428571429;
     -webkit-transition:all 0.2s ease-in-out;
@@ -80,21 +81,19 @@
 .wikipedia_thumbnail div {
     width:100%;
     display:block;
-    position:absolute;
+    /*position:absolute;
     bottom:0px;
     left:0px;
-    z-index:2;
-    margin:0;
+    z-index:2;*/
+    margin:0px;
     padding:5px;
-    color:#fff;
-    background:rgba(0,0,0,0.4);
-    -webkit-border-bottom-left-radius: 4px;
-    -webkit-border-bottom-right-radius: 4px;
+    padding-top: 0px;
+    padding-bottom: 0px;
     font-size: 10px;
 }
 
 .wikipedia_thumbnail a {
-    color:#fff
+    color:#000
 }
 
 .body-tab-pane {
@@ -1054,7 +1053,7 @@ $(document).ready(function() {
             </div>
             <div class="col-md-4" id="profile-sidebar">
                 <div class="row profilehover">
-                    <div class="panel wikipedia_thumbnail_container">
+                    <div class="wikipedia_thumbnail_container">
                         <div id="profilebar">
                             <span></span>
                         </div>
