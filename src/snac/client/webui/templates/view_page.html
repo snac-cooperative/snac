@@ -279,7 +279,7 @@ function loadHoldings() {
                     var cell = data.title;
                     if (data.href) {
                         cell += "<a target='_blank' style='float:right' href='{{control.snacURL}}/vocab_administrator/resources/" +
-                            data.id + "' title='View in SNAC'> <i class='fa fa-external-link'> </i> </a>";
+                            data.id + "' title='View in SNAC'> <i class='fa fa-info-circle' style='font-size:large'> </i> </a>";
                     }
                     return cell;
                 }
@@ -790,6 +790,7 @@ $(document).ready(function() {
                                                         <th width="20%">Role</th>
                                                         <th width="40%">Title</th>
                                                         <th width="40%">Holding Repository</th>
+                                                        <th></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -803,11 +804,13 @@ $(document).ready(function() {
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
                                                                  <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
-                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
-                                                                     <i class="fa fa-external-link"> </i>
-                                                                 </a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
+                                                             <td>
+                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                     <i class="fa fa-info-circle" style="font-size:large"> </i>
+                                                                 </a>
+                                                             </td>
                                                          </tr>
                                                      {% endif %}
                                                      {% endfor %}
@@ -846,7 +849,7 @@ $(document).ready(function() {
                                                              <td>
                                                                  <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
                                                                  <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
-                                                                     <i class="fa fa-external-link"> </i>
+                                                                     <i class="fa fa-info-circle" style="font-size:large"> </i>
                                                                  </a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
@@ -937,7 +940,7 @@ $(document).ready(function() {
                                                             </span>
                                                             {% endif %}
                                                             <a href="{{control.snacURL}}/view/{{relation.targetConstellation}}">{{relation.content}}</a>
-                                                            <a style="float:right;" data-toggle="modal" data-target"#relations-modal" href="#relations-modal">See how</p>
+                                                            <a style="float:right;" data-toggle="modal" data-target"#relations-modal" href="#relations-modal" title="View Shared Resources"><i class="fa fa-exchange" style="float:right;font-size: larger;"></i></a>
                                                         </td>
                                                         <td>
                                                             {% if relation.targetEntityType.term %}
