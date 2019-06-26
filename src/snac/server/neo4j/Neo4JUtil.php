@@ -159,6 +159,9 @@ class Neo4JUtil {
                         break;
                     }
                 }
+                // Be correct with pass by reference foreach loops
+                unset($icRel);
+                
                 if ($add)
                     array_push($icRels, [
                         "target" => $relation->getTargetConstellation(),
@@ -257,6 +260,9 @@ class Neo4JUtil {
                         break;
                     }
                 }
+                // Be correct with pass by reference foreach loops
+                unset($rRel);
+
                 if ($add)
                     array_push($rRels, [
                         "target" => $relation->getResource()->getID(),
