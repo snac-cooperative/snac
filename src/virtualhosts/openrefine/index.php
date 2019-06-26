@@ -34,6 +34,8 @@ try {
         if ($decode = json_decode($part, true))
             $part = $decode;
     }
+    // Be correct with foreach pass by reference
+    unset($part);
     
     // Instantiate and run the server
     $server = new OpenRefine($input);

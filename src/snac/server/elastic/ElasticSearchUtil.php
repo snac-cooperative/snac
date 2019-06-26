@@ -909,6 +909,8 @@ class ElasticSearchUtil {
                 if (isset($hit["_type"]))
                     unset($hit["_type"]);
             }
+            // be safe with pass by reference foreach
+            unset($hit);
         }
 
         return $results;

@@ -269,6 +269,8 @@ class ReconciliationEngine {
             foreach ($all as $test => $result)
                 $v->setScore($test, $result);
         }
+        // Be correct with foreach pass by reference
+        unset($v);
     }
 
     /**
