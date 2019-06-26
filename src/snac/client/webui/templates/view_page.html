@@ -276,27 +276,27 @@ function loadHoldings() {
         "columns": [{
                 "data": null,
                 "render": function(data, type, row, meta) {
-                    var cell = data.title;
                     if (data.href) {
-                        cell += "<a target='_blank' style='float:right' href='{{control.snacURL}}/vocab_administrator/resources/" +
-                            data.id + "' title='View in SNAC'> <i class='fa fa-info-circle' style='font-size:large'> </i> </a>";
+                        var cell = "<a target='_blank' href='" + data.href + "'>" + data.title + "</a>";
+                    } else {
+                        var cell = data.title;
                     }
                     return cell;
                 }
             },
-            // { "data": "title"},
             {
-                "data": "href",
+                "data": "relation_count"
+            },
+            {
+                "data": null,
                 "render": function(data, type, row, meta) {
                     if (data) {
-                        var cell = "<a href='" + data + "'>" + data + "</a>"
+                        var cell = "<a href='{{control.snacURL}}/vocab_administrator/resources/" + data.id +
+                            "' title='View in SNAC'> <i class='fa fa-info-circle' style='font-size:large'> </i> </a>";
                     }
                     return cell;
                 },
                 "defaultContent": ""
-            },
-            {
-                "data": "relation_count"
             }
         ]
     })
@@ -1066,8 +1066,8 @@ $(document).ready(function() {
                                         <tr>
                                             <!-- <th>Id</th> -->
                                             <th>Title</th>
-                                            <th>Href</th>
                                             <th>Relation Count</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                 </table>
