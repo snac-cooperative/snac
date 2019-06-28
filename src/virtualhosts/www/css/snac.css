@@ -21,7 +21,7 @@ body {
     border-color: #448e7f;
 }
 .btn-person.active {
-    background-color: #448e7f;
+    background-color: #224d44;
     border-color: #448e7f;
 }
 .btn-person:hover {
@@ -53,7 +53,7 @@ body {
     border-color: #af4c16;
 }
 .btn-family.active {
-    background-color: #af4c16;
+    background-color: #7a330d;
     border-color: #af4c16;
 }
 .btn-family:hover, .btn-family:active {
@@ -76,7 +76,7 @@ body {
     border-color: #50467a;
 }
 .btn-corp.active {
-    background-color: #50467a;
+    background-color: #2e274d;
     border-color: #50467a;
 }
 .btn-corp.focus, .btn-corp:focus, .btn-corp:hover, .btn-corp:active{
