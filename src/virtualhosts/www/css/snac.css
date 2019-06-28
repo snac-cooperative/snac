@@ -9,6 +9,10 @@ body {
     min-height: 100%;
 }
 
+a span.badge {
+    font-size: 10px;
+}
+
 .btn-person {
     text-shadow: 0 1px 0 #fff;
     background-image: -webkit-linear-gradient(top,#5CB9A6 0,#448e7f 100%);
@@ -320,6 +324,10 @@ h1 {
 
 .snac-hidden {
     display: none;
+}
+
+.snac-minimize {
+    display: inline;
 }
 
 div.snac {
@@ -1016,6 +1024,24 @@ input[type='checkbox']:checked + .toggle-switch {
     .footer {
         text-align: center;
     }
+
+    #row-main {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #content-column {
+        order: 2;
+    }
+
+    #profile-sidebar {
+        order: 1;
+    }
+
+    #profile-sidebar .panel {
+        display: none;
+    }
+
 }
 
 /* Tablets */
@@ -1076,6 +1102,10 @@ input[type='checkbox']:checked + .toggle-switch {
     .search-box .search-box-text {
         width: 62%;
     }
+    
+    .snac-minimize {
+        display: none;
+    }
 }
 
 /* Really streamline when below 426px for phones */
@@ -1097,6 +1127,10 @@ input[type='checkbox']:checked + .toggle-switch {
     }
    .search-box .search-box-text {
       width: 100%;
+    }
+
+    table.dataTable {
+        font-size: 11px;
     }
 }
     .list-group-super .list-group-item:last-child {

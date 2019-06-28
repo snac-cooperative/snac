@@ -34,7 +34,9 @@
 
 <!-- Datatables -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
 
 <!-- Leaflet JS Javascript and Styles-->
 <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
@@ -52,6 +54,7 @@
 <script src="{{control.snacURL}}/javascript/message_current_editor.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 
+<script src="{{control.snacURL}}/javascript/tabcollapse.js{{control.noCache}}"></script>
 <style>
 
 .wikipedia_thumbnail {
@@ -537,17 +540,20 @@ $(document).ready(function() {
         "columnDefs": [
             {"visible": false, "targets":2},
             {"width": "75%", "targets":1}
-        ]
+        ],
+        responsive: true
     });
 
     lumpTable = $('#lump').DataTable({
         "searching" : true,
-        "autoWidth": false
+        "autoWidth": false,
+        responsive: true
     })
 
     placesTable = $('#placesTable').DataTable({
         "searching" : true,
-        "autoWidth": false
+        "autoWidth": false,
+        responsive: true
     });
 
     archivalTable = $('#archival').DataTable({
@@ -558,11 +564,13 @@ $(document).ready(function() {
                         {"width": "5%", "targets":0},
                         {"width": "60%", "targets":1},
                         {"width": "35%", "targets":2}
-                    ]
+                    ],
+        responsive: true
     });
 
     $('.listtable').DataTable({
-        "searching" : true
+        "searching" : true,
+        responsive: true
     });
 
 
@@ -591,10 +599,12 @@ $(document).ready(function() {
         loadSharedResourcesModal(this);
     })
 
+    $('#view-nav-tabs').tabCollapse();
 });
 
 </script>
 
+<meta name="viewport" content="initial-scale = 1.0" />
 </head>
 
 <body role="document">
@@ -640,19 +650,19 @@ $(document).ready(function() {
                     <!-- <i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> Basic View</a> -->
                 <a class="btn list-group-item-warning"
                    href="{{control.snacURL}}/details/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View</a>
+                   <i class="fa fa-fw fa-sliders" aria-hidden="true"></i><span class="snac-minimize"> Detailed View</span></a>
                 {% if data.maybeSameCount > 0 %}
                 <a href="{{control.snacURL}}/maybesame/{{data.id}}/{{data.version}}"
                    class="btn list-group-item-merge" id="merge">
-                    <i class="fa fa-fw fa-random" aria-hidden="true"></i> Similarity Assertions
-                    <span class="badge">{{ data.maybeSameCount }}</span></a>
+                    <i class="fa fa-fw fa-random" aria-hidden="true"></i><span class="snac-minimize">  Similarity Assertions
+                    <span class="badge">{{ data.maybeSameCount }}</span></span></a>
                 {% endif %}
                 <a class="btn list-group-item-history"
                    href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History</a>
+                    <i class="fa fa-fw fa-history" aria-hidden="true"></i><span class="snac-minimize">  Revision History</span></a>
                 <a class="btn list-group-item-sources"
                    href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source Summary</a>
+                   <i class="fa fa-fw fa-archive" aria-hidden="true"></i><span class="snac-minimize">  Source Summary</span></a>
             </div>
 
             {% if user.email and permissions.Edit %}
@@ -888,10 +898,10 @@ $(document).ready(function() {
                                     <div class="btn-group pull-right">
                                         <a class="btn list-group-item-visualize"
                                            href="{{control.snacURL}}/visualize/connection_graph/{{data.id}}/{{data.version}}">
-                                            <i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
+                                           <i class="fa fa-fw fa-asterisk" aria-hidden="true"></i><span class="snac-minimize"> Connection Graph</span></a>
                                         <a class="btn list-group-item-visualize"
                                            href="{{control.snacURL}}/visualize/radial_graph/{{data.id}}/{{data.version}}">
-                                            <i class="fa fa-fw fa-bullseye" aria-hidden="true"></i> Radial Graph</a>
+                                           <i class="fa fa-fw fa-bullseye" aria-hidden="true"></i><span class="snac-minimize"> Radial Graph</span></a>
                                     </div>
                                 </div>
                             </div>
