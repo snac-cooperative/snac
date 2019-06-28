@@ -638,21 +638,42 @@ $(document).ready(function() {
             <div class="btn-group">
                 <!-- <a href="#" class="btn list-group-item-success"> -->
                     <!-- <i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> Basic View</a> -->
-                <a class="btn list-group-item-warning"
-                   href="{{control.snacURL}}/details/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View</a>
+                <a class="btn list-group-item-warning" href="{{control.snacURL}}/details/{{data.id}}/{{data.version}}">
+                    <i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View
+                </a>
                 {% if data.maybeSameCount > 0 %}
-                <a href="{{control.snacURL}}/maybesame/{{data.id}}/{{data.version}}"
-                   class="btn list-group-item-merge" id="merge">
+                <a href="{{control.snacURL}}/maybesame/{{data.id}}/{{data.version}}" class="btn list-group-item-merge" id="merge">
                     <i class="fa fa-fw fa-random" aria-hidden="true"></i> Similarity Assertions
-                    <span class="badge">{{ data.maybeSameCount }}</span></a>
+                    <span class="badge">{{ data.maybeSameCount }}</span>
+                </a>
                 {% endif %}
-                <a class="btn list-group-item-history"
-                   href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History</a>
-                <a class="btn list-group-item-sources"
-                   href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source Summary</a>
+                <a class="btn list-group-item-history" href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
+                    <i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History
+                </a>
+                <a class="btn list-group-item-sources" href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
+                    <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source
+                </a>
+                <div class="btn-group">
+                    <div class="dropdown">
+                        <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Export
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="export-btn" style="background:#ecdef2;margin-top:36px;">
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="">
+                                    <i class="fa fa-fw fa-file" aria-hidden="true"></i> JSON
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="">
+                                    <i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             {% if user.email and permissions.Edit %}
@@ -676,23 +697,6 @@ $(document).ready(function() {
                 <label for="profile-toggle" class="toggle-switch" onclick="toggleProfile()" style="float:right;"></label>
                 <div  style="float:right; margin-right:5px;">
                     <p> <span id=profile-toggle-text>Hide</span> Profile</p>
-                </div>
-            </div>
-
-            <div class="btn-group">
-                <div class="dropdown">
-                    <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Export
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="export-btn" style="background:#ecdef2;margin-top:36px;">
-                        <li>
-                            <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class=""><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> JSON</a>
-                        </li>
-                        <li>
-                            <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class=""><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>
