@@ -940,7 +940,10 @@ $(document).ready(function() {
                                                             </span>
                                                             {% endif %}
                                                             <a href="{{control.snacURL}}/view/{{relation.targetConstellation}}">{{relation.content}}</a>
-                                                            <a style="float:right;" data-toggle="modal" data-target"#relations-modal" href="#relations-modal" title="View Shared Resources"><i class="fa fa-exchange" style="float:right;font-size: larger;"></i></a>
+                                                            <a style="float:right;" data-toggle="modal" data-target"#relations-modal" href="#relations-modal" title="View Shared Resources">
+                                                                <i class="fa fa-book" style="float:right;font-size: medium;margin-left:2px;"></i>
+                                                                <i class="fa fa-exchange" style="float:right;font-size: larger;"></i>
+                                                            </a>
                                                         </td>
                                                         <td>
                                                             {% if relation.targetEntityType.term %}
@@ -1294,7 +1297,7 @@ $(document).ready(function() {
                         <div class="modal-content">
                             <div class="modal-header primary">
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                <h4 class="modal-title" id="relations-modal"> Related Shared Resources </h4>
+                                <h4 class="modal-title"> Shared Related Resources </h4>
                             </div>
                             <div class="modal-body">
                                 <div class="input-group well well-sm text-center" style="width: 100%">
@@ -1308,7 +1311,7 @@ $(document).ready(function() {
                                             <i class="fa fa-users" aria-hidden="true"></i><br/>
                                             {% endif %}
                                         </p>
-                                        <p class="relation-icon-caption"> {{ data.nameEntries.0.original }} </p>
+                                        <p> {{ data.nameEntries.0.original }} </p>
                                     </div>
                                     <div class="col-xs-2 text-center">
                                         <p class="relation-icon">
@@ -1324,15 +1327,12 @@ $(document).ready(function() {
                                         <p class="relation-icon">
                                             <i class="fa fa-long-arrow-left" aria-hidden="true"></i><br/>
                                         </p>
-                                        <p class="relation-icon-caption" id="constellationRelation_relationPictureArrow_{{i}}">
-                                            {{type}}
-                                        </p>
                                     </div>
                                     <div class="col-xs-2 text-center">
                                         <p class="relation-icon">
-                                            <i id="compared-constellation-icon" class="" aria-hidden="true"></i><br/>
+                                            <i id="compared-constellation-icon" aria-hidden="true"></i><br/>
                                         </p>
-                                        <p class="relation-icon-caption compared-constellation-name">
+                                        <p class="compared-constellation-name">
                                         </p>
                                     </div>
                                 </div>
