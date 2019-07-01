@@ -537,12 +537,18 @@ $(document).ready(function() {
         "columnDefs": [
             {"visible": false, "targets":2},
             {"width": "75%", "targets":1}
-        ]
+        ],
+        "language": {
+            "searchPlaceholder": "Relation or Name"
+        }
     });
 
     lumpTable = $('#lump').DataTable({
         "searching" : true,
-        "autoWidth": false
+        "autoWidth": false,
+        "language": {
+            "searchPlaceholder": "Title, Role, Repository"
+        }
     })
 
     placesTable = $('#placesTable').DataTable({
@@ -558,7 +564,10 @@ $(document).ready(function() {
                         {"width": "5%", "targets":0},
                         {"width": "60%", "targets":1},
                         {"width": "35%", "targets":2}
-                    ]
+                    ],
+                    "language": {
+                        "searchPlaceholder": "Title, Role, Repository"
+                    }
     });
 
     $('.listtable').DataTable({
