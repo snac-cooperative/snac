@@ -911,7 +911,7 @@ $(document).ready(function() {
                                     </thead>
                                     <tbody>
                                         {% for relation in data.relations %}
-                                        <tr>
+                                        <tr class="id" data-id="{{relation.targetConstellation}}">
                                             <td>{{relation.type.term}}</td>
                                             <td>
                                                 {% if relation.targetEntityType.term == 'person' %}
