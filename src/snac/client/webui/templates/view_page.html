@@ -492,7 +492,7 @@ $(document).ready(function() {
         $(this).tab('show');
     });
 
-    $("#view-nav-tabs a[href='#artifacts']").on("show.bs.tab", function() {
+    $("#view-nav-tabs a[href='#resources']").on("show.bs.tab", function() {
         resourceTabActions();
     })
 
@@ -521,7 +521,7 @@ $(document).ready(function() {
     } else {
         // load Resources if no bioghist
         if (($("#view-nav-tabs a[href='#biography']").parent().hasClass("disabled"))) {
-            $("#view-nav-tabs a[href='#artifacts']").tab("show");
+            $("#view-nav-tabs a[href='#resources']").tab("show");
         }
     }
 
@@ -584,7 +584,7 @@ $(document).ready(function() {
         })
     })
 
-    $("#relation-table").on("click", "a[href='#relations-modal']", function() {
+    $("#relation-table").on("click", "a[href='#shared-resources-modal']", function() {
         var icid1 = $("#constellationid").val();
         var icid2 = $(this).closest('tr').data('id');
         getSharedResources(icid1, icid2);
@@ -720,7 +720,7 @@ $(document).ready(function() {
                         <li class="disabled"><a  href="#biography" class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
                     {% endif %}
 
-                    <li><a href="#artifacts" role="tab" data-toggle="tab" >Resources</a></li>
+                    <li><a href="#resources" role="tab" data-toggle="tab" >Resources</a></li>
 
                     {{ data.relations ? enabledtab : disabledtab}} href="#relationships">Relationships</a></li>
                     {{ data.places ? enabledtab : disabledtab}} href="#places">Places</a></li>
@@ -751,7 +751,7 @@ $(document).ready(function() {
                         </div>
                     </div>
                     {% endif %}
-                    <div class="body-tab-pane tab-pane " id="artifacts">
+                    <div class="body-tab-pane tab-pane " id="resources">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="text-center">
@@ -931,7 +931,7 @@ $(document).ready(function() {
                                                 </span>
                                                 {% endif %}
                                                 <a href="{{control.snacURL}}/view/{{relation.targetConstellation}}">{{relation.content}}</a>
-                                                <a style="float:right;" data-toggle="modal" data-target"#relations-modal" href="#relations-modal" title="View Shared Resources">
+                                                <a style="float:right;" data-toggle="modal" data-target"#shared-resources-modal" href="#shared-resources-modal" title="View Shared Resources">
                                                     <i class="fa fa-book" style="float:right;font-size: medium;margin-left:2px;" aria-hidden="true"></i>
                                                     <i class="fa fa-exchange" style="float:right;font-size: larger;" aria-label="View Shared Resources"></i>
                                                 </a>
@@ -1280,7 +1280,7 @@ $(document).ready(function() {
                 </div>
 
 
-                <div class="modal fade" id="relations-modal" tabindex="-1" role="dialog" aria-labelledby="relations-modal">
+                <div class="modal fade" id="shared-resources-modal" tabindex="-1" role="dialog" aria-labelledby="shared-resources-modal">
                     <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
                             <div class="modal-header primary">
