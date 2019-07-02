@@ -560,8 +560,8 @@ $(document).ready(function() {
     $("#relation-table").on("click", "td i.i-hover", function(e) {
         var q = $(e.target).closest("td").text();
         $("#relation-table").DataTable().columns(0).search(q).draw();
-        var filterButton = "<button type='button' onclick='clearRelationFilter()' class='btn btn-primary'>" +
-            q + "<i class='fa fa-fw fa-times fa-inverse'></i></button>"
+        var filterButton = "<button type='button' onclick='clearRelationFilter()' class='btn list-group-item-warning'>" +
+            q + "<i class='fa fa-fw fa-times'></i></button>"
 
         $("#datatable-column-filters").html(filterButton);
     })
@@ -905,8 +905,11 @@ $(document).ready(function() {
                     </div>
                     <div class="body-tab-pane tab-pane" id="relationships">
                         <div class="row">
-                            <div class="col-md-12">
-                                <div class="btn-toolbar" style="margin-bottom: 15px;">
+                            <div class="col-xs-1">
+                                <p style="margin-top:8px;font-size:14px;">Filters:</p>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="btn-toolbar" style="margin-bottom: 15px;" aria-label="Table filter buttons" >
                                     <div class="btn-group">
                                         <button class="btn btn-person relation-btn-filter" data-filter="person" type="button" alt="Person Filter" title="Person">
                                                 <i class="fa fa-fw fa-user fa-inverse"></i>
@@ -921,7 +924,7 @@ $(document).ready(function() {
                                     <button class="btn btn-danger relation-btn-filter" data-filter="" id="btn-clear-filter" type="button" alt="Clear Filters" title="Clear Filters">
                                         <i class="fa fa-fw fa-times fa-inverse"></i>
                                     </button>
-                                    <div id="datatable-column-filters" class="col-xs-4">
+                                    <div id="datatable-column-filters" class="col-xs-3">
                                     </div>
                                     <div class="btn-group pull-right">
                                         <a class="btn list-group-item-visualize"
