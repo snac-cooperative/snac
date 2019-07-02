@@ -492,9 +492,13 @@ function displayPlacesMapInteractive() {
     }, 400);
 }
 
-function clearRelationFilter() {
-    $("#relation-table").DataTable().columns(0).search("").draw();
-    $("#datatable-column-filters").html("");
+function clearRelationFilter(e) {
+    // debugger
+    var tab = $(e.target).closest("div.tab-pane");
+    $(tab).find(".dataTable").DataTable().columns(0).search("").draw();
+    $(tab).find(".datatable-column-filters").html("");
+    // $("#relation-table").DataTable().columns(0).search("").draw();
+    // $("#datatable-column-filters").html("");
 }
 
 $(document).ready(function() {
@@ -557,13 +561,21 @@ $(document).ready(function() {
         }
     });
 
-    $("#relation-table").on("click", "td i.i-hover", function(e) {
+    // $("#relation-table").on("click", "td i.i-hover", function(e) {
+    $(".dataTable").on("click", "td i.i-hover", function(e) {
         var q = $(e.target).closest("td").text();
-        $("#relation-table").DataTable().columns(0).search(q).draw();
-        var filterButton = "<button type='button' onclick='clearRelationFilter()' class='btn btn-primary'>" +
-            q + "<i class='fa fa-fw fa-times fa-inverse'></i></button>"
-
-        $("#datatable-column-filters").html(filterButton);
+        // $("#relation-table").DataTable().columns(0).search(q).draw();
+        // $("#relation-table").DataTable().columns(0).search(q).draw();
+        var table = $(this).closest(".dataTable").DataTable();
+        table.columns(0).search(q).draw();
+        var filterButton = "<button type='button' onclick='clearRelationFilter(event)' class='btn list-group-item-warning'>" +
+            q + "<i class='fa fa-fw fa-times'></i></button>"
+            // debugger
+            // $(this).closest('table')[0].id
+        // var filterDiv = $(this).closest('table')[0].id + "-column-filters"
+        // Find datatable filters on current tab
+        var $filterDiv = $(this).closest('div.tab-pane').find(".datatable-column-filters")
+        $($filterDiv).html(filterButton);
     })
 
     lumpTable = $('#lump').DataTable({
@@ -820,7 +832,9 @@ $(document).ready(function() {
                                     </div>
                                     <div id="archival-collapse" class="panel-collapse collapse in">
                                         <div class="panel-body">
-                                            <table id="archival" class="table table-striped table-bordered table-hover" data-order='[[ 1, "asc" ]]'>
+                                            <div class="datatable-column-filters" style="text-align:center;">
+                                            </div>
+                                            <table id="archival" class="table table-striped table-bordered table-hover dataTable" data-order='[[ 1, "asc" ]]'>
                                                 <thead>
                                                     <tr>
                                                         <th width="20%">Role</th>
@@ -837,7 +851,7 @@ $(document).ready(function() {
                                                          {% else %}
                                                              <tr>
                                                          {% endif %}
-                                                             <td>{{relation.role.term}}</td>
+                                                             <td>{{relation.role.term}}  <i class="fa fa-filter i-hover"></i></td>
                                                              <td>
                                                                  <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
                                                              </td>
@@ -921,7 +935,7 @@ $(document).ready(function() {
                                     <button class="btn btn-danger relation-btn-filter" data-filter="" id="btn-clear-filter" type="button" alt="Clear Filters" title="Clear Filters">
                                         <i class="fa fa-fw fa-times fa-inverse"></i>
                                     </button>
-                                    <div id="datatable-column-filters" class="col-xs-4">
+                                    <div class="datatable-column-filters col-xs-4">
                                     </div>
                                     <div class="btn-group pull-right">
                                         <a class="btn list-group-item-visualize"
@@ -936,7 +950,7 @@ $(document).ready(function() {
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <table id="relation-table" class="table table-striped table-bordered" data-order='[[ 1, "asc" ]]'>
+                                <table id="relation-table" class="table table-striped table-bordered dataTable" data-order='[[ 1, "asc" ]]'>
                                     <thead>
                                         <tr>
                                             <th width="25%">Relation</th>
