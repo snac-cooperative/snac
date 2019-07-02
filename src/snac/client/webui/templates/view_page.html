@@ -148,6 +148,16 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
     }
 }
 
+td i.i-hover {
+    visibility: hidden;
+    cursor: pointer;
+    color: #347ab8;
+}
+
+td:hover i.i-hover {
+    visibility: visible;
+}
+
 /*
 .wikipedia_thumbnail_container {
     text-align: center;
@@ -482,6 +492,10 @@ function displayPlacesMapInteractive() {
     }, 400);
 }
 
+function clearRelationFilter() {
+    $("#relation-table").DataTable().columns(0).search("").draw();
+    $("#datatable-column-filters").html("");
+}
 
 $(document).ready(function() {
     $('#view-nav-tabs a').click(function(e) {
@@ -542,6 +556,15 @@ $(document).ready(function() {
             "searchPlaceholder": "Relation or Name"
         }
     });
+
+    $("#relation-table").on("click", "td i.i-hover", function(e) {
+        var q = $(e.target).closest("td").text();
+        $("#relation-table").DataTable().columns(0).search(q).draw();
+        var filterButton = "<button type='button' onclick='clearRelationFilter()' class='btn btn-primary'>" +
+            q + "<i class='fa fa-fw fa-times fa-inverse'></i></button>"
+
+        $("#datatable-column-filters").html(filterButton);
+    })
 
     lumpTable = $('#lump').DataTable({
         "searching" : true,
@@ -898,6 +921,8 @@ $(document).ready(function() {
                                     <button class="btn btn-danger relation-btn-filter" data-filter="" id="btn-clear-filter" type="button" alt="Clear Filters" title="Clear Filters">
                                         <i class="fa fa-fw fa-times fa-inverse"></i>
                                     </button>
+                                    <div id="datatable-column-filters" class="col-xs-4">
+                                    </div>
                                     <div class="btn-group pull-right">
                                         <a class="btn list-group-item-visualize"
                                            href="{{control.snacURL}}/visualize/connection_graph/{{data.id}}/{{data.version}}">
@@ -921,7 +946,7 @@ $(document).ready(function() {
                                     <tbody>
                                         {% for relation in data.relations %}
                                         <tr class="id" data-id="{{relation.targetConstellation}}">
-                                            <td>{{relation.type.term}}</td>
+                                            <td>{{relation.type.term}} <i class="fa fa-filter i-hover"></i></td>
                                             <td>
                                                 {% if relation.targetEntityType.term == 'person' %}
                                                 <span class="fa-stack fa-sm" title="Entity Type: Person">
