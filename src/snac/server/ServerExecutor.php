@@ -916,7 +916,10 @@ class ServerExecutor {
             if (isset($input["relationships"])) {
                 $icids = $this->neo4J->getResourcesRelatedConstellationIDs($input["resourceid"]);
                 foreach ($icids as $icid) {
-                    $response["related_constellations"][] = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY)->toArray();
+                    $constellation = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+                    if (isset($constellation) && $constellation != false) {
+                        $response["related_constellations"][] = $constellation->toArray();
+                    }
                 }
             }
             $this->logger->addDebug("Serialized resource for output to client", $response);
@@ -1830,8 +1833,10 @@ class ServerExecutor {
                 $assertions = $this->cStore->listAssertions($constellation,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY, $this->uStore);
 
                 $response["assertions"] = array();
-                foreach ($assertions as $key => $assert) {
-                    $response["assertions"][$key] = $assert->toArray();
+                if (isset($assertions)) {
+                    foreach ($assertions as $key => $assert) {
+                        $response["assertions"][$key] = $assert->toArray();
+                    }
                 }
 
             } catch (\Exception $e) {
