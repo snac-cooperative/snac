@@ -217,7 +217,7 @@ function getSharedResources(icid1, icid2) {
         var rows = []
         var length =  data.resources.length;
         for (i = 0; i < length; i++) {
-            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_1]
+            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_2]
             rows.push(row)
         }
         sharedTable.rows.add(rows).draw()
