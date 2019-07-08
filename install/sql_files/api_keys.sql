@@ -1,6 +1,6 @@
 -- API keys table
 create table api_keys (
-        id          int  primary key default nextval('id_seq'),
+        id          serial primary key,
         uid         int not null,       -- fk to appuser.id
         label       text,               -- user provided name of this api key 
         key         text not null,      -- the key
