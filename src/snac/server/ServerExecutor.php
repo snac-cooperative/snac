@@ -58,6 +58,7 @@ class ServerExecutor {
      */
     private $permissions = null;
 
+    private $authType = null;
 
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -69,7 +70,7 @@ class ServerExecutor {
      *
      * @param string[] $user The user array from the Server's input
      */
-    public function __construct($user = null) {
+    public function __construct($user = null, $apikey = null) {
         global $log;
 
         // create a log channel
@@ -84,15 +85,26 @@ class ServerExecutor {
         $this->logger->addDebug("Starting ServerExecutor");
 
         $this->permissions = array();
-        /*
-         * Create the user and fill in their userID from the database We assume that a non-null $user at least
-         * has a valid email. If the getUserName() is null, then user the email as userName.
+        /***************************************
+         * USER AUTHENTICATION PROCESS
+         ***************************************
          *
-         * readUser() will check getUserID(), getUserName() and even getEmail().
+         * If the $user associative array is set, we'll assume the user is authenticating with the OAuth2
+         * login information.  This is likely the WebUI or web-authenticated users.  Here, we will use
+         * authenticateUser, which checks the $user object for id, username, or email to attempt a login.
          *
-         * The expectation is that userID or userName will have valid values. If not then the user probably
-         * lost their userid, so just pull back the first user with the email address in getEmail(). There is
-         * also the expectation that the case of missing both userID and userName is very rare.
+         *      Tom's Aside: The expectation is that userID or userName 
+         *      will have valid values. If not then the user probably
+         *      lost their userid, so just pull back the first user with 
+         *      the email address in getEmail(). There is
+         *      also the expectation that the case of missing 
+         *      both userID and userName is very rare.
+         *
+         * If the $user associative array is NOT set, but we have an API key, we will attempt to
+         * find the user associated with the API key and instantiate that user object.  The call
+         * to authenticateUserByAPIKey will lookup and verify the API key, then return the correct
+         * user object from the database.  Since the user will not have an OAuth2 session, we will
+         * then generate a temporary session to use.
          */
         if ($user != null) {
             // authenticate user here!
@@ -105,8 +117,32 @@ class ServerExecutor {
             $this->logger->addDebug("User authenticated successfully");
 
             $this->getUserPermissions();
+
+            $this->authType = "user";
+        } else if ($user == null && $apikey != null) {
+            // authenticate and get user
+            $userObj = $this->uStore->authenticateUserByAPIKey($apikey);
+            // create a temporary session
+            $userObj->generateTemporarySession();
+
+            // authenticateUser sets $this->user
+            if (!$this->authenticateUser($userObj)) {
+                throw new \snac\exceptions\SNACUserException("User is not authorized", 403);
+            }
+            $this->logger->addDebug("User authenticated successfully");
+
+            $this->getUserPermissions();
+            $this->authType = "apikey";
         }
 
+    }
+
+    public function isAPIKeyAuth() {
+        return $this->authType == "apikey";
+    }
+
+    public function isUserAuth() {
+        return $this->authType == "user";
     }
 
     /**
@@ -1218,6 +1254,59 @@ class ServerExecutor {
         ];
         return $response;
     }
+
+    /**
+     * Generate User API Key 
+     *
+     * Uses the APIKeyGenerator to generate a new API key and stores it in the database.
+     * The process of storing creates an expiration time (currently 1 year after the
+     * generation time).  The first 8 characters of the key are left un-encrypted as a lable
+     * to refer to the key for the user.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     * @return string[] The response to send to the client
+     */
+    public function generateUserAPIKey() {
+        // can only generate an API key for logged-in users
+        if ($this->user != null && $this->user !== false) {
+            $key = $this->uStore->generateUserAPIKey($this->user);
+
+            if ($key == null) {
+                //error
+                throw new \snac\exceptions\SNACDatabaseException("User API key could not be generated.");
+            }
+
+            $response = [
+                "result" => "success",
+                "key" => $key->toArray()
+            ];
+            return $response;
+        } 
+    }
+
+    /**
+     * Revoke API Key 
+     *
+     * Given the label of an API key, if that key belongs to this user, then this method will
+     * request DBUser to remove the key from the database (revoke it).  
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function revokeUserAPIKey($input) {
+        $response = [
+            "result" => "failure"
+        ];
+        // can only generate an API key for logged-in users
+        if ($this->user != null && $this->user !== false && isset($input["apikey_label"])) {
+            $success = $this->uStore->revokeUserAPIKey($this->user, $input["apikey_label"]);
+            if ($success)
+                $response["result"] = "success";
+        }
+        return $response;
+    }
+
 
     /**
      * Get User Information

@@ -54,7 +54,7 @@ class WebUIExecutor {
 
         // set up server connection
         $this->connect = new ServerConnect($user);
-        $this->user = $user;
+        $this->setUser($user);
 
         // create a log channel
         $this->logger = new \Monolog\Logger('WebUIExec');
@@ -72,7 +72,7 @@ class WebUIExecutor {
      */
     public function setUser(&$user = null) {
         $this->connect->setUser($user);
-        $this->user = $user;
+        //$this->user = $user;
     }
 
     /**
@@ -84,6 +84,17 @@ class WebUIExecutor {
      */
     public function getUser() {
         return $this->connect->getUser();
+    }
+
+    /**
+     * Reload User
+     *
+     * Ask the server connector to reload the user from the server.  This will
+     * generate a user_information call to the server to get the newest version
+     * of the user object.
+     */
+    public function reloadUser() {
+        $this->connect->reloadUser();
     }
 
     /**
@@ -99,6 +110,18 @@ class WebUIExecutor {
         $this->permissions = $data;
     }
 
+    /**
+     * Get User Permissions Data
+     *
+     * Gets the permissions bitfield (as an associative array) for the user connected
+     * to this session. To maintain compatibility with Twig and other client-side scripts,
+     * permission/privielege labels have spaces and special characters removed.
+     *
+     * @return boolean[] Associative array of Permission to boolean flag
+     */
+    public function getPermissionData() {
+        return $this->permissions;
+    }
 
 	/**
      * Get Connection Graph Data
@@ -1569,8 +1592,8 @@ class WebUIExecutor {
                 $message = new \snac\data\Message();
                 $message->setSubject($input["subject"]);
                 $message->setBody($input["body"]);
-                if (isset($this->user) && $this->user !== null) {
-                    $message->setFromUser($this->user);
+                if ($this->getUser() !== null) {
+                    $message->setFromUser($this->getUser());
                 } else {
                     // set this message from the IP address:
                     if (isset($input["email"]) && isset($input["name"])) {
@@ -1620,7 +1643,7 @@ class WebUIExecutor {
             $message = new \snac\data\Message();
             $message->setSubject($input["subject"]);
             $message->setBody($input["body"]);
-            $message->setFromUser($this->user);
+            $message->setFromUser($this->getUser());
 
             $errors = array();
 
@@ -2257,24 +2280,66 @@ class WebUIExecutor {
     }
 
     /**
-     * Display API Info Page
+     * Display API Key Management 
      *
-     * Fills the display with the API information page for the given user.
+     * API Key management function.  Displays the API key information page and handles subcommands
+     * for generating and revoking API keys. 
      *
+     * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      * @param \snac\data\User $user The current user object
      */
-    public function displayAPIInfoPage(&$display, &$user) {
-        $display->setTemplate("api_info_page");
-        $smallUser = new \snac\data\User();
-        $smallUser->setUserID($user->getUserID());
-        $smallUser->setUserName($user->getUserName());
-        $smallUser->setFullName($user->getFullName());
-        $smallUser->setToken($user->getToken());
-        $display->setData([
-            "restURL" => \snac\Config::$REST_URL,
-            "user" => json_encode($smallUser->toArray(), JSON_PRETTY_PRINT)
-        ]);
+    public function displayAPIInfoPage(&$input, &$display, &$user) {
+        $command = "view";
+        if (isset($input["subcommand"])) 
+            $command = $input["subcommand"];
+        switch($command) {
+            case "generate":
+                $display->setTemplate("api_key_generate");
+                $ask = array("command"=>"generate_key_user");
+                $this->logger->addDebug("Sending query to the server", $ask);
+                $serverResponse = $this->connect->query($ask);
+                $this->logger->addDebug("Received server response", [$serverResponse]);
+                $this->logger->addDebug("Setting api key data into the page template");
+                $display->setData($serverResponse);
+                $this->logger->addDebug("Finished setting api key data into the page template");
+                $this->reloadUser();
+                break;
+            case "revoke":
+                $display->setTemplate("api_keys");
+                $data = [
+                    "restURL" => \snac\Config::$REST_URL
+                ];
+                if (isset($input["label"])) {
+                    $ask = array(
+                        "command"=>"revoke_key_user",
+                        "apikey_label" => $input["label"]
+                    );
+                    $this->logger->addDebug("Sending query to the server", $ask);
+                    $serverResponse = $this->connect->query($ask);
+                    $this->logger->addDebug("Received server response", [$serverResponse]);
+                    $this->logger->addDebug("Setting data into the page template");
+                    if (isset($serverResponse["result"]) && $serverResponse["result"] == "success") {
+                        $data["message"] = "Successfully revoked key <strong>" . $input["label"] . "</strong>";
+                        $data["messageType"] = "success";
+                    } else {
+                        $data["message"] = "Error revoking key <strong>" . $input["label"] . "</strong>";
+                        $data["messageType"] = "danger";
+                    }
+                } else {
+                    $data["message"] = "No API Key label given to revoke";
+                    $data["messageType"] = "warning";
+                }
+                $display->setData($data);
+                $this->reloadUser();
+                $this->logger->addDebug("Finished setting api key data into the page template");
+                break;
+            default:   
+                $display->setTemplate("api_keys");
+                $display->setData([
+                    "restURL" => \snac\Config::$REST_URL
+                ]);
+        }
     }
 
     /**

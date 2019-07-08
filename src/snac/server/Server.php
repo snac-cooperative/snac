@@ -95,14 +95,23 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $db = new \snac\server\database\DBUtil();
 
-        // First, authenticate the user (every time to ensure they are still valid), if user information has been supplied
+        // --------------------------
+        // Authentication
+        // --------------------------
+        // Capture any user information given to the system through inputs.  This might be the
+        // OAuth-authenticated user object or an API key.
         $user = null;
         if (isset($this->input["user"])) {
             $user = $this->input["user"];
         }
 
+        $apikey = null;
+        if (isset($this->input["apikey"])) {
+            $apikey = $this->input["apikey"];
+        }
 
-        $executor = new \snac\server\ServerExecutor($user);
+        // Executor's constructor will then handle appropriate authentication
+        $executor = new \snac\server\ServerExecutor($user, $apikey);
 
 
         $this->logger->addDebug("Switching on command");
@@ -149,6 +158,8 @@ class Server implements \snac\interfaces\ServerInterface {
 
             // User Management
             case "user_information":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->userInformation();
                 break;
             case "institution_information":
@@ -157,38 +168,54 @@ class Server implements \snac\interfaces\ServerInterface {
 
 
             case "search_users":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Edit"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to search users.", 403);
                 $this->response = $executor->searchUsers($this->input);
                 break;
 
             case "list_users":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Edit"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to view users.", 403);
                 $this->response = $executor->listUsers($this->input);
                 break;
 
             case "user_messages":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->userMessages();
                 break;
 
             case "read_message":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->readMessage($this->input);
                 break;
 
             case "send_message":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->sendMessage($this->input);
                 break;
 
             case "archive_message":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->archiveMessage($this->input);
                 break;
 
             case "archived_messages":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->listUserArchivedMessages();
                 break;
 
             case "sent_messages":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->listUserSentMessages();
                 break;
 
@@ -197,31 +224,55 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "edit_user":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->userInformation($this->input);
                 break;
 
             case "update_user":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->updateUserInformation($this->input);
+                break;
+
+            case "generate_key_user":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
+                $this->response = $executor->generateUserAPIKey();
+                break;
+
+            case "revoke_key_user":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
+                $this->response = $executor->revokeUserAPIKey($this->input);
                 break;
 
             // Group Management
             case "group_information":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->groupInformation($this->input);
                 break;
 
             case "admin_groups":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Manage Groups"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->listGroups($this->input);
                 break;
 
             case "edit_group":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Manage Groups"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->groupInformation($this->input);
                 break;
 
             case "update_group":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Manage Groups"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->updateGroupInformation($this->input);
@@ -229,11 +280,15 @@ class Server implements \snac\interfaces\ServerInterface {
 
             // institutions
             case "admin_institutions":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->listInstitutions();
                 break;
 
             // roles
             case "admin_roles":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->listRoles();
                 break;
 
