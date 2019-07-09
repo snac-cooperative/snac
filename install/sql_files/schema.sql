@@ -104,6 +104,7 @@ drop table if exists resource_origination_name;
 drop table if exists constellation_lookup;
 drop table if exists messages;
 drop table if exists not_same;
+drop table if exists api_keys;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -1127,6 +1128,20 @@ create table not_same (
     user_id          int,  -- fk to appuser table, user that made the assertion
     timestamp        timestamp default(now()));
 create index not_same_idx1 on not_same (ic_id1, ic_id2);
+
+
+-- API keys table
+create table api_keys (
+        id          serial primary key,
+        uid         int not null,       -- fk to appuser.id
+        label       text,               -- user provided name of this api key
+        key         text not null,      -- the key
+        generated   timestamp default(now()), -- time created
+        expires     timestamp default(now() + interval '1 year') -- expiration time
+        );
+create index api_keys_idx2 on api_keys(key);
+create index api_keys_idx3 on api_keys(uid);
+
 
 -- Views that allow us to query the most recent constellation data
 
