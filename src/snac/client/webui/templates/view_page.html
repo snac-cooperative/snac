@@ -640,27 +640,29 @@ $(document).ready(function() {
 
     <div class="container snac" role="main">
         <div class="name" style="margin-bottom: 15px;">
-            <h1 style="display: inline;">
-                <!--
-               {% if data.entityType.term == 'person' %}
-               <span class="fa-stack fa-sm" title="Entity Type: Person">
-                   <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
-                   <i class="fa fa-user fa-stack-1x fa-inverse"></i>
-               </span>
-               {% elseif data.entityType.term == 'corporateBody' %}
-               <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
-                   <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
-                   <i class="fa fa-university fa-stack-1x fa-inverse"></i>
-               </span>
-               {% elseif data.entityType.term == 'family' %}
-               <span class="fa-stack fa-sm" title="Entity Type: Family">
-                   <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
-                   <i class="fa fa-users fa-stack-1x fa-inverse"></i>
-               </span>
-               {% endif %}
-                -->
-                 {{data.nameEntries.0.original}}
+            <header>
+                <h1 style="display: inline;">
+                    <!--
+                   {% if data.entityType.term == 'person' %}
+                   <span class="fa-stack fa-sm" title="Entity Type: Person">
+                       <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                       <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+                   </span>
+                   {% elseif data.entityType.term == 'corporateBody' %}
+                   <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                       <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                       <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+                   </span>
+                   {% elseif data.entityType.term == 'family' %}
+                   <span class="fa-stack fa-sm" title="Entity Type: Family">
+                       <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                       <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+                   </span>
+                   {% endif %}
+                    -->
+                     {{data.nameEntries.0.original}}
             </h1>
+        </header>
             {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
             <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative-names" href="#alternative-names">Alternative names</a>
             {% endif %}

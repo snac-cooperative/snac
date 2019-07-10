@@ -118,11 +118,11 @@
 
 {% macro footer(X, user, permissions, control) %}
     {% if control.interfaceVersion == "development" %}
-    <div class="footer footer-development-version">
+    <footer class="footer footer-development-version">
     {% elseif control.interfaceVersion == "demo" %}
-    <div class="footer footer-demo-version">
+    <footer class="footer footer-demo-version">
     {% else %}
-    <div class="footer footer-inverse">
+    <footer class="footer footer-inverse">
     {% endif %}
         <div class="container">
             <div class="row">
@@ -164,7 +164,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </footer>
 
     {% import _self as page_navigation %}
     {{ page_navigation.acceptCookies() }}
