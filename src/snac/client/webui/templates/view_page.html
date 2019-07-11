@@ -495,9 +495,16 @@ function displayPlacesMapInteractive() {
     }, 400);
 }
 
-function clearRelationFilter() {
-    $("#relation-table").DataTable().columns(0).search("").draw();
-    $("#datatable-column-filters").html("");
+function clearRelationFilter(e, index) {
+    debugger
+    var tab = $(e.target).closest("div.tab-pane");
+    $(tab).find(".dataTable").DataTable().columns(index).search("").draw();
+    // Remove only the button that matches the text?
+    // $(tab).find(".datatable-column-filters").html("");
+    $(e.target).closest("button").remove()
+
+    // $("#relation-table").DataTable().columns(0).search("").draw();
+    // $("#datatable-column-filters").html("");
 }
 
 $(document).ready(function() {
@@ -560,13 +567,40 @@ $(document).ready(function() {
         }
     });
 
-    $("#relation-table").on("click", "td i.i-hover", function(e) {
-        var q = $(e.target).closest("td").text();
-        $("#relation-table").DataTable().columns(0).search(q).draw();
-        var filterButton = "<button type='button' onclick='clearRelationFilter()' class='btn list-group-item-warning'>" +
-            q + "<i class='fa fa-fw fa-times'></i></button>"
+    // $("#relation-table").on("click", "td i.i-hover", function(e) {
+    $(".dataTable").on("click", "td i.i-hover", function(e) {
+        var $currentRow = $(this).closest("tr");
+        var $currentCell = $(e.target).closest("td");
+        var q = $currentCell.text().trim();
 
-        $("#datatable-column-filters").html(filterButton);
+        // figure out which column was clicked
+        var $col0 = $currentRow.find("td:eq(0)");
+        var $col1 = $currentRow.find("td:eq(1)");
+        var searchIndex = $currentCell[0] === $col0[0] ? 0 : 1;
+
+/////////<<<<<<< HEAD
+        // $("#relation-table").DataTable().columns(0).search(q).draw();
+        // var filterButton = "<button type='button' onclick='clearRelationFilter()' class='btn list-group-item-warning'>" +
+        //     q + "<i class='fa fa-fw fa-times'></i></button>"
+        //
+        // $("#datatable-column-filters").html(filterButton);
+//////////////=======
+
+        // $("#relation-table").DataTable().columns(0).search(q).draw();
+        var table = $(this).closest(".dataTable").DataTable();
+        // TODO: Filter should add and clear only the correct column
+        table.columns(searchIndex).search(q).draw();
+
+        var filterButton = "<button type='button' onclick='clearRelationFilter(event, " + searchIndex + ")' class='btn list-group-item-warning'>" +
+            q + "<i class='fa fa-fw fa-times'></i></button>"
+            // debugger
+            // $(this).closest('table')[0].id
+
+        debugger
+        // Find datatable filters on current tab
+        var $filterDiv = $(this).closest('div.tab-pane').find(".datatable-column-filters")
+        $filterDiv.append(filterButton);
+//////////>>>>>>> add-filters-to-resource-table
     })
 
     placesTable = $('#placesTable').DataTable({
@@ -782,7 +816,7 @@ $(document).ready(function() {
                     <div class="body-tab-pane tab-pane " id="resources">
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="text-center">
+                                <div class="text-right">
                                     <a class="btn list-group-item-success" id="display-holdings-map-btn" style="display:none;margin-bottom:10px;" onclick="displayHoldingsMapInteractive()">
                                         <i class="fa fa-fw fa-globe" aria-hidden="true"></i> View Collection Locations
                                     </a>
@@ -810,49 +844,46 @@ $(document).ready(function() {
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading panel-collapsible" onClick="$('#archival-collapse').collapse('toggle'); $(this).find('span').toggleClass('collapsed');">
-                                        <span>Archival Resources</span>
-                                    </div>
-                                    <div id="archival-collapse" class="panel-collapse collapse in">
-                                        <div class="panel-body">
-                                            <table id="archival" class="table table-striped table-bordered table-hover" data-order='[[ 1, "asc" ]]'>
-                                                <thead>
-                                                    <tr>
-                                                        <th>Type</th>
-                                                        <th>Role</th>
-                                                        <th>Title</th>
-                                                        <th>Holding Repository</th>
-                                                        <th></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                     {% for relation in data.resourceRelations %}
-                                                         {% if relation.resource.repository %}
-                                                             <tr onMouseOver="highlightHoldingMarker({{relation.resource.repository.id}});" onMouseOut="unHighlightHoldingMarker({{relation.resource.repository.id}});">
-                                                         {% else %}
-                                                             <tr>
-                                                         {% endif %}
-                                                             <td>{{relation.resource.documentType.term[:-8]}}</td>
-                                                             <td>{{relation.role.term}}</td>
-                                                             <td>
-                                                                 {% if relation.resource.link %}
-                                                                     <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
-                                                                 {% else %}
-                                                                     {{relation.content|default(relation.resource.title)}}
-                                                                 {% endif%}
-                                                             </td>
-                                                             <td>{{relation.resource.repository.nameEntries.0.original}}</td>
-                                                             <td>
-                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
-                                                                     <i class="fa fa-info-circle" style="font-size:large"> </i>
-                                                                 </a>
-                                                             </td>
-                                                         </tr>
-                                                     {% endfor %}
-                                                </tbody>
-                                            </table>
+                                <div id="archival-collapse" class="panel-collapse collapse in">
+                                    <div class="panel-body">
+                                        <div class="datatable-column-filters" style="text-align:center;">
                                         </div>
+                                        <table id="archival" class="table table-striped table-bordered table-hover dataTable" data-order='[[ 1, "asc" ]]'>
+                                            <thead>
+                                                <tr>
+                                                    <th>Type</th>
+                                                    <th>Role</th>
+                                                    <th>Title</th>
+                                                    <th>Holding Repository</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                 {% for relation in data.resourceRelations %}
+                                                     {% if relation.resource.repository %}
+                                                         <tr onMouseOver="highlightHoldingMarker({{relation.resource.repository.id}});" onMouseOut="unHighlightHoldingMarker({{relation.resource.repository.id}});">
+                                                     {% else %}
+                                                         <tr>
+                                                     {% endif %}
+                                                         <td>{{relation.resource.documentType.term[:-8]}}<i class="fa fa-filter i-hover"></i></td>
+                                                         <td>{{relation.role.term}}<i class="fa fa-filter i-hover"></i></td>
+                                                         <td>
+                                                             {% if relation.resource.link %}
+                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                             {% else %}
+                                                                 {{relation.content|default(relation.resource.title)}}
+                                                             {% endif%}
+                                                         </td>
+                                                         <td>{{relation.resource.repository.nameEntries.0.original}}</td>
+                                                         <td>
+                                                             <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                 <i class="fa fa-info-circle" style="font-size:large"> </i>
+                                                             </a>
+                                                         </td>
+                                                     </tr>
+                                                 {% endfor %}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -879,8 +910,9 @@ $(document).ready(function() {
                                     <button class="btn btn-danger relation-btn-filter" data-filter="" id="btn-clear-filter" type="button" alt="Clear Filters" title="Clear Filters">
                                         <i class="fa fa-fw fa-times fa-inverse"></i>
                                     </button>
-                                    <div id="datatable-column-filters" class="col-xs-3">
+                                    <div class="datatable-column-filters col-xs-3">
                                     </div>
+
                                     <div class="btn-group pull-right">
                                         <a class="btn list-group-item-visualize"
                                            href="{{control.snacURL}}/visualize/connection_graph/{{data.id}}/{{data.version}}">
@@ -894,7 +926,7 @@ $(document).ready(function() {
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <table id="relation-table" class="table table-striped table-bordered" data-order='[[ 1, "asc" ]]'>
+                                <table id="relation-table" class="table table-striped table-bordered dataTable" data-order='[[ 1, "asc" ]]'>
                                     <thead>
                                         <tr>
                                             <th width="25%">Relation</th>
