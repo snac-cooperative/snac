@@ -321,7 +321,6 @@ function loadHoldings() {
 
 
 var archivalTable = null;
-var lumpTable = null;
 var holdingsMarkers = {};
 var placesMarkers = {};
 var placesMapView = null;
@@ -411,18 +410,18 @@ function displayHoldingsMapInteractive() {
                     /*marker.on('click', function(e) {
                         //console.log(this);
                         console.log(this.getPopup().getContent());
-                        archivalTable.columns( 2 ).search( this.getPopup().getContent() )
+                        archivalTable.columns( 3 ).search( this.getPopup().getContent() )
                                             .draw();
                     });*/
                     marker.on('popupopen', function(e) {
                         //console.log(this);
                         // console.log(this.getPopup().getContent());
-                        archivalTable.columns( 2 ).search( this.getPopup().getContent() )
+                        archivalTable.columns( 3 ).search( this.getPopup().getContent() )
                                             .draw();
                         this.setIcon(highlightIcon);
                     });
                     marker.on('popupclose', function(e) {
-                        archivalTable.columns( 2 ).search( "" )
+                        archivalTable.columns( 3 ).search( "" )
                                             .draw();
                         this.setIcon(defaultIcon);
                     });
@@ -570,14 +569,6 @@ $(document).ready(function() {
         $("#datatable-column-filters").html(filterButton);
     })
 
-    lumpTable = $('#lump').DataTable({
-        "searching" : true,
-        "autoWidth": false,
-        "language": {
-            "searchPlaceholder": "Title, Role, Repository"
-        }
-    })
-
     placesTable = $('#placesTable').DataTable({
         "searching" : true,
         "autoWidth": false
@@ -589,11 +580,12 @@ $(document).ready(function() {
                     "deferRender": true,
                     "columnDefs": [
                         {"width": "5%", "targets":0},
-                        {"width": "60%", "targets":1},
-                        {"width": "35%", "targets":2}
+                        {"width": "5%", "targets":1},
+                        {"width": "60%", "targets":2},
+                        {"width": "35%", "targets":3}
                     ],
                     "language": {
-                        "searchPlaceholder": "Title, Role, Repository"
+                        "searchPlaceholder": "Title, Type, Role, Repository"
                     }
     });
 
@@ -827,23 +819,28 @@ $(document).ready(function() {
                                             <table id="archival" class="table table-striped table-bordered table-hover" data-order='[[ 1, "asc" ]]'>
                                                 <thead>
                                                     <tr>
-                                                        <th width="20%">Role</th>
-                                                        <th width="40%">Title</th>
-                                                        <th width="40%">Holding Repository</th>
+                                                        <th>Type</th>
+                                                        <th>Role</th>
+                                                        <th>Title</th>
+                                                        <th>Holding Repository</th>
                                                         <th></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                      {% for relation in data.resourceRelations %}
-                                                     {% if relation.resource.documentType.term == 'ArchivalResource' %}
                                                          {% if relation.resource.repository %}
                                                              <tr onMouseOver="highlightHoldingMarker({{relation.resource.repository.id}});" onMouseOut="unHighlightHoldingMarker({{relation.resource.repository.id}});">
                                                          {% else %}
                                                              <tr>
                                                          {% endif %}
+                                                             <td>{{relation.resource.documentType.term[:-8]}}</td>
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
-                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 {% if relation.resource.link %}
+                                                                     <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 {% else %}
+                                                                     {{relation.content|default(relation.resource.title)}}
+                                                                 {% endif%}
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                              <td>
@@ -852,52 +849,6 @@ $(document).ready(function() {
                                                                  </a>
                                                              </td>
                                                          </tr>
-                                                     {% endif %}
-                                                     {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading panel-collapsible" onClick="$('#bibliographic-collapse').collapse('toggle'); $(this).find('span').toggleClass('collapsed');">
-                                        <span class="collapsed">Bibliographic Resources</span>
-                                    </div>
-                                    <div id="bibliographic-collapse" class="panel-collapse collapse">
-                                        <div class="panel-body">
-                                            <table id="lump" class="table table-striped table-bordered" data-order='[[ 1, "asc" ]]'>
-                                                <thead>
-                                                    <tr>
-                                                        <th width="20%">Role</th>
-                                                        <th width="40%">Title</th>
-                                                        <th width="40%">Holding Repository</th>
-                                                        <th></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                     {% for relation in data.resourceRelations %}
-                                                     {% if relation.resource.documentType.term != 'ArchivalResource' %}
-                                                         {% if relation.resource.repository %}
-                                                             <tr onMouseOver="highlightHoldingMarker({{relation.resource.repository.id}});" onMouseOut="unHighlightHoldingMarker({{relation.resource.repository.id}});">
-                                                         {% else %}
-                                                             <tr>
-                                                         {% endif %}
-                                                             <td>{{relation.role.term}}</td>
-                                                             <td>
-                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
-                                                             </td>
-                                                             <td>{{relation.resource.repository.nameEntries.0.original}}</td>
-                                                             <td>
-                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
-                                                                     <i class="fa fa-info-circle" style="font-size:large"> </i>
-                                                                 </a>
-                                                             </td>
-                                                         </tr>
-                                                     {% endif %}
                                                      {% endfor %}
                                                 </tbody>
                                             </table>
