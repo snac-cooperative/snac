@@ -126,10 +126,10 @@ class Neo4JUtil {
             );
 
             // List out relations
-            $rels = array();
+            $icRels = array();
             foreach ($result->getRecords() as $record) {
                 $path = $record->pathValue("p");
-                array_push($rels, [
+                array_push($icRels, [
                     "arcrole" => $path->relationships()[0]->hasValue('arcrole') ? $path->relationships()[0]->value('arcrole') : null,
                     "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
                     "version" => $path->relationships()[0]->hasValue('version') ? $path->relationships()[0]->value('version') : null,
@@ -140,27 +140,30 @@ class Neo4JUtil {
             }
 
             $this->logger->addDebug("Reconciling Relationships to Current IC");
-            $relsToDelete = array();
-            $relsToModify = array();
+            $icRelsToDelete = array();
+            $icRelsToModify = array();
             foreach($constellation->getRelations() as $relation) {
                 $add = true;
-                foreach ($rels as &$rel) {
-                    if ($relation->getTargetConstellation() == $rel["target"]) {
+                foreach ($icRels as &$icRel) {
+                    if ($relation->getTargetConstellation() == $icRel["target"]) {
                         // if it's been found, then don't add it to the index
                         $add = false;
-                        if ($relation->getType() && $relation->getVersion() != $rel["version"]) {
-                            $rel["arcrole"] = $relation->getType() ? $relation->getType()->getTerm() : "";
-                            $rel["id"] = $relation->getID();
-                            $rel["version"] = $relation->getVersion();
-                            $rel["operation"] = "update";
+                        if ($relation->getType() && $relation->getVersion() != $icRel["version"]) {
+                            $icRel["arcrole"] = $relation->getType() ? $relation->getType()->getTerm() : "";
+                            $icRel["id"] = $relation->getID();
+                            $icRel["version"] = $relation->getVersion();
+                            $icRel["operation"] = "update";
                         } else {
-                            $rel["operation"] = null;
+                            $icRel["operation"] = null;
                         }
                         break;
                     }
                 }
+                // Be correct with pass by reference foreach loops
+                unset($icRel);
+                
                 if ($add)
-                    array_push($rels, [
+                    array_push($icRels, [
                         "target" => $relation->getTargetConstellation(),
                         "id" => $relation->getID(),
                         "version" => $relation->getVersion(),
@@ -168,14 +171,14 @@ class Neo4JUtil {
                         "operation" => "insert"
                     ]);
             }
-            $this->logger->addDebug("List of related identity paths", $rels);
+            $this->logger->addDebug("List of related identity paths", $icRels);
 
             // Make the relationship changes
-            foreach ($rels as $rel) {
+            foreach ($icRels as $rel) {
                 switch($rel["operation"]) {
                     case "insert":
                         $result = $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Identity {id: {id2} })
-                                                            CREATE (a)-[r:ICRELATION {infos}]->(b)",
+                                                            CREATE (a)-[r:ICRELATION {infos}]->(b);",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -214,6 +217,7 @@ class Neo4JUtil {
             // ************************************
             // STEP 3: Check all the resource relations. Update, insert, or delete as appropriate
             $this->logger->addDebug("Reading resource relationships from Neo4J");
+            $rRels = array();
             try {
                 $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:RRELATION]->(b:Resource) return p;",
                     [
@@ -222,10 +226,9 @@ class Neo4JUtil {
                 );
 
                 // List out relations
-                $rels = array();
                 foreach ($result->getRecords() as $record) {
                     $path = $record->pathValue("p");
-                    array_push($rels, [
+                    array_push($rRels, [
                         "target" => $path->end()->value("id"),
                         "role" => $path->relationships()[0]->hasValue('role') ? $path->relationships()[0]->value('role') : null,
                         "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
@@ -239,26 +242,29 @@ class Neo4JUtil {
                 throw $e;
             }
             $this->logger->addDebug("Reconciling Resource Relationships to Current IC");
-            $relsToDelete = array();
-            $relsToModify = array();
+            $rRelsToDelete = array();
+            $rRelsToModify = array();
             foreach($constellation->getResourceRelations() as $relation) {
                 $add = true;
-                foreach ($rels as &$rel) {
-                    if ($relation->getResource()->getID() == $rel["target"]) {
+                foreach ($rRels as &$rRel) {
+                    if ($relation->getResource()->getID() == $rRel["target"]) {
                         // if it's been found, then don't add it to the index
                         $add = false;
-                        if ($relation->getVersion() != $rel["version"]) {
-                            $rel["role"] = $relation->getRole() ? $relation->getRole()->getTerm() : "";
-                            $rel["version"] = $relation->getVersion();
-                            $rel["operation"] = "update";
+                        if ($relation->getVersion() != $rRel["version"]) {
+                            $rRel["role"] = $relation->getRole() ? $relation->getRole()->getTerm() : "";
+                            $rRel["version"] = $relation->getVersion();
+                            $rRel["operation"] = "update";
                         } else {
-                            $rel["operation"] = null;
+                            $rRel["operation"] = null;
                         }
                         break;
                     }
                 }
+                // Be correct with pass by reference foreach loops
+                unset($rRel);
+
                 if ($add)
-                    array_push($rels, [
+                    array_push($rRels, [
                         "target" => $relation->getResource()->getID(),
                         "role" => $relation->getRole() ? $relation->getRole()->getTerm() : "",
                         "id" => $relation->getID(),
@@ -266,14 +272,14 @@ class Neo4JUtil {
                         "operation" => "insert"
                     ]);
             }
-            $this->logger->addDebug("List of related resource paths", $rels);
+            $this->logger->addDebug("List of related resource paths", $rRels);
 
             // Make the relationship changes
-            foreach ($rels as $rel) {
+            foreach ($rRels as $rel) {
                 switch($rel["operation"]) {
                     case "insert":
                         $result = $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
-                                                            CREATE (a)-[r:RRELATION {infos}]->(b)",
+                                                            CREATE (a)-[r:RRELATION {infos}]->(b);",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],

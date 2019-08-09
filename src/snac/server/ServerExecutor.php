@@ -3842,14 +3842,14 @@ class ServerExecutor {
 
         $results = $this->cStore->browseNameIndex($term, $position, $entityType, $icid);
 
-        foreach ($results as &$result) {
+        foreach ($results as $k => $result) {
             $constellation = new \snac\data\Constellation();
             $constellation->setID($result["ic_id"]);
             if (\snac\Config::$USE_NEO4J) {
                 $this->neo4J->checkHoldingInstitutionStatus($constellation);
             }
             if ($constellation->hasFlag("holdingRepository"))
-                $result["entity_type"] = "holdingRepository";
+                $results[$k]["entity_type"] = "holdingRepository";
         }
 
         $response["results"] = $results;
