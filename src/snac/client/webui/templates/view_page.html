@@ -57,6 +57,26 @@
 <script src="{{control.snacURL}}/javascript/tabcollapse.js{{control.noCache}}"></script>
 <style>
 
+@font-face {
+    font-family: "SNACIcons";
+    src: url("{{control.snacURL}}/css/SNACIcons.woff") format("woff");
+}
+
+.si {
+    display: inline-block;
+    font: normal normal normal 14px/1 SNACIcons;
+    font-size: 14px;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#relationships .btn {
+    padding-top: 4px!important;
+    padding-bottom: 8px!important;
+}
+
 .wikipedia_thumbnail {
     text-align: center;
     padding: 15px;
@@ -194,6 +214,15 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
 .wikipedia_thumbnail a {
     color:#eee
 }*/
+
+.snac-toolbar {
+    top: 0px;
+}
+.snac-toolbar .container {
+    padding-bottom: 0px!important;
+    padding-right: 0px;
+    padding-left: 0px;
+}
 
 </style>
 <script>
