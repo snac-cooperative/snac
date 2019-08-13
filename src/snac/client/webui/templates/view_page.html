@@ -171,6 +171,20 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
     }
 }
 
+td i.i-hover {
+    visibility: hidden;
+    cursor: pointer;
+    color: #347ab8;
+}
+
+td:hover i.i-hover {
+    visibility: visible;
+}
+
+.dataTables_filter input {
+    width: 240px
+}
+
 /*
 .wikipedia_thumbnail_container {
     text-align: center;
@@ -239,7 +253,7 @@ function getSharedResources(icid1, icid2) {
         var rows = []
         var length =  data.resources.length;
         for (i = 0; i < length; i++) {
-            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_1]
+            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_2]
             rows.push(row)
         }
         sharedTable.rows.add(rows).draw()
@@ -514,6 +528,10 @@ function displayPlacesMapInteractive() {
     }, 400);
 }
 
+function clearRelationFilter() {
+    $("#relation-table").DataTable().columns(0).search("").draw();
+    $("#datatable-column-filters").html("");
+}
 
 $(document).ready(function() {
     $('#view-nav-tabs a').click(function(e) {
@@ -524,7 +542,7 @@ $(document).ready(function() {
         $(this).tab('show');
     });
 
-    $("#view-nav-tabs a[href='#artifacts']").on("show.bs.tab", function() {
+    $("#view-nav-tabs a[href='#resources']").on("show.bs.tab", function() {
         resourceTabActions();
     })
 
@@ -553,7 +571,7 @@ $(document).ready(function() {
     } else {
         // load Resources if no bioghist
         if (($("#view-nav-tabs a[href='#biography']").parent().hasClass("disabled"))) {
-            $("#view-nav-tabs a[href='#artifacts']").tab("show");
+            $("#view-nav-tabs a[href='#resources']").tab("show");
         }
     }
 
@@ -570,13 +588,28 @@ $(document).ready(function() {
             {"visible": false, "targets":2},
             {"width": "75%", "targets":1}
         ],
-        responsive: true
+        responsive: true,
+        "language": {
+            "searchPlaceholder": "Relation or Name"
+        }
     });
+
+    $("#relation-table").on("click", "td i.i-hover", function(e) {
+        var q = $(e.target).closest("td").text();
+        $("#relation-table").DataTable().columns(0).search(q).draw();
+        var filterButton = "<button type='button' onclick='clearRelationFilter()' class='btn list-group-item-warning'>" +
+            q + "<i class='fa fa-fw fa-times'></i></button>"
+
+        $("#datatable-column-filters").html(filterButton);
+    })
 
     lumpTable = $('#lump').DataTable({
         "searching" : true,
         "autoWidth": false,
-        responsive: true
+        responsive: true,
+        "language": {
+            "searchPlaceholder": "Title, Role, Repository"
+        }
     })
 
     placesTable = $('#placesTable').DataTable({
@@ -594,7 +627,10 @@ $(document).ready(function() {
                         {"width": "60%", "targets":1},
                         {"width": "35%", "targets":2}
                     ],
-        responsive: true
+                    responsive: true,
+                    "language": {
+                        "searchPlaceholder": "Title, Role, Repository"
+                    }
     });
 
     $('.listtable').DataTable({
@@ -621,7 +657,7 @@ $(document).ready(function() {
         })
     })
 
-    $("#relation-table").on("click", "a[href='#relations-modal']", function() {
+    $("#relation-table").on("click", "a[href='#shared-resources-modal']", function() {
         var icid1 = $("#constellationid").val();
         var icid2 = $(this).closest('tr').data('id');
         getSharedResources(icid1, icid2);
@@ -674,7 +710,7 @@ $(document).ready(function() {
 
 
         <div class="btn-toolbar" style="margin-bottom: 15px;">
-            <div class="btn-group">
+            <div class="btn-group" role="group">
                 <!-- <a href="#" class="btn list-group-item-success"> -->
                     <!-- <i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> Basic View</a> -->
                 <a class="btn list-group-item-warning"
@@ -691,7 +727,26 @@ $(document).ready(function() {
                     <i class="fa fa-fw fa-history" aria-hidden="true"></i><span class="snac-minimize">  Revision History</span></a>
                 <a class="btn list-group-item-sources"
                    href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
-                   <i class="fa fa-fw fa-archive" aria-hidden="true"></i><span class="snac-minimize">  Source Summary</span></a>
+                   <i class="fa fa-fw fa-archive" aria-hidden="true"></i><span class="snac-minimize">  Sources</span></a>
+                <div class="btn-group" role="group">
+                    <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        <i class="fa fa-fw fa-download" aria-hidden="true"></i> Export
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="export-btn">
+                        <li>
+                        <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="">
+                            <i class="fa fa-fw fa-file" aria-hidden="true"></i> JSON
+                        </a>
+                        </li>
+                        <li>
+                        <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="">
+                            <i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML
+                        </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             {% if user.email and permissions.Edit %}
@@ -717,23 +772,6 @@ $(document).ready(function() {
                     <p> <span id=profile-toggle-text>Hide</span> Profile</p>
                 </div>
             </div>
-
-            <div class="btn-group">
-                <div class="dropdown">
-                    <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Export
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="export-btn" style="background:#ecdef2;margin-top:36px;">
-                        <li>
-                            <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class=""><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> JSON</a>
-                        </li>
-                        <li>
-                            <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class=""><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
         </div>
         <div class="row" id="row-main">
             <div id="content-column" class="col-md-8">
@@ -755,7 +793,7 @@ $(document).ready(function() {
                         <li class="disabled"><a  href="#biography" class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
                     {% endif %}
 
-                    <li><a href="#artifacts" role="tab" data-toggle="tab" >Resources</a></li>
+                    <li><a href="#resources" role="tab" data-toggle="tab" >Resources</a></li>
 
                     {{ data.relations ? enabledtab : disabledtab}} href="#relationships">Relationships</a></li>
                     {{ data.places ? enabledtab : disabledtab}} href="#places">Places</a></li>
@@ -786,7 +824,7 @@ $(document).ready(function() {
                         </div>
                     </div>
                     {% endif %}
-                    <div class="body-tab-pane tab-pane " id="artifacts">
+                    <div class="body-tab-pane tab-pane " id="resources">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="text-center">
@@ -908,8 +946,11 @@ $(document).ready(function() {
                     </div>
                     <div class="body-tab-pane tab-pane" id="relationships">
                         <div class="row">
-                            <div class="col-md-12">
-                                <div class="btn-toolbar" style="margin-bottom: 15px;">
+                            <div class="col-xs-1">
+                                <p style="margin-top:8px;font-size:14px;">Filters:</p>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="btn-toolbar" style="margin-bottom: 15px;" aria-label="Table filter buttons" >
                                     <div class="btn-group">
                                         <button class="btn btn-person relation-btn-filter" data-filter="person" type="button" alt="Person Filter" title="Person">
                                                 <i class="fa fa-fw fa-user fa-inverse"></i>
@@ -924,6 +965,8 @@ $(document).ready(function() {
                                     <button class="btn btn-danger relation-btn-filter" data-filter="" id="btn-clear-filter" type="button" alt="Clear Filters" title="Clear Filters">
                                         <i class="fa fa-fw fa-times fa-inverse"></i>
                                     </button>
+                                    <div id="datatable-column-filters" class="col-xs-3">
+                                    </div>
                                     <div class="btn-group pull-right">
                                         <a class="btn list-group-item-visualize"
                                            href="{{control.snacURL}}/visualize/connection_graph/{{data.id}}/{{data.version}}">
@@ -946,8 +989,8 @@ $(document).ready(function() {
                                     </thead>
                                     <tbody>
                                         {% for relation in data.relations %}
-                                        <tr>
-                                            <td>{{relation.type.term}}</td>
+                                        <tr class="id" data-id="{{relation.targetConstellation}}">
+                                            <td>{{relation.type.term}} <i class="fa fa-filter i-hover"></i></td>
                                             <td>
                                                 {% if relation.targetEntityType.term == 'person' %}
                                                 <span class="fa-stack fa-sm" title="Entity Type: Person">
@@ -966,7 +1009,7 @@ $(document).ready(function() {
                                                 </span>
                                                 {% endif %}
                                                 <a href="{{control.snacURL}}/view/{{relation.targetConstellation}}">{{relation.content}}</a>
-                                                <a style="float:right;" data-toggle="modal" data-target"#relations-modal" href="#relations-modal" title="View Shared Resources">
+                                                <a style="float:right;" data-toggle="modal" data-target"#shared-resources-modal" href="#shared-resources-modal" title="View Shared Resources">
                                                     <i class="fa fa-book" style="float:right;font-size: medium;margin-left:2px;" aria-hidden="true"></i>
                                                     <i class="fa fa-exchange" style="float:right;font-size: larger;" aria-label="View Shared Resources"></i>
                                                 </a>
@@ -1315,7 +1358,7 @@ $(document).ready(function() {
                 </div>
 
 
-                <div class="modal fade" id="relations-modal" tabindex="-1" role="dialog" aria-labelledby="relations-modal">
+                <div class="modal fade" id="shared-resources-modal" tabindex="-1" role="dialog" aria-labelledby="shared-resources-modal">
                     <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
                             <div class="modal-header primary">

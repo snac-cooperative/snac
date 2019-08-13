@@ -546,15 +546,6 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="source_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceURI.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.sourceURI.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_source_uri_{{i}}">
-                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="hidden" class="form-control" value="{{ source.uri }}"/>
-                            <p class="form-control-static">{{ source.uri }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
                         <label for="source_citation_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceCitation.display }}
                         </label>
@@ -570,6 +561,15 @@
                         <div class="col-xs-8" id="textarea_source_text_{{i}}">
                             <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" style="display:none;">{{ source.text }}</textarea>
                             <p class="form-control-static">{{ source.text }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="source_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceURI.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sourceURI.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_source_uri_{{i}}">
+                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="hidden" class="form-control" value="{{ source.uri }}"/>
+                            <p class="form-control-static">{{ source.uri }}</p>
                         </div>
                     </div>
 

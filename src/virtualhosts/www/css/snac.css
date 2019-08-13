@@ -1019,6 +1019,7 @@ input[type='checkbox']:checked + .toggle-switch {
   }
 }
 
+
 /* Phones */
 @media (max-width: 767px) {
     .footer {
@@ -1060,7 +1061,16 @@ input[type='checkbox']:checked + .toggle-switch {
 }
 
 /* Computers */
+@media (min-width: 768px) {
+    .container {
+        width:100%
+    }
+}
+
 @media (min-width: 992px) {
+    .container {
+        width:100%
+    }
     .affix {
         position: fixed;
         top: 62px;
@@ -1090,6 +1100,12 @@ input[type='checkbox']:checked + .toggle-switch {
 
 .search-box .search-box-text {
     width: 82%;
+}
+
+@media (min-width: 1200px) {
+    .container {
+        width:1200px
+    }
 }
 
 /* Search box doesn't look good below 700px */

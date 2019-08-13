@@ -1744,8 +1744,10 @@ class ServerExecutor {
                 $assertions = $this->cStore->listAssertions($constellation,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY, $this->uStore);
 
                 $response["assertions"] = array();
-                foreach ($assertions as $key => $assert) {
-                    $response["assertions"][$key] = $assert->toArray();
+                if (isset($assertions)) {
+                    foreach ($assertions as $key => $assert) {
+                        $response["assertions"][$key] = $assert->toArray();
+                    }
                 }
 
             } catch (\Exception $e) {
