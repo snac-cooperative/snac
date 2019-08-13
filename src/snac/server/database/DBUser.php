@@ -455,8 +455,8 @@ class DBUser
         }
 
         $user->setPreferredRules($record['preferred_rules']);
-        
-        
+
+
         $user->setAPIKeyList($this->listUserAPIKeys($user));
 
         return $user;
@@ -751,11 +751,11 @@ class DBUser
 
         return null;
     }
-    
+
     /**
-     * Revoke API Key for user 
+     * Revoke API Key for user
      *
-     * Revokes the API key given by the provided $label, if it exists. 
+     * Revokes the API key given by the provided $label, if it exists.
      *
      * @param \snac\data\User $user The user
      * @param string $label The label of the key to be revoked

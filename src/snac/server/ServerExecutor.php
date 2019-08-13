@@ -93,11 +93,11 @@ class ServerExecutor {
          * login information.  This is likely the WebUI or web-authenticated users.  Here, we will use
          * authenticateUser, which checks the $user object for id, username, or email to attempt a login.
          *
-         *      Tom's Aside: The expectation is that userID or userName 
+         *      Tom's Aside: The expectation is that userID or userName
          *      will have valid values. If not then the user probably
-         *      lost their userid, so just pull back the first user with 
+         *      lost their userid, so just pull back the first user with
          *      the email address in getEmail(). There is
-         *      also the expectation that the case of missing 
+         *      also the expectation that the case of missing
          *      both userID and userName is very rare.
          *
          * If the $user associative array is NOT set, but we have an API key, we will attempt to
@@ -1259,7 +1259,7 @@ class ServerExecutor {
     }
 
     /**
-     * Generate User API Key 
+     * Generate User API Key
      *
      * Uses the APIKeyGenerator to generate a new API key and stores it in the database.
      * The process of storing creates an expiration time (currently 1 year after the
@@ -1284,14 +1284,14 @@ class ServerExecutor {
                 "key" => $key->toArray()
             ];
             return $response;
-        } 
+        }
     }
 
     /**
-     * Revoke API Key 
+     * Revoke API Key
      *
      * Given the label of an API key, if that key belongs to this user, then this method will
-     * request DBUser to remove the key from the database (revoke it).  
+     * request DBUser to remove the key from the database (revoke it).
      *
      * @param string[] $input Input array from the Server object
      * @throws \snac\exceptions\SNACInputException
