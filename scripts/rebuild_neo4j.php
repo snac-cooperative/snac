@@ -205,6 +205,8 @@ foreach ($rels as $noderel) {
                 'id1' => $edge["source"],
                 'id2' => $edge["target"],
                 'infos' => [
+                    "id" => $edge["id"],
+                    "version" => $edge["version"],
                     "arcrole" => $edge["arcrole"]
                 ]
             ]);

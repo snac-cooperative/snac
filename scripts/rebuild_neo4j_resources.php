@@ -84,7 +84,7 @@ while($row = $db->fetchrow($allRel))
         "id" => $row["id"],
         "version" => $row["version"],
         "source" => $row["ic_id"],
-        "target" => $row["resource_id"], 
+        "target" => $row["resource_id"],
         "relation" => isset($lookup["document_role"][$row["relation"]]) ? $lookup["document_role"][$row["relation"]]["value"] : null
     ];
 }
@@ -93,9 +93,10 @@ $previousICID = -1;
 
 echo "Querying the resources from the database.\n";
 
-$allNames = $db->query("select id, version, title, href, type
-                        from resource_cache
-                        where not is_deleted", array());
+$allNames = $db->query("select b.id, b.version, b.title, b.display_entry, b.href, b.type
+                        from resource_cache b,
+                        (select distinct id, max(version) as version from resource_cache group by id) a,
+                        where b.id = a.id and b.version = a.version and not b.is_deleted", array());
 $nodes = array();
 while($name = $db->fetchrow($allNames))
 {
@@ -104,18 +105,19 @@ while($name = $db->fetchrow($allNames))
             "version" => $name["version"],
             "href" => $name["href"],
             "type" => isset($lookup["document_type"][$row["type"]]) ? $lookup["document_type"][$row["type"]]["value"] : null,
-            "title" => $name["title"]
+            "title" => $name["title"],
+            "display_entry" => $name["display_entry"]
         ];
 }
- 
+
 echo "Updating the Neo4J Graph. This may take a while...\n";
 
 $stack = $connector->stack();
 $i = 0;
 foreach ($nodes as $node) {
-    $stack->push('CREATE (n:Resource) SET n += {infos}', 
+    $stack->push('CREATE (n:Resource) SET n += {infos}',
         [
-            'infos' => $node 
+            'infos' => $node
         ]);
     if ($i++ > 10000) {
         $txn = $connector->transaction();
@@ -137,7 +139,7 @@ $stack = $connector->stack();
 $i = 0;
 foreach ($rels as $edge) {
     $stack->push("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
-        CREATE (a)-[r:RRELATION {infos}]->(b)", 
+        CREATE (a)-[r:RRELATION {infos}]->(b)",
         [
             'id1' => $edge["source"],
             'id2' => $edge["target"],
@@ -159,4 +161,3 @@ foreach ($rels as $edge) {
 $txn = $connector->transaction();
 $txn->runStack($stack);
 $txn->commit();
-
