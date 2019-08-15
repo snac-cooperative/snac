@@ -707,8 +707,27 @@ $(document).ready(function() {
                 <br><span class="label label-default"><i class="fa fa-archive" aria-hidden="true"></i> Holding Repository</span>
             {% endif %}
         </div>
-
-
+<nav class="navbar navbar-default snac-toolbar">
+    <div class="container">
+        <div class="navbar snac-toolbar-inner">
+            <ul class="nav navbar-nav">
+                <li class="highlight toolbar-save"><a href="#" id=""><i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View</a></li>
+                <li class="highlight toolbar-dashboard"><a href="#" id=""><i class="fa fa-fw fa-random" aria-hidden="true"></i>  Similarity Assertions
+                    <span class="badge">{{ data.maybeSameCount }}</span></a></li>
+                <li class="highlight toolbar-cancel"><a href="#" id=""><i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History</a></li>
+                <li class="highlight toolbar-cancel"><a href="#" id=""><i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source Summary</a></li>
+            </ul>
+            <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="highlight">
+                    <label for="profile-toggle" class="toggle-switch" onclick="toggleProfile()"><span id=profile-toggle-text>Hide</span> Profile</label>
+                    <input type="checkbox" id="profile-toggle" class="snac-hidden"  aria-hidden="true"/>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
         <div class="btn-toolbar" style="margin-bottom: 15px;">
             <div class="btn-group" role="group">
                 <!-- <a href="#" class="btn list-group-item-success"> -->
@@ -970,7 +989,7 @@ $(document).ready(function() {
                                     <div class="btn-group pull-right">
                                         <a class="btn list-group-item-visualize"
                                            href="{{control.snacURL}}/visualize/connection_graph/{{data.id}}/{{data.version}}">
-                                           <i class="fa fa-fw fa-asterisk" aria-hidden="true"></i><span class="snac-minimize"> Connection Graph</span></a>
+                                           <i class="si" aria-hidden="true">A</i><span class="snac-minimize"> Connection Graph</span></a>
                                         <a class="btn list-group-item-visualize"
                                            href="{{control.snacURL}}/visualize/radial_graph/{{data.id}}/{{data.version}}">
                                            <i class="fa fa-fw fa-bullseye" aria-hidden="true"></i><span class="snac-minimize"> Radial Graph</span></a>
