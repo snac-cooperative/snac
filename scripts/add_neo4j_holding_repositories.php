@@ -53,11 +53,10 @@ if ($connector == null)
 
 echo "Querying the resources from the database.\n";
 
-$allNames = $db->query("select b.id, b.repo_ic_id
-                        from resource_cache b,
-                        (select distinct id, max(version) as version from resource_cache group by id) a,
-                        where b.id = a.id and b.version = a.version and not b.is_deleted and b.repo_ic_id is not null", array());
-
+$allNames = $db->query("select b.id, cl.current_ic_id as repo_ic_id
+                        from resource_cache b, constellation_lookup cl,
+                        (select distinct id, max(version) as version from resource_cache group by id) a
+                        where b.id = a.id and b.version = a.version and not b.is_deleted and b.repo_ic_id is not null and b.repo_ic_id = cl.ic_id", array());
 
 $nodes = array();
 while($name = $db->fetchrow($allNames))

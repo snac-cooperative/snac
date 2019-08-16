@@ -95,7 +95,7 @@ echo "Querying the resources from the database.\n";
 
 $allNames = $db->query("select b.id, b.version, b.title, b.display_entry, b.href, b.type
                         from resource_cache b,
-                        (select distinct id, max(version) as version from resource_cache group by id) a,
+                        (select distinct id, max(version) as version from resource_cache group by id) a
                         where b.id = a.id and b.version = a.version and not b.is_deleted", array());
 $nodes = array();
 while($name = $db->fetchrow($allNames))

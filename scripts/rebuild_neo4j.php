@@ -64,10 +64,14 @@ while($row = $db->fetchrow($result))
 
 echo "Querying the relations from the database.\n";
 
-$allRel = $db->query("select r.id, r.version, r.ic_id, r.related_id, r.related_ark, r.arcrole from
-                related_identity r,
+$allRel = $db->query("select r.id, r.version, r.ic_id, cl.current_ic_id as related_id, cl.current_ark_id as related_ark, r.arcrole from
+                related_identity r, constellation_lookup cl,
                 (select distinct id, max(version) as version from related_identity group by id) a
-                where a.id = r.id and a.version = r.version and not r.is_deleted", array());
+                where a.id = r.id and a.version = r.version and not r.is_deleted and cl.ic_id = r.related_id", array());
+
+echo "Finished base query, now reading through results.\n";
+
+$rcount = 0;
 while($row = $db->fetchrow($allRel))
 {
     if (!isset($rels[$row["ic_id"]]))
@@ -81,6 +85,9 @@ while($row = $db->fetchrow($allRel))
         "target_ark" => $row["related_ark"],
         "arcrole" => isset($lookup["relation_type"][$row["arcrole"]]) ? $lookup["relation_type"][$row["arcrole"]]["value"] : null
     ];
+    $rcount++;
+    if ($rcount % 1000 == 0)
+        echo "   Read 1000 lines from the table into memory ($rcount)\n";
 }
 
 /*
@@ -98,7 +105,6 @@ while($c = $db->fetchrow($allRelCount))
 }
  */
 
-$previousICID = -1;
 
 
 echo "Querying the names from the database.\n";
@@ -147,6 +153,7 @@ where
 order by
     one.ic_id asc, two.preference_score desc, two.id asc;", array());
 
+$previousICID = -1;
 
 $nodes = array();
 while($name = $db->fetchrow($allNames))
