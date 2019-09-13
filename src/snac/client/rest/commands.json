@@ -1197,7 +1197,7 @@
                                         "eventDescription": "Merge v2.0"
                                     }
                                 ],
-                                "otherRecordIDs": [
+                                "sameAsRelations": [
                                     {
                                         "dataType": "SameAs",
                                         "type": {
@@ -3265,7 +3265,7 @@
                         "dataType": "Constellation",
                         "status": "currently editing",
                         "ark": "http://n2t.net/ark:/99166/w6vz535m",
-                        "otherRecordIDs": [{
+                        "sameAsRelations": [{
                                 "dataType": "SameAs",
                                 "type": {
                                     "id": 28225

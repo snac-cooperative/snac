@@ -839,7 +839,6 @@ class Constellation extends AbstractData {
             "status" => $this->status,
             "ark" => $this->ark,
             "entityType" => $this->entityType == null ? null : $this->entityType->toArray($shorten),
-            "otherRecordIDs" => array(),
             "entityIDs" => array(),
             "maintenanceStatus" => $this->maintenanceStatus == null ? null : $this->maintenanceStatus->toArray($shorten),
             "maintenanceAgency" => $this->maintenanceAgency,
@@ -853,6 +852,7 @@ class Constellation extends AbstractData {
             "occupations" => array(),
             "biogHists" => array(),
             "relations" => array(),
+            "sameAsRelations" => array(),
             "resourceRelations" => array(),
             "functions" => array(),
             "places" => array(),
@@ -884,9 +884,6 @@ class Constellation extends AbstractData {
         foreach ($this->nationalities as $i => $v)
             $return["nationalities"][$i] = $v->toArray($shorten);
 
-        foreach ($this->otherRecordIDs as $i => $v)
-            $return["otherRecordIDs"][$i] = $v->toArray($shorten);
-
         foreach ($this->entityIDs as $i => $v)
             $return["entityIDs"][$i] = $v->toArray($shorten);
 
@@ -913,6 +910,9 @@ class Constellation extends AbstractData {
 
         foreach ($this->relations as $i => $v)
             $return["relations"][$i] = $v->toArray($shorten);
+
+        foreach ($this->otherRecordIDs as $i => $v)
+            $return["sameAsRelations"][$i] = $v->toArray($shorten);
 
         foreach ($this->resourceRelations as $i => $v)
             $return["resourceRelations"][$i] = $v->toArray($shorten);
@@ -979,8 +979,8 @@ class Constellation extends AbstractData {
 
         unset($this->otherRecordIDs);
         $this->otherRecordIDs = array();
-        if (isset($data["otherRecordIDs"]))
-            foreach ($data["otherRecordIDs"] as $i => $entry)
+        if (isset($data["sameAsRelations"]))
+            foreach ($data["sameAsRelations"] as $i => $entry)
                 if ($entry != null)
                     $this->otherRecordIDs[$i] = new \snac\data\SameAs($entry);
 
