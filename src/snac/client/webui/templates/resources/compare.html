@@ -70,6 +70,7 @@
         }
         $.get("{{control.snacURL}}/vocab_administrator/merge_resource?victimID=" +  $victim.data("resourceId") +
             "&targetID=" + $target.data("resourceId")).done(function(data) {
+                $.get("{{control.snacURL}}/cart?clear_cart_resources=true");
                 window.location = "{{control.snacURL}}/vocab_administrator/resources/" + $target.data("resourceId");
             })
     }
