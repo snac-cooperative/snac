@@ -107,7 +107,7 @@
       <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
       <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
       <input id="page_type" name="page_type" type="hidden" value="view_page_full"/>
-    {% for sameas in data.otherRecordIDs %}
+    {% for sameas in data.sameAsRelations %}
         {% if sameas.type.term == 'sameAs' and sameas.uri matches '/wiki.*\.org/' %}
             <input id="has_wiki_link" type="hidden" value="true"/>
         {% endif %}
@@ -472,17 +472,17 @@
                          <div class="panel-heading">
                             <h4>
                              {% set numRels = 0 %}
-                             {% for relation in data.new.otherRecordIDs %}
+                             {% for relation in data.new.sameAsRelations %}
                              {% if relation.type.term == 'sameAs' %}
                                  {% set numRels = numRels + 1 %}
                              {% endif %}
                              {% endfor %}
-                             {% for relation in data.old.otherRecordIDs %}
+                             {% for relation in data.old.sameAsRelations %}
                              {% if relation.type.term == 'sameAs' %}
                                  {% set numRels = numRels + 1 %}
                              {% endif %}
                              {% endfor %}
-                             {% for relation in data.otherRecordIDs %}
+                             {% for relation in data.sameAsRelations %}
                              {% if relation.type.term == 'sameAs' %}
                                  {% set numRels = numRels + 1 %}
                              {% endif %}
@@ -522,7 +522,7 @@
                                   <a href="https://www.worldcat.org/wcidentities/lccn-n88-071278">WorldCat Identities</a>
                                </div>
                          -->
-                                         {% for sameas in data.new.otherRecordIDs %}
+                                         {% for sameas in data.new.sameAsRelations %}
                                              {% if sameas.type.term == 'sameAs' %}
                                                  {% if 'wikipedia' in sameas.uri %}
                                                     <div class="updated">
@@ -566,7 +566,7 @@
                                                  {% endif %}
                                              {% endif %}
                                          {% endfor %}
-                                         {% for sameas in data.otherRecordIDs %}
+                                         {% for sameas in data.sameAsRelations %}
                                              {% if sameas.type.term == 'sameAs' %}
                                                  {% if 'wikipedia' in sameas.uri %}
                                                     <div>
@@ -613,7 +613,7 @@
                                                  {% endif %}
                                              {% endif %}
                                          {% endfor %}
-                                         {% for sameas in data.old.otherRecordIDs %}
+                                         {% for sameas in data.old.sameAsRelations %}
                                              {% if sameas.type.term == 'sameAs' %}
                                                  {% if 'wikipedia' in sameas.uri %}
                                                     <div class="older">

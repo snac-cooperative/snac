@@ -1211,7 +1211,7 @@ $(document).ready(function() {
                         Related Descriptions
                     </div>
                     <div class="list-group">
-                    {% for sameas in data.otherRecordIDs %}
+                    {% for sameas in data.sameAsRelations %}
                         {% if sameas.type.term == 'sameAs' %}
                             {% if 'wikipedia' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
@@ -1394,7 +1394,7 @@ $(document).ready(function() {
     <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
     <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
     <input id="page_type" name="page_type" type="hidden" value="view_page_full"/>
-    {% for sameas in data.otherRecordIDs %}
+    {% for sameas in data.sameAsRelations %}
         {% if sameas.type.term == 'sameAs' and (('wikipedia' in sameas.uri) or ('wikidata' in sameas.uri)) %}
             <input id="has_wiki_link" type="hidden" value="true"/>
         {% endif %}

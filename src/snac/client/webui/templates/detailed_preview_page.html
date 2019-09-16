@@ -170,7 +170,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 
                         {% set i = 0 %}
-                        {% for other in data.otherRecordIDs %}
+                        {% for other in data.sameAsRelations %}
                             {{ components.displaySameAs(X, false, true, other, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
