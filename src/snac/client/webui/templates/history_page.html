@@ -131,9 +131,9 @@ $(document).ready(function() {
                                                     </p>
                                                 {% endfor %}
                                                 {% endif %}
-                                                {% if history.data.otherRecordIDs %}
+                                                {% if history.data.sameAsRelations %}
                                                 <h5 style="font-weight: bold;">Previous Merge Information</h5>
-                                                {% for otherid in history.data.otherRecordIDs %}
+                                                {% for otherid in history.data.sameAsRelations %}
                                                     <p style="margin-left: 20px;">{{otherid.uri}}<br>
                                                         <em>{{otherid.type.term}}</em>
                                                     </p>

@@ -21,7 +21,7 @@
         http://socialarchive.iath.virginia.edu/control/term#MergedRecord
         http://viaf.org/viaf/terms#viafID
         #}
-        {% for other in data.otherRecordIDs %}
+        {% for other in data.sameAsRelations %}
         {% if other.type.uri %}
         <otherRecordId localType="{{ other.type.uri }}">{{ other.uri}}</otherRecordId>
         {% else %}

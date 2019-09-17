@@ -128,6 +128,12 @@ class User implements \Serializable {
     private $active = false;
 
     /**
+     * API keys
+     * @var snac\data\APIKey[] Api Key info
+     */
+    private $apikeys = null;
+
+    /**
      * Constructor
      *
      * @param string[] $data Array object of User information
@@ -135,6 +141,7 @@ class User implements \Serializable {
     public function __construct($data = null) {
 
         $this->roleList = array();
+        $this->apikeys = array();
         if ($data != null)
             $this->fromArray($data);
     }
@@ -209,11 +216,6 @@ class User implements \Serializable {
      */
     public function setRoleList($roleList)
     {
-        /*
-         * Interesting that we set the whole list at once, and don't use addRole() (which doesn't exist) or
-         * something like that. That is probably due to writing user role links to the db, then getting back the
-         * whole role list from the db.
-         */
         $this->roleList = $roleList;
     }
 
@@ -226,6 +228,39 @@ class User implements \Serializable {
      */
     public function addRole($role) {
         array_push($this->roleList, $role);
+    }
+
+    /**
+     * Get the list of API Keys 
+     *
+     * Return the api key list
+     *
+     * @return snac\data\APIKey[] a list of APIKey objects
+     */
+    public function getAPIKeyList()
+    {
+        return $this->apikeys;
+    }
+
+    /**
+     * Set API Key list
+     *
+     * @param \snac\data\APIKey[] $keyList A list of API Keys.
+     */
+    public function setAPIKeyList($keyList)
+    {
+        $this->apikeys = $keyList;
+    }
+
+    /**
+     * Add an API Key
+     *
+     * Adds an API Key to this User.
+     *
+     * @param \snac\data\APIKey $key The API key to add to this user
+     */
+    public function addAPIKey($key) {
+        array_push($this->apikeys, $key);
     }
 
 
@@ -551,12 +586,15 @@ class User implements \Serializable {
                 "active" => $this->active,
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token,
-                "roleList" => array()
+                "roleList" => array(),
+                "apikeys" => array()
         );
 
         foreach ($this->roleList as $i => $v)
             $return["roleList"][$i] = $v->toArray($shorten);
 
+        foreach ($this->apikeys as $i => $v)
+            $return["apikeys"][$i] = $v->toArray($shorten);
 
         // Shorten if necessary
         if ($shorten) {
@@ -606,6 +644,15 @@ class User implements \Serializable {
             foreach ($data["roleList"] as $i => $entry) {
                 if ($entry != null)
                     $this->roleList[$i] = new \snac\data\Role($entry);
+            }
+        }
+        
+        unset($this->apikeys);
+        $this->apikeys = array();
+        if (isset($data["apikeys"])) {
+            foreach ($data["apikeys"] as $i => $entry) {
+                if ($entry != null)
+                    $this->apikeys[$i] = new \snac\data\APIKey($entry);
             }
         }
 

@@ -61,11 +61,14 @@
     /*margin-bottom: 10px;*/
     position:relative;
     display: none;
+    background: white;
+
 }
 
 .wikipedia_thumbnail img {
     z-index:1;
     padding:4px;
+    padding-bottom:0px;
     border-radius: 8px;
     line-height:1.428571429;
     -webkit-transition:all 0.2s ease-in-out;
@@ -78,21 +81,19 @@
 .wikipedia_thumbnail div {
     width:100%;
     display:block;
-    position:absolute;
+    /*position:absolute;
     bottom:0px;
     left:0px;
-    z-index:2;
-    margin:0;
+    z-index:2;*/
+    margin:0px;
     padding:5px;
-    color:#fff;
-    background:rgba(0,0,0,0.4);
-    -webkit-border-bottom-left-radius: 4px;
-    -webkit-border-bottom-right-radius: 4px;
+    padding-top: 0px;
+    padding-bottom: 0px;
     font-size: 10px;
 }
 
 .wikipedia_thumbnail a {
-    color:#fff
+    color:#000
 }
 
 .body-tab-pane {
@@ -147,6 +148,20 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
     }
 }
 
+td i.i-hover {
+    visibility: hidden;
+    cursor: pointer;
+    color: #347ab8;
+}
+
+td:hover i.i-hover {
+    visibility: visible;
+}
+
+.dataTables_filter input {
+    width: 240px
+}
+
 /*
 .wikipedia_thumbnail_container {
     text-align: center;
@@ -194,6 +209,40 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
 </style>
 <script>
 
+
+function getSharedResources(icid1, icid2) {
+    var sharedTable = $("#shared-resources-table").DataTable().clear().draw();
+
+    $.ajax({
+        url: snacUrl + "/shared_resources?icid1=" + icid1 + "&icid2=" +icid2
+    }).done(function(data) {
+        var rows = [];
+        var length =  data.resources.length;
+        for (i = 0; i < length; i++) {
+            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_2];
+            rows.push(row);
+        }
+        sharedTable.rows.add(rows).draw()
+
+    })
+}
+
+function loadSharedResourcesModal(target) {
+    // grab info on clicked table row to load the Shared Resources Modal
+    var relatedConstellationName = $(target).closest('td').find('a')[0].innerHTML;
+    $(".compared-constellation-name").html(relatedConstellationName);
+    var iconClasses = "";
+    if ($(target).closest('td').find('i.fa-stack-1x').hasClass("fa-university")) {
+        iconClasses = "fa fa-university";
+    } else if ($(target).closest('td').find('i.fa-stack-1x').hasClass("fa-users")) {
+        iconClasses = "fa fa-users";
+    } else {
+        iconClasses = "fa fa-user";
+    }
+    $("#compared-constellation-icon").removeClass();
+    $("#compared-constellation-icon").addClass(iconClasses);
+};
+
 /**
  * Prevent automatic scrolling of page to anchor by browser after page load.
  */
@@ -214,6 +263,54 @@ function preventAnchorScroll() {
 }
 
 preventAnchorScroll();
+
+
+function holdingsTabActions() {
+    if (! $.fn.DataTable.isDataTable("#holding-repository-table")) {
+        loadHoldings();
+    }
+}
+
+function loadHoldings() {
+    var constellationid = $("#constellationid").val()
+    $("#holding-repository-table").DataTable({
+        "ajax": {
+            "url": snacUrl + "/get_holdings/" + constellationid,
+            "dataType": "json",
+            "dataSrc": "resources"
+        },
+        "columns": [
+            {
+                "data": null,
+                "render": function(data, type, row, meta) {
+                    if (data.href) {
+                        var cell = "<a target='_blank' href='" + data.href + "'>" + data.title + "</a>";
+                    } else {
+                        var cell = data.title;
+                    }
+                    return cell;
+                }
+            },
+            {
+                "data": "relation_count"
+            },
+            {
+                "data": null,
+                "render": function(data, type, row, meta) {
+                    if (data) {
+                        var cell = "<a href='{{control.snacURL}}/vocab_administrator/resources/" + data.id +
+                            "' title='View in SNAC'> <i class='fa fa-info-circle' style='font-size:large'> </i> </a>";
+                    }
+                    return cell;
+                },
+                "defaultContent": ""
+            }
+        ]
+    })
+}
+
+
+
 
 
 var archivalTable = null;
@@ -392,6 +489,10 @@ function displayPlacesMapInteractive() {
     }, 400);
 }
 
+function clearRelationFilter() {
+    $("#relation-table").DataTable().columns(0).search("").draw();
+    $("#datatable-column-filters").html("");
+}
 
 $(document).ready(function() {
     $('#view-nav-tabs a').click(function(e) {
@@ -402,12 +503,16 @@ $(document).ready(function() {
         $(this).tab('show');
     });
 
-    $("#view-nav-tabs a[href='#artifacts']").on("show.bs.tab", function() {
+    $("#view-nav-tabs a[href='#resources']").on("show.bs.tab", function() {
         resourceTabActions();
     })
 
     $("#view-nav-tabs a[href='#places']").on("show.bs.tab", function() {
         displayPlacesMapInteractive();
+    })
+
+    $("#view-nav-tabs a[href='#holding-repository']").on("show.bs.tab", function() {
+        holdingsTabActions();
     })
 
     // store the currently selected tab in the hash value
@@ -427,7 +532,7 @@ $(document).ready(function() {
     } else {
         // load Resources if no bioghist
         if (($("#view-nav-tabs a[href='#biography']").parent().hasClass("disabled"))) {
-            $("#view-nav-tabs a[href='#artifacts']").tab("show");
+            $("#view-nav-tabs a[href='#resources']").tab("show");
         }
     }
 
@@ -439,15 +544,31 @@ $(document).ready(function() {
     var relationTable = $('#relation-table').DataTable({
         "searching" : true,
         "autoWidth": false,
+        "deferRender": true,
         "columnDefs": [
             {"visible": false, "targets":2},
             {"width": "75%", "targets":1}
-        ]
+        ],
+        "language": {
+            "searchPlaceholder": "Relation or Name"
+        }
     });
+
+    $("#relation-table").on("click", "td i.i-hover", function(e) {
+        var q = $(e.target).closest("td").text();
+        $("#relation-table").DataTable().columns(0).search(q).draw();
+        var filterButton = "<button type='button' onclick='clearRelationFilter()' class='btn list-group-item-warning'>" +
+            q + "<i class='fa fa-fw fa-times'></i></button>"
+
+        $("#datatable-column-filters").html(filterButton);
+    })
 
     lumpTable = $('#lump').DataTable({
         "searching" : true,
-        "autoWidth": false
+        "autoWidth": false,
+        "language": {
+            "searchPlaceholder": "Title, Role, Repository"
+        }
     })
 
     placesTable = $('#placesTable').DataTable({
@@ -458,11 +579,15 @@ $(document).ready(function() {
     archivalTable = $('#archival').DataTable({
                     dataSrc: 2,
                     "autoWidth": false,
+                    "deferRender": true,
                     "columnDefs": [
                         {"width": "5%", "targets":0},
                         {"width": "60%", "targets":1},
                         {"width": "35%", "targets":2}
-                    ]
+                    ],
+                    "language": {
+                        "searchPlaceholder": "Title, Role, Repository"
+                    }
     });
 
     $('.listtable').DataTable({
@@ -486,6 +611,13 @@ $(document).ready(function() {
         $(".relation-btn-filter").each( function() {
             $(this).removeClass('active')
         })
+    })
+
+    $("#relation-table").on("click", "a[href='#shared-resources-modal']", function() {
+        var icid1 = $("#constellationid").val();
+        var icid2 = $(this).closest('tr').data('id');
+        getSharedResources(icid1, icid2);
+        loadSharedResourcesModal(this);
     })
 
 });
@@ -535,21 +667,42 @@ $(document).ready(function() {
             <div class="btn-group">
                 <!-- <a href="#" class="btn list-group-item-success"> -->
                     <!-- <i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> Basic View</a> -->
-                <a class="btn list-group-item-warning"
-                   href="{{control.snacURL}}/details/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View</a>
+                <a class="btn list-group-item-warning" href="{{control.snacURL}}/details/{{data.id}}/{{data.version}}">
+                    <i class="fa fa-fw fa-sliders" aria-hidden="true"></i> Detailed View
+                </a>
                 {% if data.maybeSameCount > 0 %}
-                <a href="{{control.snacURL}}/maybesame/{{data.id}}/{{data.version}}"
-                   class="btn list-group-item-merge" id="merge">
+                <a href="{{control.snacURL}}/maybesame/{{data.id}}/{{data.version}}" class="btn list-group-item-merge" id="merge">
                     <i class="fa fa-fw fa-random" aria-hidden="true"></i> Similarity Assertions
-                    <span class="badge">{{ data.maybeSameCount }}</span></a>
+                    <span class="badge">{{ data.maybeSameCount }}</span>
+                </a>
                 {% endif %}
-                <a class="btn list-group-item-history"
-                   href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History</a>
-                <a class="btn list-group-item-sources"
-                   href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Source Summary</a>
+                <a class="btn list-group-item-history" href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
+                    <i class="fa fa-fw fa-history" aria-hidden="true"></i> Revision History
+                </a>
+                <a class="btn list-group-item-sources" href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
+                    <i class="fa fa-fw fa-archive" aria-hidden="true"></i> Sources
+                </a>
+                <div class="btn-group">
+                    <div class="dropdown">
+                        <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Export
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="export-btn" style="background:#ecdef2;margin-top:36px;">
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="">
+                                    <i class="fa fa-fw fa-file" aria-hidden="true"></i> JSON
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="">
+                                    <i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             {% if user.email and permissions.Edit %}
@@ -575,23 +728,6 @@ $(document).ready(function() {
                     <p> <span id=profile-toggle-text>Hide</span> Profile</p>
                 </div>
             </div>
-
-            <div class="btn-group">
-                <div class="dropdown">
-                    <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Export
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="export-btn" style="background:#ecdef2;margin-top:36px;">
-                        <li>
-                            <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class=""><i class="fa fa-fw fa-file" aria-hidden="true"></i></span> JSON</a>
-                        </li>
-                        <li>
-                            <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class=""><i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
         </div>
         <div class="row" id="row-main">
             <div id="content-column" class="col-md-8">
@@ -613,13 +749,16 @@ $(document).ready(function() {
                         <li class="disabled"><a  href="#biography" class="grayedout">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</a></li>
                     {% endif %}
 
-                    <li><a href="#artifacts" role="tab" data-toggle="tab" >Resources</a></li>
+                    <li><a href="#resources" role="tab" data-toggle="tab" >Resources</a></li>
 
                     {{ data.relations ? enabledtab : disabledtab}} href="#relationships">Relationships</a></li>
                     {{ data.places ? enabledtab : disabledtab}} href="#places">Places</a></li>
                     {{ data.subjects ? enabledtab : disabledtab}} href="#subjects">Subjects</a></li>
                     {{ data.occupations ? enabledtab : disabledtab}} href="#occupations">Occupations</a></li>
                     {{ data.functions ? enabledtab : disabledtab}} href="#functions">Functions</a></li>
+                    {% if 'holdingRepository' in data.flags %}
+                        {{ enabledtab}} href="#holding-repository">Holdings</a></li>
+                    {% endif %}
                 </ul>
                 <div class="tab-content">
                     {% if data.biogHists.0.text %}
@@ -641,7 +780,7 @@ $(document).ready(function() {
                         </div>
                     </div>
                     {% endif %}
-                    <div class="body-tab-pane tab-pane " id="artifacts">
+                    <div class="body-tab-pane tab-pane " id="resources">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="text-center">
@@ -684,6 +823,7 @@ $(document).ready(function() {
                                                         <th width="20%">Role</th>
                                                         <th width="40%">Title</th>
                                                         <th width="40%">Holding Repository</th>
+                                                        <th></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -697,11 +837,13 @@ $(document).ready(function() {
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
                                                                  <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
-                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
-                                                                     <i class="fa fa-external-link"> </i>
-                                                                 </a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
+                                                             <td>
+                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                     <i class="fa fa-info-circle" style="font-size:large"> </i>
+                                                                 </a>
+                                                             </td>
                                                          </tr>
                                                      {% endif %}
                                                      {% endfor %}
@@ -726,6 +868,7 @@ $(document).ready(function() {
                                                         <th width="20%">Role</th>
                                                         <th width="40%">Title</th>
                                                         <th width="40%">Holding Repository</th>
+                                                        <th></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -739,11 +882,13 @@ $(document).ready(function() {
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
                                                                  <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
-                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
-                                                                     <i class="fa fa-external-link"> </i>
-                                                                 </a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
+                                                             <td>
+                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                     <i class="fa fa-info-circle" style="font-size:large"> </i>
+                                                                 </a>
+                                                             </td>
                                                          </tr>
                                                      {% endif %}
                                                      {% endfor %}
@@ -757,9 +902,28 @@ $(document).ready(function() {
                     </div>
                     <div class="body-tab-pane tab-pane" id="relationships">
                         <div class="row">
-                            <div class="col-md-12">
-                                <div class="btn-toolbar  text-right" style="margin-bottom: 15px;">
+                            <div class="col-xs-1">
+                                <p style="margin-top:8px;font-size:14px;">Filters:</p>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="btn-toolbar" style="margin-bottom: 15px;" aria-label="Table filter buttons" >
                                     <div class="btn-group">
+                                        <button class="btn btn-person relation-btn-filter" data-filter="person" type="button" alt="Person Filter" title="Person">
+                                                <i class="fa fa-fw fa-user fa-inverse"></i>
+                                        </button>
+                                        <button class="btn btn-corp relation-btn-filter" data-filter="corporateBody" type="button" alt="Corporate Body Filter" title="Corporate Body">
+                                            <i class="fa fa-fw fa-university fa-inverse"></i>
+                                        </button>
+                                        <button class="btn btn-family relation-btn-filter" data-filter="family" type="button" alt="Family Filter" title="Family">
+                                            <i class="fa fa-fw fa-users fa-inverse"></i>
+                                        </button>
+                                    </div>
+                                    <button class="btn btn-danger relation-btn-filter" data-filter="" id="btn-clear-filter" type="button" alt="Clear Filters" title="Clear Filters">
+                                        <i class="fa fa-fw fa-times fa-inverse"></i>
+                                    </button>
+                                    <div id="datatable-column-filters" class="col-xs-3">
+                                    </div>
+                                    <div class="btn-group pull-right">
                                         <a class="btn list-group-item-visualize"
                                            href="{{control.snacURL}}/visualize/connection_graph/{{data.id}}/{{data.version}}">
                                             <i class="fa fa-fw fa-asterisk" aria-hidden="true"></i> Connection Graph</a>
@@ -772,78 +936,49 @@ $(document).ready(function() {
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading panel-collapsible" onClick="$('#directrels-collapse').collapse('toggle'); $(this).find('span').toggleClass('collapsed');">
-                                        <span>Direct Relationships</span>
-                                    </div>
-                                    <div id="directrels-collapse" class="panel-collapse collapse in">
-                                        <div class="panel-body">
-                                            <table id="relation-table" class="table table-striped table-bordered" data-order='[[ 1, "asc" ]]'>
-                                                <thead>
-                                                    <tr>
-                                                        <th colspan="2">
-                                                        <div class="btn-group">
-                                                            <button class="btn btn-default relation-btn-filter" data-filter="person" type="button" alt="Person Filter" title="Person">
-                                                                <span class="fa-stack fa-sm">
-                                                                    <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
-                                                                    <i class="fa fa-user fa-stack-1x fa-inverse"></i>
-                                                                </span>
-                                                            </button>
-                                                            <button class="btn btn-default relation-btn-filter" data-filter="corporateBody" type="button" alt="Corporate Body Filter" title="Corporate Body"><span class="fa-stack fa-sm">
-                                                                <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
-                                                                <i class="fa fa-university fa-stack-1x fa-inverse"></i>
-                                                            </span></button>
-                                                            <button class="btn btn-default relation-btn-filter" data-filter="family" type="button" alt="Family Filter" title="Family"><span class="fa-stack fa-sm">
-                                                                <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
-                                                                <i class="fa fa-users fa-stack-1x fa-inverse"></i>
-                                                            </span></button>
-                                                        </div>
-                                                        <button class="btn btn-default relation-btn-filter" data-filter="" id="btn-clear-filter" type="button" alt="Clear Filters" title="Clear Filters"><span class="fa-stack fa-sm">
-                                                            <i class="fa fa-square fa-stack-2x" style="color: #cd5050;"></i>
-                                                            <i class="fa fa-times fa-stack-1x fa-inverse"></i>
-                                                        </span></button>
-                                                        </th>
-                                                    </tr>
-                                                    <tr>
-                                                        <th width="25%">Relation</th>
-                                                        <th width="75%">Name</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for relation in data.relations %}
-                                                    <tr>
-                                                        <td>{{relation.type.term}}</td>
-                                                        <td>
-                                                            {% if relation.targetEntityType.term == 'person' %}
-                                                            <span class="fa-stack fa-sm" title="Entity Type: Person">
-                                                                <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
-                                                                <i class="fa fa-user fa-stack-1x fa-inverse"></i>
-                                                            </span>
-                                                            {% elseif relation.targetEntityType.term == 'corporateBody' %}
-                                                            <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
-                                                                <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
-                                                                <i class="fa fa-university fa-stack-1x fa-inverse"></i>
-                                                            </span>
-                                                            {% elseif relation.targetEntityType.term == 'family' %}
-                                                            <span class="fa-stack fa-sm" title="Entity Type: Family">
-                                                                <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
-                                                                <i class="fa fa-users fa-stack-1x fa-inverse"></i>
-                                                            </span>
-                                                            {% endif %}
-                                                            <a href="{{control.snacURL}}/view/{{relation.targetConstellation}}">{{relation.content}}</a>
-                                                        </td>
-                                                        <td>
-                                                            {% if relation.targetEntityType.term %}
-                                                                {{ relation.targetEntityType.term }}
-                                                            {% endif %}
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
+                                <table id="relation-table" class="table table-striped table-bordered" data-order='[[ 1, "asc" ]]'>
+                                    <thead>
+                                        <tr>
+                                            <th width="25%">Relation</th>
+                                            <th width="75%">Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for relation in data.relations %}
+                                        <tr class="id" data-id="{{relation.targetConstellation}}">
+                                            <td>{{relation.type.term}} <i class="fa fa-filter i-hover"></i></td>
+                                            <td>
+                                                {% if relation.targetEntityType.term == 'person' %}
+                                                <span class="fa-stack fa-sm" title="Entity Type: Person">
+                                                    <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                                                    <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+                                                </span>
+                                                {% elseif relation.targetEntityType.term == 'corporateBody' %}
+                                                <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                                                    <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                                                    <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+                                                </span>
+                                                {% elseif relation.targetEntityType.term == 'family' %}
+                                                <span class="fa-stack fa-sm" title="Entity Type: Family">
+                                                    <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                                                    <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+                                                </span>
+                                                {% endif %}
+                                                <a href="{{control.snacURL}}/view/{{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <a style="float:right;" data-toggle="modal" data-target"#shared-resources-modal" href="#shared-resources-modal" title="View Shared Resources">
+                                                    <i class="fa fa-book" style="float:right;font-size: medium;margin-left:2px;" aria-hidden="true"></i>
+                                                    <i class="fa fa-exchange" style="float:right;font-size: larger;" aria-label="View Shared Resources"></i>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if relation.targetEntityType.term %}
+                                                    {{ relation.targetEntityType.term }}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -947,6 +1082,24 @@ $(document).ready(function() {
                             </div>
                         </div>
                     </div>
+                    {% if 'holdingRepository' in data.flags %}
+                    <div class="body-tab-pane tab-pane" id="holding-repository">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table id="holding-repository-table" class="table table-striped table-bordered table-hover dataTable no-footer" style="width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <!-- <th>Id</th> -->
+                                            <th>Title</th>
+                                            <th>Relation Count</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                     <!-- <div class="body-tab-pane tab-pane" id="names">
                         <div class="row">
                             <div class="col-md-12">
@@ -971,7 +1124,7 @@ $(document).ready(function() {
             </div>
             <div class="col-md-4" id="profile-sidebar">
                 <div class="row profilehover">
-                    <div class="panel wikipedia_thumbnail_container">
+                    <div class="wikipedia_thumbnail_container">
                         <div id="profilebar">
                             <span></span>
                         </div>
@@ -1051,7 +1204,7 @@ $(document).ready(function() {
                         Related Descriptions
                     </div>
                     <div class="list-group">
-                    {% for sameas in data.otherRecordIDs %}
+                    {% for sameas in data.sameAsRelations %}
                         {% if sameas.type.term == 'sameAs' %}
                             {% if 'wikipedia' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
@@ -1162,6 +1315,72 @@ $(document).ready(function() {
                       </div>
                    </div>
                 </div>
+
+
+                <div class="modal fade" id="shared-resources-modal" tabindex="-1" role="dialog" aria-labelledby="shared-resources-modal">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header primary">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title"> Shared Related Resources </h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="input-group well well-sm text-center" style="width: 100%">
+                                    <div class="col-xs-2 text-center">
+                                        <p class="relation-icon">
+                                            {% if data.entityType.term == "person" %}
+                                            <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                            {% elseif data.entityType.term == "corporateBody" %}
+                                            <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                            {% elseif data.entityType.term == "family" %}
+                                            <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                            {% endif %}
+                                        </p>
+                                        <p> {{ data.nameEntries.0.original }} </p>
+                                    </div>
+                                    <div class="col-xs-2 text-center">
+                                        <p class="relation-icon">
+                                            <i class="fa fa-long-arrow-right" aria-hidden="true"></i><br/>
+                                        </p>
+                                    </div>
+                                    <div class="col-xs-2 text-center">
+                                        <p class="relation-icon">
+                                            <i class="fa fa-book" aria-hidden="true"></i><br/>
+                                        </p>
+                                    </div>
+                                    <div class="col-xs-2 text-center">
+                                        <p class="relation-icon">
+                                            <i class="fa fa-long-arrow-left" aria-hidden="true"></i><br/>
+                                        </p>
+                                    </div>
+                                    <div class="col-xs-2 text-center">
+                                        <p class="relation-icon">
+                                            <i id="compared-constellation-icon" aria-hidden="true"></i><br/>
+                                        </p>
+                                        <p class="compared-constellation-name">
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <table id="shared-resources-table" class="table table-striped table-bordered table-hover dataTable no-footer" style="width:100%;">
+                                            <thead>
+                                                <tr>
+                                                    <th> {{ data.nameEntries.0.original }} </th>
+                                                    <th> Title </th>
+                                                    <th class="compared-constellation-name"></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                               <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1171,7 +1390,7 @@ $(document).ready(function() {
     <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
     <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
     <input id="page_type" name="page_type" type="hidden" value="view_page_full"/>
-    {% for sameas in data.otherRecordIDs %}
+    {% for sameas in data.sameAsRelations %}
         {% if sameas.type.term == 'sameAs' and (('wikipedia' in sameas.uri) or ('wikidata' in sameas.uri)) %}
             <input id="has_wiki_link" type="hidden" value="true"/>
         {% endif %}

@@ -425,9 +425,9 @@
         "title" : "Insert New Constellation",
         "description" : "Insert a new Constellation into SNAC. The Constellation must have the operation flags set to \"insert\".",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellation" : {
                 "type": "Object",
@@ -459,7 +459,7 @@
                 "description": "Inserting a Constellation with only one nameEntry",
                 "query": {
                     "command": "insert_constellation",
-                    "user": { "..." : "..." },
+                    "apikey" : "...",
                     "constellation": {
                         "dataType": "Constellation",
                         "operation": "insert",
@@ -538,9 +538,9 @@
         "title" : "Update Constellation",
         "description" : "Updates SNAC's copy of the given Constellation with this one.  Any components with operation flags set to \"update\" will be overwritten with the new version.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellation" : {
                 "type": "Object",
@@ -572,7 +572,7 @@
                 "description": "Update a Constellation with only one nameEntry",
                 "query": {
                     "command": "update_constellation",
-                    "user": { "..." : "..." },
+                    "apikey" : "...",
                     "constellation": {
                         "dataType": "Constellation",
                         "id": "76813079",
@@ -630,9 +630,9 @@
         "title" : "Publish Constellation",
         "description" : "Publishes the given Constellation in SNAC.  This does not make any updates to the Constellation data in SNAC.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellation" : {
                 "type": "Object",
@@ -664,7 +664,7 @@
                 "description": "When publishing, only the bare Constellation object is required to perform the publish.",
                 "query": {
                     "command": "publish_constellation",
-                    "user": { "..." : "..." },
+                    "apikey" : "...",
                     "constellation": {
                         "dataType": "Constellation",
                         "id": "76813079",
@@ -692,9 +692,9 @@
         "title" : "Unlock Constellation",
         "description" : "Drops the lock on the given Constellation from \"currently editing\" down to simply locked to the user.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellation" : {
                 "type": "Object",
@@ -721,7 +721,7 @@
                 "description": "When unlocking, only the bare Constellation object is required to perform the unlock.",
                 "query": {
                     "command": "unlock_constellation",
-                    "user": { "..." : "..." },
+                    "apikey" : "...",
                     "constellation": {
                         "dataType": "Constellation",
                         "id": "76813079",
@@ -748,9 +748,9 @@
         "title" : "Send Constellation for Review",
         "description" : "Sends the given Constellation in SNAC for review.  This does not make any updates to the Constellation data in SNAC.  If a reviewer is specified, this query will put the Constellation in that user's review queue.  If no reviewer is specified, the Constellation will go for general review.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "reviewer" : {
                 "type": "Object",
@@ -787,7 +787,7 @@
                 "description": "When sending for review, only the bare Constellation object is required to perform the request.",
                 "query": {
                     "command": "review_constellation",
-                    "user": { "..." : "..." },
+                    "apikey" : "...",
                     "reviewer": { "..." : "..." },
                     "constellation": {
                         "dataType": "Constellation",
@@ -816,9 +816,9 @@
         "title" : "Delete Constellation",
         "description" : "Deletes the given Constellation from SNAC.  This does not make any updates to the Constellation data in SNAC before deleting.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellation" : {
                 "type": "Object",
@@ -845,7 +845,7 @@
                 "description": "When deleting, only the bare Constellation object is required to perform the request.",
                 "query": {
                     "command": "delete_constellation",
-                    "user": { "..." : "..." },
+                    "apikey" : "...",
                     "constellation": {
                         "dataType": "Constellation",
                         "id": "76813079",
@@ -872,9 +872,9 @@
         "title" : "Reassign Constellation to Another User",
         "description" : "Reassigns the given Constellation to a different user, i.e. changes which user to which the Constellation is locked.  This does not make any updates to the Constellation data in SNAC.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "Acting user's User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellation" : {
                 "type": "Object",
@@ -905,7 +905,7 @@
                 "description": "When reassigning a Constellation, only the bare Constellation object is required to perform the request.",
                 "query": {
                     "command": "reassign_constellation",
-                    "user": { "..." : "..." },
+                    "apikey" : "...",
                     "to_user": { "..." : "..." },
                     "constellation": {
                         "dataType": "Constellation",
@@ -1051,10 +1051,9 @@
         "title" : "List Constellations",
         "description" : "Returns a list of Constellations based on the query parameters.  By default, it will return a subset of published Constellations.  If a user object is supplied, additional statuses are allowed to be queried, including \"needs review\" for all Constellations needing review.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "Acting user's User object",
-                "optional": true
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "status" : {
                 "type": "String",
@@ -1198,7 +1197,7 @@
                                         "eventDescription": "Merge v2.0"
                                     }
                                 ],
-                                "otherRecordIDs": [
+                                "sameAsRelations": [
                                     {
                                         "dataType": "SameAs",
                                         "type": {
@@ -1276,9 +1275,9 @@
         "title" : "List Maybe-Same Constellations",
         "description" : "Returns a list of Constellations denoted as maybe-same-as the given Constellation.  If the user object is given, it will contain mergeable flags to denote if the user has permission to merge any of the Constellations.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "User object",
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key",
                 "optional": true
             },
             "constellationid" : {
@@ -1310,7 +1309,7 @@
                 "description": "",
                 "query": {
                     "command" : "constellation_list_maybesame",
-                    "user" : { "...":"..." },
+                    "apikey" : "...",
                     "constellationid" : 66598997
                 },
                 "response" : {
@@ -1404,9 +1403,9 @@
         "title" : "Add Maybe-Same Constellation Assertions",
         "description" : "Makes a maybe-same assertion between the constellations specified.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description" : "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "assertion" : {
                 "type": "String",
@@ -1433,7 +1432,7 @@
                 "description": "",
                 "query" : {
                    "command" : "constellation_add_maybesame",
-                   "user" : { "...":"..." },
+                   "apikey" : "...",
                    "constellationids" : [123456, 987654, 626505],
                    "assertion": "These three all have the same name and come from the same holding institution"
                 },
@@ -1480,7 +1479,7 @@
                 "description": "",
                 "query" : {
                    "command" : "constellation_diff",
-                   "user" : { "...":"..." },
+                   "apikey" : "...",
                    "constellationid1" : 123456,
                    "constellationid2" : 987654
                 },
@@ -1502,9 +1501,9 @@
         "title" : "Compute Constellation Diff and Set Merge",
         "description" : "Computes the difference between the two given Constellations.  Checks out the two Constellations in editing for the given user to allow a merge.  Returns Constellation objects containing: only those items in the first, only those items in the second, and components shared.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description" : "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellationid1" : {
                 "type": "Integer",
@@ -1539,7 +1538,7 @@
                 "description": "If the given user has permission to check both Constellations out for editing, then the system will automatically check them out to the user, produce the diff, and denote to the user in the mergeable flag that the user may merge these constellations.",
                 "query" : {
                    "command" : "constellation_diff_merge",
-                   "user" : { "...":"..." },
+                   "apikey" : "...",
                    "constellationid1" : 123456,
                    "constellationid2" : 987654
                 },
@@ -1558,9 +1557,9 @@
         "title" : "Merge Constellations",
         "description" : "Given Constellation IDs and a full, merged, Constellation, creates a new Constellation in SNAC from the given Constellation and sets all Constellations given by the IDs to be \"tombstoned\" and redirected to the new, merged, Constellation.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description" : "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellationids" : {
                 "type": "Array of Integers",
@@ -1591,7 +1590,7 @@
                 "description": "If we want to merge three Constellations into one, which only has a name entry, we would provide all IDs and the appropriate merged version.",
                 "query" : {
                    "command" : "constellation_merge",
-                   "user" : { "...":"..." },
+                   "apikey" : "...",
                    "constellationids" : [123456, 987654, 626505],
                    "constellation": {
                        "dataType": "Constellation",
@@ -1639,9 +1638,9 @@
         "title" : "Automatically Merge Constellations",
         "description" : "Given Constellation IDs, creates a new Constellation in SNAC from the combined data from all Constellations, \"tombstones\" the originals, and redirects thier IDs to the new, merged, Constellation.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description" : "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellationids" : {
                 "type": "Array of Integers",
@@ -1668,7 +1667,7 @@
                 "description": "If we want to merge three Constellations into one, which only has a name entry, we would provide all IDs and the system automatically creates a merged version.",
                 "query" : {
                    "command" : "constellation_auto_merge",
-                   "user" : { "...":"..." },
+                   "apikey" : "...",
                    "constellationids" : [123456, 987654, 626505]
                 },
                 "response": {
@@ -1810,9 +1809,9 @@
         "title" : "Edit Constellation",
         "description" : "Check out the Constellation for editing.",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description" : "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellationid" : {
                 "type" : "Integer",
@@ -1839,7 +1838,7 @@
                 "description": "",
                 "query": {
                     "command": "edit",
-                    "user" : { "...":"..." },
+                    "apikey" : "...",
                     "constellationid": 76813079
                 },
                 "response":{
@@ -2420,9 +2419,9 @@
                 "type": "Object",
                 "description": "Resource object to write to SNAC, with \"operation\" set to \"insert\"."
             },
-            "user" : {
-                "type": "Object",
-                "description" : "Acting user object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             }
         },
         "returns" : {
@@ -2464,7 +2463,7 @@
                         },
                         "operation": "insert"
                     },
-                    "user": {"...":"..."}
+                    "apikey" : "..."
                 },
                 "response":{
                     "resource": {
@@ -3108,14 +3107,139 @@
         "title": "Parse EAC-CPF XML to Constellation (Pre-Alpha)",
         "description": "Parses a given EAC-CPF file into a Constellation JSON object using the SNAC profile."
     },
+    "concepts" : {
+        "category": "vocabulary",
+        "title" : "Get Concepts",
+        "description" : "Get all concepts, or a single detailed concept.",
+        "parameters" : {
+            "id" : {
+                "optional": true,
+                "type": "Integer",
+                "description" : "Concept ID. If given a concept id, that detailed concept is directly returned."
+            }
+        },
+        "returns": {
+            "concepts" : {
+                "type": "Array",
+                "description": "Array of SNAC Concept ids and preferred terms."
+            },
+            "concept" : {
+                "type": "Object",
+                "description": "Detailed SNAC Concept, if requested with id parameter"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "query": {
+                    "command" : "concepts"
+                },
+                "response" : {
+                    	"concepts": [
+                    		{ "id": "835", "value": "Abbots"},
+                    		{ "id": "1", "value": "Academic librarians"},
+                    		{ "id": "2", "value": "Accountants"},
+                    		{ "id": "573", "value": "Actors"},
+                            "..."
+                        ],
+                    	"result": "success",
+                    	"timing": 35.46
+                }
+            },
+            {
+                "query": {
+                    "command" : "concepts",
+                    "id" : "835"
+                },
+                "response" : {
+                    	"concept": {
+                    		"id": "835",
+                    		"terms": [
+                    			{
+                    				"id": "2187",
+                    				"value": "Abbots",
+                    				"is_preferred": "t"
+                    			}
+                    		],
+                    		"related_concepts": false,
+                    		"broader_concepts": [
+                    			{
+                    				"id": "158",
+                    				"value": "Monks"
+                    			}
+                    		],
+                    		"narrower_concepts": false
+                    	},
+                    	"timing": 34.67
+                    }                }
+        ]
+    },
+    "search_concepts" : {
+        "category": "vocabulary",
+        "title" : "Search Concepts",
+        "description" : "Search concepts.",
+        "parameters" : {
+            "q" : {
+                "type": "String",
+                "description" : "Search query to use."
+            }
+        },
+        "returns": {
+            "concepts" : {
+                "type": "Array",
+                "description": "Array of SNAC Concept ids and preferred terms that match the search query."
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "query": {
+                    "command" : "search_concepts",
+                    "q" : "librarian"
+                },
+                "response" : {
+                    "concepts": [
+                		{
+                			"id": "130",
+                			"value": "Librarians"
+                		},
+                		{
+                			"id": "208",
+                			"value": "Reference librarians"
+                		},
+                		{
+                			"id": "403",
+                			"value": "Law librarians"
+                		},
+                        "..."
+                	],
+                	"timing": 24.31
+                }
+            }
+        ]
+    },
     "add_sameas": {
         "title": "Add external links to a constellation",
         "description": "Links a constellation to an external identity on sites such as Wikipedia, VIAF, etc.",
         "category": "modification",
         "parameters" : {
-            "user" : {
-                "type": "Object",
-                "description": "User object"
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
             },
             "constellationid" : {
                 "type": "Integer",
@@ -3134,14 +3258,14 @@
                    "command" : "add_sameas",
                    "constellationid" : 73093297,
                    "sameas_uris": ["https://en.wikipedia.org/wiki/Franciscus_Gomarus", "https://id.loc.gov/authorities/names/nb98048106"],
-                   "user" : { "...":"..." }
+                   "apikey" : "..."
                 },
                 "response":{
                     "constellation": {
                         "dataType": "Constellation",
                         "status": "currently editing",
                         "ark": "http://n2t.net/ark:/99166/w6vz535m",
-                        "otherRecordIDs": [{
+                        "sameAsRelations": [{
                                 "dataType": "SameAs",
                                 "type": {
                                     "id": 28225
@@ -3170,6 +3294,72 @@
                     },
                     "result": "success",
                     "timing": 3052.06
+                }
+            }
+        ]
+    },
+    "get_holdings": {
+        "title": "Get Holdings",
+        "description": "Get an array of resources held by a Holding Repository",
+        "category": "resource",
+        "parameters" : {
+            "constellationid" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Get Holdings",
+                "description": "Get an array of resources held by a Holding Repository",
+                "query" : {
+                   "command" : "get_holdings",
+                   "constellationid" : 76778184
+                   },
+                "response": {
+                    "resources": [{
+                        "id": "7677119",
+                        "title": "Report of a focused visit to Oakland Community College ...",
+                        "href": "http:\/\/www.worldcat.org\/oclc\/54358612",
+                        "relation_count": 2
+                    }],
+	                    "result": "success",
+                        "timing": 792.5
+                }
+            }
+        ]
+    },
+    "shared_resources": {
+        "title": "Shared Resources",
+        "description": "Get an array of resources related to both constellations ",
+        "category": "resource",
+        "parameters" : {
+            "icid1" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            },
+            "icid2" : {
+                "type": "Integer",
+                "description": "Constellation ID"
+            }
+        },
+        "examples" : [
+            {
+                "title": "Shared Resources",
+                "description": "Get an array of resources held by a Holding Repository",
+                "query" : {
+                   "command" : "shared_resources",
+                   "icid1" : 29260863,
+                   "icid2" : 50307952
+                },
+                "response": {
+                    "resources": [{
+                        "id": "7960925",
+                        "title": "C.S. Lewis collection. [1939].",
+                        "href": "http:\/\/www.worldcat.org\/oclc\/667850821"
+                    }],
+                        "result": "success",
+                        "timing": 792.5
                 }
             }
         ]

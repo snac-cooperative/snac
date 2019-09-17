@@ -948,6 +948,133 @@ class SQL
     }
 
 
+    /**
+     * Select user API key data 
+     *
+     * Selects all API key data for the given user id
+     *
+     * @param int $appUserID The numeric ID for the user
+     *
+     * @return string[][] A 2-d associative array of the user's API-key data out of Postgres
+     */
+    public function selectUserKeys($appUserID)
+    {
+        $result = $this->sdb->query("select * from api_keys
+                                    where uid=$1 order by generated asc",
+                                    array($appUserID));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Save User Key 
+     *
+     * Save the given API key with provided label for the given user.  This method will
+     * also have Postgres auto-generate an expiration time and unique database ID for the
+     * key.  The key is stored using PHP's built-in password hashing scheme, which is
+     * cryptographically secure; the key is unrecoverable from the database since this method
+     * is a one-way hash.
+     *
+     * @param int $appUserID The numeric ID for the user
+     * @param string $key The clear-text key to save (encrypted)
+     * @param string $label The label for the key (stored in clear text)
+     *
+     * @return string[] All data for the inserted key as an associative array (includes expires and generated time) 
+     */
+    public function saveUserKey($appUserID, $key, $label)
+    {
+        // encrypt the key in the database
+        $encrypt = password_hash($key, PASSWORD_DEFAULT);
+        if ($encrypt === false)
+            return null;
+
+        $result = $this->sdb->query("insert into api_keys (uid, label, key) values ($1, $2, $3)
+                                        returning *;", [$appUserID, $label, $encrypt]);
+
+        // Return only the data returned (one row);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $all = $row;
+        }
+        return $all;
+    }
+    
+    /**
+     * Revoke User Key 
+     *
+     * Deletes the key in the database associtated with the given user id and label.
+     *
+     * @param int $appUserID The numeric ID for the user
+     * @param string $label The label for the key
+     *
+     * @return boolean True if successfully removed, false otherwise 
+     */
+    public function revokeUserKey($appUserID, $label)
+    {
+        // Check to see if the key exists for the user first
+        $result = $this->sdb->query("select id from api_keys where uid=$1 and label=$2;", [$appUserID, $label]);
+
+        // Return only the data returned (one row);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $all = $row;
+        }
+
+        // If key exists for the user, then delete it
+        if (!empty($all) && isset($all["id"])) {
+            $result = $this->sdb->query("delete from api_keys where id=$1 returning *;", [$all["id"]]);
+            // Return only the data returned (one row);
+            $check = array();
+            while($row = $this->sdb->fetchrow($result))
+            {
+                $check = $row;
+            }
+
+            // Sanity check: did we actually delete something?
+            if (empty($all))
+                return false;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Select Key Data by Key
+     *
+     * This method is used for authentication purposes, when we have the clear-text key
+     * (which can NOT be used to index the database) and the label (which can be used
+     * to index the database).  This method gets all keys matching the provided label (which
+     * may be multiple).  Then, for each key, it uses PHP's built-in cryptographically
+     * secure password verifier to see if the encrypted key in the database matches the
+     * provided clear-text key.  If the keys match, it returns that row's data (including
+     * userID, expires, and generated times).
+     *
+     * WARNING: No part of this method should be logged on production! It contains clear-text
+     * API keys.
+     *
+     * @param string $key The CLEAR-TEXT API Key
+     * @param string $label The label for the API Key
+     * @return string[]|null The associated data for the key (userid, expires, generated) or null if not found
+     */
+    public function selectAPIKeyByKey($key, $label)
+    {
+        $result = $this->sdb->query("select * from api_keys where label = $1;", [$label]);
+
+        while($row = $this->sdb->fetchrow($result))
+        {
+            if (password_verify($key, $row["key"])) 
+                return $row;
+        }
+        return null;
+    }
+
 
 
     /**
@@ -6442,6 +6569,355 @@ class SQL
             return false;
 
         return $this->sdb->fetchrow($result);
+    }
+
+
+    // Concepts
+
+    /**
+     * Select all concepts
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @param integer $id Record id
+     *
+     * @param integer $termID Vocabulary foreign key for the term.
+     *
+     */
+    public function selectAllConcepts() {
+        $sql = "SELECT c.id, t.value
+                FROM concept c
+                LEFT JOIN term t
+                ON c.id = t.concept_id
+                WHERE c.deprecated = 'f'
+                AND t.is_preferred = 't'
+                ORDER BY t.value";
+        // $sql = "SELECT * FROM term";
+
+        $result = $this->sdb->query($sql, array());
+        $concepts = array();
+        while ($row = $this->sdb->fetchrow($result)){
+            array_push($concepts, $row);
+        }
+        return $concepts;
+    }
+
+    /**
+     * Select Concept
+     *
+     * Gets the concept from database
+     *
+     * @param int $id Concept ID
+     * @return string[] Associative array of concept and terms
+     */
+    public function selectConcept($id) {
+        $qq = 'select_concept';
+
+        $sql = "SELECT t.id
+                    t.value
+                    t.is_preferred
+                FROM concept c
+                LEFT JOIN term t
+                ON c.id = t.concept_id
+                WHERE c.id = $1
+                AND c.deprecated = 'f'
+                ORDER BY t.is_preferred DESC, t.value";
+
+       $this->sdb->prepare($qq, $sql);
+
+       $result = $this->sdb->execute($qq, array($id));
+        $concept = [];
+       while ($row = $this->sdb->fetchrow($result)) {
+           $concept[] = $row;
+       }
+       return $concept;
+   }
+
+
+    /**
+    * Delete Concept
+    *
+    * Delete a concept and its dependent terms from the database
+    *
+    * @param int $id Concept ID
+    * @return bool True if the concept is deleted
+    */
+    public function deleteConcept($id) {
+        $this->sdb->query("DELETE FROM term where term.concept_id = $1;", array($id));
+        $this->sdb->query("DELETE FROM concept WHERE id = $1;", array($id));
+
+        return true;
+    }
+
+    /**
+     * Insert Concept
+     *
+     * Creates a new concept in the database
+     *
+     * @param term $term
+     * @return int $id Concept ID
+     */
+    public function insertConcept() {
+        $result = $this->sdb->query("INSERT INTO concept DEFAULT VALUES RETURNING id;", array());
+        $row = $this->sdb->fetchrow($result);
+        $conceptID = $row['id'];
+        return $conceptID;
+    }
+
+    /**
+     * Insert Term
+     *
+     * Creates a new term in the database
+     *
+     * @param int $conceptID Concept ID
+     * @param string $value Value
+     * @param bool $isPreferred Whether term is preferred term for concept
+     * @return
+     */
+    public function insertTerm($conceptID, $value, $isPreferred) {
+        $isPreferred = $this->sdb->boolToPg($isPreferred);
+        $sql = "INSERT INTO term(concept_id, value, is_preferred)
+                VALUES($1, $2, $3) RETURNING *";
+
+        $result = $this->sdb->query($sql, array($conceptID, $value, $isPreferred));
+        $term = $this->sdb->fetchrow($result);
+        return $term;
+    }
+
+    /**
+     * Save Term
+     *
+     * Updates term value and concept in the database
+     *
+     * @param int $termID Term ID
+     * @param int $conceptID Concept ID
+     * @param string $value Value
+     * @param bool $isPreferred Whether term is preferred term for concept
+     * @return
+     */
+    public function updateTerm($termID, $conceptID, $value, $isPreferred) {
+        $isPreferred = $this->sdb->boolToPg($isPreferred);
+        $sql = "UPDATE term
+                SET concept_id = $1,
+                    value = $2,
+                    is_preferred = $3
+                WHERE id = $4
+                RETURNING *";
+
+        $result = $this->sdb->query($sql, array($conceptID, $value, $isPreferred, $termID));
+        $term = $this->sdb->fetchrow($result);
+        return $term;
+    }
+
+    /**
+     * Delete Term
+     *
+     * Deletes a term from the database
+     *
+     * @param int $termID
+     * @return int $id Concept ID
+     */
+    public function deleteTerm($termID) {
+        $sql = "DELETE FROM term WHERE id = $1";
+        $this->sdb->query($sql, array($termID));
+        return true;
+    }
+
+    /**
+     * Select Detailed Concept
+     *
+     * Gets a detailed concept from database
+     *
+     * @param int $id Concept ID
+     * @return string[] Associative array of resource data
+     */
+    public function selectDetailedConcept($id) {
+        $sql = "SELECT t.id, t.value, t.is_preferred
+                FROM concept c
+                JOIN term t
+                ON c.id = t.concept_id
+                LEFT JOIN concept_properties cp ON cp.concept_id = c.id
+                WHERE c.id = $1
+                ORDER BY t.is_preferred DESC, t.value";
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+
+    /**
+     * Select Related Concept
+     *
+     * Gets all related concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectRelatedConcepts($id) {
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                JOIN related_concept rc
+                ON rc.related_id = t.concept_id
+                WHERE rc.concept_id = $1
+                AND t.is_preferred = 't'";
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * Select Broader Concepts
+     *
+     * Gets all broader concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectBroaderConcepts($id) {
+
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                JOIN broader_concept bc
+                ON bc.broader_id = t.concept_id
+                WHERE bc.narrower_id = $1
+                AND t.is_preferred = 't'";
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * Select Narrower Concepts
+     *
+     * Gets all narrower concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectNarrowerConcepts($id) {
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                JOIN broader_concept bc
+                ON bc.narrower_id = t.concept_id
+                WHERE bc.broader_id = $1
+                AND t.is_preferred = 't'";
+
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * UpdatePreferredTerm
+     *
+     * Sets one term's preference to true and all others to false for a given concept
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function updatePreferredTerm($conceptID, $termID) {
+        $sql = "UPDATE term t
+                    SET is_preferred =
+                    CASE
+                        WHEN t.id = $1
+                            THEN TRUE
+                            ELSE FALSE
+                        END
+                WHERE t.concept_id = $2";
+
+        $result = $this->sdb->query($sql, array($termID, $conceptID));
+    }
+
+    /**
+    * Search Concepts
+    *
+    * Search for a concept by its preferred term
+    *
+    * @param string $query Search query
+    * @return string[] Array of concept id and value pairs
+    */
+    public function searchConcepts($query) {
+
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                WHERE value ILIKE $1
+                AND t.is_preferred = 't'";
+
+
+        $result = $this->sdb->query($sql, array("%$query%"));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
+
+    /**
+    * Insert Related Concepts
+    *
+    * Relate two concepts
+    *
+    * @param string $id1 Related Concept id
+    * @param string $id2 Related Concept id
+    * @return string[] Array of related concept ids
+    */
+    public function insertRelatedConcepts($id1, $id2) {
+        $sql = "INSERT INTO related_concept VALUES ($1, $2), ($2,$1)";
+        $result = $this->sdb->query($sql, array($id1, $id2));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
+    /**
+    * Delete Related Concepts
+    *
+    * Remove relationship between two related concepts
+    *
+    * @param string $id1 Related Concept id
+    * @param string $id2 Related Concept id
+    * @return
+    */
+    public function deleteRelatedConcepts($id1, $id2) {
+        $sql = "DELETE FROM related_concept WHERE concept_id = $1 AND related_id = $2 OR concept_id = $2 AND related_id = $1";
+        $result = $this->sdb->query($sql, array($id1, $id2));
+        $deleteCount = $this->sdb->fetchAll($result);
+        return $deleteCount;
+    }
+
+    /**
+    * Insert Broader Concepts
+    *
+    * Relate a narrower and broader concept
+    *
+    * @param string $id1 Narrower Concept id
+    * @param string $id2 Broader Concept id
+    * @return
+    */
+    public function insertBroaderConcepts($narrowerID, $broaderID) {
+        $sql = "INSERT INTO broader_concept VALUES ($1, $2)";
+        $result = $this->sdb->query($sql, array($narrowerID, $broaderID));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
+
+    /**
+    * Delete Broader Concepts
+    *
+    * Remove relationship between two related concepts
+    *
+    * @param string $id1 Broader Concept id
+    * @param string $id2 Broader Concept id
+    * @return
+    */
+    public function deleteBroaderConcepts($narrowerID, $broaderID) {
+        $sql = "DELETE FROM broader_concept WHERE narrower_id = $1 AND broader_id = $2";
+        $result = $this->sdb->query($sql, array($narrowerID, $broaderID));
+        // $deleteCount = $this->sdb->fetchAll($result);
+        // return $deleteCount;
+        return true;
     }
 
 

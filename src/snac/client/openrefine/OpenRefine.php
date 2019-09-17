@@ -185,6 +185,11 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                 "identifierSpace" => \snac\Config::$WEBUI_URL,
                 "name" => "SNAC Reconciliation for OpenRefine",
                 "schemaSpace" => \snac\Config::$OPENREFINE_URL,
+                "preview" => [
+                    "width" => 400,
+                    "height" => 500,
+                    "url" => \snac\Config::$WEBUI_URL . "/snippet/{{id}}"
+                ] 
             ];
 
             $this->response = json_encode($response, JSON_PRETTY_PRINT); 

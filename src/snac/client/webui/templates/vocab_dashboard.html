@@ -67,16 +67,33 @@
         {% if permissions.EditVocabulary %}
         <div class="col-md-4">
             <!-- Left column -->
-            <div class="panel panel-info">
+            <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="panel-title">Concept Management</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Use the following links to administer controlled concept vocabularies.</p>
+                    <p>Manage concept vocabularies.</p>
                     <div class="list-group">
-                        <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Concept Term</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/add_concept" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Concept Term</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/concepts" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Concepts</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if permissions.EditVocabulary %}
+        <div class="col-md-4">
+            <!-- Left column -->
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Vocabulary Management</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Manage controlled vocabularies.</p>
+                    <div class="list-group">
+                        <a href="{{control.snacURL}}/vocab_administrator/add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Vocabulary Term</a>
 
-                        <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Concepts</a>
+                        <a href="{{control.snacURL}}/vocab_administrator/search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Vocabulary</a>
                     </div>
                 </div>
             </div>
@@ -90,7 +107,7 @@
                     <h3 class="panel-title">Geographic Vocabulary Management</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Use the following links to administer geographic vocabulary terms.</p>
+                    <p>Manage geographic vocabulary terms.</p>
                     <div class="list-group">
                         <a href="{{control.snacURL}}/vocab_administrator/add_geoterm" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Geographic Term</a>
                         <a href="{{control.snacURL}}/vocab_administrator/geosearch" class="list-group-item"><i class="fa fa-globe fa-fw" aria-hidden="true"></i> Search Geographic Terms</a>
@@ -107,7 +124,7 @@
                     <h3 class="panel-title">Resource Cache Management</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Use the following links to administer the resource cache.</p>
+                    <p>Manage the resource cache.</p>
                     <div class="list-group">
                         <a href="{{control.snacURL}}/vocab_administrator/add_resource" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Resource</a>
                         <a href="{{control.snacURL}}/vocab_administrator/resources" class="list-group-item"><i class="fa fa-book fa-fw" aria-hidden="true"></i> Manage Resources</a>

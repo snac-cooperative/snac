@@ -202,4 +202,26 @@ class ServerConnect {
 
         return false;
     }
+
+    /**
+     * Reload User
+     *
+     * Queries the server for the newest version of the currently logged-in user
+     * by requesting user_information.  This can be helpful if API keys are updated,
+     * messaging counts are updated, etc.
+     */
+    public function reloadUser() {
+        $ask = array("command"=>"user_information"
+        );
+        $this->logger->addDebug("Sending user information query to the server", $ask);
+        $serverResponse = $this->query($ask);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+
+        if (isset($serverResponse["user"]) && $serverResponse["user"] != null) {
+            $tmpUser = new \snac\data\User($serverResponse["user"]);
+            if ($tmpUser != null) {
+                $this->user = $tmpUser;
+            }
+        }
+    }
 }

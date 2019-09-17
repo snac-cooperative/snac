@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SNAC Vocabulary: {{ data.title }}</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/vocab_admin.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+
+<script src="{{control.snacURL}}/javascript/concept_admin.js{{control.noCache}}"></script>
+
+
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+{% set concept = data.response.concept %}
+{{ topNavigation(X, user, permissions, control) }}
+
+<div class="container snac" role="main">
+    <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+        <p>Saving Term...</p>
+    </div><!-- end alert -->
+    <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+        <p>Successfully saved!</p>
+    </div><!-- end alert -->
+    <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
+        <p>An error occured while saving</p>
+    </div><!-- end alert -->
+
+    <h1>Vocabulary: {{ data.title }}</h1>
+    <ol class="breadcrumb">
+        <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
+        <li><a href="{{control.snacURL}}/vocab_administrator/concepts">Concepts</a></li>
+        <li>{{concept.terms[0].value|default("New Concept")}}</li>
+    </ol>
+    <h1>{{concept.terms[0].value|default("New Concept")}}</h1>
+    <div class="row">
+        <div class="col-md-8">
+
+            <h2>Terms</h2>
+            <!-- {% for term in concept.terms %}
+                <p>{{term.value}}</p>
+            {% endfor %} -->
+
+
+            <!-- {% for concept in concept.termss %}
+                <p><a href="{{control.snacURL}}/concepts/{{concept.concept_id}}">{{concept.value}}</a></p>
+            {% endfor %} -->
+
+            <!-- {% for concept in concept.termss %}
+                {% for term in concept.terms %}
+                    <p>{{term.value}}</p>
+                    {% if concept.broader_concepts.length != 0 %}
+                        <p>Broader</p>
+                        {% for term in concept.terms %}
+                            <p style='margin-left:5px;'>{{concept.broader_concepts[0].terms[0].value}}</p>
+                            {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %} -->
+
+
+            <form id="concept-form" class="form-horizontal">
+                    <!-- TODO: Distinguish between preferred and nonpreferred -->
+
+
+                <!-- delete isChecked??  -->
+                {% for term in concept.terms %}
+                {% set isChecked = (term.is_preferred == "t") ? "checked" : "" %}
+                {% if term.is_preferred == "t" %}
+                <h4>Preferred Term</h4>
+                <div class="form-group">
+                    <div class="col-xs-8">
+                        <div class="input-group">
+                            <p type="text" class="term form-control" data-term-id="{{term.id}}" data-is-preferred="{{term.is_preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#term-modal" title="Edit" onclick="buildTermForm(event)"><i class="fa fa-edit"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                <h4>Alternate Terms</h4>
+                {% for term in concept.terms %}
+                {% set isChecked = (term.is_preferred == "t") ? "checked" : "" %}
+                {% if term.is_preferred == "f" %}
+                <div class="form-group">
+                    <div class="col-xs-8">
+                        <div class="input-group">
+                            <p type="text" class="term form-control" data-term-id="{{term.id}}" data-is-preferred="{{term.is_preferred}}" data-term-value="{{term.value}}"> {{term.value}}</p>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#term-modal" title="Edit" onclick="buildTermForm(event)"><i class="fa fa-edit"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#term-modal"> <i class="fa fa-plus"></i> Add Term</button>
+                <!-- <h4>Properties</h4> -->
+                <!-- <div class="form-group"> -->
+                    <!-- <div class="col-xs-8"> -->
+                        <!-- <textarea class="form-control" rows="3" style="width:475px;"> {{term.value}}</textarea> -->
+                    <!-- </div> -->
+                <!-- </div> -->
+
+            </form>
+
+            <br>
+
+
+<!--  -->
+            <!-- <h2>Search</h2>
+            <div class="well well-lg text-center">
+                <div class="input-group select2-bootstrap-append">
+                    <select id="term-relationship-type-select" name="concept-relationship" class="select" style="width: 25%;">
+                        <option>Broader</option>
+                        <option>Narrower</option>
+                        <option>Related</option>
+                    </select>
+                    <input type="text" class="form-control" placeholder="Term" id="" name="term" style="width: 75%">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" id="">Search</button>
+                    </span>
+
+                </div>
+            </div>
+
+
+            <div class="radio">
+                <label>
+                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type1" value=""> Broader
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type2" value=""> Narrower
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type3" value="">Related
+                </label>
+            </div> -->
+<!--  -->
+
+
+
+        </div>
+    </div>
+
+    <div class="row">
+        {% if concept.related_concepts %}
+        <div class="form-group col-xs-6">
+        <h2>Related Concepts</h2>
+            {% for related in concept.related_concepts %}
+                <h4><span><button type="button" class="btn-xs btn-danger related_concept" name="button" data-concept-id="{{related.id}}" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span> <a href="{{snacUrl}}{{related.id}}"> {{related.value}}</a></h4>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="row">
+
+
+        {% if concept.narrower_concepts %}
+        <div class="form-group  col-xs-6">
+        <h2>Narrower Concepts</h2>
+            {% for narrower in concept.narrower_concepts %}
+                <h4><span><button type="button" class="btn-xs btn-danger narrower_concept" name="button" data-concept-id="{{narrower.id}}" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span> <a href="{{snacUrl}}{{narrower.id}}"> {{narrower.value}}</a></h4>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if concept.broader_concepts %}
+        <div class="form-group  col-xs-6">
+            <h2>Broader Concepts</h2>
+            {% for broader in concept.broader_concepts %}
+            <h4><span><button type="button" class="btn-xs btn-danger broader_concept" name="button" data-concept-id="{{broader.id}}" onclick="deleteConceptRelationship()"> <i class="fa fa-minus-circle"></i></button></span><a href="{{snacUrl}}{{broader.id}}"> {{broader.value}} </a></h4>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- <button type="button" class="btn btn-success" data-toggle="modal" data-target="#concept-relationship-modal"> <i class="fa fa-plus"></i> Add new relationship</button> -->
+    <button class="btn btn-success" id="btn_add_conceptRelation" data-toggle="modal" data-target="#conceptSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Concept Relation</button>
+</div>
+
+
+
+<div class="modal fade" id="conceptSearchPane" tabindex="-1" role="dialog" aria-labelledby="conceptSearchPane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="conceptSearchLabel">Create New Concept Relation</h4>
+            </div>
+            <div class="modal-body" id="conceptSearchPaneContent">
+                <form class="form-horizontal" id="concept-search-form" onsubmit="return false;">
+                    <div class="modal-body">
+	                    <input type="hidden" name="json" value="true">
+                        <p>Search for concepts by their preferred term.</p>
+
+                        <h3>{{concept.terms[0].value}}</h3>
+
+                        <div class="input-group">
+	                        <input type="text" class="form-control"
+	                            placeholder="Concept term" id="concept-searchbar" name="q">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="submit" id="concept-searchbutton" onclick='searchConcepts()'><i class="fa fa-search" aria-hidden="true"></i></button>
+                                </span>
+	                    </div>
+                        <!-- Relationship Types -->
+                        <div id="concept-relationship-options">
+
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type1" value="broader"> Broader
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type2" value="narrower"> Narrower
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="concept-relationship-type" id="concept-relationship-type3" value="related">Related
+                                </label>
+                            </div>
+                        </div>
+
+
+	                    <div id="concept-results-box">
+	                    </div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <p>Relationship:</p>
+                            <button type="button" class="btn btn-success" id="relate-concepts-btn" data-dismiss="modal" onclick="postConceptRelationship()">Relate Concepts</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
+                <!-- <button type="button" class="btn btn-primary" id="btn_create_conceptRelationship" onclick="postConceptRelationship()"data-dismiss="modal">Continue</button> -->
+                <!-- Define CreateConceptRelation? ^^ -->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="term-modal" tabindex="-1" role="dialog" aria-labelledby="term-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="term-modal-label">Add Term</h4>
+            </div>
+            <div class="modal-body">
+                <form id="term-form">
+
+                    <div class="term form-group required">
+                        <div class="form-group" style="margin-bottom:100px">
+                            <label class="control-label col-xs-2" for="">Term</label>
+                            <div class="col-xs-10">
+                                <input type="text" id="term-input" class="form-control" name="term-value" data-term-id="" required>
+                                <input type="hidden" id="concept-id" name="concept-id" value="{{concept.id}}">
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-left:100px;">
+                            <div class="checkbox col-xs-5">
+                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="is-preferred" value="checked">
+                                <label for="is-preferred">Preferred </label>
+                            </div>
+
+                            <div class="col-xs-6" style="margin-top:10px;">
+                                <!-- <button type="button" class="btn btn-primary " ><i class="fa fa-fw fa-floppy-o"></i> Save</button> -->
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="margin-top:100px">
+                <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()" disabled><i class="fa fa-minus-circle"></i> Delete</button>
+                <button type="button" class="btn btn-primary" onclick="saveTermForm()">Save Term</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="concept-relationship-modal" tabindex="-1" role="dialog" aria-labelledby="concept-relationship-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="concept-relationship-modal-label">Add Concept Relationship</h4>
+            </div>
+            <div class="modal-body">
+                <form id="concept-relationship-form">
+
+                    <div class="term form-group required">
+                        <div class="form-group" style="margin-bottom:100px">
+                            <label class="control-label col-xs-2" for="">Term</label>
+                            <div class="col-xs-10">
+                                <input type="text" id="term-input" class="form-control" data-term-id="" name="term-id" value="" required>
+                            </div>
+                        </div>
+                        <br>
+                        <div style="margin-left:100px;">
+                            <div class="checkbox col-xs-5">
+                                <input type="checkbox" id="is-preferred" data-toggle="toggle" data-on="Yes" data-off="No" data-size="normal" name="is-preferred" value="checked">
+                                <label for="is-preferred">Preferred </label>
+                            </div>
+
+                            <div class="col-xs-6" style="margin-top:10px;">
+                                <!-- <button type="button" class="btn btn-primary " ><i class="fa fa-fw fa-floppy-o"></i> Save</button> -->
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="margin-top:100px">
+                <button type="button" id="term-delete-btn" class="btn btn-danger" onclick="deleteTerm()"><i class="fa fa-minus-circle"></i> Delete</button>
+                <button type="button" class="btn btn-primary" onclick="saveTermForm()">Save Term</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetTermForm()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>

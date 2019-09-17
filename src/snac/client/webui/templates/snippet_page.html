@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{data.nameEntries.0.original}} - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+<link rel="stylesheet" href="{{control.snacURL}}/css//hrt/icons.css{{control.noCache}}">
+
+<style>
+
+@media screen and (-webkit-min-device-pixel-ratio: 1),
+screen and (min--moz-device-pixel-ratio: 1),
+screen and (-o-min-device-pixel-ratio: 100 / 100),
+screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
+    .sprite-icons-worldcat,.sprite-icons-wikipedia,.sprite-icons-viaf,
+    .sprite-icons-idlocgov,.sprite-icons-dpla,.sprite-icons-archivegrid,
+    .sprite-icons-cbw {
+        background-image:url('{{control.snacURL}}/css/hrt/icons.png');
+        -webkit-background-size:48px 48px;
+        -moz-background-size:48px 48px;
+        background-size:48px 48px
+    }
+}
+
+
+.sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
+.sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs, .sprite-icons-nara, .sprite-icons-wikidata {
+    float: left;
+    margin-right: 0.33em;
+}
+
+.snac-name-header {
+    font-size: 20px;
+}
+
+.navbar-brand {
+    padding-top: 4px;
+    padding-bottom: 6px;
+    height: 25px;
+    line-height: 15px;
+}
+
+.navbar {
+    min-height: 25px;
+}
+
+h1 {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 3px;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 14px;
+    margin-bottom: 4px;
+    margin-top: 0px;
+}
+
+.panel {
+    margin-top: 8px;
+    margin-bottom: 0px;
+}
+
+.panel-heading {
+    padding: 5px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+.panel-title {
+    font-size: 13px;
+}
+.panel-body {
+    padding: 0px;
+}
+.list-group-item {
+    padding: 0px;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 13px;
+}
+.biog-hist-small {
+    padding: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 13px;
+}
+.biog-hist-small p {
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+body {
+    padding-top: 30px;
+}
+
+</style>
+    {# If there is a google analytics tracking ID, then insert the Google Analytics script #}
+    {% if control.googleAnalyticsID %}
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+            ga('create', '{{control.googleAnalyticsID}}', 'auto');
+            ga('send', 'pageview');
+        </script>
+    {% endif %}
+</head>
+
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+    {% if control.interfaceVersion == "development" %}
+    <nav class="navbar navbar-inverse navbar-fixed-top navbar-development-version">
+    {% elseif control.interfaceVersion == "demo" %}
+    <nav class="navbar navbar-inverse navbar-fixed-top navbar-demo-version">
+    {% else %}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+    {% endif %}
+    <div class="container">
+        <div class="navbar-header">
+            <span class="navbar-brand active"><span class="snac-name-header">snac</span></span><!--<span class="snac-fullname-header"> | social networks and archival context</span>-->
+        </div>
+    </div>
+</nav>
+
+    <div class="container snac" role="main">
+        <div>
+            <h1>
+                <!--
+               {% if data.entityType.term == 'person' %}
+               <span class="fa-stack fa-sm" title="Entity Type: Person">
+                   <i class="fa fa-square fa-stack-2x" style="color: #5CB9A6;"></i>
+                   <i class="fa fa-user fa-stack-1x fa-inverse"></i>
+               </span>
+               {% elseif data.entityType.term == 'corporateBody' %}
+               <span class="fa-stack fa-sm" title="Entity Type: Corporate Body">
+                   <i class="fa fa-square fa-stack-2x" style="color: #7E72B5;"></i>
+                   <i class="fa fa-university fa-stack-1x fa-inverse"></i>
+               </span>
+               {% elseif data.entityType.term == 'family' %}
+               <span class="fa-stack fa-sm" title="Entity Type: Family">
+                   <i class="fa fa-square fa-stack-2x" style="color: #EA6820;"></i>
+                   <i class="fa fa-users fa-stack-1x fa-inverse"></i>
+               </span>
+               {% endif %}
+                -->
+                 {{data.nameEntries.0.original}}
+            </h1>
+            {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Select Alternative Names</h3>
+                </div>
+                <div class="panel-body list-group">
+                    {% for nameEntry in data.nameEntries|slice(1,4)|sort %}
+                        <p class="list-group-item">{{nameEntry.original}}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if data.dates %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Exist Dates</h3>
+                </div>
+                <div class="panel-body list-group">
+                {% for date in data.dates %}
+                    <p class="list-group-item">{{date.fromType.term}} {{date.fromDate}}</p>
+                    {% if date.toDate %}
+                        <p class="list-group-item">{{date.toType.term}} {{date.toDate}}</p>
+                    {% endif %}
+                {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if data.genders %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Gender</h3>
+                </div>
+                <div class="panel-body list-group">
+                {% for gender in data.genders %}
+                    <p class="list-group-item">{{gender.term.term}}</p>
+                {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if data.nationalities %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Nationality</h3>
+                </div>
+                <div class="panel-body list-group">
+                {% for nat in data.nationalities|slice(0,3)|sort %}
+                <p class="list-group-item">{{ nat.term.term }}</p>
+                {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if data.languagesUsed %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Languages Used</h3>
+                </div>
+                <div class="panel-body list-group">
+                {% for lang in data.languagesUsed|sort|slice(0,3) %}
+                    <p class="list-group-item">{{ lang.language.description }}</p>
+                {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if data.biogHists.0.text %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{ data.entityType.term == 'person' ? 'Biography' : 'History'}}</h3>
+                </div>
+                <div class="panel-body biog-hist-small">
+                        {{ data.biogHists.0.text|replace({
+                             '<citation ':"<p class='source' ",
+                             '</citation>':"</p>",
+                             'chronList':"ul class='chronlist'",
+                             'chronItem':"li",
+                             '<date':"<span class='date'",
+                             '</date>':"</span>: ",
+                             '</fromDate>':"</fromDate> -",
+                             '<dateRange': "<span class='date'",
+                             '</dateRange>':"</span>: ",
+                             '<daterange':"<span class='date'",
+                             '</daterange>':"</span>: "
+                          })|raw }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+

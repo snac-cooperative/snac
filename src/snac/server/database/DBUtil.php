@@ -1815,6 +1815,160 @@ class DBUtil
     }
 
 
+    /**
+     * Get all Concepts
+     * Get all the concepts from the database
+     */
+    public function getAllConcepts() {
+        return $this->sql->selectAllConcepts();
+    }
+
+
+    /**
+     * Get Concept
+     * Get concept from the database
+     */
+    public function getConcept($id) {
+        $concept = new \snac\data\Concept();
+        $conceptTerm = new \snac\data\ConceptTerm();
+        //TODO: build concept
+        return $this->sql->selectConcept($id);
+    }
+
+    /**
+     * Get Detailed Concept
+     * Get detailed concept from the database with related, broader and narrower concepts
+     * @return string[] An associative array of the concept, its terms, and related concepts
+     */
+    public function getDetailedConcept($id) {
+        $concept = [];
+
+        $concept['id'] = $id;
+        $concept['terms'] = $this->sql->selectDetailedConcept($id);
+        $concept['related_concepts'] = $this->sql->selectRelatedConcepts($id);
+        $concept['broader_concepts'] = $this->sql->selectBroaderConcepts($id);
+        $concept['narrower_concepts'] = $this->sql->selectNarrowerConcepts($id);
+
+        return $concept;
+    }
+
+    /**
+     * Create Concept
+     * @return int $conceptID associative array of inserted terms from database
+     */
+    public function createConcept() {
+        $conceptID = $this->sql->insertConcept();
+        return $conceptID;
+    }
+
+    /**
+     * Search Concepts
+     * @param string Search query
+     * @return string[] associative array of matching concepts from database
+     */
+    public function searchConcepts($q) {
+        return $this->sql->searchConcepts($q);
+    }
+
+    // /**
+    //  * Save Terms
+    //  * @param int $conceptID
+    //  * @param string[] associative array of terms e.g. [[value => "Librarian"], [isPreferred => 'f']]
+    //  * @return string[] associative array of inserted terms from database
+    //  */
+    // public function saveTerms($conceptID, $terms) {
+    //     $inserted = [];
+    //     foreach ($terms as $term) {
+    //         $inserted[] = $this->sql->insertTerm($conceptID, $term['value'], $term['is_preferred']);
+    //     }
+    //
+    //     return $inserted;
+    // }
+
+    /**
+     * Save Term
+     * @param int $conceptID
+     * @param string $value
+     * @param string $isPreferred
+     * @return string[] associative array of saved term from database
+     */
+    public function saveTerm($termID, $conceptID, $value, $isPreferred) {
+        if (!isset($termID)) {
+            $term =  $this->sql->insertTerm($conceptID, $value, $isPreferred);
+        } else {
+            $term =  $this->sql->updateTerm($termID, $conceptID, $value, $isPreferred);
+        }
+
+        if (isset($termID, $conceptID) && $isPreferred === 'true') {
+            $this->sql->updatePreferredTerm($conceptID, $termID);
+        }
+        return $term;
+    }
+
+    /**
+     * Delete Term
+     * @param int $termID
+     * @return bool True if deleted
+     */
+    public function deleteTerm($termID) {
+        $this->sql->deleteTerm($termID);
+        return true;
+    }
+
+    /**
+     * Save Related Concepts
+     *
+     * Relate two concepts
+     *
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return string[] Array of related concept ids
+     */
+    public function saveRelatedConcepts($id1, $id2) {
+        if (!isset($id1, $id2)) { return false;}
+        $this->sql->insertRelatedConcepts($id1, $id2);
+        return true;
+    }
+
+    /**
+     * Remove Related Concepts
+     *
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return bool True if deleted
+     */
+    public function removeRelatedConcepts($id1, $id2) {
+        $this->sql->deleteRelatedConcepts($id1, $id2);
+        return true;
+    }
+
+    /**
+     * Save Broader Concepts
+     *
+     * Relate a narrower and broader concept
+     *
+     * @param string $narrowerID Narrower Concept id
+     * @param string $broaderID Broader Concept id
+     * @return bool True if saved
+     */
+    public function saveBroaderConcept($narrowerID, $broaderID) {
+        if (!isset($narrowerID, $broaderID)) { return false;}
+        $this->sql->insertBroaderConcepts($narrowerID, $broaderID);
+        return true;
+    }
+
+    /**
+     * Remove Broader Concepts
+     *
+     * @param string $narrowerID Narrower Concept id
+     * @param string $broaderID Broader Concept id
+     * @return bool True if deleted
+     */
+    public function removeBroaderConcepts($narrowerID, $broaderID) {
+        $this->sql->deleteBroaderConcepts($narrowerID, $broaderID);
+        return true;
+    }
+
 
     /**
      * Select (populate) ConventionDeclaration
@@ -2887,6 +3041,7 @@ class DBUtil
 
     /**
      * Replace Resource Relation Resource
+     * Does not maintain version history
      *
      * @param \snac\data\Resource $victim
      * @param \snac\data\Resource $target
@@ -2898,7 +3053,6 @@ class DBUtil
         $targetVersion = $target->getVersion();
 
         $this->sql->replaceResourceRelationResource($victimID, $victimVersion, $targetID, $targetVersion);
-
     }
 
     /**
@@ -2916,7 +3070,6 @@ class DBUtil
         $resource->setVersion(null);
         $resource->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $this->writeResource($user, $resource);
-
     }
 
     /**

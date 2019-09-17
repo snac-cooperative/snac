@@ -58,6 +58,7 @@ class ServerExecutor {
      */
     private $permissions = null;
 
+    private $authType = null;
 
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -69,7 +70,7 @@ class ServerExecutor {
      *
      * @param string[] $user The user array from the Server's input
      */
-    public function __construct($user = null) {
+    public function __construct($user = null, $apikey = null) {
         global $log;
 
         // create a log channel
@@ -84,15 +85,26 @@ class ServerExecutor {
         $this->logger->addDebug("Starting ServerExecutor");
 
         $this->permissions = array();
-        /*
-         * Create the user and fill in their userID from the database We assume that a non-null $user at least
-         * has a valid email. If the getUserName() is null, then user the email as userName.
+        /***************************************
+         * USER AUTHENTICATION PROCESS
+         ***************************************
          *
-         * readUser() will check getUserID(), getUserName() and even getEmail().
+         * If the $user associative array is set, we'll assume the user is authenticating with the OAuth2
+         * login information.  This is likely the WebUI or web-authenticated users.  Here, we will use
+         * authenticateUser, which checks the $user object for id, username, or email to attempt a login.
          *
-         * The expectation is that userID or userName will have valid values. If not then the user probably
-         * lost their userid, so just pull back the first user with the email address in getEmail(). There is
-         * also the expectation that the case of missing both userID and userName is very rare.
+         *      Tom's Aside: The expectation is that userID or userName
+         *      will have valid values. If not then the user probably
+         *      lost their userid, so just pull back the first user with
+         *      the email address in getEmail(). There is
+         *      also the expectation that the case of missing
+         *      both userID and userName is very rare.
+         *
+         * If the $user associative array is NOT set, but we have an API key, we will attempt to
+         * find the user associated with the API key and instantiate that user object.  The call
+         * to authenticateUserByAPIKey will lookup and verify the API key, then return the correct
+         * user object from the database.  Since the user will not have an OAuth2 session, we will
+         * then generate a temporary session to use.
          */
         if ($user != null) {
             // authenticate user here!
@@ -105,8 +117,32 @@ class ServerExecutor {
             $this->logger->addDebug("User authenticated successfully");
 
             $this->getUserPermissions();
+
+            $this->authType = "user";
+        } else if ($user == null && $apikey != null) {
+            // authenticate and get user
+            $userObj = $this->uStore->authenticateUserByAPIKey($apikey);
+            // create a temporary session
+            $userObj->generateTemporarySession();
+
+            // authenticateUser sets $this->user
+            if (!$this->authenticateUser($userObj)) {
+                throw new \snac\exceptions\SNACUserException("User is not authorized", 403);
+            }
+            $this->logger->addDebug("User authenticated successfully");
+
+            $this->getUserPermissions();
+            $this->authType = "apikey";
         }
 
+    }
+
+    public function isAPIKeyAuth() {
+        return $this->authType == "apikey";
+    }
+
+    public function isUserAuth() {
+        return $this->authType == "user";
     }
 
     /**
@@ -649,6 +685,170 @@ class ServerExecutor {
         return $response;
     }
 
+
+    /**
+     * Read Concept
+     *
+     * Reads the vocabulary from the database, based on the input given and returns
+     * the result
+     *
+     * @param string[] $input Direct server input
+     * @return string[] The response to send to the client
+     */
+    public function readConcepts() {
+        $response = [];
+        $concepts = $this->cStore->getAllConcepts();
+
+        if (!empty($concepts)) {
+            $response["concepts"] = $concepts;
+            $response["result"] = "success";
+        } else {
+            $response["concepts"] = null;
+            $response["result"] = "failure";
+        }
+        return $response;
+    }
+
+    /**
+     * Read Concept
+     *
+     * Reads a concept from the database for an id
+     *
+     * @param string[] $id Concept id
+     * @return string[] The response to send to the client
+     */
+    public function readConcept($id) {
+        $response = [];
+        $concept = $this->cStore->getConcept($id);
+        $response["concept"] = $concept;
+        return $response;
+    }
+
+    /**
+     * Read Detailed Concept
+     *
+     * Reads a  vocabulary from the database, based on the input given and returns
+     * the result
+     *
+     * @param int $id Concept id
+     * @return string[] The response to send to the client
+     */
+    public function readDetailedConcept($id) {
+        $response = [];
+        $concept = $this->cStore->getDetailedConcept($id);
+        $response["concept"] = $concept;
+        return $response;
+    }
+
+    /**
+     * Search Concepts
+     *
+     * @param string $input Search query
+     * @return string[] The response to send to the client
+     */
+    public function searchConcepts($q) {
+        $response = [];
+        $concepts = $this->cStore->searchConcepts($q);
+        $response["concepts"] = $concepts;
+        $response["result"] = "success";
+        return $response;
+    }
+
+
+    /**
+     * Create Concept
+     *
+     * @param string $value Initial term value of concept
+     * @return string[] The response to send to the client
+     */
+    public function createConcept($value) {
+        $conceptID = $this->cStore->createConcept();
+
+        $response = $this->saveTerm(null, $conceptID, $value, true);
+        $response["concept_id"] = $response["term"]["concept_id"];
+        return $response;
+    }
+
+    /**
+     * Save Term
+     * @param int $conceptID
+     * @param string $value
+     * @param string $isPreferred
+     * @return string[] associative array of inserted term from database
+     */
+    public function saveTerm($termID, $conceptID, $value, $isPreferred) {
+        $response = [];
+        $term =  $this->cStore->saveTerm($termID, $conceptID, $value, $isPreferred);
+        $response["term"] = $term;
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Delete Term
+     * @param int $termID
+     * @param int termID
+     * @return string[] $response
+     */
+    public function deleteTerm($termID) {
+        $this->cStore->deleteTerm($termID);
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Save Related Concepts
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return string[] $response
+     */
+    public function saveRelatedConcepts($id1, $id2) {
+        $response = $this->cStore->saveRelatedConcepts($id1, $id2);
+        $response = ["result" => "success"];
+        return $response;
+    }
+
+    /**
+     * Remove Related Concepts
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return string[] $response
+     */
+    public function removeRelatedConcepts($id1, $id2) {
+        $this->cStore->removeRelatedConcepts($id1, $id2);
+        $response = ["result" => "success"];
+        return $response;
+    }
+
+
+    /**
+     * Save Broader Concepts
+     *
+     * Relate a narrower and broader concept
+     *
+     * @param string $narrowerID Narrower Concept id
+     * @param string $broaderID Broader Concept id
+     * @return string[] $response
+     */
+    public function saveBroaderConcepts($narrowerID, $broaderID) {
+        $this->cStore->saveBroaderConcept($narrowerID, $broaderID);
+        $response = ["result" => "success"];
+        return $response;
+    }
+
+    /**
+     * Delete Broader Concepts
+     *
+     * @param string $id1 Narrower Concept id
+     * @param string $id2 Broader Concept id
+     * @return string[] $response
+     */
+    public function removeBroaderConcepts($narrowerID, $broaderID) {
+        $response = $this->cStore->removeBroaderConcepts($narrowerID, $broaderID);
+        $response = ["result" => "success"];
+        return $response;
+    }
+
     /**
      * Search Resources
      *
@@ -714,9 +914,12 @@ class ServerExecutor {
             $response["related_constellations"] = [];
 
             if (isset($input["relationships"])) {
-                $icids = $this->neo4J->getResourceRelationships($input["resourceid"]);
+                $icids = $this->neo4J->getResourcesRelatedConstellationIDs($input["resourceid"]);
                 foreach ($icids as $icid) {
-                    $response["related_constellations"][] = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY)->toArray();
+                    $constellation = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+                    if (isset($constellation) && $constellation != false) {
+                        $response["related_constellations"][] = $constellation->toArray();
+                    }
                 }
             }
             $this->logger->addDebug("Serialized resource for output to client", $response);
@@ -1054,6 +1257,59 @@ class ServerExecutor {
         ];
         return $response;
     }
+
+    /**
+     * Generate User API Key
+     *
+     * Uses the APIKeyGenerator to generate a new API key and stores it in the database.
+     * The process of storing creates an expiration time (currently 1 year after the
+     * generation time).  The first 8 characters of the key are left un-encrypted as a lable
+     * to refer to the key for the user.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     * @return string[] The response to send to the client
+     */
+    public function generateUserAPIKey() {
+        // can only generate an API key for logged-in users
+        if ($this->user != null && $this->user !== false) {
+            $key = $this->uStore->generateUserAPIKey($this->user);
+
+            if ($key == null) {
+                //error
+                throw new \snac\exceptions\SNACDatabaseException("User API key could not be generated.");
+            }
+
+            $response = [
+                "result" => "success",
+                "key" => $key->toArray()
+            ];
+            return $response;
+        }
+    }
+
+    /**
+     * Revoke API Key
+     *
+     * Given the label of an API key, if that key belongs to this user, then this method will
+     * request DBUser to remove the key from the database (revoke it).
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function revokeUserAPIKey($input) {
+        $response = [
+            "result" => "failure"
+        ];
+        // can only generate an API key for logged-in users
+        if ($this->user != null && $this->user !== false && isset($input["apikey_label"])) {
+            $success = $this->uStore->revokeUserAPIKey($this->user, $input["apikey_label"]);
+            if ($success)
+                $response["result"] = "success";
+        }
+        return $response;
+    }
+
 
     /**
      * Get User Information
@@ -1577,8 +1833,10 @@ class ServerExecutor {
                 $assertions = $this->cStore->listAssertions($constellation,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY, $this->uStore);
 
                 $response["assertions"] = array();
-                foreach ($assertions as $key => $assert) {
-                    $response["assertions"][$key] = $assert->toArray();
+                if (isset($assertions) && $assertions) {
+                    foreach ($assertions as $key => $assert) {
+                        $response["assertions"][$key] = $assert->toArray();
+                    }
                 }
 
             } catch (\Exception $e) {
@@ -3584,14 +3842,14 @@ class ServerExecutor {
 
         $results = $this->cStore->browseNameIndex($term, $position, $entityType, $icid);
 
-        foreach ($results as &$result) {
+        foreach ($results as $k => $result) {
             $constellation = new \snac\data\Constellation();
             $constellation->setID($result["ic_id"]);
             if (\snac\Config::$USE_NEO4J) {
                 $this->neo4J->checkHoldingInstitutionStatus($constellation);
             }
             if ($constellation->hasFlag("holdingRepository"))
-                $result["entity_type"] = "holdingRepository";
+                $results[$k]["entity_type"] = "holdingRepository";
         }
 
         $response["results"] = $results;
@@ -3942,5 +4200,61 @@ class ServerExecutor {
         return $result;
     }
 
+
+
+    /**
+     * Get Holdings
+     *
+     * Get array of all resources held by a Holding Institution
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function getHoldings(&$input) {
+        if (!isset($input["constellationid"])) {
+            $response = ["result" => "failure",
+                         "error" => "Must provide a constellation id"
+                        ];
+            return $response;
+        }
+
+        $this->logger->addDebug("Retrieving holdings from Neo4J");
+
+        $icid = $input["constellationid"];
+        $resources = $this->neo4J->getHoldings($icid);
+
+        $response["resources"] = $resources;
+        $response["result"] = "success";
+
+        return $response;
+    }
+
+    /**
+     * Get Shared Resources
+     *
+     * Get array of all resources held by a Holding Institution
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function getSharedResources(&$input) {
+        if (!isset($input["icid1"], $input["icid2"])) {
+            $response = ["result" => "failure",
+                         "error" => "Must provide constellation ids"
+                        ];
+            throw new \snac\exceptions\SNACInputException("Must provide constellation ids", 400);
+            return $response;
+        }
+
+        $this->logger->addDebug("Retrieving shared resources from Neo4J");
+
+
+        $resources = $this->neo4J->getSharedResources($input["icid1"], $input["icid2"]);
+
+        $response["resources"] = $resources;
+        $response["result"] = "success";
+
+        return $response;
+    }
 
 }

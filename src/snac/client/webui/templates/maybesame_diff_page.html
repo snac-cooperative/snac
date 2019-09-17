@@ -281,7 +281,7 @@ $(document).ready(function() {
         {% set subjectCount = (data.constellation1.subjects|length) + (data.constellation2.subjects|length) + (intersection.subjects|length) %}
         {% set rrelCount = (data.constellation1.resourceRelations|length) + (data.constellation2.resourceRelations|length) + (intersection.resourceRelations|length) %}
         {% set crelCount = (data.constellation1.relations|length) + (data.constellation2.relations|length) + (intersection.relations|length) %}
-        {% set sameasCount = (data.constellation1.otherRecordIDs|length) + (data.constellation2.otherRecordIDs|length) + (intersection.otherRecordIDs|length) %}
+        {% set sameasCount = (data.constellation1.sameAsRelations|length) + (data.constellation2.sameAsRelations|length) + (intersection.sameAsRelations|length) %}
         {% set entityidCount = (data.constellation1.entityIDs|length) + (data.constellation2.entityIDs|length) + (intersection.entityIDs|length) %}
         {% set funCount = (data.constellation1.functions|length) + (data.constellation2.functions|length) + (intersection.functions|length) %}
         {% set lsCount = (data.constellation1.legalStatuses|length) + (data.constellation2.legalStatuses|length) + (intersection.legalStatuses|length) %}
@@ -944,7 +944,7 @@ $(document).ready(function() {
                         </div>
                         <!-- END biogHists Pane -->
 
-                        <!-- BEGIN otherRecordIDs Pane -->
+                        <!-- BEGIN sameAsRelations Pane -->
                         <div class="tab-pane" id="sameAs">
 
                             <div class="col-xs-4 panel panel-body diff-content-panel content-a">
@@ -955,7 +955,7 @@ $(document).ready(function() {
                                     </div>
                                 </div>
                                 <div class="data-components">
-                                    {% for sameAs in data.constellation1.otherRecordIDs %}
+                                    {% for sameAs in data.constellation1.sameAsRelations %}
                                         <div class="data-component data-component-a" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
                                                 {{ components.displaySameAs(X, false, false, sameAs, i) }}
@@ -970,7 +970,7 @@ $(document).ready(function() {
                                         {% set i = i + 1 %}
                                     {% endfor %}
                                 </div>
-                                {% if data.merging and data.constellation1.otherRecordIDs|length > 0 %}
+                                {% if data.merging and data.constellation1.sameAsRelations|length > 0 %}
                                     <div class="row text-center move-all-button-div">
                                         <button class="btn btn-success move-all-button" title="Move all elements">move all <i class="fa fa-chevron-circle-right" aria-hidden="true"></i></button>
                                     </div>
@@ -987,7 +987,7 @@ $(document).ready(function() {
                                     </div>
                                 </div>
                                 <div class="data-components">
-                                    {% for sameAs in data.intersection.otherRecordIDs %}
+                                    {% for sameAs in data.intersection.sameAsRelations %}
                                         <div class="data-component  data-component-both" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
                                                 {{ components.displaySameAs(X, false, false, sameAs, i) }}
@@ -1011,7 +1011,7 @@ $(document).ready(function() {
                                     <div class="col-sm-11 preview preview-right"></div>
                                 </div>
                                 <div class="data-components">
-                                    {% for sameAs in data.constellation2.otherRecordIDs %}
+                                    {% for sameAs in data.constellation2.sameAsRelations %}
                                         <div class="data-component data-component-b" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
                                                 {{ components.displaySameAs(X, false, false, sameAs, i) }}
@@ -1026,14 +1026,14 @@ $(document).ready(function() {
                                         {% set i = i + 1 %}
                                     {% endfor %}
                                 </div>
-                                {% if data.merging and data.constellation2.otherRecordIDs|length > 0 %}
+                                {% if data.merging and data.constellation2.sameAsRelations|length > 0 %}
                                     <div class="row text-center move-all-button-div">
                                         <button class="btn btn-success move-all-button" title="Move all elements"><i class="fa fa-chevron-circle-left" aria-hidden="true"></i> move all</button>
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
-                        <!-- END otherRecordIDs Pane -->
+                        <!-- END sameAsRelations Pane -->
 
                         <!-- BEGIN entityIDs Pane -->
                         <div class="tab-pane" id="entityID">

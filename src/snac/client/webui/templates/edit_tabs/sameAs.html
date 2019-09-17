@@ -12,7 +12,7 @@
 
 
 {% set i = 0 %}
-{% for other in data.otherRecordIDs %}
+{% for other in data.sameAsRelations %}
     {{ components.displaySameAs(X, true, true, other, i) }}
     {% set i = i + 1 %}
 {% endfor %}

@@ -54,7 +54,7 @@ class WebUIExecutor {
 
         // set up server connection
         $this->connect = new ServerConnect($user);
-        $this->user = $user;
+        $this->setUser($user);
 
         // create a log channel
         $this->logger = new \Monolog\Logger('WebUIExec');
@@ -72,7 +72,7 @@ class WebUIExecutor {
      */
     public function setUser(&$user = null) {
         $this->connect->setUser($user);
-        $this->user = $user;
+        //$this->user = $user;
     }
 
     /**
@@ -84,6 +84,17 @@ class WebUIExecutor {
      */
     public function getUser() {
         return $this->connect->getUser();
+    }
+
+    /**
+     * Reload User
+     *
+     * Ask the server connector to reload the user from the server.  This will
+     * generate a user_information call to the server to get the newest version
+     * of the user object.
+     */
+    public function reloadUser() {
+        $this->connect->reloadUser();
     }
 
     /**
@@ -99,6 +110,18 @@ class WebUIExecutor {
         $this->permissions = $data;
     }
 
+    /**
+     * Get User Permissions Data
+     *
+     * Gets the permissions bitfield (as an associative array) for the user connected
+     * to this session. To maintain compatibility with Twig and other client-side scripts,
+     * permission/privielege labels have spaces and special characters removed.
+     *
+     * @return boolean[] Associative array of Permission to boolean flag
+     */
+    public function getPermissionData() {
+        return $this->permissions;
+    }
 
 	/**
      * Get Connection Graph Data
@@ -449,6 +472,41 @@ class WebUIExecutor {
         }
 
         return $results;
+    }
+
+    /**
+     * Display Snippet Page
+     *
+     * Loads the snippet page for a given constellation input into the display.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySnippetPage(&$input, &$display) {
+        $message = null;
+        $serverResponse = $this->getConstellation($input, $display, "summary");
+        if (isset($serverResponse["constellation"])) {
+            if (isset($serverResponse["constellation"]["dataType"])) {
+                // We have only ONE constellation, so display
+                $constellation = $serverResponse["constellation"];
+                $editingUser = null;
+                $holdings = array();
+
+                $display->setTemplate("snippet_page");
+
+                $this->logger->addDebug("Setting constellation data into the page template");
+
+                $display->setData(
+                    $constellation
+                );
+            } else {
+                // We have multiple constellations, so redirect to split page
+                $this->displaySplitChoicePage($serverResponse, $display);
+            }
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
     }
 
     /**
@@ -1534,8 +1592,8 @@ class WebUIExecutor {
                 $message = new \snac\data\Message();
                 $message->setSubject($input["subject"]);
                 $message->setBody($input["body"]);
-                if (isset($this->user) && $this->user !== null) {
-                    $message->setFromUser($this->user);
+                if ($this->getUser() !== null) {
+                    $message->setFromUser($this->getUser());
                 } else {
                     // set this message from the IP address:
                     if (isset($input["email"]) && isset($input["name"])) {
@@ -1585,7 +1643,7 @@ class WebUIExecutor {
             $message = new \snac\data\Message();
             $message->setSubject($input["subject"]);
             $message->setBody($input["body"]);
-            $message->setFromUser($this->user);
+            $message->setFromUser($this->getUser());
 
             $errors = array();
 
@@ -1928,6 +1986,111 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
+            // Concepts and Concept Terms
+            case "add_concept":
+                    $display->setData(array("title"=> "Test Vocab", "response" => "success"));
+                    $display->setTemplate("concepts/new");
+                break;
+            case "add_concept_post":
+                    return $response = $this->postNewConcept($input, $user);
+                break;
+            case "concepts":
+                $id = $input["constellationid"] ?? null;   // actually conceptID
+                $request = [ "command" => "concepts" ];
+
+                if ($id) {
+                    $request["id"] = $id;
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "Concept" ,  "response" => $response));
+                    $display->setTemplate("concepts/view");
+
+                } else {
+                    $response = $this->connect->query($request);
+                    $display->setData(array("title"=> "Concepts",  "response" => $response));
+                    $display->setTemplate("concepts/index");
+                }
+                break;
+            case "search_concepts":
+                $json = isset($input["json"]) && $input["json"] == "true";
+                $query = $input["q"] ?? null;
+                $request = [
+                    "command" => "search_concepts",
+                    "q" => $query
+                ];
+
+                $response = $this->connect->query($request);
+
+                if (!$json ) {
+                    $display->setData(array("title"=> "Searching - ".$query ,  "response" => $response));
+                    $display->setTemplate("concepts/index");
+                }
+
+                return $response;
+                break;
+            case "save_concept_term":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    return $this->saveConceptTerm($input, $user);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "delete_concept_term":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    return $this->deleteConceptTerm($input);
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "save_related_concepts":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $request = [];
+                    $request["command"] = "save_related_concepts";
+                    $request["id1"] = $input["id1"];
+                    $request["id2"] = $input["id2"];
+                    $response = $this->connect->query($request);
+                    return $response;  // check if needed
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "delete_related_concepts":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $request = [];
+                    $request["command"] = "delete_related_concepts";
+                    $request["id1"] = $input["id1"];
+                    $request["id2"] = $input["id2"];
+                    $response = $this->connect->query($request);
+                    return $response;  // check if needed
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "save_broader_concepts":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $request = [];
+                    $request["command"] = "save_broader_concepts";
+                    $request["narrower_id"] = $input["narrower_id"];
+                    $request["broader_id"] = $input["broader_id"];
+                    $response = $this->connect->query($request);
+                    return $response;  // check if needed
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            case "delete_broader_concepts":
+                if (isset($this->permissions["EditVocabulary"])) {
+                    $request = [];
+                    $request["command"] = "delete_broader_concepts";
+                    $request["narrower_id"] = $input["narrower_id"];
+                    $request["broader_id"] = $input["broader_id"];
+                    $response = $this->connect->query($request);
+                    return $response;  // check if needed
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+
+            // Resources
             case "add_resource":
                 if (isset($this->permissions["EditResources"])) {
                     $display->setData(array("title"=> "Add a Resource"));
@@ -2117,24 +2280,66 @@ class WebUIExecutor {
     }
 
     /**
-     * Display API Info Page
+     * Display API Key Management
      *
-     * Fills the display with the API information page for the given user.
+     * API Key management function.  Displays the API key information page and handles subcommands
+     * for generating and revoking API keys.
      *
+     * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      * @param \snac\data\User $user The current user object
      */
-    public function displayAPIInfoPage(&$display, &$user) {
-        $display->setTemplate("api_info_page");
-        $smallUser = new \snac\data\User();
-        $smallUser->setUserID($user->getUserID());
-        $smallUser->setUserName($user->getUserName());
-        $smallUser->setFullName($user->getFullName());
-        $smallUser->setToken($user->getToken());
-        $display->setData([
-            "restURL" => \snac\Config::$REST_URL,
-            "user" => json_encode($smallUser->toArray(), JSON_PRETTY_PRINT)
-        ]);
+    public function displayAPIInfoPage(&$input, &$display, &$user) {
+        $command = "view";
+        if (isset($input["subcommand"]))
+            $command = $input["subcommand"];
+        switch($command) {
+            case "generate":
+                $display->setTemplate("api_key_generate");
+                $ask = array("command"=>"generate_key_user");
+                $this->logger->addDebug("Sending query to the server", $ask);
+                $serverResponse = $this->connect->query($ask);
+                $this->logger->addDebug("Received server response", [$serverResponse]);
+                $this->logger->addDebug("Setting api key data into the page template");
+                $display->setData($serverResponse);
+                $this->logger->addDebug("Finished setting api key data into the page template");
+                $this->reloadUser();
+                break;
+            case "revoke":
+                $display->setTemplate("api_keys");
+                $data = [
+                    "restURL" => \snac\Config::$REST_URL
+                ];
+                if (isset($input["label"])) {
+                    $ask = array(
+                        "command"=>"revoke_key_user",
+                        "apikey_label" => $input["label"]
+                    );
+                    $this->logger->addDebug("Sending query to the server", $ask);
+                    $serverResponse = $this->connect->query($ask);
+                    $this->logger->addDebug("Received server response", [$serverResponse]);
+                    $this->logger->addDebug("Setting data into the page template");
+                    if (isset($serverResponse["result"]) && $serverResponse["result"] == "success") {
+                        $data["message"] = "Successfully revoked key <strong>" . $input["label"] . "</strong>";
+                        $data["messageType"] = "success";
+                    } else {
+                        $data["message"] = "Error revoking key <strong>" . $input["label"] . "</strong>";
+                        $data["messageType"] = "danger";
+                    }
+                } else {
+                    $data["message"] = "No API Key label given to revoke";
+                    $data["messageType"] = "warning";
+                }
+                $display->setData($data);
+                $this->reloadUser();
+                $this->logger->addDebug("Finished setting api key data into the page template");
+                break;
+            default:
+                $display->setTemplate("api_keys");
+                $display->setData([
+                    "restURL" => \snac\Config::$REST_URL
+                ]);
+        }
     }
 
     /**
@@ -3668,5 +3873,87 @@ class WebUIExecutor {
 
 
         return true;
+    }
+
+    /**
+     * Post New Concept
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    protected function postNewConcept(&$input) {
+        $request = [];
+        $request["command"] = "add_concept";
+        $request["value"] = $input["term-value"];
+        $response = $this->connect->query($request);
+        return $response;
+    }
+
+
+    /**
+     * Save Concept Term
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    protected function saveConceptTerm(&$input) {
+        $request = [];
+        $request["command"] = "save_term";
+        $request["term_id"] = $input["term-id"] ?? null;
+        $request["concept_id"] = $input["concept-id"];
+        $request["value"] = $input["term-value"];
+
+        $preferred = ($input["is-preferred"] ?? null == "checked") ? "true" : "false";;
+        $request["is_preferred"] = $preferred;
+        $response = $this->connect->query($request);
+        return $response;
+    }
+
+    /**
+     * Delete Concept Term
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    protected function deleteConceptTerm(&$input) {
+        $request = [];
+        $request["command"] = "delete_term";
+        $request["term_id"] = $input["term-id"];
+        $response = $this->connect->query($request);
+        return $response;
+    }
+
+    /**
+     * Get Holdings
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function getHoldings(&$input) {
+        $request = [];
+        $request["command"] = "get_holdings";
+        $request["constellationid"] = "76783446";
+        $response = $this->connect->query($request);
+        return $response;
+    }
+
+    /**
+     * Get Shared Resources
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function getSharedResources(&$input) {
+        $request = [];
+        $request["command"] = "shared_resources";
+        $request["icid1"] = $input["icid1"];
+        $request["icid2"] = $input["icid2"];
+        $response = $this->connect->query($request);
+        return $response;
     }
 }
