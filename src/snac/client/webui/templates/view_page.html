@@ -214,15 +214,13 @@ function getSharedResources(icid1, icid2) {
     var sharedTable = $("#shared-resources-table").DataTable().clear().draw();
 
     $.ajax({
-        url: restUrl,
-        method: "POST",
-        data: '{"command":"shared_resources", "icid1":"'+icid1+'", "icid2":"'+ icid2 + '"}'
+        url: snacUrl + "/shared_resources?icid1=" + icid1 + "&icid2=" +icid2
     }).done(function(data) {
-        var rows = []
+        var rows = [];
         var length =  data.resources.length;
         for (i = 0; i < length; i++) {
-            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_2]
-            rows.push(row)
+            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_2];
+            rows.push(row);
         }
         sharedTable.rows.add(rows).draw()
 
@@ -232,14 +230,14 @@ function getSharedResources(icid1, icid2) {
 function loadSharedResourcesModal(target) {
     // grab info on clicked table row to load the Shared Resources Modal
     var relatedConstellationName = $(target).closest('td').find('a')[0].innerHTML;
-    $(".compared-constellation-name").html(relatedConstellationName)
-    var iconClasses = ""
+    $(".compared-constellation-name").html(relatedConstellationName);
+    var iconClasses = "";
     if ($(target).closest('td').find('i.fa-stack-1x').hasClass("fa-university")) {
         iconClasses = "fa fa-university";
     } else if ($(target).closest('td').find('i.fa-stack-1x').hasClass("fa-users")) {
-        iconClasses = "fa fa-users"
+        iconClasses = "fa fa-users";
     } else {
-        iconClasses = "fa fa-user"
+        iconClasses = "fa fa-user";
     }
     $("#compared-constellation-icon").removeClass();
     $("#compared-constellation-icon").addClass(iconClasses);
@@ -275,19 +273,14 @@ function holdingsTabActions() {
 
 function loadHoldings() {
     var constellationid = $("#constellationid").val()
-    var command = '{"command":"get_holdings", "constellationid":"' + constellationid + '"}'
-
     $("#holding-repository-table").DataTable({
         "ajax": {
-            "type": "PUT",
-            "url": restUrl,
-            "data": function(d) {
-                return command;
-            },
+            "url": snacUrl + "/get_holdings/" + constellationid,
             "dataType": "json",
             "dataSrc": "resources"
         },
-        "columns": [{
+        "columns": [
+            {
                 "data": null,
                 "render": function(data, type, row, meta) {
                     if (data.href) {
