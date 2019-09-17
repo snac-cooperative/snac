@@ -652,6 +652,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->handleCartResources($this->input);
                 break;
 
+            case "get_holdings":
+                $response = $executor->getHoldings($this->input);
+                break;
+
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only
@@ -670,7 +674,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // ServerConnect object was created.
         if ($executor->getUser() != null) {
             $_SESSION['snac_user'] = serialize($executor->getUser());
-        
+
             // Set the user information into the display object
             $display->setUserData($executor->getUser()->toArray());
 

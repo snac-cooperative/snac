@@ -2280,10 +2280,10 @@ class WebUIExecutor {
     }
 
     /**
-     * Display API Key Management 
+     * Display API Key Management
      *
      * API Key management function.  Displays the API key information page and handles subcommands
-     * for generating and revoking API keys. 
+     * for generating and revoking API keys.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
@@ -2291,7 +2291,7 @@ class WebUIExecutor {
      */
     public function displayAPIInfoPage(&$input, &$display, &$user) {
         $command = "view";
-        if (isset($input["subcommand"])) 
+        if (isset($input["subcommand"]))
             $command = $input["subcommand"];
         switch($command) {
             case "generate":
@@ -2334,7 +2334,7 @@ class WebUIExecutor {
                 $this->reloadUser();
                 $this->logger->addDebug("Finished setting api key data into the page template");
                 break;
-            default:   
+            default:
                 $display->setTemplate("api_keys");
                 $display->setData([
                     "restURL" => \snac\Config::$REST_URL
@@ -3922,6 +3922,21 @@ class WebUIExecutor {
         $request = [];
         $request["command"] = "delete_term";
         $request["term_id"] = $input["term-id"];
+        $response = $this->connect->query($request);
+        return $response;
+    }
+
+    /**
+     * Get Holdings
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function getHoldings(&$input) {
+        $request = [];
+        $request["command"] = "get_holdings";
+        $request["constellationid"] = "76783446";
         $response = $this->connect->query($request);
         return $response;
     }

@@ -275,19 +275,14 @@ function holdingsTabActions() {
 
 function loadHoldings() {
     var constellationid = $("#constellationid").val()
-    var command = '{"command":"get_holdings", "constellationid":"' + constellationid + '"}'
-
     $("#holding-repository-table").DataTable({
         "ajax": {
-            "type": "PUT",
-            "url": restUrl,
-            "data": function(d) {
-                return command;
-            },
+            "url": snacUrl + "/get_holdings/" + constellationid,
             "dataType": "json",
             "dataSrc": "resources"
         },
-        "columns": [{
+        "columns": [
+            {
                 "data": null,
                 "render": function(data, type, row, meta) {
                     if (data.href) {
