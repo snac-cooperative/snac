@@ -656,6 +656,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->getHoldings($this->input);
                 break;
 
+            case "shared_resources":
+                $response = $executor->getSharedResources($this->input);
+                break;
+
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only

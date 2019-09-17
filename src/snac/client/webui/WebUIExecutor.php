@@ -3940,4 +3940,20 @@ class WebUIExecutor {
         $response = $this->connect->query($request);
         return $response;
     }
+
+    /**
+     * Get Shared Resources
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function getSharedResources(&$input) {
+        $request = [];
+        $request["command"] = "shared_resources";
+        $request["icid1"] = $input["icid1"];
+        $request["icid2"] = $input["icid2"];
+        $response = $this->connect->query($request);
+        return $response;
+    }
 }

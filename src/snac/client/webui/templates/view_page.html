@@ -214,15 +214,16 @@ function getSharedResources(icid1, icid2) {
     var sharedTable = $("#shared-resources-table").DataTable().clear().draw();
 
     $.ajax({
-        url: restUrl,
-        method: "POST",
-        data: '{"command":"shared_resources", "icid1":"'+icid1+'", "icid2":"'+ icid2 + '"}'
+        url: snacUrl + "/shared_resources?icid1=" + icid1 + "&icid2=" +icid2
+        // url: restUrl,
+        // method: "POST",
+        // data: '{"command":"shared_resources", "icid1":"'+icid1+'", "icid2":"'+ icid2 + '"}'
     }).done(function(data) {
-        var rows = []
+        var rows = [];
         var length =  data.resources.length;
         for (i = 0; i < length; i++) {
-            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_2]
-            rows.push(row)
+            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_2];
+            rows.push(row);
         }
         sharedTable.rows.add(rows).draw()
 
