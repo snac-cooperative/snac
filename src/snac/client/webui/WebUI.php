@@ -125,7 +125,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "contact",
                 "stats",
                 "feedback",
-                "resource_search"
+                "resource_search",
+                "get_holdings",
+                "shared_resources"
         );
 
         // These are read-only commands that are allowed in read-only mode
