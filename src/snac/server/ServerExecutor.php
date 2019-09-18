@@ -4246,10 +4246,13 @@ class ServerExecutor {
             return $response;
         }
 
+        $icid1 = $this->cStore->getCurrentIDsForID($input["icid1"])[0] ?? null;
+        $icid2 = $this->cStore->getCurrentIDsForID($input["icid2"])[0] ?? null;
+
+
         $this->logger->addDebug("Retrieving shared resources from Neo4J");
 
-
-        $resources = $this->neo4J->getSharedResources($input["icid1"], $input["icid2"]);
+        $resources = $this->neo4J->getSharedResources($icid1, $icid2);
 
         $response["resources"] = $resources;
         $response["result"] = "success";
