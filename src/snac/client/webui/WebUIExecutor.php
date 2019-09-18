@@ -1987,108 +1987,108 @@ class WebUIExecutor {
                 }
                 break;
             // Concepts and Concept Terms
-            case "add_concept":
-                    $display->setData(array("title"=> "Test Vocab", "response" => "success"));
-                    $display->setTemplate("concepts/new");
-                break;
-            case "add_concept_post":
-                    return $response = $this->postNewConcept($input, $user);
-                break;
-            case "concepts":
-                $id = $input["constellationid"] ?? null;   // actually conceptID
-                $request = [ "command" => "concepts" ];
-
-                if ($id) {
-                    $request["id"] = $id;
-                    $response = $this->connect->query($request);
-                    $display->setData(array("title"=> "Concept" ,  "response" => $response));
-                    $display->setTemplate("concepts/view");
-
-                } else {
-                    $response = $this->connect->query($request);
-                    $display->setData(array("title"=> "Concepts",  "response" => $response));
-                    $display->setTemplate("concepts/index");
-                }
-                break;
-            case "search_concepts":
-                $json = isset($input["json"]) && $input["json"] == "true";
-                $query = $input["q"] ?? null;
-                $request = [
-                    "command" => "search_concepts",
-                    "q" => $query
-                ];
-
-                $response = $this->connect->query($request);
-
-                if (!$json ) {
-                    $display->setData(array("title"=> "Searching - ".$query ,  "response" => $response));
-                    $display->setTemplate("concepts/index");
-                }
-
-                return $response;
-                break;
-            case "save_concept_term":
-                if (isset($this->permissions["EditVocabulary"])) {
-                    return $this->saveConceptTerm($input, $user);
-                } else {
-                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-                }
-                break;
-            case "delete_concept_term":
-                if (isset($this->permissions["EditVocabulary"])) {
-                    return $this->deleteConceptTerm($input);
-                } else {
-                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-                }
-                break;
-            case "save_related_concepts":
-                if (isset($this->permissions["EditVocabulary"])) {
-                    $request = [];
-                    $request["command"] = "save_related_concepts";
-                    $request["id1"] = $input["id1"];
-                    $request["id2"] = $input["id2"];
-                    $response = $this->connect->query($request);
-                    return $response;  // check if needed
-                } else {
-                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-                }
-                break;
-            case "delete_related_concepts":
-                if (isset($this->permissions["EditVocabulary"])) {
-                    $request = [];
-                    $request["command"] = "delete_related_concepts";
-                    $request["id1"] = $input["id1"];
-                    $request["id2"] = $input["id2"];
-                    $response = $this->connect->query($request);
-                    return $response;  // check if needed
-                } else {
-                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-                }
-                break;
-            case "save_broader_concepts":
-                if (isset($this->permissions["EditVocabulary"])) {
-                    $request = [];
-                    $request["command"] = "save_broader_concepts";
-                    $request["narrower_id"] = $input["narrower_id"];
-                    $request["broader_id"] = $input["broader_id"];
-                    $response = $this->connect->query($request);
-                    return $response;  // check if needed
-                } else {
-                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-                }
-                break;
-            case "delete_broader_concepts":
-                if (isset($this->permissions["EditVocabulary"])) {
-                    $request = [];
-                    $request["command"] = "delete_broader_concepts";
-                    $request["narrower_id"] = $input["narrower_id"];
-                    $request["broader_id"] = $input["broader_id"];
-                    $response = $this->connect->query($request);
-                    return $response;  // check if needed
-                } else {
-                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-                }
-                break;
+            // case "add_concept":
+            //         $display->setData(array("title"=> "Test Vocab", "response" => "success"));
+            //         $display->setTemplate("concepts/new");
+            //     break;
+            // case "add_concept_post":
+            //         return $response = $this->postNewConcept($input, $user);
+            //     break;
+            // case "concepts":
+            //     $id = $input["constellationid"] ?? null;   // actually conceptID
+            //     $request = [ "command" => "concepts" ];
+            //
+            //     if ($id) {
+            //         $request["id"] = $id;
+            //         $response = $this->connect->query($request);
+            //         $display->setData(array("title"=> "Concept" ,  "response" => $response));
+            //         $display->setTemplate("concepts/view");
+            //
+            //     } else {
+            //         $response = $this->connect->query($request);
+            //         $display->setData(array("title"=> "Concepts",  "response" => $response));
+            //         $display->setTemplate("concepts/index");
+            //     }
+            //     break;
+            // case "search_concepts":
+            //     $json = isset($input["json"]) && $input["json"] == "true";
+            //     $query = $input["q"] ?? null;
+            //     $request = [
+            //         "command" => "search_concepts",
+            //         "q" => $query
+            //     ];
+            //
+            //     $response = $this->connect->query($request);
+            //
+            //     if (!$json ) {
+            //         $display->setData(array("title"=> "Searching - ".$query ,  "response" => $response));
+            //         $display->setTemplate("concepts/index");
+            //     }
+            //
+            //     return $response;
+            //     break;
+            // case "save_concept_term":
+            //     if (isset($this->permissions["EditVocabulary"])) {
+            //         return $this->saveConceptTerm($input, $user);
+            //     } else {
+            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+            //     }
+            //     break;
+            // case "delete_concept_term":
+            //     if (isset($this->permissions["EditVocabulary"])) {
+            //         return $this->deleteConceptTerm($input);
+            //     } else {
+            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+            //     }
+            //     break;
+            // case "save_related_concepts":
+            //     if (isset($this->permissions["EditVocabulary"])) {
+            //         $request = [];
+            //         $request["command"] = "save_related_concepts";
+            //         $request["id1"] = $input["id1"];
+            //         $request["id2"] = $input["id2"];
+            //         $response = $this->connect->query($request);
+            //         return $response;  // check if needed
+            //     } else {
+            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+            //     }
+            //     break;
+            // case "delete_related_concepts":
+            //     if (isset($this->permissions["EditVocabulary"])) {
+            //         $request = [];
+            //         $request["command"] = "delete_related_concepts";
+            //         $request["id1"] = $input["id1"];
+            //         $request["id2"] = $input["id2"];
+            //         $response = $this->connect->query($request);
+            //         return $response;  // check if needed
+            //     } else {
+            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+            //     }
+            //     break;
+            // case "save_broader_concepts":
+            //     if (isset($this->permissions["EditVocabulary"])) {
+            //         $request = [];
+            //         $request["command"] = "save_broader_concepts";
+            //         $request["narrower_id"] = $input["narrower_id"];
+            //         $request["broader_id"] = $input["broader_id"];
+            //         $response = $this->connect->query($request);
+            //         return $response;  // check if needed
+            //     } else {
+            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+            //     }
+            //     break;
+            // case "delete_broader_concepts":
+            //     if (isset($this->permissions["EditVocabulary"])) {
+            //         $request = [];
+            //         $request["command"] = "delete_broader_concepts";
+            //         $request["narrower_id"] = $input["narrower_id"];
+            //         $request["broader_id"] = $input["broader_id"];
+            //         $response = $this->connect->query($request);
+            //         return $response;  // check if needed
+            //     } else {
+            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+            //     }
+            //     break;
 
             // Resources
             case "add_resource":
