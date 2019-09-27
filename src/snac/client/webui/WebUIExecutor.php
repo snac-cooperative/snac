@@ -3936,7 +3936,7 @@ class WebUIExecutor {
     public function getHoldings(&$input) {
         $request = [];
         $request["command"] = "get_holdings";
-        $request["constellationid"] = "76783446";
+        $request["constellationid"] = $input["constellationid"];
         $response = $this->connect->query($request);
         return $response;
     }
