@@ -117,6 +117,8 @@ $(document).ready(function() {
                     $('.deleted-component').remove();
 
 
+                    var preferredNamePanelNumbers = getPreferredNamePanelNumbers();
+
                 	// Return edited items back to unedited state
                 	$("div[id*='_panel_']").each(function() {
                 		// for any div that has _panel_ in its name, we should check the ID
@@ -154,6 +156,9 @@ $(document).ready(function() {
             	        }
 
                 	});
+
+                    // If there are multiple preferred nameEntries, mark them as preferred on the edit interface
+                    updateNameEntryPanelToPreferred(preferredNamePanelNumbers);
 
                     // Everything's been saved, so mark not in editing
                     setEditedFlag(false);
@@ -572,7 +577,7 @@ $(document).ready(function() {
             }, 10000);
             return false;
         }
-        
+
         // Copy the review message from the modal into the form body
         $("#reviewmessage").val($("#reviewerNotebook").val());
 
@@ -975,3 +980,44 @@ $(document).ready(function() {
 
 
 });
+
+
+/**
+ * Get Preferred Name Panel Numbers
+ *
+ * Find all the preferred names and return their panel numbers
+ *
+ * @return Array of the preferred name panel numbers
+ */
+
+function getPreferredNamePanelNumbers() {
+    var preferredNames = $("#nameEntries").find("input[id*='nameEntry_preferenceScore_']").serialize();
+    var nameRegex = /nameEntry_preferenceScore_\d+=checked/g;
+    preferredNames = preferredNames.match(nameRegex);
+
+    var preferredNamePanels = [];
+    if (preferredNames) {
+        preferredNames.forEach( function(name ) {
+            var panelNumber = parseInt(name.slice(26));
+            preferredNamePanels.push(panelNumber);
+        });
+    }
+    return preferredNamePanels;
+}
+
+/**
+ * Update Name Entry Panel To Preferred
+ *
+ * Update nameEntry UI panel to show preferred status
+ *
+ * @param Array NameEntry panel numbers
+ */
+
+function updateNameEntryPanelToPreferred(numbers) {
+    if (numbers.length) {
+        numbers.forEach(function(number) {
+            $("#nameEntry_preferenceScore_" + number).val('checked');
+            $("#checkbox_nameEntry_preferenceScore_" + number).find("p").html("Preferred");
+        });
+    }
+}
