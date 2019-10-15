@@ -265,8 +265,8 @@
                                 {% set i = 0 %}
                                 {% set isPrimary = true %}
                                 {% for nameEntry in data.nameEntries %}
+                                    {% set isPrimary = (nameEntry.preferenceScore == '99') %}
                                     {{ components.displayNameEntry(X, true, true, nameEntry, i, isPrimary) }}
-                                    {% set isPrimary = false %}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
