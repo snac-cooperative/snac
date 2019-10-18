@@ -3523,7 +3523,7 @@ class ServerExecutor {
                 $response["file"] = array();
                 $response["file"]["mime-type"] = "text/csv";
                 $response["file"]["filename"] = $icid . "_holdings.csv";
-                $response["file"]["content"] = $csv;
+                $response["file"]["content"] = base64_encode($csv);
                 break;
             default:
                 throw new \snac\exceptions\SNACInputException("Unknown download file type: " . $input["type"], 400);
