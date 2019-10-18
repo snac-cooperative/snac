@@ -700,6 +700,13 @@ $(document).ready(function() {
                                     <i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML
                                 </a>
                             </li>
+                            {% if 'holdingRepository' in data.flags %}
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=holdings" class="">
+                                    <i class="fa fa-fw fa-book" aria-hidden="true"></i> Resource Holdings
+                                </a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
