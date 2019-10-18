@@ -1433,7 +1433,12 @@ class WebUIExecutor {
         if (isset($serverResponse["file"])) {
             array_push($headers, "Content-Type: " . $serverResponse["file"]["mime-type"]);
             array_push($headers, 'Content-Disposition: inline; filename="'.$serverResponse["file"]["filename"].'"');
-            return base64_decode($serverResponse["file"]["content"]);
+            $content = $serverResponse["file"]["content"];
+
+            if ($serverResponse["file"]["mime-type"] !== "text/csv") {
+                $content = base64_decode($content);
+            }
+            return $content;
         } else {
             $this->drawErrorPage("Download error occurred", $display);
         }

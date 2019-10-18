@@ -949,7 +949,7 @@ class SQL
 
 
     /**
-     * Select user API key data 
+     * Select user API key data
      *
      * Selects all API key data for the given user id
      *
@@ -971,7 +971,7 @@ class SQL
     }
 
     /**
-     * Save User Key 
+     * Save User Key
      *
      * Save the given API key with provided label for the given user.  This method will
      * also have Postgres auto-generate an expiration time and unique database ID for the
@@ -983,7 +983,7 @@ class SQL
      * @param string $key The clear-text key to save (encrypted)
      * @param string $label The label for the key (stored in clear text)
      *
-     * @return string[] All data for the inserted key as an associative array (includes expires and generated time) 
+     * @return string[] All data for the inserted key as an associative array (includes expires and generated time)
      */
     public function saveUserKey($appUserID, $key, $label)
     {
@@ -1003,16 +1003,16 @@ class SQL
         }
         return $all;
     }
-    
+
     /**
-     * Revoke User Key 
+     * Revoke User Key
      *
      * Deletes the key in the database associtated with the given user id and label.
      *
      * @param int $appUserID The numeric ID for the user
      * @param string $label The label for the key
      *
-     * @return boolean True if successfully removed, false otherwise 
+     * @return boolean True if successfully removed, false otherwise
      */
     public function revokeUserKey($appUserID, $label)
     {
@@ -1069,7 +1069,7 @@ class SQL
 
         while($row = $this->sdb->fetchrow($result))
         {
-            if (password_verify($key, $row["key"])) 
+            if (password_verify($key, $row["key"]))
                 return $row;
         }
         return null;
@@ -4935,6 +4935,35 @@ class SQL
                                                                                   $title,
                                                                                   $type));
 
+        return $this->sdb->fetchAll($result);
+    }
+
+
+    /**
+     * Select Holdings
+     *
+     * Selects all resource holdings of a
+     *
+     * @param int $icid The id of the holding repository
+     * @return string[] Returns associative array of resources data
+     */
+    public function selectHoldings($icid) {
+        // Check for merged repo_ic_ids
+        $result = $this->sdb->query('select ic_id from constellation_lookup where current_ic_id = $1', array($icid));
+        $icids = [];
+
+        while ($row = $this->sdb->fetchrow($result)) {
+            $icids[] = $row["ic_id"];
+        }
+        $icids = implode(", " , $icids);
+
+        $query = "SELECT r1.id, r1.version, r1.href, r1.type, r1.title, r1.display_entry, r1.abstract, r1.extent, r1.date, r1.updated_at
+                  FROM resource_cache r1
+                  INNER JOIN (SELECT id, max(version) AS version FROM resource_cache
+                  WHERE repo_ic_id IN ({$icids}) AND NOT is_deleted GROUP BY id) AS r2
+                  ON r1.id = r2.id AND r1.version = r2.version";
+
+        $result = $this->sdb->query($query, array());
         return $this->sdb->fetchAll($result);
     }
 

@@ -3507,6 +3507,24 @@ class ServerExecutor {
                 $serializer = new \snac\util\EACCPFSerializer();
                 $response["file"]["content"] = base64_encode($serializer->serialize($constellation));
                 break;
+            case "holdings":
+                $icid = $input["constellationid"];
+                $resources = $this->cStore->getRepoHoldings($icid);
+                $fh = fopen('php://temp', 'rw'); # don't create a file, attempt to use memory instead
+                fputcsv($fh, array_keys(current($resources))); // Add column headings
+
+                foreach ( $resources as $row ) {
+                    fputcsv($fh, $row);
+                }
+                rewind($fh);
+                $csv = stream_get_contents($fh);
+                fclose($fh);
+
+                $response["file"] = array();
+                $response["file"]["mime-type"] = "text/csv";
+                $response["file"]["filename"] = $icid . "_holdings.csv";
+                $response["file"]["content"] = $csv;
+                break;
             default:
                 throw new \snac\exceptions\SNACInputException("Unknown download file type: " . $input["type"], 400);
         }

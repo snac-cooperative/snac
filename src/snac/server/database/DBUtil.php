@@ -3245,6 +3245,18 @@ class DBUtil
         }
     }
 
+
+    /**
+     * Get Repo Holdings
+     *
+     * Gets an array of resource data of all holdings for a given holding institution.
+     * @param int $icid
+     * @param string[] Array of resources data
+     */
+     public function getRepoHoldings($icid) {
+         return $resources = $this->sql->selectHoldings($icid);
+     }
+
     /**
      * Save the resource origination name
      *
