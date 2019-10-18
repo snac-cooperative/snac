@@ -4942,9 +4942,9 @@ class SQL
     /**
      * Select Holdings
      *
-     * Selects all resource holdings of a
+     * Selects all resource holdings of a holding repository.
      *
-     * @param int $icid The id of the holding repository
+     * @param integer $icid The id of the holding repository
      * @return string[] Returns associative array of resources data
      */
     public function selectHoldings($icid) {
@@ -5110,7 +5110,7 @@ class SQL
     *
     * @param integer $icid Constellation ID.
     *
-    * @param inteter $version Version number.
+    * @param integer $version Version number.
     *
     * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
     */

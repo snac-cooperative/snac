@@ -3512,7 +3512,6 @@ class ServerExecutor {
                 $resources = $this->cStore->getRepoHoldings($icid);
                 $fh = fopen('php://temp', 'rw'); # don't create a file, attempt to use memory instead
                 fputcsv($fh, array_keys(current($resources))); // Add column headings
-
                 foreach ( $resources as $row ) {
                     fputcsv($fh, $row);
                 }
