@@ -700,6 +700,13 @@ $(document).ready(function() {
                                     <i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML
                                 </a>
                             </li>
+                            {% if 'holdingRepository' in data.flags %}
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=holdings" download>
+                                    <i class="fa fa-fw fa-book" aria-hidden="true"></i> Resource Holdings
+                                </a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
@@ -817,7 +824,7 @@ $(document).ready(function() {
                                     </div>
                                     <div id="archival-collapse" class="panel-collapse collapse in">
                                         <div class="panel-body">
-                                            <table id="archival" class="table table-striped table-bordered table-hover" data-order='[[ 1, "asc" ]]'>
+                                            <table id="archival" class="table table-striped table-hover" data-order='[[ 1, "asc" ]]'>
                                                 <thead>
                                                     <tr>
                                                         <th width="20%">Role</th>
@@ -836,7 +843,7 @@ $(document).ready(function() {
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
-                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a href="{{relation.resource.link}}" class="outbound-repo-link">{{relation.content|default(relation.resource.title)}}</a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                              <td>
@@ -862,7 +869,7 @@ $(document).ready(function() {
                                     </div>
                                     <div id="bibliographic-collapse" class="panel-collapse collapse">
                                         <div class="panel-body">
-                                            <table id="lump" class="table table-striped table-bordered" data-order='[[ 1, "asc" ]]'>
+                                            <table id="lump" class="table table-striped" data-order='[[ 1, "asc" ]]'>
                                                 <thead>
                                                     <tr>
                                                         <th width="20%">Role</th>
@@ -936,7 +943,7 @@ $(document).ready(function() {
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <table id="relation-table" class="table table-striped table-bordered" data-order='[[ 1, "asc" ]]'>
+                                <table id="relation-table" class="table table-striped " data-order='[[ 1, "asc" ]]'>
                                     <thead>
                                         <tr>
                                             <th width="25%">Relation</th>
@@ -1086,7 +1093,7 @@ $(document).ready(function() {
                     <div class="body-tab-pane tab-pane" id="holding-repository">
                         <div class="row">
                             <div class="col-md-12">
-                                <table id="holding-repository-table" class="table table-striped table-bordered table-hover dataTable no-footer" style="width:100%;">
+                                <table id="holding-repository-table" class="table table-striped table-hover dataTable no-footer" style="width:100%;">
                                     <thead>
                                         <tr>
                                             <!-- <th>Id</th> -->
@@ -1363,7 +1370,7 @@ $(document).ready(function() {
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <table id="shared-resources-table" class="table table-striped table-bordered table-hover dataTable no-footer" style="width:100%;">
+                                        <table id="shared-resources-table" class="table table-striped table-hover dataTable no-footer" style="width:100%;">
                                             <thead>
                                                 <tr>
                                                     <th> {{ data.nameEntries.0.original }} </th>
