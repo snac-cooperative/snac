@@ -84,7 +84,6 @@
                         }).serialize();
 
                 $.post("{{control.snacURL}}/resource_search?count=100", serializedForm, function(data) {
-                    x = data
                     var results = [];
                     datatable.clear();
                     if (data.results.length > 0) {
@@ -106,16 +105,16 @@
 
                             var icons = "<div style='display:inline-block'>"
                             {% if permissions.EditResources %}
-                                icons += "<button type='button' class='btn btn-primary btn-circle add-cart-resource-btn' title='Add to Cart' data-id='" +
-                                    resource.id+"' data-title='"+title+"'> <i class='fa fa-plus'></i></button>" +
+                            icons += "<button type='button' class='btn btn-primary btn-circle add-cart-resource-btn' title='Add to Cart' data-id='" +
+                                resource.id+"' data-title='"+title+"'> <i class='fa fa-plus'></i></button>"
                             {% endif %}
-                            "<div class='btn-group' style='margin-left:10px;'><a class='btn btn-success' title='View' target='_blank' href ='{{control.snacURL}}/vocab_administrator/resources/" +
-                                resource.id + "'> <i class='fa fa-eye'></i> </a>" +
-                                {% if permissions.EditResources %}
-                                    "<a class='btn btn-primary' title='Edit' target='_blank' href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
-                                    resource.id + "'> <i class='fa fa-edit'></i> </a>" +
-                                {% endif %}
-                                    "</div></div>";
+                            icons += "<div class='btn-group' style='margin-left:10px;'><a class='btn btn-success' title='View' target='_blank' href ='{{control.snacURL}}/vocab_administrator/resources/" +
+                                resource.id + "'> <i class='fa fa-eye'></i> </a>"
+                            {% if permissions.EditResources %}
+                            icons += "<a class='btn btn-primary' title='Edit' target='_blank' href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
+                                resource.id + "'> <i class='fa fa-edit'></i> </a>"
+                            {% endif %}
+                            icons += "</div></div>";
 
                             var row = new Array(icons, title, abstract, href, holdingInstitution, type);
                             datatable.row.add(row);
