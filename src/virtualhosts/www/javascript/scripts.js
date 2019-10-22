@@ -87,6 +87,8 @@ $(document).ready(function() {
         // call the normal startup scripts
         startupScript();
     }
+
+    trackOutboundRepoLinks();
 });
 
 function displayHoldingsMap() {
@@ -244,4 +246,21 @@ function toggleProfile() {
 
     var profileButtonText = ($("#profile-toggle-text").text() === "Hide") ? "Show" : "Hide";
     $("#profile-toggle-text").text(profileButtonText);
+}
+
+function trackOutboundRepoLinks() {
+    if (typeof ga === "function") {  // check for Google Analytics
+        $(".outbound-repo-link").on("click", function(event) {
+            handleOutboundLinkClicks(event);
+        });
+    }
+}
+
+// Send Outbound link clicks to Google Analytics for logging
+function handleOutboundLinkClicks(event) {
+    ga('send', 'event', {
+        eventCategory: 'Outbound Link',
+        eventAction: 'click',
+        eventLabel: event.target.href
+    });
 }

@@ -94,7 +94,7 @@
                             var type = resource.documentType.term || "";
                             var abstract = shortenIfLong(resource.abstract || "", 300);
                             var href = resource.link || "";
-                            href = "<a href=" + href + " target='_blank' title='" + href + "'>" + shortenIfLong(href, 35, false) + "</a>";
+                            href = "<a href=" + href + " target='_blank' title='" + href + "' class='outbound-repo-link'>" + shortenIfLong(href, 35, false) + "</a>";
 
                             var repo = resource.repository || "";
                             var holdingInstitution = "";
@@ -149,6 +149,12 @@
                 var resourceData = $(event.target).closest("button").data();
                 addResourceToCart(resourceData.id, resourceData.title);
             })
+
+            $("#resourceList").on( "click", ".outbound-repo-link", function(event) {
+                if (typeof ga === "function") {  // check for Google Analytics
+                    handleOutboundLinkClicks(event);
+                }
+            });
         });
 
         function cartResources() {
