@@ -159,11 +159,24 @@ $(document).ready(function() {
                                             <div class="modal-body">
                                                 <p>This Constellation was {{ history.data.action == 'merge' ? "merged" : "split"}} from the following Constellation(s):</p>
                                                 {% if history.data.arks %}
-                                                <h5 style="font-weight: bold;">Previous ARK Identifiers</h5>
-                                                {% for ark in history.data.arks %}
-                                                <p style="margin-left: 20px;">{{ark}}</p>
-                                                {% endfor %}
-                                                {% endif %}
+                                                <div class="row">
+                                                    <div class="col-md-6">
+
+                                                        <h5 style="font-weight: bold;">Previous ARK Identifiers</h5>
+                                                        {% for ark in history.data.arks %}
+                                                        <p style="margin-left: 20px;">{{ark}}</p>
+                                                        {% endfor %}
+                                                        {% endif %}
+                                                        {% if history.data.icids %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h5 style="font-weight: bold;">Previous SNAC Identifiers</h5>
+                                                        {% for icid in history.data.icids %}
+                                                        <p style="margin-left: 20px;">{{icid}}</p>
+                                                        {% endfor %}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
