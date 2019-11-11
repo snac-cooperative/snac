@@ -843,7 +843,7 @@ $(document).ready(function() {
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
-                                                                 <a href="{{relation.resource.link}}" class="outbound-repo-link">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a href="{{relation.resource.link}}" class="outbound-repo-link">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                              <td>
@@ -888,7 +888,7 @@ $(document).ready(function() {
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
-                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                              <td>
