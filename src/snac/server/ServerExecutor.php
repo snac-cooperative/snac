@@ -612,9 +612,9 @@ class ServerExecutor {
                     if (isset($input["count"]))
                         $count = $input["count"];
                     $results = $this->cStore->searchVocabulary(
-                        $input["type"],
-                        $input["query_string"],
-                        $input["entity_type"],
+                        $input["type"] ?? "",
+                        $input["query_string"] ?? "",
+                        $input["entity_type"] ?? "",
                         $count);
                     foreach ($results as $result)
                         array_push($response["results"], $result->toArray(false));
