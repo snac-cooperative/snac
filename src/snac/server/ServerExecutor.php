@@ -598,6 +598,9 @@ class ServerExecutor {
         if (isset($input["term_id"])) {
             return $this->readVocabulary($input);
         } else {
+            if (!array_key_exists("type", $input) || !array_key_exists("entity_type", $input) || !array_key_exists("query_string", $input)) {
+                throw new \snac\exceptions\SNACInputException("Missing required field.", 400);
+            }
             switch ($input["type"]) {
                 case "holding":
                     $response["results"] = array();
