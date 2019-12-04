@@ -571,10 +571,6 @@ $(document).ready(function() {
         }
     })
 
-    placesTable = $('#placesTable').DataTable({
-        "searching" : true,
-        "autoWidth": false
-    });
 
     archivalTable = $('#archival').DataTable({
                     dataSrc: 2,
@@ -588,6 +584,11 @@ $(document).ready(function() {
                     "language": {
                         "searchPlaceholder": "Title, Role, Repository"
                     }
+    });
+
+    placesTable = $('#placesTable').DataTable({
+        "searching" : true,
+        "autoWidth": false
     });
 
     $('.listtable').DataTable({
@@ -1016,8 +1017,8 @@ $(document).ready(function() {
                                     </thead>
                                     <tbody>
                                         {% for place in data.places %}
-                                            <tr>
                                             {% if place.confirmed and place.geoplace.id %}
+                                            <tr>
                                                 <td>
                                                     {% if place.geoplace.latitude %}
                                                     <input type='hidden' class="place_latitude" id='place_lat_{{loop.index}}' value='{{place.geoplace.latitude}}'/>
@@ -1029,13 +1030,15 @@ $(document).ready(function() {
                                                 <td>{{place.geoplace.name}}</td>
                                                 <td>{{place.geoplace.administrationCode}}</td>
                                                 <td>{{place.geoplace.countryCode}}</td>
+                                            </tr>
                                             {% elseif place.original and place.original != "" %}
+                                            <tr>
                                                 <td></td>
                                                 <td>{{place.original}}</td>
                                                 <td></td>
                                                 <td></td>
-                                            {% endif %}
                                             </tr>
+                                            {% endif %}
                                         {% endfor %}
                                     </tbody>
                                 </table>
