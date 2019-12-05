@@ -36,6 +36,14 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 
+<!-- Datatable CSV -->
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.print.min.js"></script>
+<!-- <script src="https://cdn.datatables.net/1.10.9/js/dataTables.bootstrap.min.js"></script> -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script> -->
+
+
 <!-- Leaflet JS Javascript and Styles-->
 <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
@@ -583,7 +591,21 @@ $(document).ready(function() {
                     ],
                     "language": {
                         "searchPlaceholder": "Title, Role, Repository"
-                    }
+                    },
+                    dom: "Bfrltip",
+                    buttons: [
+                        {
+                            extend: 'csv',
+                            text: '<i class="fa fa-download"></i> csv',
+                            className: 'btn btn-xs btn-default',
+                            exportOptions: {
+                                modifier: {
+                                    page: 'all'
+                                }
+                            }
+                        }
+                         ]
+
     });
 
     placesTable = $('#placesTable').DataTable({
