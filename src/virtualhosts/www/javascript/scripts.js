@@ -249,18 +249,25 @@ function toggleProfile() {
 }
 
 function trackOutboundRepoLinks() {
-    if (typeof ga === "function") {  // check for Google Analytics
+
         $(".outbound-repo-link").on("click", function(event) {
             handleOutboundLinkClicks(event);
         });
-    }
 }
 
 // Send Outbound link clicks to Google Analytics for logging
 function handleOutboundLinkClicks(event) {
-    ga('send', 'event', {
-        eventCategory: 'Outbound Link',
-        eventAction: 'click',
-        eventLabel: event.target.href
-    });
+    if (typeof ga === "function") {  // check for Google Analytics
+        ga('send', 'event', {
+            eventCategory: 'Outbound Link',
+            eventAction: 'click',
+            eventLabel: event.target.href
+        });
+    }
+    var logUrl = "url=" + event.target.href;
+    var icid = $('#constellationid').val();
+    if (icid) {
+        logUrl += ("&icid=" + icid);
+    }
+    navigator.sendBeacon(snacUrl + "/analytics?" + logUrl );
 }
