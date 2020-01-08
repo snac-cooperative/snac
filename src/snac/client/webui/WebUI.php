@@ -127,7 +127,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "feedback",
                 "resource_search",
                 "get_holdings",
-                "shared_resources"
+                "shared_resources",
+                "analytics"
         );
 
         // These are read-only commands that are allowed in read-only mode
@@ -662,6 +663,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->getSharedResources($this->input);
                 break;
 
+            case "analytics":
+                $executor->recordAnalytics($this->input);
+                break;
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only

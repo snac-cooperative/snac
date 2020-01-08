@@ -150,9 +150,7 @@
             })
 
             $("#resourceList").on( "click", ".outbound-repo-link", function(event) {
-                if (typeof ga === "function") {  // check for Google Analytics
-                    handleOutboundLinkClicks(event);
-                }
+                handleOutboundLinkClicks(event);
             });
         });
 

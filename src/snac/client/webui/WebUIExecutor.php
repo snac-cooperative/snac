@@ -1687,10 +1687,23 @@ class WebUIExecutor {
                     "type" => "general"
                 );
                 $serverResponse = $this->connect->query($ask);
-                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != "success")
                     return $this->drawErrorPage($serverResponse, $display);
                 $display->setData($serverResponse);
                 $display->setTemplate("report_general_page");
+                break;
+
+            case "outbound":
+                $ask = array(
+                    "command"=>"report",
+                    "type" => "outbound",
+                    "domain" => $input["domain"] ?? null
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != "success")
+                    return $this->drawErrorPage($serverResponse, $display);
+                $display->setData($serverResponse);
+                $display->setTemplate("report_outbound_page");
                 break;
 
             case "holdings":
@@ -1699,7 +1712,7 @@ class WebUIExecutor {
                     "type" => "holdings"
                 );
                 $serverResponse = $this->connect->query($ask);
-                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != "success")
                     return $this->drawErrorPage($serverResponse, $display);
                 $display->setData($serverResponse);
                 $display->setTemplate("report_list_page");
@@ -3955,5 +3968,18 @@ class WebUIExecutor {
         $request["icid2"] = $input["icid2"];
         $response = $this->connect->query($request);
         return $response;
+    }
+
+    /**
+     * Record Analytics
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     */
+    public function recordAnalytics($input) {
+        $request = ["command" => "analytics"];
+        $request["icid"] = $input["icid"];
+        $request["url"] = $input["url"];
+        $this->connect->query($request);
     }
 }

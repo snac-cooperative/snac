@@ -4058,16 +4058,29 @@ class ServerExecutor {
             case "public":
                 $reportName = "Public";
                 break;
+            case "outbound":  # Outbound data is generated on the fly, instead of being pulled from a precompiled report
+                $domain = $input["domain"];
+                $visits = $this->cStore->readAnalytics($domain);
+                $trafficData = array("result" => "success");
+                $trafficData["domain"] = $domain;
+                $trafficData["dates"]  = json_encode($visits[0]);
+                $trafficData["counts"] = json_encode($visits[1]);
+                $trafficData["total"] = json_encode($visits[2]["Total"]);
+                return $trafficData;
+                break;
             case "general":
             default:
                 break;
         }
         $report = $this->cStore->readReport($reportName);
 
+
+
         if ($report && $report != null && !empty($report))
             return array("result" => "success",
                          "reports" => json_decode($report["report"], true),
                          "timestamp" => $report["timestamp"]);
+
 
         return array("result" => "failure");
     }
@@ -4108,6 +4121,7 @@ class ServerExecutor {
                 $reportEngine->addReport("TopEditorsThisWeek");
                 $reportEngine->addReport("PublishesLastMonth");
                 $reportEngine->addReport("TopHoldingInstitutions");
+                $reportEngine->addReport("OutboundLinks");
                 break;
         }
         $reportEngine->setPostgresConnector($this->cStore->sqlObj()->connectorObj());
@@ -4278,6 +4292,18 @@ class ServerExecutor {
         $response["result"] = "success";
 
         return $response;
+    }
+
+    /**
+     * Record Analytics
+     *
+     * Record outgoing link traffic hit
+     *
+     * @param string[] $input Input array from the Server object
+     */
+    public function recordAnalytics($input) {
+
+        $this->cStore->recordAnalytics($input["icid"], $input["url"]);
     }
 
 }
