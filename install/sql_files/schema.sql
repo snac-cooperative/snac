@@ -104,6 +104,7 @@ drop table if exists resource_origination_name;
 drop table if exists constellation_lookup;
 drop table if exists messages;
 drop table if exists not_same;
+drop table if exists outbound_link
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -1141,6 +1142,14 @@ create table api_keys (
 create index api_keys_idx2 on api_keys(key);
 create index api_keys_idx3 on api_keys(uid);
 
+create table outbound_link (
+        id          serial primary key,
+        ic_id       int,
+        url         text,
+        timestamp   timestamp default(CURRENT_DATE)
+        );
+create index url_idx1 on outbound_link(url);
+create index timestamp_idx1 on outbound_link(timestamp);
 
 -- Views that allow us to query the most recent constellation data
 

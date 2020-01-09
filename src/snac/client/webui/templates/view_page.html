@@ -571,10 +571,6 @@ $(document).ready(function() {
         }
     })
 
-    placesTable = $('#placesTable').DataTable({
-        "searching" : true,
-        "autoWidth": false
-    });
 
     archivalTable = $('#archival').DataTable({
                     dataSrc: 2,
@@ -588,6 +584,11 @@ $(document).ready(function() {
                     "language": {
                         "searchPlaceholder": "Title, Role, Repository"
                     }
+    });
+
+    placesTable = $('#placesTable').DataTable({
+        "searching" : true,
+        "autoWidth": false
     });
 
     $('.listtable').DataTable({
@@ -632,6 +633,13 @@ $(document).ready(function() {
 
 
     <div class="container snac" role="main">
+    {% if data.message %}
+        <div class="alert alert-warning alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <strong>Notice:</strong> Please update your bookmarks. The Constellation you requested has been merged into a new identifier, <a href="{{data.message.info.redirect}}">{{data.message.info.redirect}}</a>, displayed below.
+        </div>
+    {% endif %}
+
         <div class="name" style="margin-bottom: 15px;">
             <h1 style="display: inline;">
                 <!--
@@ -843,7 +851,7 @@ $(document).ready(function() {
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
-                                                                 <a href="{{relation.resource.link}}" class="outbound-repo-link">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a href="{{relation.resource.link}}" class="outbound-repo-link">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                              <td>
@@ -888,7 +896,7 @@ $(document).ready(function() {
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
-                                                                 <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                              <td>
@@ -1009,8 +1017,8 @@ $(document).ready(function() {
                                     </thead>
                                     <tbody>
                                         {% for place in data.places %}
-                                            <tr>
                                             {% if place.confirmed and place.geoplace.id %}
+                                            <tr>
                                                 <td>
                                                     {% if place.geoplace.latitude %}
                                                     <input type='hidden' class="place_latitude" id='place_lat_{{loop.index}}' value='{{place.geoplace.latitude}}'/>
@@ -1022,13 +1030,15 @@ $(document).ready(function() {
                                                 <td>{{place.geoplace.name}}</td>
                                                 <td>{{place.geoplace.administrationCode}}</td>
                                                 <td>{{place.geoplace.countryCode}}</td>
+                                            </tr>
                                             {% elseif place.original and place.original != "" %}
+                                            <tr>
                                                 <td></td>
                                                 <td>{{place.original}}</td>
                                                 <td></td>
                                                 <td></td>
-                                            {% endif %}
                                             </tr>
+                                            {% endif %}
                                         {% endfor %}
                                     </tbody>
                                 </table>

@@ -7043,4 +7043,40 @@ class SQL
 
         return $return;
     }
+
+
+    /**
+     * Record Analytics
+     *
+     * Saves outbound link traffic for analytics
+     *
+     * @param integer $icid The icid of the constellation page the link was clicked on, if any.
+     * @param string $url Url of the resource clicked
+     */
+    public function recordAnalytics($icid, $url) {
+        $sql = "INSERT INTO outbound_link (ic_id, url) VALUES ($1, $2)";
+        $result = $this->sdb->query($sql, array($icid, $url));
+    }
+
+    /**
+     * Read Analytics
+     *
+     * Read outbound link traffic analytics
+     *
+     * @param string $domain The unique domain to return counts for.
+     * @return array $results Array of dates and hit counts.
+     */
+    public function selectAnalytics($domain) {
+        $sql = "SELECT count(*), to_char(timestamp, 'yyyy-mm-dd') AS date
+                FROM outbound_link
+                WHERE url ilike $1
+                AND timestamp > (NOW() - INTERVAL '1 year')
+                GROUP BY date;";
+
+        $result = $this->sdb->query($sql, ["%".$domain."%"]);
+        $results = $this->sdb->fetchAll($result);
+        return $results;
+    }
+
+
 }

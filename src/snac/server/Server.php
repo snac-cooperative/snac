@@ -493,7 +493,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->readReport($tmp);
                 break;
             case "report":
-                if (!$executor->hasPermission("View Reports"))
+                if (!$executor->hasPermission("View Reports") && $this->input["type"] != "outbound")
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to view reports.", 403);
                 $this->response = $executor->readReport($this->input);
                 break;
@@ -576,6 +576,10 @@ class Server implements \snac\interfaces\ServerInterface {
             //
             //     break;
 
+
+            case "analytics":
+                $executor->recordAnalytics($this->input);
+                break;
 
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"], 400);

@@ -154,9 +154,9 @@ class Config {
      *  @var integer Default for limit selectListByStatus() and selectEditList()
      */
     public static $SQL_LIMIT = 42;
-    
+
     /**
-     * @var string Location of the REST commands file 
+     * @var string Location of the REST commands file
      */
     public static $REST_COMMAND_FILE = "full/path/to/src/snac/client/rest/commands.json";
 
@@ -240,6 +240,11 @@ class Config {
      * @var string Resource type for the resource search functionality of snac
      */
     public static $ELASTIC_SEARCH_RESOURCE_TYPE = "";
+
+    /**
+     * @var integer Maximum number of pages to show on search result pages
+     */
+    public static $MAX_SEARCH_RESULT_PAGES = 15;
 
     /**
      * @var boolean Whether or not to have the server attempt to use Neo4J
