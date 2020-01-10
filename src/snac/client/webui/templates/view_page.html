@@ -896,7 +896,11 @@ $(document).ready(function() {
                                                          {% endif %}
                                                              <td>{{relation.role.term}}</td>
                                                              <td>
-                                                                 <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
+                                                                 {% if relation.resource.link %}
+                                                                     <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
+                                                                 {% else %}
+                                                                     <p>{{relation.resource.displayEntry|default(relation.resource.title)}}</p>
+                                                                 {% endif %}
                                                              </td>
                                                              <td>{{relation.resource.repository.nameEntries.0.original}}</td>
                                                              <td>
