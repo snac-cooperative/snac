@@ -4204,8 +4204,9 @@ class ServerExecutor {
         // Make sameAs for each uri
         $sameAsList = [];
         foreach ($sameAsUris  as $uri) {
-            $sameAs->setURI($uri);
-            $sameAsList[] = $sameAs;
+            $newSameAs = clone $sameAs;
+            $newSameAs->setURI($uri);
+            $sameAsList[] = $newSameAs;
         }
 
         //  Check out constellation and get updated version.
