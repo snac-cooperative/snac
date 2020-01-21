@@ -175,7 +175,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 <span class="btn btn-default"
                                     style="width: 20%;border-right: 0px; border-top: 0px; border-bottom:0px; border-radius: 0px;"
                                     data-toggle="modal" data-target="#constellation-settings" title="View more options"
-                                    onClick="updateSettingsBox({{link.id}}, {{link.version}}, '{{link.nameEntry}}');">
+                                    onClick="updateSettingsBox({{link.id}}, {{link.version}}, '{{link.nameEntry|replace({"'":""})}}');">
                                     <span class="glyphicon glyphicon-cog"> </span>
                                 </span>
                             </div>
