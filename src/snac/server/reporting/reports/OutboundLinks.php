@@ -44,7 +44,8 @@ class OutboundLinks extends helpers\Report {
      public function compute($psql) {
          $sql = "SELECT count(*), date_trunc('day', timestamp) AS date
                     FROM outbound_link
-                    WHERE timestamp > TIMESTAMP 'yesterday' - INTERVAL '31 days'
+                    WHERE timestamp > current_date - INTERVAL '31 days'
+                    AND timestamp < current_date
                     group by date
                     order by date asc;";
 
