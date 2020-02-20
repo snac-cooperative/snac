@@ -4058,7 +4058,7 @@ class ServerExecutor {
             case "public":
                 $reportName = "Public";
                 break;
-            case "outbound":  # Outbound data is generated on the fly, instead of being pulled from a precompiled report
+            case "outbound":               // Outbound data is generated on the fly, instead of being pulled from a precompiled report
                 $domain = $input["domain"];
                 $visits = $this->cStore->readAnalytics($domain);
                 $trafficData = array("result" => "success");
@@ -4204,8 +4204,9 @@ class ServerExecutor {
         // Make sameAs for each uri
         $sameAsList = [];
         foreach ($sameAsUris  as $uri) {
-            $sameAs->setURI($uri);
-            $sameAsList[] = $sameAs;
+            $newSameAs = clone $sameAs;
+            $newSameAs->setURI($uri);
+            $sameAsList[] = $newSameAs;
         }
 
         //  Check out constellation and get updated version.

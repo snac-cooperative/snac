@@ -46,38 +46,48 @@ function updateSettingsBox(id, version, nameEntry) {
     var html = "";
 
     // Edit
-    html += "<a href='"+snacUrl+"/edit/"+id+"/"+version+"' class='list-group-item list-group-item-info'>";
-    html += "   <span class='glyphicon glyphicon-pencil'></span> Edit this Constellation";
-    html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Open this constellation in editing mode, continuing where you left off." data-toggle="popover" data-placement="right"></span>';
-    html += "</a>";
+    html += `<a href="${snacUrl}/edit/${id}/${version}" class="list-group-item list-group-item-info">
+                <span class="glyphicon glyphicon-pencil"></span> Edit this Constellation
+                <span class="pull-right glyphicon glyphicon-question-sign" title="Help"
+                    data-content="Open this constellation in editing mode, continuing where you left off." data-toggle="popover" data-placement="right">
+                </span>
+            </a>`;
 
     // Preview
-    html += "<a href='"+snacUrl+"/view/"+id+"/"+version+"?preview=1' class='list-group-item list-group-item-success'>";
-    html += "   <span class='glyphicon glyphicon-eye-open'></span> Preview this Constellation";
-    html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Preview the current state of this constellation in the view mode." data-toggle="popover" data-placement="right"></span>';
-    html += "</a>";
+    html += `<a href="${snacUrl}/view/${id}/${version}?preview=1" class="list-group-item list-group-item-success">
+                <span class="glyphicon glyphicon-eye-open"></span> Preview this Constellation
+                <span class="pull-right glyphicon glyphicon-question-sign" title="Help"
+                    data-content="Preview the current state of this constellation in the view mode." data-toggle="popover" data-placement="right">
+                </span>
+            </a>`;
 
     // Send for Review
-    html += "<a href='#' onClick='sendForReviewModal("+id+","+version+");' class='list-group-item list-group-item-review'>";
-    html += "   <span class='glyphicon glyphicon-send'></span> Send this Constellation for Review";
-    html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Send your saved changes to a reviewer." data-toggle="popover" data-placement="right"></span>';
-    html += "</a>";
+    html += `<a href="#" onClick="sendForReviewModal(${id},${version});" class="list-group-item list-group-item-review">
+                <span class="glyphicon glyphicon-send"></span> Send this Constellation for Review
+                <span class="pull-right glyphicon glyphicon-question-sign" title="Help"
+                    data-content="Send your saved changes to a reviewer." data-toggle="popover" data-placement="right">
+                </span>
+            </a>`;
 
     // Publish
     if (permissions.Publish) {
-        html += "<a href='"+snacUrl+"/publish/"+id+"/"+version+"' class='list-group-item list-group-item-warning'>";
-        html += "   <span class='glyphicon glyphicon-upload'></span> Publish this Constellation";
-        html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Publish your saved changes, making them publicly available." data-toggle="popover" data-placement="right"></span>';
-        html += "</a>";
+        html += `<a href="${snacUrl}/publish/${id}/${version}" class="list-group-item list-group-item-warning">
+                    <span class="glyphicon glyphicon-upload"></span> Publish this Constellation
+                    <span class="pull-right glyphicon glyphicon-question-sign" title="Help"
+                        data-content="Publish your saved changes, making them publicly available." data-toggle="popover" data-placement="right">
+                    </span>
+                </a>`;
     }
 
     // Delete
     if (permissions.Delete) {
-        html += "<a href='"+snacUrl+"/delete/"+id+"/"+version+"' class='list-group-item list-group-item-danger'";
-        html += "       onClick=\"return window.confirm('Are your sure you want to delete "+nameEntry+"?');\">";
-        html += "   <span class='glyphicon glyphicon-trash'></span> Delete this Constellation";
-        html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Delete this constellation from SNAC." data-toggle="popover" data-placement="right"></span>';
-        html += "</a>";
+        html += `<a href="${snacUrl}/delete/${id}/${version}" class="list-group-item list-group-item-danger"
+                       onClick="return window.confirm('Are your sure you want to delete ${nameEntry}?')">
+                    <span class="glyphicon glyphicon-trash"></span> Delete this Constellation
+                    <span class="pull-right glyphicon glyphicon-question-sign" title="Help"
+                        data-content="Delete this constellation from SNAC." data-toggle="popover" data-placement="right">
+                    </span>
+                </a>`;
     }
 
     $("#settings-actions").html(html);
