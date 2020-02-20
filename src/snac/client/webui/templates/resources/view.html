@@ -237,8 +237,8 @@
         {% if  data.related_constellations %}
             <div class="row">
                 <div class="col-md-12 search-results">
-                    <h3>Related Constellations</h3>
-                    <p class="search-info">There are {{data.related_constellations|length}} Constellations related to this resource.
+                    <h3>Related Entities</h3>
+                    <p class="search-info">There are {{data.related_constellations|length}} Entities related to this resource.
                     </p>
                     {% for constellation in data.related_constellations %}
                         <div id="result{{loop.index}}">
