@@ -214,12 +214,17 @@ function getSharedResources(icid1, icid2) {
     var sharedTable = $("#shared-resources-table").DataTable().clear().draw();
 
     $.ajax({
-        url: snacUrl + "/shared_resources?icid1=" + icid1 + "&icid2=" +icid2
+        url: snacUrl + "/shared_resources?icid1=" + icid1 + "&icid2=" + icid2
     }).done(function(data) {
         var rows = [];
         var length =  data.resources.length;
         for (i = 0; i < length; i++) {
-            var row = [data.resources[i].arcrole_1, "<a href='"+data.resources[i].href+"'>" +data.resources[i].title + "</a> ", data.resources[i].arcrole_2];
+            var resourceHref = "<a href='" + data.resources[i].href + "'>" + data.resources[i].title + "</a> "
+            var resourceInfoIcon = " <a target='_blank' href='" +
+                    snacUrl + "/vocab_administrator/resources/" + data.resources[i].id +
+                    "' title='View in SNAC'> <i class='fa fa-info-circle' style='font-size:large'> </i> </a>"
+
+            var row = [data.resources[i].arcrole_1, resourceHref, resourceInfoIcon, data.resources[i].arcrole_2];
             rows.push(row);
         }
         sharedTable.rows.add(rows).draw()
@@ -229,12 +234,12 @@ function getSharedResources(icid1, icid2) {
 
 function loadSharedResourcesModal(target) {
     // grab info on clicked table row to load the Shared Resources Modal
-    var relatedConstellationName = $(target).closest('td').find('a')[0].innerHTML;
+    var relatedConstellationName = $(target).closest("td").find("a")[0].innerHTML;
     $(".compared-constellation-name").html(relatedConstellationName);
     var iconClasses = "";
-    if ($(target).closest('td').find('i.fa-stack-1x').hasClass("fa-university")) {
+    if ($(target).closest("td").find("i.fa-stack-1x").hasClass("fa-university")) {
         iconClasses = "fa fa-university";
-    } else if ($(target).closest('td').find('i.fa-stack-1x').hasClass("fa-users")) {
+    } else if ($(target).closest("td").find("i.fa-stack-1x").hasClass("fa-users")) {
         iconClasses = "fa fa-users";
     } else {
         iconClasses = "fa fa-user";
@@ -1387,9 +1392,10 @@ $(document).ready(function() {
                                         <table id="shared-resources-table" class="table table-striped table-hover dataTable no-footer" style="width:100%;">
                                             <thead>
                                                 <tr>
-                                                    <th> {{ data.nameEntries.0.original }} </th>
+                                                    <th style="width: 130px;"> {{ data.nameEntries.0.original }} </th>
                                                     <th> Title </th>
-                                                    <th class="compared-constellation-name"></th>
+                                                    <th  style="width: 5px;" ></th>
+                                                    <th class="compared-constellation-name" style="width: 130px;"></th>
                                                 </tr>
                                             </thead>
                                         </table>
