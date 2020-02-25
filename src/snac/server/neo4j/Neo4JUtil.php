@@ -161,7 +161,7 @@ class Neo4JUtil {
                 }
                 // Be correct with pass by reference foreach loops
                 unset($icRel);
-                
+
                 if ($add)
                     array_push($icRels, [
                         "target" => $relation->getTargetConstellation(),
@@ -708,10 +708,9 @@ class Neo4JUtil {
 
             // If resource has a repository, then add a link
             if ($resource->getRepository() != null && $resource->getRepository()->getID() != null) {
-                $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
-                    CREATE (b)-[r:HIRELATION]->(a);",
+                $this->connector->run("MATCH (a:Identity {id: {id1} }) MATCH (b:Resource {id: {id2} }) CREATE (b)-[r:HIRELATION]->(a);",
                     [
-                        'id1' => $resource->getRepository()->getID(),
+                        'id1' => (string) $resource->getRepository()->getID(),   
                         'id2' => $resource->getID()
                     ]);
             }
