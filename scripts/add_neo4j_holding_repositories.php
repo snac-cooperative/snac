@@ -1,13 +1,11 @@
 #!/usr/bin/env php
 <?php
 /**
- * Refresh the Elatic Search Indices
+ * Add Holding Repository Relationships to Neo4j
  *
- * This script is more "dirty" to be efficient in rebuilding the Elastic Search index.  It queries
- * the postgres database directly to get required information to build the elastic search indices.
+ * This script queries postgres directly and then adds Holding Institution relationships to Neo4j by pointing
+ * resouce nodes to the constellation node of their holding institution.
  *
- * It fills two indices by default: the base search index for UI interaction and the all names index
- * for identity reconciliation.
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause

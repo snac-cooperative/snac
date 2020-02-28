@@ -1,13 +1,12 @@
 #!/usr/bin/env php
 <?php
 /**
- * Refresh the Elatic Search Indices
+ * Rebuild Neo4j Resources
  *
- * This script is more "dirty" to be efficient in rebuilding the Elastic Search index.  It queries
- * the postgres database directly to get required information to build the elastic search indices.
+ * This script queries the postgres database directly to get required information to build the neo4j database.
  *
- * It fills two indices by default: the base search index for UI interaction and the all names index
- * for identity reconciliation.
+ * It creates resource nodes nodes with id, version, href, type, and title and relates them to Identity
+ * Constellation nodes.
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause

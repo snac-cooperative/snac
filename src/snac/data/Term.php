@@ -3,7 +3,7 @@
 /**
  * Term Class that holds simple database terms.
  *
- * Holds the information for an individual term in a controlled vocabulary. 
+ * Holds the information for an individual term in a controlled vocabulary.
  *
  * License:
  *
@@ -30,62 +30,62 @@ class Term {
 
     /**
      * @var string $type Vocabulary type
-     * 
+     *
      * Vocabulary type of this term.
      *
      * This type is based on the storage of the vocabulary in our system, in which the vocabulary is grouped by what area
      * it is describing (such as a gender, or script code).  The list of types is:
-     * 
-     * * record_type, 
-     * * script_code, 
-     * * entity_type, 
-     * * event_type, 
+     *
+     * * record_type,
+     * * script_code,
+     * * entity_type,
+     * * event_type,
      * * name_type,
-     * * occupation, 
-     * * language_code, 
-     * * gender, 
-     * * nationality, 
-     * * maintenance_status, 
-     * * agent_type, 
+     * * occupation,
+     * * language_code,
+     * * gender,
+     * * nationality,
+     * * maintenance_status,
+     * * agent_type,
      * * document_role,
-     * * document_type, 
-     * * function_type, 
-     * * function, 
-     * * subject, 
-     * * date_type, 
-     * * relation_type, 
-     * * place_match, 
+     * * document_type,
+     * * function_type,
+     * * function,
+     * * subject,
+     * * date_type,
+     * * relation_type,
+     * * place_match,
      * * source_type
-     * 
+     *
      */
     protected $type;
 
     /**
      * @var int $id vocabulary ID for this term
-     * 
+     *
      * This is the ID in vocabulary store (postgres)
      */
     protected $id;
 
     /**
-     * @var string $term The term 
-     * 
+     * @var string $term The term
+     *
      * This is the value (in any language) for this particular Term object.
      */
     protected $term;
-    
+
     /**
      * @var string $uri The full URI for this controlled vocabulary term
      */
     protected $uri;
-    
+
     /**
-     * @var string $description The description 
-     * 
+     * @var string $description The description
+     *
      * This is the description (in any language) for this particular vocabulary term
      */
     protected $description;
-    
+
     /**
      * Constructor
      *
@@ -103,11 +103,11 @@ class Term {
     }
 
     /**
-     * Set the type 
-     * 
+     * Set the type
+     *
      * Set the type for this vocabulary term. Objects using this term will match their type against this. User
      * interface will use this constrain vocabulary term selection only to appropriate values.
-     * 
+     *
      * @param string $type Set the vocabulary type of this Term.
      */
     public function setType($type)
@@ -117,10 +117,10 @@ class Term {
 
     /**
      * Get the type
-     * 
+     *
      * Get the type for this vocabulary term. Objects using this term will match their type against this. User
      * interface will use this constrain vocabulary term selection only to appropriate values.
-     * 
+     *
      * @return string The vocabulary type of this Term.
      */
     public function getType()
@@ -145,10 +145,10 @@ class Term {
     public function setID($id) {
         $this->id = $id;
     }
-    
+
     /**
      * Get the term of this vocab term
-     * 
+     *
      * This is a human-readable text string of this Term.  It may be in any language available to the system.
      *
      *  @return string term of this vocab term
@@ -183,7 +183,7 @@ class Term {
     public function setURI($uri) {
         $this->uri = $uri;
     }
-    
+
     /**
      * Get the description of this vocab term
      *
@@ -204,7 +204,7 @@ class Term {
 
     /**
      * Is the term empty
-     * 
+     *
      * Check whether or not this term object is empty (all null values).
      *
      * @return boolean True if the term is empty, false otherwise.
@@ -230,7 +230,7 @@ class Term {
             'type' => $this->getType(),
             'description' => $this->getDescription()
         );
-       
+
         // Shorten if necessary
         if ($shorten) {
             $return2 = array();
@@ -242,7 +242,7 @@ class Term {
         }
 
 
-        return $return; 
+        return $return;
     }
 
     /**
@@ -251,7 +251,7 @@ class Term {
      * @param string[][] $data The data for this object in an associative array
      */
     public function fromArray($data) {
-            
+
         unset($this->id);
         if (isset($data["id"]))
             $this->id = $data["id"];
@@ -291,7 +291,7 @@ class Term {
      */
     public function toJSON($shorten = true) {
         return json_encode($this->toArray($shorten), JSON_PRETTY_PRINT);
-    } 
+    }
 
     /**
      * Prepopulate term structure from the given JSON
@@ -304,8 +304,8 @@ class Term {
         $return = $this->fromArray($data);
         unset($data);
         return $return;
-    } 
-    
+    }
+
     /**
      * is Equal
      *
@@ -318,7 +318,7 @@ class Term {
      */
     public function equals($other) {
         // Don't consider it if it's not a Term object
-        if ($other != null && $other instanceOf \snac\data\Term) { 
+        if ($other != null && $other instanceOf \snac\data\Term) {
             // Check IDs first
             if ($other->getID() != null && $this->getID() != null) {
                 if ($other->getID() == $this->getID())
