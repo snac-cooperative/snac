@@ -2459,7 +2459,7 @@
                         "repository": {
                             "ark": "http://n2t.net/ark:/99166/w6kq8qkp",
                             "dataType": "Constellation",
-                            "id": 76763300
+                            "id": "76763300"
                         },
                         "operation": "insert"
                     },
@@ -3189,7 +3189,7 @@
                 "description": "Get an array of resources held by a Holding Repository",
                 "query" : {
                    "command" : "get_holdings",
-                   "constellationid" : 76778184
+                   "constellationid" : "76778184"
                    },
                 "response": {
                     "resources": [{
@@ -3224,8 +3224,8 @@
                 "description": "Get an array of resources held by a Holding Repository",
                 "query" : {
                    "command" : "shared_resources",
-                   "icid1" : 29260863,
-                   "icid2" : 50307952
+                   "icid1" : "29260863",
+                   "icid2" : "50307952"
                 },
                 "response": {
                     "resources": [{

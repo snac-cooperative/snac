@@ -4243,7 +4243,7 @@ class ServerExecutor {
      * Get array of all resources held by a Holding Institution
      *
      * @param string[] $input Input array from the Server object
-     * @return string[] The response to send to the client
+     * @return string[] A response with an array of resource info from neo4j
      */
     public function getHoldings(&$input) {
         if (!isset($input["constellationid"])) {
