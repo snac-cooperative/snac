@@ -722,32 +722,43 @@ $(document).ready(function() {
                     <i class="fa fa-fw fa-random" aria-hidden="true"></i><span class="snac-minimize">  Similarity Assertions
                     <span class="badge">{{ data.maybeSameCount }}</span></span></a>
                 {% endif %}
-                <a class="btn list-group-item-history"
-                   href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
-                    <i class="fa fa-fw fa-history" aria-hidden="true"></i><span class="snac-minimize">  Revision History</span></a>
-                <a class="btn list-group-item-sources"
-                   href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
-                   <i class="fa fa-fw fa-archive" aria-hidden="true"></i><span class="snac-minimize">  Sources</span></a>
-                <div class="btn-group" role="group">
-                    <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        <i class="fa fa-fw fa-download" aria-hidden="true"></i><span class="snac-minimize"> Export</span>
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="export-btn">
-                        <li>
-                        <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="">
-                            <i class="fa fa-fw fa-file" aria-hidden="true"></i> JSON
-                        </a>
-                        </li>
-                        <li>
-                        <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="">
-                            <i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML
-                        </a>
-                        </li>
-                    </ul>
+
+                <a class="btn list-group-item-history" href="{{control.snacURL}}/history/{{data.id}}/{{data.version}}">
+                    <i class="fa fa-fw fa-history" aria-hidden="true"></i> <span class="snac-minimize"> Revision History</span>
+                </a>
+                <a class="btn list-group-item-sources" href="{{control.snacURL}}/sources/{{data.id}}/{{data.version}}">
+                    <i class="fa fa-fw fa-archive" aria-hidden="true"></i> <span class="snac-minimize"> Sources</span>
+                </a>
+                <div class="btn-group">
+                    <div class="dropdown">
+                        <button class="dropdown-toggle btn list-group-item-download" type="button" id="export-btn"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            <i class="fa fa-fw fa-download" aria-hidden="true"></i><span class="snac-minimize"> Export</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="export-btn" style="background:#ecdef2;margin-top:36px;">
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=constellation_json" class="">
+                                    <i class="fa fa-fw fa-file" aria-hidden="true"></i> JSON
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=eac-cpf" class="">
+                                    <i class="fa fa-fw fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML
+                                </a>
+                            </li>
+                            {% if 'holdingRepository' in data.flags %}
+                            <li>
+                                <a href="{{control.snacURL}}/download/{{data.id}}?type=holdings" download>
+                                    <i class="fa fa-fw fa-book" aria-hidden="true"></i> Resource Holdings
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
                 </div>
             </div>
+
 
             {% if user.email and permissions.Edit %}
             <div class="btn-group">
