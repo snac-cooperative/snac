@@ -4303,8 +4303,7 @@ class ServerExecutor {
      * @param string[] $input Input array from the Server object
      */
     public function recordAnalytics($input) {
-
-        $this->cStore->recordAnalytics($input["icid"], $input["url"]);
+        $this->cStore->recordAnalytics($input["icid"], $input["url"], $input["repo_ic_id"]);
     }
 
 }

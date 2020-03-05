@@ -3980,6 +3980,7 @@ class WebUIExecutor {
         $request = ["command" => "analytics"];
         $request["icid"] = $input["icid"];
         $request["url"] = $input["url"];
+        $request["repo_ic_id"] = $input["repo_ic_id"];
         $this->connect->query($request);
     }
 }

@@ -7042,22 +7042,21 @@ class SQL
             $return["month"]["topEditors"] = $all;
         }
 
-
         return $return;
     }
-
 
     /**
      * Record Analytics
      *
      * Saves outbound link traffic for analytics
      *
-     * @param integer $icid The icid of the constellation page the link was clicked on, if any.
+     * @param int $icid The icid of the constellation page the link was clicked on, if any
      * @param string $url Url of the resource clicked
+     * @param int $repo_ic_id Repository id of the resource clicked
      */
-    public function recordAnalytics($icid, $url) {
-        $sql = "INSERT INTO outbound_link (ic_id, url) VALUES ($1, $2)";
-        $result = $this->sdb->query($sql, array($icid, $url));
+    public function recordAnalytics($icid, $url, $repoICID) {
+        $sql = "INSERT INTO outbound_link (ic_id, url, repo_ic_id) VALUES ($1, $2, $3)";
+        $result = $this->sdb->query($sql, array($icid, $url, $repoICID));
     }
 
     /**
@@ -7065,8 +7064,8 @@ class SQL
      *
      * Read outbound link traffic analytics
      *
-     * @param string $domain The unique domain to return counts for.
-     * @return array $results Array of dates and hit counts.
+     * @param string $domain The unique domain to return counts for
+     * @return array $results Array of dates and hit counts
      */
     public function selectAnalytics($domain) {
         $sql = "SELECT count(*), to_char(timestamp, 'yyyy-mm-dd') AS date

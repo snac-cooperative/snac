@@ -5188,8 +5188,8 @@ class DBUtil
      * @param integer $icid The icid of the constellation page the link was clicked on, if any.
      * @param string $url Url of the resource clicked.
      */
-    public function recordAnalytics($icid, $url) {
-        return $this->sql->recordAnalytics($icid, $url);
+    public function recordAnalytics($icid, $url, $repoICID) {
+        return $this->sql->recordAnalytics($icid, $url, $repoICID);
     }
 
     /**
