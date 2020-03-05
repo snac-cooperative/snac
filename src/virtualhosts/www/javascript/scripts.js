@@ -250,7 +250,7 @@ function toggleProfile() {
 
 function trackOutboundRepoLinks() {
 
-        $(".outbound-repo-link").on("click", function(event) {
+        $("body").on("click", ".outbound-repo-link", function(event) {
             handleOutboundLinkClicks(event);
         });
 }
@@ -264,10 +264,16 @@ function handleOutboundLinkClicks(event) {
             eventLabel: event.target.href
         });
     }
-    var logUrl = "url=" + event.target.href;
+    
+    var logInfo = "url=" + event.target.href;
     var icid = $('#constellationid').val();
+    var repoICID = $(event.target).data('repoIcId');
+
     if (icid) {
-        logUrl += ("&icid=" + icid);
+        logInfo += ("&icid=" + icid);
     }
-    navigator.sendBeacon(snacUrl + "/analytics?" + logUrl );
+    if (repoICID) {
+        logInfo += ("&repo_ic_id=" + repoICID);
+    }
+    navigator.sendBeacon(snacUrl + "/analytics?" + logInfo );
 }
