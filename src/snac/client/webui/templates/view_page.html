@@ -321,7 +321,8 @@ function loadHoldings() {
                 "data": null,
                 "render": function(data, type, row, meta) {
                     if (data.href) {
-                        var cell = "<a target='_blank' href='" + data.href + "'>" + data.title + "</a>";
+                        var cell = "<a target='_blank' href='" + data.href +"'class='outbound-repo-link'" +
+                            "data-repo-ic-id='"+constellationid+"'>" + data.title + "</a>";
                     } else {
                         var cell = data.title;
                     }
@@ -887,26 +888,30 @@ $(document).ready(function() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                     {% for relation in data.resourceRelations %}
-                                                     {% if relation.resource.documentType.term == 'ArchivalResource' %}
-                                                         {% if relation.resource.repository %}
-                                                             <tr onMouseOver="highlightHoldingMarker({{relation.resource.repository.id}});" onMouseOut="unHighlightHoldingMarker({{relation.resource.repository.id}});">
-                                                         {% else %}
-                                                             <tr>
-                                                         {% endif %}
-                                                             <td>{{relation.role.term}}</td>
-                                                             <td>
-                                                                 <a href="{{relation.resource.link}}" class="outbound-repo-link">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
-                                                             </td>
-                                                             <td>{{relation.resource.repository.nameEntries.0.original}}</td>
-                                                             <td>
-                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
-                                                                     <i class="fa fa-info-circle" style="font-size:large"> </i>
-                                                                 </a>
-                                                             </td>
-                                                         </tr>
-                                                     {% endif %}
-                                                     {% endfor %}
+                                                    {% for relation in data.resourceRelations %}
+                                                    {% if relation.resource.documentType.term == 'ArchivalResource' %}
+                                                        {% if relation.resource.repository %}
+                                                            <tr onMouseOver="highlightHoldingMarker({{relation.resource.repository.id}});"
+                                                                onMouseOut="unHighlightHoldingMarker({{relation.resource.repository.id}});">
+                                                        {% else %}
+                                                            <tr>
+                                                        {% endif %}
+                                                            <td>{{relation.role.term}}</td>
+                                                            <td>
+                                                                <a href="{{relation.resource.link}}" class="outbound-repo-link"
+                                                                    data-repo-ic-id="{{relation.resource.repository.id}}">
+                                                                    {{relation.resource.displayEntry|default(relation.resource.title)}}
+                                                                </a>
+                                                            </td>
+                                                            <td>{{relation.resource.repository.nameEntries.0.original}}</td>
+                                                            <td>
+                                                                <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                    <i class="fa fa-info-circle" style="font-size:large"> </i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    {% endfor %}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -932,30 +937,34 @@ $(document).ready(function() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                     {% for relation in data.resourceRelations %}
-                                                     {% if relation.resource.documentType.term != 'ArchivalResource' %}
-                                                         {% if relation.resource.repository %}
-                                                             <tr onMouseOver="highlightHoldingMarker({{relation.resource.repository.id}});" onMouseOut="unHighlightHoldingMarker({{relation.resource.repository.id}});">
-                                                         {% else %}
-                                                             <tr>
-                                                         {% endif %}
-                                                             <td>{{relation.role.term}}</td>
-                                                             <td>
-                                                                 {% if relation.resource.link %}
-                                                                     <a href="{{relation.resource.link}}">{{relation.resource.displayEntry|default(relation.resource.title)}}</a>
-                                                                 {% else %}
-                                                                     <p>{{relation.resource.displayEntry|default(relation.resource.title)}}</p>
-                                                                 {% endif %}
-                                                             </td>
-                                                             <td>{{relation.resource.repository.nameEntries.0.original}}</td>
-                                                             <td>
-                                                                 <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
-                                                                     <i class="fa fa-info-circle" style="font-size:large"> </i>
-                                                                 </a>
-                                                             </td>
-                                                         </tr>
-                                                     {% endif %}
-                                                     {% endfor %}
+                                                    {% for relation in data.resourceRelations %}
+                                                    {% if relation.resource.documentType.term != 'ArchivalResource' %}
+                                                        {% if relation.resource.repository %}
+                                                        <tr onMouseOver="highlightHoldingMarker({{relation.resource.repository.id}});"
+                                                            onMouseOut="unHighlightHoldingMarker({{relation.resource.repository.id}});">
+                                                        {% else %}
+                                                        <tr>
+                                                        {% endif %}
+                                                            <td>{{relation.role.term}}</td>
+                                                            <td>
+                                                                {% if relation.resource.link %}
+                                                                    <a href="{{relation.resource.link}}" class="outbound-repo-link"
+                                                                        data-repo-ic-id="{{relation.resource.repository.id}}">
+                                                                        {{relation.resource.displayEntry|default(relation.resource.title)}}
+                                                                    </a>
+                                                                {% else %}
+                                                                    <p>{{relation.resource.displayEntry|default(relation.resource.title)}}</p>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{relation.resource.repository.nameEntries.0.original}}</td>
+                                                            <td>
+                                                                <a target="_blank" style="float:right" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}} " title="View in SNAC">
+                                                                    <i class="fa fa-info-circle" style="font-size:large"> </i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    {% endfor %}
                                                 </tbody>
                                             </table>
                                         </div>
