@@ -143,7 +143,12 @@
                             <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
                                 data-placement="top"> {{X.resourceURI.display}} </label>
                             <div class="col-xs-8">
-                                <p class="form-control-static outbound-repo-link"> <a href="{{data.resource.link}}"> {{data.resource.link}} </a></p>
+                                <p class="form-control-static">
+                                    <a href="{{data.resource.link}}" class="outbound-repo-link"
+                                        data-repo-ic-id="{{data.resource.repository.id}}"> 
+                                        {{data.resource.link}}
+                                    </a>
+                                </p>
                             </div>
                         </div>
                         {% endif %}
