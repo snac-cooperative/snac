@@ -1697,7 +1697,9 @@ class WebUIExecutor {
                 $ask = array(
                     "command"=>"report",
                     "type" => "outbound",
-                    "domain" => $input["domain"] ?? null
+                    "domain" => $input["domain"] ?? null,
+                    "repo_ic_id" => $input["repo_ic_id"] ?? null,
+                    "name" => $input["name"] ?? null,
                 );
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != "success")

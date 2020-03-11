@@ -7060,15 +7060,15 @@ class SQL
     }
 
     /**
-     * Read Analytics
+     * Read Analytics by Domain
      *
      * Read outbound link traffic analytics
      *
      * @param string $domain The unique domain to return counts for
      * @return array $results Array of dates and hit counts
      */
-    public function selectAnalytics($domain) {
-        $sql = "SELECT count(*), to_char(timestamp, 'yyyy-mm-dd') AS date
+    public function selectAnalyticsbyDomain($domain) {
+        $sql = "SELECT count(*), to_char(timestamp, 'yyyy-mm') AS date
                 FROM outbound_link
                 WHERE url ilike $1
                 AND timestamp > (NOW() - INTERVAL '1 year')
@@ -7078,6 +7078,32 @@ class SQL
         $results = $this->sdb->fetchAll($result);
         return $results;
     }
+
+    /**
+     * Read Analytics by Repository
+     *
+     * Read outbound link traffic analytics by holding repository
+     *
+     * @param string $icid The id of the holding repository
+     * @return array $results Array of dates and hit counts
+     */
+    public function selectAnalyticsByRepo($icid) {
+        $sql = "SELECT count(*), to_char(timestamp, 'yyyy-mm') AS date
+                FROM outbound_link o
+                LEFT JOIN constellation_lookup c
+                    ON o.repo_ic_id = c.ic_id
+                WHERE repo_ic_id IN
+                    (SELECT ic_id
+                    FROM constellation_lookup
+                    WHERE current_ic_id = $1)
+                AND timestamp > (NOW() - INTERVAL '1 year')
+                GROUP BY date;";
+
+        $result = $this->sdb->query($sql, [$icid]);
+        $results = $this->sdb->fetchAll($result);
+        return $results;
+    }
+
 
 
 }
