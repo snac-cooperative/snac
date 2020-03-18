@@ -33,13 +33,35 @@
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 <script>
-// Inline script to help out the pop-up menu for constellations
-var permissions = {
-    {% for permission, value in permissions %}
-        {{permission}}: {{value}},
-    {% endfor %}
-    FakeHolder: false
-};
+    // Inline script to help out the pop-up menu for constellations
+    var permissions = {
+        {% for permission, value in permissions %}
+            {{permission}}: {{value}},
+        {% endfor %}
+        FakeHolder: false
+    };
+
+    function outboundLinkDomainReport() {
+        var domain = $("#outbound-domain").val()
+        if (!domain)
+            return;
+        var url = "{{control.snacURL}}/reports/outbound?domain=" + domain
+        window.location.href = url
+    }
+
+    function outboundLinkRepoReport() {
+        var repoID = $("#repository-search-id").val()
+        var repoName = $("#repository-search-id").text().trim()
+        if (!repoID)
+            return;
+        var url = "{{control.snacURL}}/reports/outbound?repo_ic_id=" + repoID + "&name=" + repoName
+        window.location.href = url
+    }
+
+    $(document).ready(function() {
+        vocab_select_replace($("#repository-search-id"), "", "holding", 3);
+    });
+
 </script>
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -108,7 +130,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         </div>
         <div class="col-md-4">
             <!-- Middle column -->
-            {% if permissions.ViewReports %} 
+            {% if permissions.ViewReports %}
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">Weekly Reports</h3>
@@ -124,7 +146,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         </div>
         <div class="col-md-4">
             <!-- Right column -->
-            {% if permissions.ViewReports %} 
+            {% if permissions.ViewReports %}
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Monthly Reports</h3>
@@ -138,6 +160,56 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             </div>
             {% endif %}
         </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Outbound Link Reports by domain</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group" id="outbound-domain-input">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="outbound-domain" placeholder="Domain Name (e.g. harvard.gov)">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" onclick="outboundLinkDomainReport()">Report</button>
+                                </span>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Outbound Link Reports by Holding Repository</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <div class="col-xs-10">
+                                <div class="input-group"
+                                    style="width:80%; clear: none; float: left;">
+                                    <select class="resource-repo" id="repository-search-id"
+                                        name="resources[0][repo]">
+                                        <option value="{{resource.repository.id}}" selected>
+                                            {{resource.repository.nameEntries[0].original }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="input-group" style="margin-left: 20%;display:block">
+                                    <button type="button" class="btn btn-default"
+                                        onclick="outboundLinkRepoReport()">Report</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -212,4 +284,3 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 {{ footer(X, user, permissions, control) }}
 </body>
 </html>
-
