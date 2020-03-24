@@ -1146,10 +1146,12 @@ create table outbound_link (
         id          serial primary key,
         ic_id       int,
         url         text,
+        repo_ic_id  int,
         timestamp   timestamp default(CURRENT_DATE)
         );
 create index url_idx1 on outbound_link(url);
 create index timestamp_idx1 on outbound_link(timestamp);
+create index repo_ic_id_idx1 on outbound_link(repo_ic_id);
 
 -- Views that allow us to query the most recent constellation data
 

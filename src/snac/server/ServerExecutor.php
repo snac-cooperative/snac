@@ -4059,14 +4059,7 @@ class ServerExecutor {
                 $reportName = "Public";
                 break;
             case "outbound":               // Outbound data is generated on the fly, instead of being pulled from a precompiled report
-                $domain = $input["domain"];
-                $visits = $this->cStore->readAnalytics($domain);
-                $trafficData = array("result" => "success");
-                $trafficData["domain"] = $domain;
-                $trafficData["dates"]  = json_encode($visits[0]);
-                $trafficData["counts"] = json_encode($visits[1]);
-                $trafficData["total"] = json_encode($visits[2]["Total"]);
-                return $trafficData;
+                return $this->readAnalytics($input);
                 break;
             case "general":
             default:
@@ -4303,8 +4296,34 @@ class ServerExecutor {
      * @param string[] $input Input array from the Server object
      */
     public function recordAnalytics($input) {
-
-        $this->cStore->recordAnalytics($input["icid"], $input["url"]);
+        $this->cStore->recordAnalytics($input["icid"], $input["url"], $input["repo_ic_id"]);
     }
 
+    /**
+     * Record Analytics by Domain
+     *
+     * Record outgoing link traffic hit
+     *
+     * @param string[] $input Input array from the Server object
+     */
+    public function readAnalytics($input) {
+        if ($input["domain"]) {
+            $analyticsName = $input["domain"];
+            $visits = $this->cStore->readAnalyticsByDomain($input["domain"]) ?? "";
+
+        } elseif ($input["repo_ic_id"]) {
+            $analyticsName = $input["name"];
+            $repoICID = $input["repo_ic_id"];
+            $visits = $this->cStore->readAnalyticsByRepo($repoICID);
+        }
+        if (!isset($visits)) {
+            return ["result" => "failure"];
+        }
+            $trafficData = ["result" => "success"];
+            $trafficData["analytics_name"] = $analyticsName;
+            $trafficData["dates"]  = json_encode($visits[0]);
+            $trafficData["counts"] = json_encode($visits[1]);
+            $trafficData["total"] = json_encode($visits[2]["Total"]);
+        return $trafficData;
+    }
 }

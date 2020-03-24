@@ -5188,8 +5188,8 @@ class DBUtil
      * @param integer $icid The icid of the constellation page the link was clicked on, if any.
      * @param string $url Url of the resource clicked.
      */
-    public function recordAnalytics($icid, $url) {
-        return $this->sql->recordAnalytics($icid, $url);
+    public function recordAnalytics($icid, $url, $repoICID) {
+        return $this->sql->recordAnalytics($icid, $url, $repoICID);
     }
 
     /**
@@ -5200,8 +5200,30 @@ class DBUtil
      * @param string $domain The unique domain to return counts for.
      * @return array $visits Array of dates, hit counts, and total hits.
      */
-    public function readAnalytics($domain) {
-        $results =  $this->sql->selectAnalytics($domain);
+    public function readAnalyticsByDomain($domain) {
+
+        $results =  $this->sql->selectAnalyticsByDomain($domain);
+        $visits = [["Date"], ["Count"], ["Total" => 0]];
+
+        if ($results) {
+            foreach ($results as $result) {
+                $visits[0][] = $result["date"];
+                $visits[1][] = $result["count"];
+                $visits[2]["Total"] += $result["count"];
+            }
+        }
+        return $visits;
+    }
+    /**
+     * Read Analytics
+     *
+     * Read outbound link traffic analytics
+     *
+     * @param string $domain The unique domain to return counts for.
+     * @return array $visits Array of dates, hit counts, and total hits.
+     */
+    public function readAnalyticsByRepo($repoICID) {
+        $results =  $this->sql->selectAnalyticsByRepo($repoICID);
         $visits = [["Date"], ["Count"], ["Total" => 0]];
 
         if ($results) {

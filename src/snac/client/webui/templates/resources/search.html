@@ -93,9 +93,14 @@
                             var type = resource.documentType.term || "";
                             var abstract = shortenIfLong(resource.abstract || "", 300);
                             var href = resource.link || "";
-                            href = "<a href=" + href + " target='_blank' title='" + href + "' class='outbound-repo-link'>" + shortenIfLong(href, 35, false) + "</a>";
-
                             var repo = resource.repository || "";
+                            var repoID = "";
+                            if (repo.length) {
+                                repoID = repo.id;
+                            }
+                            href = "<a href=" + href + " target='_blank' title='" + href + "' class='outbound-repo-link' data-repo-ic-id='"+ repo.id +"'>"
+                                + shortenIfLong(href, 35, false) + "</a>";
+
                             var holdingInstitution = "";
                             if (repo) {
                                 holdingInstitution = repo.nameEntries[0].original || "";
