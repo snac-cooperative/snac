@@ -611,6 +611,10 @@ $(document).ready(function() {
         }
     })
 
+    if (lumpTable.data().any()) {
+        $('#bibliographic-collapse').collapse('toggle').prev('div').find("span").toggleClass("collapsed")
+    }
+
 
     archivalTable = $('#archival').DataTable({
                     dataSrc: 2,
@@ -923,7 +927,7 @@ $(document).ready(function() {
                             <div class="col-md-12">
                                 <div class="panel panel-default">
                                     <div class="panel-heading panel-collapsible" onClick="$('#bibliographic-collapse').collapse('toggle'); $(this).find('span').toggleClass('collapsed');">
-                                        <span class="collapsed">Bibliographic Resources</span>
+                                        <span class="collapsed">Bibliographic and Digital Archival Resources</span>
                                     </div>
                                     <div id="bibliographic-collapse" class="panel-collapse collapse">
                                         <div class="panel-body">
