@@ -6267,21 +6267,22 @@ class SQL
     /**
      * Insert a new institution.
      *
-     * Insert a new institution and return the institution's id. We aren't using snac_institution.id so we
-     * need to check for a record before inserting, just in calse.
+     * Insert a new institution and return the institution's id. If institution already exists, simply return id.
      *
-     * @param string $ic_id Institution ic_id, aka a constellation ic_id.
+     * @param string $ic_id Institution's ic_id.
+     * @return string[] $row Institution ic_id.
      */
-    public function insertInstitution($ic_id)
-    {
-        $result = $this->sdb->query("select * from snac_institution where ic_id=$1",
-                                    array($ic_id));
+    public function insertInstitution($ic_id) {
 
-        if (! $this->sdb->fetchrow($result))
-        {
-            $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1)",
-                                        array($ic_id));
+        $result = $this->sdb->query("select * from snac_institution where ic_id=$1", array($ic_id));
+        $row = $this->sdb->fetchrow($result);
+
+        if (!$row) {
+            $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1) returning ic_id", array($ic_id));
+            $row = $this->sdb->fetchrow($result);
         }
+
+        return $row["ic_id"];
     }
 
     /**

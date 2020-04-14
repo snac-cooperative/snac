@@ -285,6 +285,14 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->listInstitutions();
                 break;
 
+            case "insert_institution":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
+                if (!$executor->hasPermission("Manage Groups"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
+                $this->response = $executor->createInstitution($this->input);
+                break;
+
             // roles
             case "admin_roles":
                 if ($executor->isAPIKeyAuth())
