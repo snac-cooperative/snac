@@ -1030,6 +1030,31 @@ class ServerExecutor {
     }
 
     /**
+     * Create New SNAC institution
+     *
+     * Takes an existing SNAC constellation id and inserts it as an affiliated institution in SNAC.
+     *
+     * @param string[] $input Input array with constellationid key.
+     * @return string[] The response to send to the client
+     */
+    public function createInstitution($input) {
+        $constellation = new \snac\data\Constellation();
+        $constellation->setID($input["constellationid"]);
+
+        $inserted = $this->uStore->writeInstitution($constellation);
+
+        if ($inserted) {
+            $response = [
+                "result" => "success",
+                "constellation" =>  $constellation->toArray()
+            ];
+        } else {
+            $response["result"] = "failure";
+        }
+        return $response;
+    }
+
+    /**
      * Archive Message
      *
      * Archives the message with given message id if it exists and the user has

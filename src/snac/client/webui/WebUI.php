@@ -647,6 +647,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayInstitutionPage($this->input, $display);
                 break;
 
+            case "save_institution":
+                $response = $executor->saveInstitution($this->input);
+                break;
+
             case "upload":
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;

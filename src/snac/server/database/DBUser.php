@@ -1426,11 +1426,11 @@ class DBUser
      *
      * @param \snac\data\Constellation $institution The SNAC institution in a constellation.
      *
-     * @return \snac\data\Constellation object, summary, holding a SNAC institution
+     * @return string $icid ic_id of the institution.
      */
-    public function writeInstitution($institution)
-    {
-        $this->sql->insertInstitution($institution->getID());
+    public function writeInstitution($institution) {
+        $icid = $this->sql->insertInstitution($institution->getID());
+        return $icid;
     }
 
     /**

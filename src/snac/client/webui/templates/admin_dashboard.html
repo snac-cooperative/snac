@@ -25,8 +25,38 @@
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/dashboard.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+<script>
+    function addSNACInstitution(ic_id) {
+        $.post("{{control.snacURL}}/save_institution/" + ic_id).then(
+            function(response) {
+                if (response.result === "success") {
+                    alert("Saved institution.")
+                } else {
+                    alert("Error: Failed to save institution")
+                }
+            });
+    }
+
+    $(document).ready(function() {
+        $("#search_form").on("click", "a", function(event) {
+            event.preventDefault()
+            $link = $(event.target)
+            var href = $link.attr("href")
+            var name = $link.text()
+            var id = href.slice(href.lastIndexOf("/") + 1)
+
+            if (confirm(`Are you sure you want to make ${name} (ID: ${id}) a SNAC Institution?`)) {
+                addSNACInstitution(id);
+                $("#search-results-box").html("")
+            }
+        })
+    });
+</script>
+
 
 </head>
 <body role="document">
@@ -122,6 +152,21 @@
             </div>
         </div>
     </div>
+    {% if permissions.ManageGroups %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Add Institutions</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Add SNAC affiliated institutions</p>
+                    {{ include("dashboard/_dashboard_search.html") }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {{ footer(X, user, permissions, control) }}
 
