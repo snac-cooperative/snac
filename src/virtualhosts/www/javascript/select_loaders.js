@@ -244,6 +244,7 @@ function affiliation_select_replace(selectItem) {
 function reviewer_select_replace(selectItem) {
         if(selectItem != null) {
                 selectItem.select2({
+                    placeholder: "Reviewer Name or Email...",
                     ajax: {
                         url: function() {
                             var query = snacUrl+"/user_search?role=Reviewer";

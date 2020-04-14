@@ -227,44 +227,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 </div>
 
 <form id="send_review_form">
-    <div class="modal fade" id="sendReviewPane" tabindex="-1" role="dialog" aria-labelledby="sendReviewPane">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header primary">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="sendReviewPaneLabel">Send for Review Options</h4>
-                </div>
-                <div class="modal-body" id="sendReviewPaneContent">
-                        <div class="modal-body">
-                            <p>Search for a User's name or primary email address below to send this constellation to that person
-                            for review.  Alternatively, you may send it for review to the general reviewer pool.</p>
-                            <div class="input-group select2-bootstrap-append">
-                                <select class="form-control"
-                                    placeholder="Name or Email..." id="reviewersearchbox">
-                                    <option></option>
-                                </select>
-                                <span class="input-group-btn">
-                                    <button type="button" class="btn btn-primary" id="save_and_review_touser" data-dismiss="modal">Send for Review</button>
-                                </span>
-                            </div>
-
-                            <div id="user-results-box">
-                            </div>
-                            <div style="text-align: center; margin-top: 10px;">
-                                <p>OR</p>
-                                <button type="button" class="btn btn-success" id="save_and_review_general" data-dismiss="modal"><span class="glyphicon glyphicon-send"></span> Send to General Reviewer Pool</button>
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <textarea id="reviewmessage" name="reviewmessage" class='panel panel-default panel-body' style='width: 100%' placeholder="You may write a message to the reviewer here..."></textarea>
-                            </div>
-                        </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include '_send_review_pane.html' %}
 </form>
 {{ footer(X, user, permissions, control) }}
 </body>
