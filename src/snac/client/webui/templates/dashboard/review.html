@@ -93,26 +93,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             </div>
             {% endif %}
 
-            <form class="form-horizontal" id="search_form" onsubmit="return false;">
-                <div class="well well-lg text-center">
-                        <input type="hidden" id="count" name="count" value="10">
-                        <input type="hidden" id="start" name="start" value="0">
-                        <div class="input-group">
-                            <input type="text" class="form-control"
-                                placeholder="Search for..." id="searchbox" name="term">
-                                <span class="input-group-btn">
-                                     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
-                                </span>
-                        </div>
-
-                        <div id="search-results-box">
-                        </div>
-
-                        <div>
-                            <p style="margin-top: 10px; margin-bottom: 0px;"><a href="{{control.snacURL}}/search?search_type=advanced">Advanced Search</a></p>
-                        </div>
-                </div>
-            </form>
+            {{ include("dashboard/_dashboard_search.html") }}
         </div>
         <div class="col-md-4">
             <!-- Middle column -->
