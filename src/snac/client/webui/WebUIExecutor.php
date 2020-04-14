@@ -1255,6 +1255,31 @@ class WebUIExecutor {
     }
 
     /**
+     * Save Institution
+     *
+     * Saves a given SNAC ID as a SNAC affiliated institution
+     *
+     * @param string[] $input Post/Get input with constellationid key
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function saveInstitution($input) {
+        $ask = ["command" => "insert_institution"];
+
+        if (isset($input["constellationid"]))
+            $ask["constellationid"] = $input["constellationid"];
+
+        $serverResponse = $this->connect->query($ask);
+
+        $response = [];
+        if (isset($serverResponse["result"]) && $serverResponse["result"] === "success") {
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "error";
+        }
+        return $response;
+    }
+
+    /**
      * Display Upload Page
      *
      * Displays a page that will eventually house a file upload to parse and ingest.
