@@ -212,33 +212,15 @@ function scm_source_select_replace(selectItem, idMatch) {
  * @param  JQuery selectItem The JQuery item to replace
  */
 function affiliation_select_replace(selectItem) {
-        if(selectItem != null) {
-                selectItem.select2({
-                    ajax: {
-                        url: function() {
-                            var query = snacUrl+"/vocabulary?type=affiliation";
-                                return query;
-                        },
-                        dataType: 'json',
-                        delay: 250,
-                        data: function (params) {
-                            return {
-                                q: params.term,
-                                page: params.page
-                            };
-                        },
-                        processResults: function (data, page) {
-                            return { results: data.results };
-                        },
-                        cache: true
-                    },
-                    width: '100%',
-                    minimumInputLength: 0,
-                    allowClear: false,
-                    theme: 'bootstrap',
-                    placeholder: 'Select Affiliation'
-                });
-            }
+    $.get(snacUrl + "/vocabulary?type=affiliation").done(function(data) {
+        var options = data.results;
+        selectItem.select2({
+            data: options,
+            allowClear: true,
+            theme: "bootstrap",
+            placeholder: "Select Affiliation"
+        });
+    });
 }
 
 function reviewer_select_replace(selectItem) {
