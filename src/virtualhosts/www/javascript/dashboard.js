@@ -33,7 +33,7 @@ function sendForReviewModal(id, version) {
 
 function sendReview() {
     // Pull the message text
-    reviewPayload.reviewmessage = $("#reviewmessage").val();
+    reviewPayload.reviewmessage = $("#sendReviewMessage").val();
 
     // Send the browser to the review page (which will then redirect them back to the dashboard)
     window.location.href = snacUrl+"/review/"+reviewPayload.id+"/"+reviewPayload.version+"?reviewer="+reviewPayload.reviewer+"&reviewmessage="+encodeURIComponent(reviewPayload.reviewmessage);
