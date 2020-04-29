@@ -481,13 +481,33 @@
                             <p class="form-control-static">{{ other.uri }}</p>
                         </div>
                     </div>
+                    <div class="form-group" style="display:none" id="sameAs_baseuri_container_{{ i }}">
+                        <label for="sameAs_baseuri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsBaseURI.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sameAsBaseURI.display }}
+                        </label>
+                        <div class="col-xs-8" id="select_sameAs_baseuri_{{i}}">
+                          <input id="sameAs_baseuri_id_{{i}}" name="sameAs_baseuri_id_{{i}}" type="hidden" class="form-control" value="{{ other.uri }}"/>
+                          <input id="sameAs_baseuri_term_{{i}}" name="sameAs_baseuri_term_{{i}}" type="hidden" class="form-control" value="{{ WorldCat }}"/>
+                          <input id="sameAs_baseuri_vocabtype_{{i}}" name="sameAs_baseuri_vocabtype_{{i}}" type="hidden" class="form-control" value="external_sameas_domain"/>
+                          <input id="sameAs_baseuri_minlength_{{i}}" name="sameAs_baseuri_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                          <p class="form-control-static">{{ other.uri }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group" style="display:none" id="sameAs_uriid_container_{{ i }}">
+                        <label for="sameAs_uriid_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsURIId.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sameAsURIId.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_sameAs_uriid_{{i}}">
+                            <input id="sameAs_uriid_{{i}}" name="sameAs_uriid_{{i}}" type="hidden" class="form-control" value="{{ other.uri }}"/>
+                            <p class="form-control-static">{{ other.uri }}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {{ widgets.scmModal(X, inEdit, showSubElements, "sameAs", i, other.uri, "Same-As Relation", other) }}
                 {{ widgets.optionsList(X, inEdit, showSubElements, "sameAs", i) }}
             </div>
         </div>
-
 {% endmacro %}
 
 {% macro displayEntityID(X, inEdit, showSubElements, other, i) %}
