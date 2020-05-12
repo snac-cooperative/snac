@@ -8,3 +8,5 @@ log/
 #test/
 src/virtualhosts/log
 src/virtualhosts/output
+node_modules
+src/virtualhosts/www/javascript/bundle.js
