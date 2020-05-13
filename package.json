@@ -8,6 +8,8 @@
   "license": "Private",
   "private": true,
   "dependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "7",
     "webpack": "^4.43.0"
   },
   "scripts": {
