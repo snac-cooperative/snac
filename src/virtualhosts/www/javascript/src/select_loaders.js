@@ -20,7 +20,7 @@
  * @param  string type       The type of the vocabulary term
  * @param  int    minLength  The minimum required length of the autocomplete search
  */
-function vocab_select_replace(selectItem, idMatch, type, minLength) {
+export function vocab_select_replace(selectItem, idMatch, type, minLength) {
     if (minLength === undefined) {
         minLength = 2;
     }
@@ -57,9 +57,9 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
             }
 }
 
-var geoPlaceSearchResults = null;
+export var geoPlaceSearchResults = null;
 
-function geovocab_select_replace(selectItem, idMatch) {
+export function geovocab_select_replace(selectItem, idMatch) {
     var minLength = 2;
 
     if(selectItem.attr('id').endsWith(idMatch)
@@ -127,7 +127,7 @@ function addbr(str) {
  * @param  JQuery selectItem The JQuery item to replace
  * @param  string idMatch    ID string for the object on the page
  */
-function scm_source_select_replace(selectItem, idMatch) {
+export function scm_source_select_replace(selectItem, idMatch) {
         if(selectItem.attr('id').endsWith(idMatch)
             && !selectItem.attr('id').endsWith("ZZ")) {
                 selectItem.select2({
@@ -263,22 +263,12 @@ function select_replace(selectItem, idMatch) {
             }
 }
 
-function select_replace_simple(selectItem) {
+export function select_replace_simple(selectItem) {
     selectItem.select2({
         width: '100%',
         allowClear: true,
         theme: 'bootstrap'
     });
-}
-
-
-
-function sayHi(user) {
-  return `Hello, ${user}!`;
-}
-
-function sayBye(user) {
-  return `Bye bye, ${user}!`;
 }
 
 /**
@@ -290,7 +280,7 @@ function sayBye(user) {
  * @param  string type       The type of the vocabulary term
  * @param  string type       Text placeholder for select
  */
-function loadVocabSelectOptions(selectItem, type, placeholder) {
+export function loadVocabSelectOptions(selectItem, type, placeholder) {
     return $.get(snacUrl + "/vocabulary?type=" + type)
     .done(function(data) {
         var options = data.results;

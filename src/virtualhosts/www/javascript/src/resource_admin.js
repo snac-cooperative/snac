@@ -9,7 +9,7 @@
  *            the Regents of the University of California
  */
 
-function saveResource(event) {
+export function saveResource(event) {
     event.preventDefault();
     var $form = $(event.target);
 
@@ -47,7 +47,7 @@ function saveResource(event) {
 }
 
 
-function setDeletedResourceLanguageOperations($form) {
+export function setDeletedResourceLanguageOperations($form) {
     // Set deleted new languages to null, set deleted existing languages to delete
     var $deletedLanguages = $form.find("#resource-languages .component-deleted").has('input[id]');
     var $ignoredLanguages = $form.find("#resource-languages .component-deleted.new-language");
@@ -55,7 +55,7 @@ function setDeletedResourceLanguageOperations($form) {
     setOperations($ignoredLanguages, "");
 }
 
-function cancelResource() {
+export function cancelResource() {
     if (!confirm('Are you sure you want to cancel?')) {
         return;
     }
@@ -74,7 +74,7 @@ function cancelResource() {
  * Tracks language index using $('#language-template').data('languageCount')
  *
  */
-function newResourceLanguage(event) {
+export function newResourceLanguage(event) {
     event.preventDefault();
     var $newLanguage = $('#resource-language-template').find(".language").clone();
     var data = $('#resource-language-template').data();
@@ -105,7 +105,7 @@ function newResourceLanguage(event) {
  * Does not change operations.
  *
  */
-function deleteOrUndoLanguage(event) {
+export function deleteOrUndoLanguage(event) {
     event.preventDefault();
     var $btn = $(event.currentTarget);
     $btn.toggleClass('btn-danger btn-warning');
@@ -128,7 +128,7 @@ function setOperations($elements, operation) {
  * @param jqueryObject $resourceForm jQuery object to modify
  *
  */
-function markEditedResourceFields($resourceForm) {
+export function markEditedResourceFields($resourceForm) {
     $resourceForm.find("input, select, textarea").on("change", function(e) {
         $(e.target).addClass('edited-field');
 
@@ -165,13 +165,13 @@ function enableVocabularySelect(selectItem, type) {
     });
 }
 
-function enableLanguageSelect($language) {
+export function enableLanguageSelect($language) {
     enableVocabularySelect($language.find("select:first"), 'language_code');
     enableVocabularySelect($language.find("select:last"), 'script_code');
 }
 
 
-function magicNewResourceLanguage(event) {
+export function magicNewResourceLanguage(event) {
     var $newLanguage = newResourceLanguage(event);
     var defaultLanguage = new Option(defaults.language.term, defaults.language.id, false, true);
     var defaultScript = new Option(defaults.script.term, defaults.script.id, false, true);
@@ -179,7 +179,7 @@ function magicNewResourceLanguage(event) {
     $newLanguage.find("select:last").append(defaultScript).trigger('change');
 }
 
-function selectHoldingRepository(event) {
+export function selectHoldingRepository(event) {
     event.preventDefault();
     var name = event.target.innerHTML;
     var id = event.target.href.split('/').pop();
