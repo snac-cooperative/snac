@@ -1,0 +1,22 @@
+{
+  "name": "snac",
+  "version": "1.0.0",
+  "description": "SNAC Cooperative Frontend JavaScripts",
+  "main": "main.js",
+  "repository": "blank",
+  "author": "Derik Ramirez <rderik@gmail.com>",
+  "license": "Private",
+  "private": true,
+  "dependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "7",
+    "webpack": "^4.43.0"
+  },
+  "scripts": {
+    "build-dev": "webpack",
+    "build-prod": "webpack -p --env production"
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.3.11"
+  }
+}
