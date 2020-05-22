@@ -247,6 +247,14 @@
         "display" : "URI",
         "tooltip" : "The permanent link to the external identity"
     },
+    "sameAsBaseURI" : {
+        "display" : "Base URI",
+        "tooltip" : "The base domain for the external identity permanent link"
+    },
+    "sameAsURIId" : {
+        "display" : "URI identifier",
+        "tooltip" : "The identifier used in the external identity permanent link"
+    },
 
     "_comment" : "%%% EntityID elements",
 

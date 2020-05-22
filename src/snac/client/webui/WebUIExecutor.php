@@ -3704,6 +3704,9 @@ class WebUIExecutor {
                         }
 
                         $serverResponse["results"][$k]["text"] = $serverResponse["results"][$k]["value"];
+                        if (isset($input["use_description"]) && ($input["use_description"] == 'true')) {
+                          $serverResponse["results"][$k]["text"] = $v["description"];
+                        }
                     }
                 }
 

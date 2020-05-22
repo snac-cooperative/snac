@@ -241,6 +241,18 @@ function textToSelect(shortName, idStr) {
 
             if (name == "citation")
                 scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
+            else if (shortName == "sameAs" && name == "baseuri") {
+                //The following block handles the specific case of Same As External Resource association form
+                loadVocabSelectOptions($("#"+shortName+"_"+name+"_id_"+idStr), "external_sameas_domain", "Base URI", true);
+                var uriRegexp = /^(?<baseuri>.+)\/(?<uriid>.+)$/;
+                var currentURI = $("#"+shortName+"_uri_"+idStr).val();
+                if (currentURI) {
+                  var uriResult = currentURI.match(uriRegexp).groups;
+                  $("#sameAs_baseuri_id_"+idStr).val(uriResult.baseuri);
+                  $("#sameAs_uriid_"+idStr).val(uriResult.uriid);
+                }
+                $("#"+shortName+"_uri_"+idStr).prop("readonly", true);
+            }
             else
                 vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
 
@@ -751,6 +763,13 @@ function subMakeEditable(short, i) {
             updatePlaceHeading(short, i,
                 $('#'+short+'_geoplace_id_'+i).val());
         });
+    }
+    // Same As add on change functions
+    if (short == 'sameAs') {
+        $("#sameAs_baseuri_id_"+i).change(updateSameAsURI);
+        $("#sameAs_baseuri_container_"+i).css("display","block");
+        $("#sameAs_uriid_"+i).on("input", updateSameAsURI);
+        $("#sameAs_uriid_container_"+i).css("display","block");
     }
 
     // add parser btn if nameEntry is a computed name, entity is person, and if no btn or extra name components already exist
