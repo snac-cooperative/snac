@@ -297,7 +297,6 @@ export function loadVocabSelectOptions(selectItem, type, placeholder) {
  * Replace all the selects that exist on the page when the page has finished loading
  */
 $(document).ready(function() {
-
     // Use select2 to display the select dropdowns
     // rather than the HTML default
     $("select").each(function() {

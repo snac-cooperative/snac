@@ -13,7 +13,8 @@
     "webpack": "^4.43.0"
   },
   "scripts": {
-    "build": "webpack"
+    "build-dev": "webpack",
+    "build-prod": "webpack -p --env production"
   },
   "devDependencies": {
     "webpack-cli": "^3.3.11"
