@@ -248,11 +248,11 @@
         "tooltip" : "The permanent link to the external identity"
     },
     "sameAsBaseURI" : {
-        "display" : "Base URI",
-        "tooltip" : "The base domain for the external identity permanent link"
+        "display" : "External Authority",
+        "tooltip" : "The authority hosting the external identity permanent link (e.g. Wikidata)"
     },
     "sameAsURIId" : {
-        "display" : "URI identifier",
+        "display" : "Authority ID",
         "tooltip" : "The identifier used in the external identity permanent link"
     },
 
