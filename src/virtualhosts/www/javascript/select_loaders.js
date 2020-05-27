@@ -284,36 +284,50 @@ function select_replace_simple(selectItem) {
  * @param  string [useDescription=false] Use description instead of value for text field on return object
  */
 function loadVocabSelectOptions(selectItem, type, placeholder, useDescription = false) {
+    var loadPromise = new Promise(function(resolve, reject){
+
     var url = "/vocabulary?type=" + type;
     if (useDescription == true) {
      url = url.concat("&use_description=true");
     }
     return $.get(snacUrl + url)
     .done(function(data) {
-        var options = data.results;
-        if (useDescription == true) {
-          options = options.reduce(function(newOptions, option){
-            var newElement = option;
-            newElement["id"] = option["value"]
-            newOptions.push(newElement);
-            return newOptions;
-          },[]);
-        }
-        selectItem.select2({
-            data: options,
-            allowClear: false,
-            theme: 'bootstrap',
-            placeholder: placeholder
+            var options = data.results;
+            if (useDescription == true) {
+              options = options.reduce(function(newOptions, option){
+                var newElement = option;
+                newElement["id"] = option["value"]
+                newOptions.push(newElement);
+                return newOptions;
+              },[]);
+            }
+            options.sort(function(a,b) {
+                if(a["text"] < b["text"]){
+                    return -1;
+                }
+                if(a["text"] > b["text"]){
+                    return 1;
+                }
+                return 0;
+            });
+            selectItem.select2({
+                data: options,
+                allowClear: false,
+                theme: 'bootstrap',
+                placeholder: placeholder
+            });
+            resolve("loaded");
         });
     });
+    return loadPromise;
 }
 
 function updateSameAsURI() {
     var id = this.id;
-    var sequence = id.slice(id.lastIndexOf('_') + 1)
+    var sequence = id.match(/_([0-9]+)$/)[1];
     var baseURI = $("#sameAs_baseuri_id_"+sequence).val();
     var uriId = $("#sameAs_uriid_"+sequence).val();
-    $("#sameAs_uri_"+sequence).val(baseURI+uriId);
+    $("#sameAs_uri_"+sequence).val(baseURI.replace(/{id}/,uriId));
 }
 
 /**

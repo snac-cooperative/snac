@@ -30,7 +30,7 @@
             <ul class="dropdown-menu">
                 <li><a href="#resourceRelations" id="resourceRelationstab" role="tab" data-toggle="tab">Resource Relations</a></li>
                 <li><a href="#constellationRelations" id="constellationRelationstab" role="tab" data-toggle="tab">Internal CPF Relations</a></li>
-                <li><a href="#sameAs" id="sameAstab" role="tab" data-toggle="tab">External CPF (Same As)</a></li>
+                <li><a href="#sameAs" id="sameAstab" role="tab" data-toggle="tab">External Related CPF</a></li>
                 <li><a href="#entityID" id="entityIDtab" role="tab" data-toggle="tab">Other Entity IDs (Same As)</a></li>
             </ul>
         </li>
@@ -463,15 +463,6 @@
                     <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
                     <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value="{{ other.operation }}"/>
                     <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" value="{{ other.type.id }}"/>
-                    <!-- <div class="form-group">
-                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsText.tooltip}}" data-toggle="popover" data-placement="top">
-                           {{ X.sameAsText.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_sameAs_text_{{i}}">
-                            <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="hidden" class="form-control" value="{{ other.text }}"/>
-                            <p class="form-control-static">{{ other.text }}</p>
-                        </div>
-                    </div> -->
                     <div class="form-group">
                         <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsURI.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sameAsURI.display }}
@@ -486,7 +477,7 @@
                             {{ X.sameAsBaseURI.display }}
                         </label>
                         <div class="col-xs-8" id="select_sameAs_baseuri_{{i}}">
-                          <input id="sameAs_baseuri_id_{{i}}" name="sameAs_baseuri_id_{{i}}" type="hidden" class="form-control" value="{{ other.uri }}"/>
+                          <input id="sameAs_baseuri_id_{{i}}" name="sameAs_baseuri_id_{{i}}" type="hidden" class="form-control" value=""/>
                           <input id="sameAs_baseuri_term_{{i}}" name="sameAs_baseuri_term_{{i}}" type="hidden" class="form-control" value="{{ WorldCat }}"/>
                           <input id="sameAs_baseuri_vocabtype_{{i}}" name="sameAs_baseuri_vocabtype_{{i}}" type="hidden" class="form-control" value="external_sameas_domain"/>
                           <input id="sameAs_baseuri_minlength_{{i}}" name="sameAs_baseuri_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
@@ -498,7 +489,7 @@
                             {{ X.sameAsURIId.display }}
                         </label>
                         <div class="col-xs-8" id="text_sameAs_uriid_{{i}}">
-                            <input id="sameAs_uriid_{{i}}" name="sameAs_uriid_{{i}}" type="hidden" class="form-control" value="{{ other.uri }}"/>
+                            <input id="sameAs_uriid_{{i}}" name="sameAs_uriid_{{i}}" type="hidden" class="form-control" value=""/>
                             <p class="form-control-static">{{ other.uri }}</p>
                         </div>
                     </div>

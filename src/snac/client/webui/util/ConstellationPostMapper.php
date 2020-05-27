@@ -1163,7 +1163,8 @@ class ConstellationPostMapper {
             }
             $sameas->setOperation($this->getOperation($data));
 
-            $sameas->setText($data["text"]);
+            if (isset($data["text"])) { $sameas->setText($data["text"]); }
+
             $sameas->setURI($data["uri"]);
 
             $sameas->setType($this->parseTerm($data["type"]));
