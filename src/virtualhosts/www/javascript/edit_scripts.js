@@ -245,11 +245,11 @@ function textToSelect(shortName, idStr) {
                 //The following block handles the specific case of Same As External Resource association form
                 loadVocabSelectOptions($("#"+shortName+"_"+name+"_id_"+idStr), "external_sameas_domain", "Base URI", true);
                 var currentURI = $("#"+shortName+"_uri_"+idStr).val();
+                var uriRegexp = /^(.+)\/(.+)$/;
                 if (currentURI) {
-                    var authorityBaseURI = currentURI.slice(0, currentURI.lastIndexOf('/') + 1)
-                    var authorityID = currentURI.slice(currentURI.lastIndexOf('/') + 1)
-                    $("#sameAs_baseuri_id_"+idStr).val(authorityBaseURI);
-                    $("#sameAs_uriid_"+idStr).val(authorityID);
+                    var uriResult = currentURI.match(uriRegexp);
+                    $("#sameAs_baseuri_id_"+idStr).val(uriResult[1]);
+                    $("#sameAs_uriid_"+idStr).val(uriResult[2]);
                 }
                 $("#"+shortName+"_uri_"+idStr).prop("readonly", true);
             }

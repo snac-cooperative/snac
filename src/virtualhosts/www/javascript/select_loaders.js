@@ -309,11 +309,11 @@ function loadVocabSelectOptions(selectItem, type, placeholder, useDescription = 
 }
 
 function updateSameAsURI() {
-    var id = this.id;
-    var sequence = id.slice(id.lastIndexOf('_') + 1)
-    var baseURI = $("#sameAs_baseuri_id_"+sequence).val();
-    var uriId = $("#sameAs_uriid_"+sequence).val();
-    $("#sameAs_uri_"+sequence).val(baseURI+uriId);
+  var id = this.id;
+  var sequence = id.match(/_([0-9]+)$/)[1];
+  var baseURI = $("#sameAs_baseuri_id_"+sequence).val();
+  var uriId = $("#sameAs_uriid_"+sequence).val();
+  $("#sameAs_uri_"+sequence).val(baseURI+uriId);
 }
 
 /**
