@@ -243,17 +243,35 @@ function textToSelect(shortName, idStr) {
                 scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
             else if (shortName == "sameAs" && name == "baseuri") {
                 //The following block handles the specific case of Same As External Resource association form
-                loadVocabSelectOptions($("#"+shortName+"_"+name+"_id_"+idStr), "external_sameas_domain", "Base URI", true);
-                var currentURI = $("#"+shortName+"_uri_"+idStr).val();
-                if (currentURI) {
-                    var authorityBaseURI = currentURI.slice(0, currentURI.lastIndexOf('/') + 1)
-                    var authorityID = currentURI.slice(currentURI.lastIndexOf('/') + 1)
-                    $("#sameAs_baseuri_id_"+idStr).val(authorityBaseURI);
-                    $("#sameAs_uriid_"+idStr).val(authorityID);
-                }
-                $("#"+shortName+"_uri_"+idStr).prop("readonly", true);
-            }
-            else
+                var loadPromise = loadVocabSelectOptions($("#"+shortName+"_"+name+"_id_"+idStr), "external_sameas_domain", "Base URI", true);
+                loadPromise.then(function(result){
+                    var currentURI = $("#"+shortName+"_uri_"+idStr).val();
+                    if (currentURI) {
+                        var found = false;
+                        $("#"+shortName+"_"+name+"_id_"+idStr+" option").each(function(index,op){
+                            if( found || (!op.hasAttribute("value") || !op.value)) {
+                                return;
+                            }
+                            var uriComponents = op.value.split(/{id}/);
+                            if(currentURI.indexOf(uriComponents[0]) == 0) {
+                                var currOption = op.value;
+                                var currId = currentURI.replace(uriComponents[0],"");
+                                if(!!uriComponents[1]) {
+                                    if(currentURI.indexOf(uriComponents[1]) != -1) {
+                                        currId = currId.replace(/uriComponents[1]$/,"");
+                                    }
+                                }
+                                found = true;
+                                $("#sameAs_baseuri_id_"+idStr).val(currOption);
+                                $("#sameAs_baseuri_id_"+idStr).trigger("change");
+                                $("#sameAs_uriid_"+idStr).val(currId);
+                                $("#sameAs_uri_"+idStr).val(currOption.replace(/{id}/,currId));
+                            }
+                        });
+                    }
+                    $("#"+shortName+"_uri_"+idStr).prop("readonly", true);
+                });
+            } else
                 vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
 
         }

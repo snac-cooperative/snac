@@ -235,10 +235,6 @@
 
     "_comment" : "%%% SameAs elements",
 
-    "sameAsText" : {
-        "display" : "Relation Text",
-        "tooltip" : "The human-readable text that appears in a relation entry"
-    },
     "sameAsRole" : {
         "display" : "Role",
         "tooltip" : "How this Identity Constellation is related to the external identity"
