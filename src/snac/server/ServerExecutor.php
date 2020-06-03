@@ -169,7 +169,7 @@ class ServerExecutor {
 
             $ownerDetails = $provider->getResourceOwner($accessToken);
 
-            if ($ownerDetails->getEmail() != $user->getEmail()) {
+            if (strtolower($ownerDetails->getEmail()) != strtolower($user->getEmail())) {
                 // This user's token doesn't match the user's email
                 $this->logger->addDebug("Email mismatch from the user and OAuth details");
                 return false;

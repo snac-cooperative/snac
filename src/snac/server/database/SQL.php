@@ -519,7 +519,7 @@ class SQL
      */
     public function selectUserByEmail($email)
     {
-        $result = $this->sdb->query("select id from appuser where email=$1 limit 1",
+        $result = $this->sdb->query("select id from appuser where lower(email) = lower($1) limit 1",
                                     array($email));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('id', $row))
@@ -545,7 +545,7 @@ class SQL
      */
     public function selectUserByUserName($userName)
     {
-        $result = $this->sdb->query("select id from appuser where username=$1",
+        $result = $this->sdb->query("select id from appuser where lower(username) = lower($1)",
                                     array($userName));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('id', $row))

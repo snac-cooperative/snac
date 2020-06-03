@@ -278,21 +278,56 @@ function select_replace_simple(selectItem) {
  *
  * Replaces the select with a select2 object preloaded with an array of options
  *
- * @param  JQuery selectItem The JQuery item to replace
- * @param  string type       The type of the vocabulary term
- * @param  string type       Text placeholder for select
+ * @param  JQuery selectItem             The JQuery item to replace
+ * @param  string type                   The type of the vocabulary term
+ * @param  string type                   Text placeholder for select
+ * @param  string [useDescription=false] Use description instead of value for text field on return object
  */
-function loadVocabSelectOptions(selectItem, type, placeholder) {
-    return $.get(snacUrl + "/vocabulary?type=" + type)
+function loadVocabSelectOptions(selectItem, type, placeholder, useDescription = false) {
+    var loadPromise = new Promise(function(resolve, reject){
+
+    var url = "/vocabulary?type=" + type;
+    if (useDescription == true) {
+     url = url.concat("&use_description=true");
+    }
+    return $.get(snacUrl + url)
     .done(function(data) {
-        var options = data.results;
-        selectItem.select2({
-            data: options,
-            allowClear: false,
-            theme: 'bootstrap',
-            placeholder: placeholder
+            var options = data.results;
+            if (useDescription == true) {
+              options = options.reduce(function(newOptions, option){
+                var newElement = option;
+                newElement["id"] = option["value"]
+                newOptions.push(newElement);
+                return newOptions;
+              },[]);
+            }
+            options.sort(function(a,b) {
+                if(a["text"] < b["text"]){
+                    return -1;
+                }
+                if(a["text"] > b["text"]){
+                    return 1;
+                }
+                return 0;
+            });
+            selectItem.select2({
+                data: options,
+                allowClear: false,
+                theme: 'bootstrap',
+                placeholder: placeholder
+            });
+            resolve("loaded");
         });
     });
+    return loadPromise;
+}
+
+function updateSameAsURI() {
+    var id = this.id;
+    var sequence = id.match(/_([0-9]+)$/)[1];
+    var baseURI = $("#sameAs_baseuri_id_"+sequence).val();
+    var uriId = $("#sameAs_uriid_"+sequence).val();
+    $("#sameAs_uri_"+sequence).val(baseURI.replace(/{id}/,uriId));
 }
 
 /**

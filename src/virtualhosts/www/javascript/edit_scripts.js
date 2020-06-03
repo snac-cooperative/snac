@@ -241,7 +241,37 @@ function textToSelect(shortName, idStr) {
 
             if (name == "citation")
                 scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
-            else
+            else if (shortName == "sameAs" && name == "baseuri") {
+                //The following block handles the specific case of Same As External Resource association form
+                var loadPromise = loadVocabSelectOptions($("#"+shortName+"_"+name+"_id_"+idStr), "external_sameas_domain", "Base URI", true);
+                loadPromise.then(function(result){
+                    var currentURI = $("#"+shortName+"_uri_"+idStr).val();
+                    if (currentURI) {
+                        var found = false;
+                        $("#"+shortName+"_"+name+"_id_"+idStr+" option").each(function(index,op){
+                            if( found || (!op.hasAttribute("value") || !op.value)) {
+                                return;
+                            }
+                            var uriComponents = op.value.split(/{id}/);
+                            if(currentURI.indexOf(uriComponents[0]) == 0) {
+                                var currOption = op.value;
+                                var currId = currentURI.replace(uriComponents[0],"");
+                                if(!!uriComponents[1]) {
+                                    if(currentURI.indexOf(uriComponents[1]) != -1) {
+                                        currId = currId.replace(/uriComponents[1]$/,"");
+                                    }
+                                }
+                                found = true;
+                                $("#sameAs_baseuri_id_"+idStr).val(currOption);
+                                $("#sameAs_baseuri_id_"+idStr).trigger("change");
+                                $("#sameAs_uriid_"+idStr).val(currId);
+                                $("#sameAs_uri_"+idStr).val(currOption.replace(/{id}/,currId));
+                            }
+                        });
+                    }
+                    $("#"+shortName+"_uri_"+idStr).prop("readonly", true);
+                });
+            } else
                 vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
 
         }
@@ -751,6 +781,13 @@ function subMakeEditable(short, i) {
             updatePlaceHeading(short, i,
                 $('#'+short+'_geoplace_id_'+i).val());
         });
+    }
+    // Same As add on change functions
+    if (short == 'sameAs') {
+        $("#sameAs_baseuri_id_"+i).change(updateSameAsURI);
+        $("#sameAs_baseuri_container_"+i).css("display","block");
+        $("#sameAs_uriid_"+i).on("input", updateSameAsURI);
+        $("#sameAs_uriid_container_"+i).css("display","block");
     }
 
     // add parser btn if nameEntry is a computed name, entity is person, and if no btn or extra name components already exist

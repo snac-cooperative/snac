@@ -26,24 +26,9 @@ $(document).ready(function() {
     if($('#save_and_continue').exists()) {
         $('#save_and_continue').click(function(){
 
-        	// If EntityType and NameEntry do not have values, then don't let the user save
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
-        		return false;
-        	}
-
-
+            if (!validateConstellation()) {
+                return false;
+            }
         	// If nothing has changed, alert the user and do nothing
         	if (somethingHasBeenEdited == false) {
                 $('#notification-message').html("<p>No new changes to save.</p>");
@@ -191,23 +176,9 @@ $(document).ready(function() {
     if($('#save_and_dashboard').exists()) {
         $('#save_and_dashboard').click(function(){
 
-        	// If EntityType and NameEntry do not have values, then don't let the user save
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
-        		return false;
-        	}
-
+            if (!validateConstellation()) {
+                return false;
+            }
         	// If nothing has changed, alert the user and unlock
         	if (somethingHasBeenEdited == false) {
 		        $('#notification-message').html("<p>No new changes to save.  Updating Constellation state... Please wait.</p>");
@@ -316,23 +287,9 @@ $(document).ready(function() {
     if($('#save_and_publish').exists()) {
         $('#save_and_publish').click(function(){
 
-        	// If EntityType and NameEntry do not have values, then don't let the user save or publish
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
-        		return false;
-        	}
-
+            if (!validateConstellation()) {
+                return false;
+            }
         	// If nothing has changed, alert the user and publish
         	if (somethingHasBeenEdited == false) {
 		        $('#notification-message').html("<p>No new changes to save.  Publishing Constellation... Please wait.</p>");
@@ -438,23 +395,10 @@ $(document).ready(function() {
     }
 
     function save_and_review(){
-        // If EntityType and NameEntry do not have values, then don't let the user save or publish
-        var noNameEntryText = true;
-        $("input[id^='nameEntry_original_']").each(function() {
-            if ($(this).val() != "")
-                noNameEntryText = false;
-        });
-        if ($('#entityType').val() == "" || noNameEntryText) {
-            $('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-            setTimeout(function(){
-                $('#error-message').slideDown();
-            }, 500);
-            setTimeout(function(){
-                $('#error-message').slideUp();
-            }, 10000);
+
+        if (!validateConstellation()) {
             return false;
         }
-
         // Copy the review message from the modal into the form body
         $("#reviewmessage").val($("#sendReviewMessage").val());
 
@@ -561,23 +505,10 @@ $(document).ready(function() {
     }
 
     function save_and_send_editor(){
-        // If EntityType and NameEntry do not have values, then don't let the user save or publish
-        var noNameEntryText = true;
-        $("input[id^='nameEntry_original_']").each(function() {
-            if ($(this).val() != "")
-                noNameEntryText = false;
-        });
-        if ($('#entityType').val() == "" || noNameEntryText) {
-            $('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-            setTimeout(function(){
-                $('#error-message').slideDown();
-            }, 500);
-            setTimeout(function(){
-                $('#error-message').slideUp();
-            }, 10000);
+
+        if (!validateConstellation()) {
             return false;
         }
-
         // Copy the review message from the modal into the form body
         $("#reviewmessage").val($("#reviewerNotebook").val());
 
@@ -798,25 +729,9 @@ $(document).ready(function() {
     if($('#continue_and_reconcile').exists()) {
         $('#continue_and_reconcile').click(function(){
 
-            // If EntityType and NameEntry do not have values, then don't let the user save
-            var noNameEntryText = true;
-            $("input[id^='nameEntry_original_']").each(function() {
-                if ($(this).val() != "")
-                noNameEntryText = false;
-            });
-            if ($('#entityType').val() == "" || noNameEntryText) {
-                $('#error-message').html("<p>Entity Type and at least one Name Entry required for continuing.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
+            if (!validateConstellation()) {
                 return false;
             }
-
-
-
             // Open up the warning alert box and note that we are saving
             $('#notification-message').html("<p>Reconciling Constellation... Please wait.</p>");
             $('#notification-message').slideDown();
@@ -1019,5 +934,50 @@ function updateNameEntryPanelToPreferred(numbers) {
             $("#nameEntry_preferenceScore_" + number).val('checked');
             $("#checkbox_nameEntry_preferenceScore_" + number).find("p").html("Preferred");
         });
+    }
+}
+
+
+/**
+* Validate Constellation
+*
+* Validates that there are no edited components to be saved with empty term fields.
+*
+* @param Boolean True if valid, else false.
+*/
+function validateConstellation() {
+    var errorMessage = ""
+
+    // Validate Term Fields
+    var emptyTermCount = $(".edited-component select[id*='term']")
+        .find("option:selected").filter( function() {
+                return this.value == '';
+            }).length;
+    if (emptyTermCount) {
+        var plural = emptyTermCount > 1 ? "s" : "";
+        errorMessage += `<p>You have ${emptyTermCount} empty term field${plural}. Please enter a valid value for each term field and save again.</p>`
+    }
+
+    // Validate entityType and nameEntry
+    var noNameEntryText = true;
+    $("input[id^='nameEntry_original_']").each(function() {
+        if ($(this).val() != "")
+            noNameEntryText = false;
+    });
+    if ($("#entityType").val() == "" || noNameEntryText) {
+        errorMessage += "<p>Entity Type and at least one Name Entry required in order to save.</p>"
+    }
+
+    if (errorMessage.length) {
+        $("#error-message").html(errorMessage);
+        setTimeout(function() {
+            $("#error-message").slideDown();
+        }, 500);
+        setTimeout(function() {
+            $("#error-message").slideUp();
+        }, 10000);
+        return false;
+    } else {
+        return true;
     }
 }

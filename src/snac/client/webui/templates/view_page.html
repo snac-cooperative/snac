@@ -1287,43 +1287,47 @@ $(document).ready(function() {
                         {% if sameas.type.term == 'sameAs' %}
                             {% if 'wikipedia' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-wikipedia"></span>
+                                    <span class="sprite-icon sprite-icons-wikipedia"></span>
                                     Wikipedia</a>
                             {% elseif 'loc.gov/authorities' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-idlocgov"></span>
+                                    <span class="sprite-icon sprite-icons-idlocgov"></span>
                                     LC Name Authority File</a>
                             {% elseif 'viaf.org' in sameas.uri %}
 
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-viaf"></span>
+                                    <span class="sprite-icon sprite-icons-viaf"></span>
                                     Virtual International Authority File</a>
-                            {% elseif 'worldcat.org/wcidentities' in sameas.uri %}
+                            {% elseif 'worldcat.org/identities' in sameas.uri %}
 
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-worldcat"></span>
+                                    <span class="sprite-icon sprite-icons-worldcat"></span>
                                     WorldCat Identities</a>
                             {% elseif 'cbw.iath.virginia.edu' in sameas.uri %}
 
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-cbw"></span>
+                                    <span class="sprite-icon sprite-icons-cbw"></span>
                                     Collective Biographies of Women</a>
                             {% elseif 'familysearch.org' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-fs"></span>
+                                    <span class="sprite-icon sprite-icons-fs"></span>
                                     FamilySearch</a>
                             {% elseif 'archives.gov' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-nara"></span>
+                                    <span class="sprite-icon sprite-icons-nara"></span>
                                     National Archives and Records Administration</a>
                             {% elseif 'wikidata.org' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-wikidata"></span>
+                                    <span class="sprite-icon sprite-icons-wikidata"></span>
                                     Wikidata</a>
                             {% elseif 'numismatics.org' in sameas.uri %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icons-numismatic"></span>
+                                    <span class="sprite-icon sprite-icons-numismatic"></span>
                                     American Numismatic Society</a>
+                            {% elseif 'thehistorymakers.org' in sameas.uri %}
+                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
+                                    <span class="sprite-icon sprite-icons-historymakers"></span>
+                                    The HistoryMakers</a>
                             {% else %}
                                 <a class="list-group-item" href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
                             {% endif %}
@@ -1337,10 +1341,10 @@ $(document).ready(function() {
                     </div>
                     <div class="list-group">
                         <a class="list-group-item" href="https://beta.worldcat.org/archivegrid/?p=1&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}" target="_blank">
-                            <span class="sprite-icons-archivegrid"></span>
+                            <span class="sprite-icon sprite-icons-archivegrid"></span>
                             ArchiveGrid Search</a>
                         <a class="list-group-item" href="https://dp.la/search?utf8=%E2%9C%93&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}" target="_blank">
-                            <span class="sprite-icons-dpla"></span>
+                            <span class="sprite-icon sprite-icons-dpla"></span>
                             DPLA Search</a>
                     </div>
                 </div>
