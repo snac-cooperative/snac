@@ -115,7 +115,7 @@ class ElasticSearchUtil {
             $this->connector->index($params);
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
                     'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $entry->getID(),
                     'body' => [
@@ -157,7 +157,7 @@ class ElasticSearchUtil {
             }
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
                     'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $entry->getID()
                 ];
@@ -678,7 +678,7 @@ class ElasticSearchUtil {
             }
 
             $response = array();
-            $response["total"] = $results["hits"]["total"];
+            $response["total"] = $results["hits"]["total"]["value"];
             $response["results"] = $return;
             $response["aggregations"] = $aggregations;
 

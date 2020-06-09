@@ -1,9 +1,12 @@
 {
+	"config": {
+	"secure-http":false
+	},
     "require": {
         "php": "~7.0",
         "twig/twig": "~1.23",
         "monolog/monolog": "^1.18",
-        "elasticsearch/elasticsearch": "~2.0@beta",
+        "elasticsearch/elasticsearch": "*",
         "phpmailer/phpmailer": "~5.2",
         "snac/ark-manager": "*",
         "snac/eac-validator": "*",

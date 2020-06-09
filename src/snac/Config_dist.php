@@ -227,6 +227,11 @@ class Config {
     public static $ELASTIC_SEARCH_BASE_TYPE = "";
 
     /**
+     * @var string All index for the all name (and alternate) search functionality of snac
+     */
+    public static $ELASTIC_SEARCH_ALL_INDEX = "";
+
+    /**
      * @var string Search base for ALL of the snac name entries (and alternates)
      */
     public static $ELASTIC_SEARCH_ALL_TYPE = "";

@@ -455,7 +455,7 @@ function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree, $
         // do one first to get the index going
         if (!$secondaryStart) {
             $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
                     'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $nameid,
                     'body' => [
@@ -480,7 +480,7 @@ function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree, $
             // elasticsearch api = array with "index" => array(information), followed by array of data, then repeated
             $secondaryBody['body'][] = [
                 'index' => [
-                    '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    '_index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
                     '_type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     '_id' => $nameid
                 ]
