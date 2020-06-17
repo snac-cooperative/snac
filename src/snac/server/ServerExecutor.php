@@ -4202,6 +4202,36 @@ class ServerExecutor {
 
         return $response;
     }
+    
+    /**
+     * Parse EAD and return result
+     *
+     * Calls EAD Parser on zip file given on the input and returns TSV files
+     * as well as any errors that occurred during the conversion process.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function parseEADToTSV($input) {
+        if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
+            throw new \snac\exceptions\SNACInputException("No zip file specified", 400);
+        }
+
+        $file = base64_decode($input["file"]["content"]);
+        $response = array();
+
+        $parser = new \snac\util\EADParser();
+        $outzip = $parser->parseZip($file);
+
+	$response["file"] = [
+		"mime-type" => "application/zip",
+		"content" => base64_encode($outzip)
+	];
+
+	$response["result"] = "success";
+
+        return $response;
+    }
 
     /**
      * Add Constellation SameAs
