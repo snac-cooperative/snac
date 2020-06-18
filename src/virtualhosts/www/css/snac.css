@@ -373,9 +373,11 @@ div.snac {
     margin-bottom: 0;
 }
 
-.nav>li.disabled>a.grayedout{
+ul>li>a.grayedout {
     color: #c1c1c1;
 }
+
+
 
 .scm-modal {
     color: #000000;
@@ -1118,7 +1120,7 @@ input[type='checkbox']:checked + .toggle-switch {
     .search-box .search-box-text {
         width: 62%;
     }
-    
+
     .snac-minimize {
         display: none;
     }

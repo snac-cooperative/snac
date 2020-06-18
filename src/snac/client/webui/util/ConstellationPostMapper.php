@@ -229,7 +229,7 @@ class ConstellationPostMapper {
                     $scmObject->setVersion($scm["version"]);
             }
             $scmObject->setOperation($this->getOperation($scm));
-            $scmObject->setSubCitation($scm["subCitation"]);
+            $scmObject->setSubCitation($scm["}"] ?? '');
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
 
