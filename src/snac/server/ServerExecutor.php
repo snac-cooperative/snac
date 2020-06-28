@@ -4213,25 +4213,50 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function parseEADToTSV($input) {
-        if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
-            throw new \snac\exceptions\SNACInputException("No zip file specified", 400);
+        if (!isset($input["url"]) && (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"]))) {
+            throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
         }
-
-        $file = base64_decode($input["file"]["content"]);
-        $response = array();
-
+		
+		$response = array();
         $parser = new \snac\util\EADParser();
-        $outzip = $parser->parseZip($file);
+        $outzip = null;
 
-	$response["file"] = [
-		"mime-type" => "application/zip",
-		"content" => base64_encode($outzip)
-	];
+		if (isset($input["url"])) {
+			$outzip = $parser->parseURL($input["url"]);
+		} else {
+			$file = base64_decode($input["file"]["content"]);
+			$outzip = $parser->parseZip($file);
+		}
 
-	$response["result"] = "success";
+		$response["file"] = [
+			"mime-type" => "application/zip",
+			"content" => base64_encode($outzip)
+		];
 
-        return $response;
-    }
+		$response["result"] = "success";
+
+		return $response;
+	}
+    public function validateEAD($input) {
+        if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
+            throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
+        }
+		
+		$response = array();
+        $parser = new \snac\util\EADParser();
+
+		$file = base64_decode($input["file"]["content"]);
+		$errors = $parser->validateZip($file);
+
+		if (empty($errors))
+			$response["result"] = "success";
+		else
+			$response = [
+				"result" => "failure",
+				"errors" => $errors
+			];
+		return $response;
+	}
 
     /**
      * Add Constellation SameAs

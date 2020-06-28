@@ -655,6 +655,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;
 
+            case "validate_ead":
+				$response = $executor->handleValidateEAD($this->input, $display, $this->responseHeaders);
+				break;
             case "parse_ead":
                 $this->response = $executor->handleParseEAD($this->input, $display, $this->responseHeaders);
                 if ($display->hasTemplate()) {
