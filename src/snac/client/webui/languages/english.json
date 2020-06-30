@@ -353,7 +353,7 @@
     },
     "sourceCitation" : {
         "display" : "Citation",
-        "tooltip" : "A textual representation of this source, i.e. a full bibliographic citation"
+        "tooltip" : "A full bibliographic citation, i.e. title of publication, web resource, etc., then date of publication, or date a web resource was viewed."
     },
 
     "_comment" : "%%% SCM elements",

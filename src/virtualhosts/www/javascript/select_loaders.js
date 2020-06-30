@@ -152,7 +152,7 @@ function scm_source_select_replace(selectItem, idMatch) {
                             // need id, text
                             var results = new Array();
                             data.results.forEach(function(res) {
-                                results.push({id: res.id, text: res.displayName});
+                                results.push({id: res.id, text: res.citation});
                             });
                             return { results: results };
                         },
