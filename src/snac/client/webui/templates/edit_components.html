@@ -4,15 +4,15 @@
     {% else %}
     <ul class="nav nav-tabs" role="tablist">
     {% endif %}
-        <li class="active"><a href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">Core Data</a></li>
+        <li class="active"><a href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">Name Entries</a></li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">History <span class="caret"></span></a>
             <ul class="dropdown-menu">
                 <li><a href="#biogHists" id="biogHiststab" role="tab" data-toggle="tab">BiogHist</a></li>
                 <li><a href="#dates" id="existstab" role="tab" data-toggle="tab">Exist Dates</a></li>
                 <li><a href="#places" id="placestab" role="tab" data-toggle="tab">Places</a></li>
-                <li><a href="#generalContexts" id="generalContextstab" role="tab" data-toggle="tab">General Contexts</a></li>
-                <li><a href="#structureOrGenealogies" id="structureOrGenealogiestab" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
+                <li><a href="#generalContexts" id="generalContextstab" class="grayedout" role="tab" data-toggle="tab">General Contexts</a></li>
+                <li><a href="#structureOrGenealogies" id="structureOrGenealogiestab" class="grayedout" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
             </ul>
         </li>
         <li class="dropdown">
@@ -31,21 +31,26 @@
                 <li><a href="#resourceRelations" id="resourceRelationstab" role="tab" data-toggle="tab">Resource Relations</a></li>
                 <li><a href="#constellationRelations" id="constellationRelationstab" role="tab" data-toggle="tab">Internal CPF Relations</a></li>
                 <li><a href="#sameAs" id="sameAstab" role="tab" data-toggle="tab">External Related CPF</a></li>
-                <li><a href="#entityID" id="entityIDtab" role="tab" data-toggle="tab">Other Entity IDs (Same As)</a></li>
+                <!-- <li><a href="#entityID" id="entityIDtab" role="tab" data-toggle="tab">Other Entity IDs (Same As)</a></li> -->
             </ul>
         </li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Corporate Description <span class="caret"></span></a>
             <ul class="dropdown-menu">
                 <li><a href="#functions" id="functionstab" role="tab" data-toggle="tab">Functions</a></li>
-                <li><a href="#legalStatuses" id="legalStatusestab" role="tab" data-toggle="tab">Legal Statuses</a></li>
-                <li><a href="#mandates" id="mandatestab" role="tab" data-toggle="tab">Mandates</a></li>
+                <li><a href="#legalStatuses" id="legalStatusestab" class="grayedout" role="tab" data-toggle="tab">Legal Statuses</a></li>
+                <li><a href="#mandates" id="mandatestab" class="grayedout" role="tab" data-toggle="tab">Mandates</a></li>
             </ul>
         </li>
         <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Control <span class="caret"></span></a>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Sources <span class="caret"></span></a>
             <ul class="dropdown-menu">
                 <li><a href="#sources" id="sourcestab" role="tab" data-toggle="tab" id="sources-tab">Sources</a></li>
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Control Data<span class="caret"></span></a>
+            <ul class="dropdown-menu">
                 <li><a href="#conventionDeclarations" id="conventionDeclarationstab" role="tab" data-toggle="tab">Convention Declarations</a></li>
             </ul>
         </li>
@@ -547,7 +552,7 @@
                     <input id="source_id_{{i}}" name="source_id_{{i}}" type="hidden" value="{{ source.id }}"/>
                     <input id="source_version_{{i}}" name="source_version_{{i}}" type="hidden" value="{{ source.version }}"/>
                     <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value="{{ source.operation }}"/>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="source_displayName_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceDisplayName.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceDisplayName.display }}
                         </label>
@@ -555,7 +560,7 @@
                             <input id="source_displayName_{{i}}" name="source_displayName_{{i}}" type="hidden" class="form-control" value="{{ source.displayName }}"/>
                             <p class="form-control-static">{{ source.displayName }}</p>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="form-group">
                         <label for="source_citation_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceCitation.display }}
@@ -1600,8 +1605,8 @@
                     </div>
                     {% if inEdit %}
                     <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.scmCitation.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.scmCitation.display }}
+                        <label class="control-label col-xs-4" data-content="{{X.sourceCitation.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sourceCitation.display }}
                             </label>
                         <div class="col-xs-8" id="select_scm_{{short}}_citation_{{j}}_{{i}}">
                             <input id="scm_{{short}}_citation_id_{{j}}_{{i}}" name="scm_{{short}}_citation_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.citation.id }}"/>
@@ -1613,8 +1618,8 @@
                     </div>
                     {% endif %}
 
-
-                    <div class="form-group">
+                    <!-- Removing SubCitation -->
+                    <!-- <div class="form-group">
                         <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSubCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSubCitation.display }}
                         </label>
@@ -1622,7 +1627,7 @@
                             <input id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.subCitation }}"/>
                             <p class="form-control-static">{{ scm.subCitation }}</p>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="form-group" style="display: none;">
                         <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSourceData.display }}

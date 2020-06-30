@@ -1350,7 +1350,7 @@ class DBUtil
                     $this->dataCache["meta"][$rec['fk_table']][$rec['fk_id']] = array();
 
                 $gObj = new \snac\data\SNACControlMetadata();
-                $gObj->setSubCitation($rec['sub_citation']);
+                $gObj->setSubCitation($rec['sub_citation'] ?? '');
                 $gObj->setSourceData($rec['source_data']);
                 $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
                 $gObj->setNote($rec['note']);
@@ -2275,7 +2275,7 @@ class DBUtil
         foreach ($rows as $rec)
         {
             $newObj = new \snac\data\Source();
-            $newObj->setDisplayName($rec['display_name']);
+            // $newObj->setDisplayName($rec['display_name']);
             $newObj->setText($rec['text']);
             $newObj->setCitation($rec['citation']);
             $newObj->setNote($rec['note']);
@@ -2338,7 +2338,7 @@ class DBUtil
         foreach ($rows as $rec)
         {
             $newObj = new \snac\data\Source();
-            $newObj->setDisplayName($rec['display_name']);
+            // $newObj->setDisplayName($rec['display_name']);
             $newObj->setText($rec['text']);
             $newObj->setCitation($rec['citation']);
             $newObj->setNote($rec['note']);
