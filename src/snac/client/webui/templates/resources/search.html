@@ -129,7 +129,7 @@
                 });
             }
 
-            loadVocabSelectOptions($('#resource-type-select'), "document_type").done(function() {
+            loadVocabSelectOptions($('#resource-type-select'), "document_type").then(function() {
                 var newOption = new Option("All Resources", '', false, false)
                 $('#resource-type-select').append(newOption)
             })
