@@ -73,49 +73,6 @@ class EADParser {
 			$this->logger->addDebug("Unzipped");
 
 
-			/* SAXON/C PHP does not work	
-
-			// Define the XML file (full path)
-			$xmlfile = \snac\Config::$EAD_PARSE_XSLT_DIR."/ead_parse_driver.xml";
-			// Define the XSLT file (full path)
-			$xslfile = \snac\Config::$EAD_PARSE_XSLT_DIR."/eadToORxsl.xsl";
-
-			$this->logger->addDebug("Creating SAXON Parser");
-			// Create the SAXON parser
-			$proc = new \Saxon\SaxonProcessor();
-			//$version = $proc->version();
-			//echo 'Saxon Processor version: '.$version;
-
-			// Create the XSLT3 parser and compile the XSLT code
-			$xslt3p = $proc->newXslt30Processor();
-			$this->logger->addDebug("Loading XSLT: $xslfile");
-			$xslt3p->compileFromFile($xslfile);
-			$this->logger->addDebug("Done loading XSLT");
-
-			// Define the base output URI
-			// this is the base of where the output directory will be, however it is
-			// NOT the base of the XSLT execution.
-			$xslt3p->setProperty("BaseOutputURI", $tmpdir);
-			$xslt3p->setOutputFile("tmpoutput.xml");
-
-			// The path of the source input files (EAD).  This should be a full path or
-			// relative to the path that the XSLT file is being run (defined above)
-			$xslt3p->setParameter("sourceFolderPath", $proc->createAtomicValue($eaddir));
-
-			// The path of the output TSV files (this is relative to the BaseOutputURI above)
-			$xslt3p->setParameter("outputFolderPath", $proc->createAtomicValue($outputdir));
-
-			// The source identifier
-			$xslt3p->setParameter("sourceID", $proc->createAtomicValue("test"));
-
-			// Parse the XML file (unused) and run the XSLT template.  This will not actually
-			// create a file, but it is needed
-			$this->logger->addDebug("Running SAXON");
-			$in = $proc->parseXmlFromFile($xmlfile);
-			$xslt3p->setInitialMatchSelection($in);
-			$out = $xslt3p->applyTemplatesReturningFile();
-			 */
-
 			$xmlfile = \snac\Config::$EAD_PARSE_XSLT_DIR."/ead_parse_driver.xml";
 			$xslfile = \snac\Config::$EAD_PARSE_XSLT_DIR."/eadToORxsl.xsl";
 			$tmpoutfile = $tmpdir."/tmpoutput.xml";
