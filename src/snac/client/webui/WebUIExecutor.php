@@ -1367,7 +1367,7 @@ class WebUIExecutor {
 
 		$this->logger->addDebug("Sending query to the server", $query);
 		$serverResponse = $this->connect->query($query);
-		$this->logger->addDebug("Received server response", $serverResponse);
+		$this->logger->addDebug("Received server response", [$serverResponse]);
 
 		/*
 			Ask server to "parse_ead"

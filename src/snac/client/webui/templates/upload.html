@@ -33,137 +33,7 @@
 <!-- SNAC Scripts -->
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
-
-<script>
-// We can attach the `fileselect` event to all file inputs on the page
-$(document).on('change', ':file', function() {
-    var input = $(this),
-    numFiles = input.get(0).files ? input.get(0).files.length : 1,
-    label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-    input.trigger('fileselect', [numFiles, label]);
-});
-
-// We can watch for our custom `fileselect` event like this
-$(document).ready( function() {
-    $(':file').on('fileselect', function(event, numFiles, label) {
-
-        var input = $(this).parents('.input-group').find(':text'),
-        log = numFiles > 1 ? numFiles + ' files selected' : label;
-
-        if( input.length ) {
-            input.val(log);
-        } else {
-            if( log ) alert(log);
-        }
-
-    });
-
-
-	$("#upload_form").submit(function(){
-		var formData = new FormData($(this)[0]);
-		$("#submit").attr('disabled', 'true');
-		$("#progress-div").css('visibility', 'visible');
-		$('.progress-bar').css('width', '10%').attr('aria-valuenow', '10');
-		$('.progress-text').text("Uploading and Validating EAD");
-		$('#errors').text("");
-		$.ajax({
-			url:$(this).attr("action"),
-			type: 'POST',
-			data: formData,
-			async: false,
-			success: function (data) {
-				if (data.result == "success") {
-					// Validation is complete, now parse
-					$('.progress-bar').css('width', '50%').attr('aria-valuenow', '50');
-					$('.progress-text').text("Validation Complete, Uploading and Parsing EAD");
-
-					var xhr = new XMLHttpRequest();
-					xhr.open('POST', 'parse_ead' , true);
-					xhr.responseType = 'arraybuffer';
-					xhr.onload = function () {
-						    if (this.status === 200) {
-							$('.progress-bar').css('width', '100%').attr('aria-valuenow', '100');
-							$('.progress-text').text("Parsing Complete");
-							// this will be zip file
-							var filename = "";
-							var disposition = xhr.getResponseHeader('Content-Disposition');
-							if (disposition && disposition.indexOf('attachment') !== -1) {
-							    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-							    var matches = filenameRegex.exec(disposition);
-							    if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-							}
-
-							var type = xhr.getResponseHeader('Content-Type');
-
-							    var blob;
-							    if (typeof File === 'function') {
-								    try {
-									    blob = new File([this.response], filename, { type: type });
-								    } catch (e) { /* Edge */ }
-							    }
-							    if (typeof blob === 'undefined') {
-								    blob = new Blob([this.response], { type: type });
-							    }
-							if (typeof window.navigator.msSaveBlob !== 'undefined') {
-							    // IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
-							    window.navigator.msSaveBlob(blob, filename);
-							} else {
-							    var URL = window.URL || window.webkitURL;
-							    var downloadUrl = URL.createObjectURL(blob);
-
-							    if (filename) {
-								// use HTML5 a[download] attribute to specify filename
-								var a = document.createElement("a");
-								// safari doesn't support this yet
-								if (typeof a.download === 'undefined') {
-								    window.location = downloadUrl;
-								} else {
-								    a.href = downloadUrl;
-								    a.download = filename;
-								    document.body.appendChild(a);
-								    a.click();
-								}
-							    } else {
-								window.location = downloadUrl;
-							    }
-
-							    setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
-							}
-
-						    }
-					};
-					xhr.send(formData);
-				} else { // validation or other errors
-					$('.progress-text').text("Validation Errors");
-					if (typeof data.errors != "undefined") {
-						data.errors.forEach(function(error) {
-							$('#errors').append("<p><b>"+error.filename+":"+error.line+": </b> "+error.message);
-						});
-					} else {
-						$('#errors').append("<p>"+data.error.message+"</p>");
-					}
-					$("#submit").attr('disabled', 'false');
-				}
-			},
-			cache: false,
-			contentType: false,
-			processData: false
-		});
-		return false;
-	});
-	/*$('#submit').click(function() {
-        // Send the data back by AJAX call
-        $.post(snacUrl+"/parse", $("#upload_form").serialize(), function (data) {
-            // 
-            if (data.result == "success") {
-                // 
-            }
-        });
-	});*/
-});
-
-
-</script>
+<script src="{{control.snacURL}}/javascript/uploadparse.js{{control.noCache}}"></script>
 
 </head>
 
@@ -182,22 +52,13 @@ $(document).ready( function() {
             <form id="upload_form" method="POST" action="validate_ead" enctype="multipart/form-data">
                 <div class="form-group">
                 <div class="input-group">
-                    <input type="text" class="form-control" value="Choose a file to upload and process" readonly>
-                    <label class="input-group-btn">
-                        <span class="btn btn-primary">
-                            Browse&hellip; <input type="file" style="display: none;" name="eadfile" accept=".zip,application/zip">
-                        </span>
-                    </label>
+                    <input type="file" class="form-control-file" name="eadfile" accept=".zip,application/zip">
                 </div>
                 </div>
-		<!--
-                <div class="form-group">
-                    <input type="text" class="form-control" value="" name="url">
-                </div>
-		-->
                 
                 <div class="form-group text-center">
-                        <button class="btn btn-success" id="submit" name="submit">Parse EAD to TSV</button>
+                        <button class="btn btn-success" id="submit" name="submit">Validate EAD</button>
+                        <button class="btn btn-danger" id="parse">Parse EAD to TSV</button>
                 </div>
 		<div class="well well-lg" style="visibility:hidden" id="progress-div">
 			<div class="progress">

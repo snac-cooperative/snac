@@ -4219,24 +4219,38 @@ class ServerExecutor {
 		
 		$response = array();
         $parser = new \snac\util\EADParser();
-        $outzip = null;
+        $output = null;
 
-		if (isset($input["url"])) {
-			$outzip = $parser->parseURL($input["url"]);
-		} else {
+		if (isset($input["file"])) {
 			$file = base64_decode($input["file"]["content"]);
-			$outzip = $parser->parseZip($file);
+			$output = $parser->parseZip($file);
 		}
 
-		$response["file"] = [
-			"mime-type" => "application/zip",
-			"content" => base64_encode($outzip)
-		];
+		if ($output && !is_array($output)) {
+				$response["file"] = [
+					"mime-type" => "application/zip",
+					"content" => base64_encode($output)
+				];
 
-		$response["result"] = "success";
-
+				$response["result"] = "success";
+		} else {
+				// an error occurred
+				$response["result"] = "failure";
+				if (is_array($output))
+						$response["errors"] = $output;
+		}
 		return $response;
 	}
+    
+    /**
+     * VAlidate EAD and return result
+     *
+     * Calls EAD Parser on zip file given on the input and returns
+     * any errors that occurred during the validation process.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
     public function validateEAD($input) {
         if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
             throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
