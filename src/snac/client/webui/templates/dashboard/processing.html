@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Processing Dashboard - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Datatables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+
+<!-- SNAC Scripts -->
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/uploadparse.js{{control.noCache}}"></script>
+
+<meta name="viewport" content="initial-scale = 1.0" />
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+
+
+    <div class="row">
+        <div class="alert alert-01 alert-info" id="status-message" style="display: none">
+            <p></p>
+        </div><!-- end alert -->
+    </div>
+    <div class="row dashboard-title">
+        <div class="col-md-4">
+            <div>
+                <div class="large-icon-box">
+                    <p class="text-center background-icon">
+                        <i class="fa fa-folder" style="color: #b2a6f5;" ></i>
+                    </p>
+                    <p class="text-right overlay-icon" >
+                        <i class="fa fa-wrench" style="color: #3b2a9c;"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+                <h1 class="title">Processing Dashboard</h1>
+                <div class="well-md">
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Processing dashboard!  Here you can use and download SNAC's processing tools to process your EAD and EAC-CPF XML.</p>
+                </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Left column -->
+            <div class="panel panel-review">
+                <div class="panel-heading">
+                    <h3 class="panel-title">EAD Processing</h3>
+                </div>
+                <div class="panel-body">
+                    <p> Choose a zip file of EAD XML on your system to upload to SNAC and parse.  This may take some time to load. </p>
+                    <form id="upload_form" method="POST" action="validate_ead" enctype="multipart/form-data">
+                        <div class="form-group">
+                        <div class="input-group">
+                            <input type="file" class="form-control-file" name="eadfile" accept=".zip,application/zip">
+                        </div>
+                        </div>
+                        
+                        <div class="form-group text-center">
+                                <button class="btn btn-success" id="submit" name="submit">Validate EAD</button>
+                                <button class="btn btn-danger" id="parse">Parse EAD to TSV</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">EAC-CPF Processing</h3>
+                </div>
+                <div class="panel-body">
+                    <p>We have created many tools to help with EAC-CPF data offline.</p>
+                    <div class="list-group">
+                        <a href="{{control.snacURL}}/" class="list-group-item">EAC Schematron</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-8">
+            <!-- Right column -->
+		<div class="well well-lg" style="visibility:hidden" id="progress-div">
+			<div class="progress">
+				<div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+					<span class="sr-only">0% Complete</span>
+				</div>
+			</div>
+			<p class="text-center progress-text"></p>
+			<div id="errors"></div>
+		</div>
+        </div>
+    </div>
+</div>
+
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>

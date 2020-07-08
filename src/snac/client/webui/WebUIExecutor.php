@@ -1288,7 +1288,7 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayUploadPage(&$input, &$display) {
-        $display->setTemplate("upload");
+        $display->setTemplate("dashboard/processing");
         return true;
     }
     

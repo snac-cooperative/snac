@@ -58,6 +58,7 @@
                         {% endif %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">System Dashboards</li>
+                        <li><a href="{{control.snacURL}}/upload"><i class="fa fa-fw fa-wrench" aria-hidden="true"></i> Processing</a></li>
                         <li><a href="{{control.snacURL}}/reports/dashboard"><i class="fa fa-fw fa-pie-chart" aria-hidden="true"></i> Reporting</a></li>
                         {% if permissions.ViewAdminDashboard %}
                         <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cog" aria-hidden="true"></i> Administrator</a></li>
@@ -98,7 +99,6 @@
                         <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
                         <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         <li><a href="{{control.snacURL}}/api_key"><i class="fa fa-fw fa-key" aria-hidden="true"></i> Rest API Key</a></li>
-                        <li><a href="{{control.snacURL}}/upload"><i class="fa fa-fw fa-upload" aria-hidden="true"></i> Upload and Parse EAD</a></li>
                         <li><a href="{{control.snacURL}}/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
                     </ul>
                     </li>

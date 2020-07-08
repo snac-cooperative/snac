@@ -32,7 +32,7 @@ class EADParser {
     private $logger = null;
 
     /**
-     * Constructor.      
+     * Constructor
      */
 	public function __construct() {
 		global $log;
@@ -43,7 +43,13 @@ class EADParser {
 	}
 
     /**
-     *  Parse a zip file
+     * Parse a zip file
+     * 
+     * Uses SAXON to parse all the XML in a zip file and returns the contents of a 
+     * zip file containing the TSV files produced by SAXON's parsing.
+     *
+     * @param $zipcontents string the contents of the zip file to be parsed
+     * @return string The contents of the result zip
      */
 	public function parseZip($zipcontents) {
 		$tmpdir = $this->unzip($zipcontents);
@@ -79,8 +85,6 @@ class EADParser {
 				fclose($pipes[1]);
 				fclose($pipes[2]);
 
-				// It is important that you close any pipes before calling
-				// proc_close in order to avoid a deadlock
 				$return_value = proc_close($process);
 
 			}
@@ -124,6 +128,15 @@ class EADParser {
 		return $toReturn;
 	} 
 
+    /**
+     * Unzip a zip file 
+     * 
+     * Unzips the file given as a parameter to a temporary directory and
+     * returns the location of the zip contents.
+     *
+     * @param $zipcontents string the contents of the zip file (not filename)
+     * @return string The path to the folder containing the zip contents
+     */
 	private function unzip($zipcontents) {
 		$tmpdir = \snac\Config::$EAD_PARSETMP_DIR . "/". microtime(true);
 		$this->logger->addDebug("creating tmp directory");
@@ -165,13 +178,24 @@ class EADParser {
 		return $tmpdir;
 	}
 
+    /**
+     * Cleanup a temporary directory 
+     *
+     * Deletes a temporary directory from the filesystem. 
+     *
+     * @param $dir The temporary directory to delete
+     */
 	private function cleanup($dir) {
-		//unlink($dir);
 		$this->delTree($dir);
 	}
 
 	/**
+     * Recursively delete a directory 
+     *
+     * Deletes a directory and it's contents from the filesystem. 
 	 * From https://www.php.net/manual/en/function.rmdir.php
+     *
+     * @param $dir The temporary directory to delete
 	 */
 	private function delTree($dir) {
 		$files = array_diff(scandir($dir), array('.','..'));
@@ -181,6 +205,14 @@ class EADParser {
 		return rmdir($dir);
 	}
 
+	/**
+     * Get libxml Errors 
+     *
+     * Gets the XML parsing errors from PHP's libxml.  This creates an array of the errors 
+	 * including the message, line, filename, and error code.
+     *
+     * @return array[] An array of errors
+	 */
 	private function getXMLErrors() {
 			$errors = [];
 			$err = libxml_get_errors();
@@ -208,6 +240,16 @@ class EADParser {
 			return $errors;
 	}
 
+	/**
+     * Validate a Directory of XML 
+     *
+     * Loads all XML files from the given directory into PHP's libxml parser to check 
+	 * for well-formedness or EAD schema validation.
+     *
+     * @param $eaddir string The directory to parse through
+     * @param $fullValidate boolean optional Whether or not to use full Schema validation
+     * @return array[] An array of errors, or empty array if no error
+	 */
 	private function validateDirectory($eaddir, $fullValidate = true) {
 		$errors = [];
 		try {
@@ -241,6 +283,15 @@ class EADParser {
 
 	}	
 	
+    /**
+     * Validate a zip file
+     * 
+     * Runs PHP's libxml implementation to validate all the contents of the zip file 
+     * against the EAD2002 schema file.  Returns a list of validation errors.
+     *
+     * @param $zipcontents string the contents of the zip file to be parsed
+     * @return string The contents of the result zip
+     */
 	public function validateZip($zipcontents) {
 		$tmpdir = $this->unzip($zipcontents); 
 		$eaddir = $tmpdir."/ead/";
