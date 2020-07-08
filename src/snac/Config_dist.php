@@ -300,4 +300,26 @@ class Config {
      * @var boolean Whether or not to treat feedback recipients as email addresses (true) or snac usernames (false)
      */
     public static $FEEDBACK_EMAIL_ONLY = false;
+
+
+    /**
+     * @var string Temporary directory to parse EAD 
+     */
+    public static $EAD_PARSETMP_DIR = "/tmp";
+
+    /**
+     * @var string Location of EAD XSLT file
+     */
+    public static $EAD_PARSE_XSLT_DIR = "/path/to/snac/src/snac/util";
+
+    /**
+     * @var string Location of EAD2002 schema file
+     */
+    public static $EAD_SCHEMA_FILE = "/path/to/snac/src/snac/util/ead2002.xsd";
+
+    /**
+     * @var string Location of SAXON jar file
+     */
+    public static $SAXON_JARFILE = "/home/jrhott/snac/lib/saxon9he.jar";
+
 }
