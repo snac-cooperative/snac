@@ -36,9 +36,9 @@ RewriteEngine on
 RewriteBase /
 
 # Redirect to HTTPS
-RewriteCond %{HTTPS} !on
-RewriteCond %{HTTP_HOST} !=localhost
-RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+#RewriteCond %{HTTPS} !on
+#RewriteCond %{HTTP_HOST} !=localhost
+#RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 
 # Store the current location in an environment variable CWD
 RewriteCond $0#%{REQUEST_URI} ([^#]*)#(.*)\1$

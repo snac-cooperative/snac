@@ -166,6 +166,11 @@
         </div>
     </div>
 
+    
+    {% if control.interfaceVersion == "development" %}
+    <!--{{ dump() }}-->
+    {% endif %}
+
     {% import _self as page_navigation %}
     {{ page_navigation.acceptCookies() }}
 
