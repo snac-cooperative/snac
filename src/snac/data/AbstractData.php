@@ -10,7 +10,7 @@
  *
  * @author Robbie Hott
  * @author Tom Laudeman
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -511,7 +511,7 @@ abstract class AbstractData implements \Serializable {
             }
         }
         if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
-            foreach ($this->snacControlMetadata as &$scm) {
+            foreach ($this->snacControlMetadata as $scm) {
                 $newSCM = new \snac\data\SNACControlMetadata($scm->toArray());
 
                 //TODO might be useful to have a toString() that would convert this data object into

@@ -25,7 +25,7 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
      */
     public function testBadFilename() {
         $parser = new \snac\util\EACCPFParser();
-        $parser->setVocabulary(new TestVocabulary());
+        // $parser->setVocabulary(new TestVocabulary());
         try {
             $parser->parseFile("Not-a-valid-filename");
         } catch (\snac\exceptions\SNACParserException $e) {
@@ -44,7 +44,7 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
      */
     public function testParseFile() {
         $parser = new \snac\util\EACCPFParser();
-        $parser->setVocabulary(new TestVocabulary());
+        // $parser->setVocabulary(new TestVocabulary());
         try {
             // Parse the file into an identity
             $identity = $parser->parseFile("test/snac/util/eac-cpf/test1.xml");
@@ -79,7 +79,7 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
      */
     public function testParserConstellationEquality() {
         $parser = new \snac\util\EACCPFParser();
-        $parser->setVocabulary(new TestVocabulary());
+        // $parser->setVocabulary(new TestVocabulary());
         $parser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         try {
             // Parse the file into an identity
@@ -97,67 +97,67 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
     }
 }
 
-/**
- * Test vocabulary for the parser tests
- *
- * @author Robbie Hott
- *
- */
-class TestVocabulary implements \snac\util\Vocabulary {
-
-    /**
-     * {@inheritDoc}
-     * @see \snac\util\Vocabulary::getTermByValue()
-     *
-     * @param string $value The value to look up
-     * @param string $type The type of the vocabulary
-     */
-    public function getTermByValue($value, $type) {
-        if ($value == null || $value == "")
-            return null;
-
-        $term = new \snac\data\Term();
-        $term->setTerm($value);
-        $term->setURI($type);
-        return $term;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see \snac\util\Vocabulary::getTermByID()
-     *
-     * @param int $id The term id
-     * @param string $type The type of the vocabulary
-     */
-    public function getTermByID($id, $type) {
-        if ($id == null || $id == "")
-            return null;
-
-        $term = new \snac\data\Term();
-        $term->setID($id);
-        $term->setURI($type);
-        return $term;
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see \snac\util\Vocabulary::getGeoTermByURI()
-     *
-     * @param string $uri The URI to look up
-     */
-    public function getGeoTermByURI($uri) {
-        $geoterm = new \snac\data\GeoTerm();
-        $geoterm->setURI($uri);
-        return $geoterm;
-    }
-
-    /**
-     * Get a Resource by Resource object
-     *
-     * @param \snac\data\Resource $resource The resource to search
-     * @return \snac\data\Resource|null The resource object found in the database
-     */
-    public function getResource($resource) {
-        return $resource;
-    }
-}
+// /**
+//  * Test vocabulary for the parser tests
+//  *
+//  * @author Robbie Hott
+//  *
+//  */
+// class TestVocabulary implements \snac\util\Vocabulary {
+//
+//     /**
+//      * {@inheritDoc}
+//      * @see \snac\util\Vocabulary::getTermByValue()
+//      *
+//      * @param string $value The value to look up
+//      * @param string $type The type of the vocabulary
+//      */
+//     public function getTermByValue($value, $type) {
+//         if ($value == null || $value == "")
+//             return null;
+//
+//         $term = new \snac\data\Term();
+//         $term->setTerm($value);
+//         $term->setURI($type);
+//         return $term;
+//     }
+//
+//     /**
+//      * {@inheritDoc}
+//      * @see \snac\util\Vocabulary::getTermByID()
+//      *
+//      * @param int $id The term id
+//      * @param string $type The type of the vocabulary
+//      */
+//     public function getTermByID($id, $type) {
+//         if ($id == null || $id == "")
+//             return null;
+//
+//         $term = new \snac\data\Term();
+//         $term->setID($id);
+//         $term->setURI($type);
+//         return $term;
+//     }
+//
+//     /**
+//      * {@inheritDoc}
+//      * @see \snac\util\Vocabulary::getGeoTermByURI()
+//      *
+//      * @param string $uri The URI to look up
+//      */
+//     public function getGeoTermByURI($uri) {
+//         $geoterm = new \snac\data\GeoTerm();
+//         $geoterm->setURI($uri);
+//         return $geoterm;
+//     }
+//
+//     /**
+//      * Get a Resource by Resource object
+//      *
+//      * @param \snac\data\Resource $resource The resource to search
+//      * @return \snac\data\Resource|null The resource object found in the database
+//      */
+//     public function getResource($resource) {
+//         return $resource;
+//     }
+// }

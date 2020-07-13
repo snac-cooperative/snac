@@ -4,7 +4,7 @@
  * Scripts used in the messaging cener page
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -65,6 +65,10 @@ function showMessage(messageID) {
                                     + data.message.toUser.userName +")");
             currentMessage = data.message;
             $('#message_view_pane').html(html);
+	    $('#message_view_pane a').on('click', function() {
+	        window.open($(this).attr('href'));
+	        return false;
+	    });
 
             $("#reply_message").removeAttr("disabled").removeClass("disabled");
             $("#forward_message").removeAttr("disabled").removeClass("disabled");

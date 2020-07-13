@@ -1,0 +1,33 @@
+    <div class="modal fade" id="sendReviewPane" tabindex="-1" role="dialog" aria-labelledby="sendReviewPane">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="sendReviewPaneLabel">Send for Review Options</h4>
+                </div>
+                <div class="modal-body" id="sendReviewPaneContent">
+                        <div class="modal-body">
+                            <div style="margin-top: 20px;">
+                                <textarea id="sendReviewMessage" class='panel panel-default panel-body' style='width: 100%' placeholder="You may write a message to the reviewer here..."></textarea>
+                            </div>
+                            <p>Search for a User's name or primary email address below to send this constellation to that person
+                            for review.</p>
+                            <div style="margin-top: 20px;">
+                                <select class="form-control" id="reviewersearchbox">
+                                    <option></option>
+                                </select>
+                            </div>
+
+                            <div id="user-results-box">
+                            </div>
+                            <div style="text-align: center; margin-top: 10px;">
+                                <button type="button" class="btn btn-success" id="save_and_review_touser" data-dismiss="modal">Send Review</button>
+                            </div>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
+                </div>
+            </div>
+        </div>
+    </div>

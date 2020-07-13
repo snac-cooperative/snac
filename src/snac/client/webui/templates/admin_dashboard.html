@@ -4,21 +4,17 @@
 <title>Admin Dashboard - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
 
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
-
-<!-- Helper Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
@@ -29,7 +25,38 @@
 <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/dashboard.js{{control.noCache}}"></script>
-<script src="{{control.snacURL}}/javascript/search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+<script>
+    function addSNACInstitution(ic_id) {
+        $.post("{{control.snacURL}}/save_institution/" + ic_id).then(
+            function(response) {
+                if (response.result === "success") {
+                    alert("Saved institution.")
+                } else {
+                    alert("Error: Failed to save institution")
+                }
+            });
+    }
+
+    $(document).ready(function() {
+        $("#search_form").on("click", "a", function(event) {
+            event.preventDefault()
+            $link = $(event.target)
+            var href = $link.attr("href")
+            var name = $link.text()
+            var id = href.slice(href.lastIndexOf("/") + 1)
+
+            if (confirm(`Are you sure you want to make ${name} (ID: ${id}) a SNAC Institution?`)) {
+                addSNACInstitution(id);
+                $("#search-results-box").html("")
+            }
+        })
+    });
+</script>
+
 
 </head>
 <body role="document">
@@ -39,7 +66,26 @@
 
 <div class="container snac" role="main">
 
-    <h1>Administrator Dashboard</h1>
+    <div class="row dashboard-title">
+        <div class="col-md-4">
+            <div>
+                <div class="large-icon-box">
+                    <p class="text-center background-icon">
+                        <i class="fa fa-folder" style="color: #EAE8EE;" ></i>
+                    </p>
+                    <p class="text-right overlay-icon" >
+                        <i class="fa fa-cog" style="color: #7B7484"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+                <h1 class="title">Administrator's Dashboard</h1>
+                <div class="well-md">
+                    <p>Welcome to the Administrator's dashboard.  This dashboard provides system-level controls for user accounts, user groups, and roles and privileges.</p>
+                </div>
+        </div>
+    </div>
 
     <ol class="breadcrumb">
         <li>Administrator</a></li>
@@ -54,26 +100,6 @@
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
-            <h3>Overview</h3>
-
-            <p>Welcome to the Administrator's dashboard.  The first column provides access to administrative settings and user accounts.  The second column gives quick access to reports on the system.</p>
-            <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
-
-
-            <div class="panel panel-success">
-                <div class="panel-heading">
-                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
-                </div>
-                <div class="panel-body">
-                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
-                    <div class="list-group">
-                        <a href="#" class="list-group-item disabled">Coming Soon</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <!-- Middle column -->
             {% if permissions.AddUsers or permissions.ModifyUsers or permissions.AssignRoles %}
             <div class="panel panel-info">
                 <div class="panel-heading">
@@ -93,6 +119,9 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
             {% if permissions.ManageGroups %}
             <div class="panel panel-info">
                 <div class="panel-heading">
@@ -107,6 +136,9 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Role Management</h3>
@@ -119,25 +151,22 @@
                 </div>
             </div>
         </div>
+    </div>
+    {% if permissions.ManageGroups %}
+    <div class="row">
         <div class="col-md-4">
-            <!-- Right column -->
-            <div class="panel panel-warning">
+            <div class="panel panel-success">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Reports</h3>
+                    <h3 class="panel-title">Add Institutions</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Reports generated weekly</p>
-                    <div class="list-group">
-                        <a href="{{control.snacURL}}/administrator/report_general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
-                    </div>
-                    <p>Reports generated monthly</p>
-                    <div class="list-group">
-                        <a href="{{control.snacURL}}/administrator/report_holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
-                    </div>
+                    <p>Add SNAC affiliated institutions</p>
+                    {{ include("dashboard/_dashboard_search.html") }}
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 {{ footer(X, user, permissions, control) }}
 

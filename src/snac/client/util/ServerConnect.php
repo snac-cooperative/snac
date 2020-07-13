@@ -5,7 +5,7 @@
  * Contains the connection class between the clients and server
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -76,6 +76,17 @@ class ServerConnect {
     }
 
     /**
+     * Get User
+     *
+     * Gets the user object returned from the Server
+     *
+     * @return \snac\data\User|null The user object
+     */
+    public function getUser() {
+        return $this->user;
+    }
+
+    /**
      * Perform Server Query
      *
      * Uses CURL to query the server by converting the given array into JSON, sending that
@@ -120,6 +131,14 @@ class ServerConnect {
         }
 
         $this->logger->addDebug("Got the following server response", $return);
+
+        if (isset($return["user"]) && $return["user"] != null) {
+            $tmpUser = new \snac\data\User($return["user"]);
+            if ($tmpUser != null) {
+                $this->user = $tmpUser;
+            }
+        }
+
         return $return;
     }
 
@@ -181,9 +200,28 @@ class ServerConnect {
             return $resource;
         }
 
-        $resource = new \snac\data\Resource();
-        $resource->setID($id);
-        $resource->setVersion($version);
-        return $resource;
+        return false;
+    }
+
+    /**
+     * Reload User
+     *
+     * Queries the server for the newest version of the currently logged-in user
+     * by requesting user_information.  This can be helpful if API keys are updated,
+     * messaging counts are updated, etc.
+     */
+    public function reloadUser() {
+        $ask = array("command"=>"user_information"
+        );
+        $this->logger->addDebug("Sending user information query to the server", $ask);
+        $serverResponse = $this->query($ask);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+
+        if (isset($serverResponse["user"]) && $serverResponse["user"] != null) {
+            $tmpUser = new \snac\data\User($serverResponse["user"]);
+            if ($tmpUser != null) {
+                $this->user = $tmpUser;
+            }
+        }
     }
 }

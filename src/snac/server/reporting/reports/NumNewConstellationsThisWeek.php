@@ -4,7 +4,7 @@
  * Number of New Constellations This Week Report Class File
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -45,9 +45,9 @@ class NumNewConstellationsThisWeek extends helpers\Report {
         $sql = "select count(*)
                 from version_history as aa,
                     (select min(timestamp) as timestamp, id from version_history
-                    where status in ('published', 'tombstoned', 'deleted', 'embargoed')
+                    where status in ('published', 'tombstone', 'deleted', 'embargoed')
                     group by id) as cc
-                where              
+                where
                     aa.id=cc.id and
                     aa.version=cc.version and
                     cc.timestamp > NOW() - INTERVAL '7 days' and
@@ -66,4 +66,3 @@ class NumNewConstellationsThisWeek extends helpers\Report {
     }
 
 }
-

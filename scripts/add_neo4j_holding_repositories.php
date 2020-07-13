@@ -53,21 +53,20 @@ if ($connector == null)
 
 echo "Querying the resources from the database.\n";
 
-$allNames = $db->query("select id, version, title, href, type, repo_ic_id
-                        from resource_cache
-                        where not is_deleted and repo_ic_id is not null", array());
+$allNames = $db->query("select b.id, cl.current_ic_id as repo_ic_id
+                        from resource_cache b, constellation_lookup cl,
+                        (select distinct id, max(version) as version from resource_cache group by id) a
+                        where b.id = a.id and b.version = a.version and not b.is_deleted and b.repo_ic_id is not null and b.repo_ic_id = cl.ic_id", array());
+
 $nodes = array();
 while($name = $db->fetchrow($allNames))
 {
         $nodes[$name["id"]] = [
             "id" => $name["id"],
-            "version" => $name["version"],
-            "href" => $name["href"],
-            "title" => $name["title"],
             "repo" => $name["repo_ic_id"]
         ];
 }
- 
+
 echo "Updating the Neo4J Graph. This may take a while...\n";
 
 $stack = $connector->stack();
@@ -78,7 +77,7 @@ foreach ($nodes as $node) {
         continue;
     }
     $stack->push("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
-        CREATE (b)-[r:HIRELATION]->(a);", 
+        CREATE (b)-[r:HIRELATION]->(a);",
         [
             'id1' => $node["repo"],
             'id2' => $node["id"]
@@ -101,4 +100,3 @@ foreach ($nodes as $node) {
 $txn = $connector->transaction();
 $txn->runStack($stack);
 $txn->commit();
-

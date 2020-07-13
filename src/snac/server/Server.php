@@ -9,7 +9,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -95,14 +95,23 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $db = new \snac\server\database\DBUtil();
 
-        // First, authenticate the user (every time to ensure they are still valid), if user information has been supplied
+        // --------------------------
+        // Authentication
+        // --------------------------
+        // Capture any user information given to the system through inputs.  This might be the
+        // OAuth-authenticated user object or an API key.
         $user = null;
         if (isset($this->input["user"])) {
             $user = $this->input["user"];
         }
 
+        $apikey = null;
+        if (isset($this->input["apikey"])) {
+            $apikey = $this->input["apikey"];
+        }
 
-        $executor = new \snac\server\ServerExecutor($user);
+        // Executor's constructor will then handle appropriate authentication
+        $executor = new \snac\server\ServerExecutor($user, $apikey);
 
 
         $this->logger->addDebug("Switching on command");
@@ -149,42 +158,64 @@ class Server implements \snac\interfaces\ServerInterface {
 
             // User Management
             case "user_information":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->userInformation();
                 break;
+            case "institution_information":
+                $this->response = $executor->institutionInformation($this->input);
+                break;
+
 
             case "search_users":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Edit"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to search users.", 403);
                 $this->response = $executor->searchUsers($this->input);
                 break;
 
             case "list_users":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Edit"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to view users.", 403);
                 $this->response = $executor->listUsers($this->input);
                 break;
 
             case "user_messages":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->userMessages();
                 break;
 
             case "read_message":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->readMessage($this->input);
                 break;
 
             case "send_message":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->sendMessage($this->input);
                 break;
 
             case "archive_message":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->archiveMessage($this->input);
                 break;
 
             case "archived_messages":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->listUserArchivedMessages();
                 break;
 
             case "sent_messages":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->listUserSentMessages();
                 break;
 
@@ -193,31 +224,55 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "edit_user":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->userInformation($this->input);
                 break;
 
             case "update_user":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->updateUserInformation($this->input);
+                break;
+
+            case "generate_key_user":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
+                $this->response = $executor->generateUserAPIKey();
+                break;
+
+            case "revoke_key_user":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
+                $this->response = $executor->revokeUserAPIKey($this->input);
                 break;
 
             // Group Management
             case "group_information":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->groupInformation($this->input);
                 break;
 
             case "admin_groups":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Manage Groups"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->listGroups($this->input);
                 break;
 
             case "edit_group":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Manage Groups"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->groupInformation($this->input);
                 break;
 
             case "update_group":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 if (!$executor->hasPermission("Manage Groups"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
                 $this->response = $executor->updateGroupInformation($this->input);
@@ -225,11 +280,23 @@ class Server implements \snac\interfaces\ServerInterface {
 
             // institutions
             case "admin_institutions":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->listInstitutions();
+                break;
+
+            case "insert_institution":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
+                if (!$executor->hasPermission("Manage Groups"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.", 403);
+                $this->response = $executor->createInstitution($this->input);
                 break;
 
             // roles
             case "admin_roles":
+                if ($executor->isAPIKeyAuth())
+                    throw new \snac\exceptions\SNACPermissionException("Command not allowed with API key authorization.", 403);
                 $this->response = $executor->listRoles();
                 break;
 
@@ -359,7 +426,15 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->removeMaybeSameConstellation($this->input);
                 break;
 
+            case "add_sameas":
+                if (!$executor->hasPermission("Publish"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to Edit and Publish.", 403);
 
+                if (!isset($this->input["sameas_uris"], $this->input["constellationid"]) || count($this->input["sameas_uris"]) == 0)
+                    throw new \snac\exceptions\SNACInputException("Incorrect input.", 400);
+
+                $this->response = $executor->addConstellationSameAs($this->input["constellationid"], $this->input["sameas_uris"]);
+                break;
 
             case "read":
                 $this->response = $executor->readConstellation($this->input);
@@ -392,6 +467,14 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->elasticSearchQuery($this->input);
                 break;
 
+            case "get_holdings":
+                $this->response = $executor->getHoldings($this->input);
+                break;
+
+            case "shared_resources":
+                $this->response = $executor->getSharedResources($this->input);
+                break;
+
             // Resource Management
             case "insert_resource":
                 if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
@@ -399,7 +482,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->writeResource($this->input);
                 break;
             case "update_resource":
-                if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
+                if (!$executor->hasPermission("Edit Resources"))
                    throw new \snac\exceptions\SNACPermissionException("User not authorized to update resources.");
                 $this->response = $executor->writeResource($this->input);
                 break;
@@ -409,6 +492,9 @@ class Server implements \snac\interfaces\ServerInterface {
             case "resource_search":
                 $this->response = $executor->searchResources($this->input);
                 break;
+            case "merge_resource":
+                $this->response = $executor->mergeResources($this->input["victimID"], $this->input["targetID"]);
+                break;
 
             // Reporting
             case "stats":
@@ -416,7 +502,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->readReport($tmp);
                 break;
             case "report":
-                if (!$executor->hasPermission("View Reports"))
+                if (!$executor->hasPermission("View Reports") && $this->input["type"] != "outbound")
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to view reports.", 403);
                 $this->response = $executor->readReport($this->input);
                 break;
@@ -426,6 +512,82 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->generateReport($this->input);
                 break;
 
+            // Ingest and Parsing tasks
+            case "parse_eac":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse Constellations.");
+                $this->response = $executor->parseEACCPFToConstellation($this->input);
+                break;
+
+            case "concepts":
+                if (isset($this->input['id'])) {
+                    $this->response = $executor->readDetailedConcept($this->input['id']);
+                } else {
+                    $this->response = $executor->readConcepts();
+                }
+                break;
+
+            case "search_concepts":
+                if ($this->input['q']) {
+                    $this->response = $executor->searchConcepts($this->input['q']);
+                }
+                break;
+
+            case "add_concept":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to edit Concepts.");
+                $this->response = $executor->createConcept($this->input["value"]);
+                break;
+            case "add_term":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to edit Concepts.");
+                $this->response = $executor->saveTerm($this->input["concept_id"],
+                                                      $this->input["value"],
+                                                      $this->input["is_preferred"]);
+                break;
+            case "save_term":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to edit Concepts.");
+                $this->response = $executor->saveTerm($this->input["term_id"] ?? null,
+                                                      $this->input["concept_id"],
+                                                      $this->input["value"],
+                                                      $this->input["is_preferred"]);
+                break;
+            case "delete_term":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to edit Concepts.");
+                $this->response = $executor->deleteTerm($this->input["term_id"]);
+
+                break;
+            case "save_related_concepts":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to edit Concepts.");
+                $this->response = $executor->saveRelatedConcepts($this->input["id1"], $this->input["id2"]);
+
+                break;
+            case "delete_related_concepts":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to edit Concepts.");
+                $this->response = $executor->removeRelatedConcepts($this->input["id1"], $this->input["id2"]);
+
+                break;
+            case "save_broader_concepts":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to edit Concepts.");
+                $this->response = $executor->saveBroaderConcepts($this->input["narrower_id"], $this->input["broader_id"]);
+
+                break;
+            case "delete_broader_concepts":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to edit Concepts.");
+                $this->response = $executor->removeBroaderConcepts($this->input["narrower_id"], $this->input["broader_id"]);
+
+                break;
+
+
+            case "analytics":
+                $executor->recordAnalytics($this->input);
+                break;
 
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"], 400);

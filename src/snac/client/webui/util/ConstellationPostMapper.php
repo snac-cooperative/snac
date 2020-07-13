@@ -6,7 +6,7 @@
  * Contains the mapper class between Constellations and POST data from the WebUI
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2016 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -229,7 +229,7 @@ class ConstellationPostMapper {
                     $scmObject->setVersion($scm["version"]);
             }
             $scmObject->setOperation($this->getOperation($scm));
-            $scmObject->setSubCitation($scm["subCitation"]);
+            $scmObject->setSubCitation($scm[""] ?? '');
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
 
@@ -796,7 +796,7 @@ class ConstellationPostMapper {
             }
             $source->setOperation($this->getOperation($data));
 
-            $source->setDisplayName($data["displayName"]);
+            // $source->setDisplayName($data["displayName"]);
             $source->setText($data["text"]);
             $source->setCitation($data["citation"]);
             $source->setURI($data["uri"]);
@@ -1163,7 +1163,8 @@ class ConstellationPostMapper {
             }
             $sameas->setOperation($this->getOperation($data));
 
-            $sameas->setText($data["text"]);
+            if (isset($data["text"])) { $sameas->setText($data["text"]); }
+
             $sameas->setURI($data["uri"]);
 
             $sameas->setType($this->parseTerm($data["type"]));
@@ -1208,10 +1209,12 @@ class ConstellationPostMapper {
             }
             $relation->setOperation($this->getOperation($data));
 
-            $resource = null;
+            $resource = false;
             if ($this->lookupTerms) {
                 $resource = $this->lookupTermsConnector->lookupResource($data["resourceid"], $data["resourceversion"]);
-            } else {
+            }
+
+            if ($resource === false) {
                 $resource = new \snac\data\Resource();
                 $resource->setID($data["resourceid"]);
                 $resource->setVersion($data["resourceversion"]);

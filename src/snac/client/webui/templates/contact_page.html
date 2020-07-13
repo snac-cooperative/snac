@@ -4,7 +4,7 @@
 <title>Contact Us - Social Networks and Archival Contexts</title>
 
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -16,12 +16,11 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
 <!-- Helper Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 <script src='https://www.google.com/recaptcha/api.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Tiny MCE text editor -->
-<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
 <script>
 tinymce.init({
     selector:'textarea',
@@ -37,26 +36,47 @@ tinymce.init({
 });
 </script>
 
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
 <!-- SNAC Scripts -->
 <script src="{{control.snacURL}}/javascript/profile.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/contact.js{{control.noCache}}"></script>
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
+<script>
+$(document).ready(function() {
+    $('#contact-topic-select').select2( {
+        placeholder: "Select a Topic",
+        allowClear: false,
+        minimumResultsForSearch: -1,
+        theme: 'bootstrap'
+    });
+})
+</script>
+
 </head>
+
+
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
 
+
 <div class="container snac" role="main">
 <form id="profile_form">
-    <h1>Contact Us</h1>
+    <h1>Contact SNAC</h1>
     <div class="row">
         <div class="col-md-4">
+            <p>SNAC (Social Networks and Archival Context) is a discovery service for persons, families, and organizations found within archival collections at cultural heritage institutions.</p>
+            <p>If you're looking for information regarding accessing specific archival documents, please contact the holding institution directly. </p>
+
             <p>We value your comments and suggestions.  Please use this form to send a message to the SNAC team.  If you are reporting a technical problem with the system, please use the feedback option at the bottom-right of the page you encountered the error, if possible, which will provide us with more technical details of your issue.</p>
         </div>
         <div class="col-md-8">
@@ -64,6 +84,19 @@ tinymce.init({
             <div class="alert alert-01" id="comment_status_message" style="display: none">
             </div><!-- end alert -->
             <div class="form-horizontal">
+
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Topic</label>
+
+                    <div class="col-xs-9">
+                        <select class="form-control" name="topic" id='contact-topic-select'>
+                            <option></option>
+                            <option value="Data Correction"> Data Correction (Please include evidence)</option>
+                            <option value="Technical Feedback"> Technical Feedback </option>
+                            <option value="Other"> Other </option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="control-label col-xs-3">Your Name</label>
                     <div class="col-xs-9">
@@ -92,6 +125,13 @@ tinymce.init({
                     <label class="control-label col-xs-3"></label>
                     <div class="col-xs-9">
                         <div class="g-recaptcha" data-sitekey="6LdjGCwUAAAAAJSU24QBnENdvbcX6oHJbjTzO1jN"></div>
+                    </div>
+                </div>
+                <div class="form-group required">
+                    <label class="control-label col-xs-3"></label>
+                    <div class="col-xs-9 checkbox">
+                        <input type="checkbox" id="contact-confirm-checkbox">
+                        <p>I understand that SNAC is a research discovery platform for persons, families and organizations hosted by the University of Virginia and the U.S. National Archives. SNAC is not a means of contacting the individual, institution, or holding repository associated with any identity displayed on our website.</p>
                     </div>
                 </div>
                 <div class="form-group">

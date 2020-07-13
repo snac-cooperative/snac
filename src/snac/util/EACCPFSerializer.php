@@ -9,7 +9,7 @@
  *
  * @author Tom Laudeman
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2016 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -118,7 +118,7 @@ class EACCPFSerializer {
     }
 
     /**
-     * Create cpfRelation sameAs and remove otherRecordIDs sameAs
+     * Create cpfRelation sameAs and remove sameAsRelations sameAs
      *
      * Original ingested cpfRelations that are sameAs are saved in table otherid, PHP object
      * otherRecordIDs. The xlink:href for sameAs is (not surprisingly) the same as the entityType.
@@ -133,11 +133,11 @@ class EACCPFSerializer {
      */
     private static function cpfSameAs(&$data) {
         $fixedOIDs = array();
-        if (array_key_exists('otherRecordIDs', $data)) {
+        if (array_key_exists('sameAsRelations', $data)) {
             if (!isset($data['relations'])) {
                 $data['relations'] = array();
             }
-            foreach($data['otherRecordIDs'] as $oId) {
+            foreach($data['sameAsRelations'] as $oId) {
                 if (isset($oId['type']) && $oId['type']['term'] == 'sameAs') {
                     $cpfRel = array();
                     $cpfRel['dataType'] = "ConstellationRelation";
@@ -153,7 +153,7 @@ class EACCPFSerializer {
                     array_push($fixedOIDs, $oId);
                 }
             }
-            $data['otherRecordIDs'] = $fixedOIDs;
+            $data['sameAsRelations'] = $fixedOIDs;
         }
     }
 

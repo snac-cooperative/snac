@@ -4,7 +4,7 @@
  * Publishes in the Last Month Report Class File
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -45,7 +45,7 @@ class PublishesLastMonth extends helpers\Report {
         $sql = "select count(*), date_trunc('day', timestamp) as date
                     from version_history
                     where
-                        status in ('published', 'tombstoned', 'deleted', 'embargoed') and
+                        status in ('published', 'tombstone', 'deleted', 'embargoed') and
                         timestamp > NOW() - INTERVAL '31 days'
                     group by date
                     order by date asc;";

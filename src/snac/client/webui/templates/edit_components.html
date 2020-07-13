@@ -4,15 +4,15 @@
     {% else %}
     <ul class="nav nav-tabs" role="tablist">
     {% endif %}
-        <li class="active"><a href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">Core Data</a></li>
+        <li class="active"><a href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">Name Entries</a></li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">History <span class="caret"></span></a>
             <ul class="dropdown-menu">
                 <li><a href="#biogHists" id="biogHiststab" role="tab" data-toggle="tab">BiogHist</a></li>
                 <li><a href="#dates" id="existstab" role="tab" data-toggle="tab">Exist Dates</a></li>
                 <li><a href="#places" id="placestab" role="tab" data-toggle="tab">Places</a></li>
-                <li><a href="#generalContexts" id="generalContextstab" role="tab" data-toggle="tab">General Contexts</a></li>
-                <li><a href="#structureOrGenealogies" id="structureOrGenealogiestab" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
+                <li><a href="#generalContexts" id="generalContextstab" class="grayedout" role="tab" data-toggle="tab">General Contexts</a></li>
+                <li><a href="#structureOrGenealogies" id="structureOrGenealogiestab" class="grayedout" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
             </ul>
         </li>
         <li class="dropdown">
@@ -30,23 +30,23 @@
             <ul class="dropdown-menu">
                 <li><a href="#resourceRelations" id="resourceRelationstab" role="tab" data-toggle="tab">Resource Relations</a></li>
                 <li><a href="#constellationRelations" id="constellationRelationstab" role="tab" data-toggle="tab">Internal CPF Relations</a></li>
-                <li><a href="#sameAs" id="sameAstab" role="tab" data-toggle="tab">External CPF (Same As)</a></li>
-                <li><a href="#entityID" id="entityIDtab" role="tab" data-toggle="tab">Other Entity IDs (Same As)</a></li>
+                <li><a href="#sameAs" id="sameAstab" role="tab" data-toggle="tab">External Related CPF</a></li>
+                <!-- <li><a href="#entityID" id="entityIDtab" role="tab" data-toggle="tab">Other Entity IDs (Same As)</a></li> -->
             </ul>
         </li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Corporate Description <span class="caret"></span></a>
             <ul class="dropdown-menu">
                 <li><a href="#functions" id="functionstab" role="tab" data-toggle="tab">Functions</a></li>
-                <li><a href="#legalStatuses" id="legalStatusestab" role="tab" data-toggle="tab">Legal Statuses</a></li>
-                <li><a href="#mandates" id="mandatestab" role="tab" data-toggle="tab">Mandates</a></li>
+                <li><a href="#legalStatuses" id="legalStatusestab" class="grayedout" role="tab" data-toggle="tab">Legal Statuses</a></li>
+                <li><a href="#mandates" id="mandatestab" class="grayedout" role="tab" data-toggle="tab">Mandates</a></li>
             </ul>
         </li>
+        <li><a href="#sources" id="sourcestab" role="tab" data-toggle="tab" id="sources-tab">Sources</a></li>
         <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Control <span class="caret"></span></a>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Control Data<span class="caret"></span></a>
             <ul class="dropdown-menu">
-                <li><a href="#sources" id="sourcestab" role="tab" data-toggle="tab" id="sources-tab">Sources</a></li>
-                <li><a href="#conventionDeclarations" id="conventionDeclarationstab" role="tab" data-toggle="tab">Convention Declarations</a></li>
+                <li><a class="grayedout" href="#conventionDeclarations" id="conventionDeclarationstab" role="tab" data-toggle="tab">Convention Declarations</a></li>
             </ul>
         </li>
     </ul>
@@ -114,7 +114,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <div class="col-xs-12 well well-sm" id="nameEntry_reorderable_{{i}}">
+                    <div class="col-xs-12 well well-sm name-components" id="nameEntry_reorderable_{{i}}">
                         <p style="font-weight: bold;" class="text-center">Name Components</p>
                         {% set j = 0 %}
                         {% for component in nameEntry.components %}
@@ -462,27 +462,7 @@
                     <input id="sameAs_id_{{i}}" name="sameAs_id_{{i}}" type="hidden" value="{{ other.id }}"/>
                     <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
                     <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value="{{ other.operation }}"/>
-                    <div class="form-group">
-                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsText.tooltip}}" data-toggle="popover" data-placement="top">
-                           {{ X.sameAsText.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_sameAs_text_{{i}}">
-                            <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="hidden" class="form-control" value="{{ other.text }}"/>
-                            <p class="form-control-static">{{ other.text }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsRole.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.sameAsRole.display }}
-                        </label>
-                        <div class="col-xs-8" id="select_sameAs_type_{{i}}">
-                            <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
-                            <input id="sameAs_type_term_{{i}}" name="sameAs_type_term_{{i}}" type="hidden" class="form-control" value="{{ other.type.term }}"/>
-                            <input id="sameAs_type_vocabtype_{{i}}" name="sameAs_type_vocabtype_{{i}}" type="hidden" class="form-control" value="record_type"/>
-                            <input id="sameAs_type_minlength_{{i}}" name="sameAs_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ other.type.term }}</p>
-                        </div>
-                    </div>
+                    <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" value="{{ other.type.id }}"/>
                     <div class="form-group">
                         <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsURI.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sameAsURI.display }}
@@ -492,13 +472,33 @@
                             <p class="form-control-static">{{ other.uri }}</p>
                         </div>
                     </div>
+                    <div class="form-group" style="display:none" id="sameAs_baseuri_container_{{ i }}">
+                        <label for="sameAs_baseuri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsBaseURI.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sameAsBaseURI.display }}
+                        </label>
+                        <div class="col-xs-8" id="select_sameAs_baseuri_{{i}}">
+                          <input id="sameAs_baseuri_id_{{i}}" name="sameAs_baseuri_id_{{i}}" type="hidden" class="form-control" value=""/>
+                          <input id="sameAs_baseuri_term_{{i}}" name="sameAs_baseuri_term_{{i}}" type="hidden" class="form-control" value="{{ WorldCat }}"/>
+                          <input id="sameAs_baseuri_vocabtype_{{i}}" name="sameAs_baseuri_vocabtype_{{i}}" type="hidden" class="form-control" value="external_sameas_domain"/>
+                          <input id="sameAs_baseuri_minlength_{{i}}" name="sameAs_baseuri_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                          <p class="form-control-static">{{ other.uri }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group" style="display:none" id="sameAs_uriid_container_{{ i }}">
+                        <label for="sameAs_uriid_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsURIId.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sameAsURIId.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_sameAs_uriid_{{i}}">
+                            <input id="sameAs_uriid_{{i}}" name="sameAs_uriid_{{i}}" type="hidden" class="form-control" value=""/>
+                            <p class="form-control-static">{{ other.uri }}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {{ widgets.scmModal(X, inEdit, showSubElements, "sameAs", i, other.uri, "Same-As Relation", other) }}
                 {{ widgets.optionsList(X, inEdit, showSubElements, "sameAs", i) }}
             </div>
         </div>
-
 {% endmacro %}
 
 {% macro displayEntityID(X, inEdit, showSubElements, other, i) %}
@@ -547,7 +547,7 @@
                     <input id="source_id_{{i}}" name="source_id_{{i}}" type="hidden" value="{{ source.id }}"/>
                     <input id="source_version_{{i}}" name="source_version_{{i}}" type="hidden" value="{{ source.version }}"/>
                     <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value="{{ source.operation }}"/>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="source_displayName_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceDisplayName.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceDisplayName.display }}
                         </label>
@@ -555,16 +555,7 @@
                             <input id="source_displayName_{{i}}" name="source_displayName_{{i}}" type="hidden" class="form-control" value="{{ source.displayName }}"/>
                             <p class="form-control-static">{{ source.displayName }}</p>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="source_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceURI.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.sourceURI.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_source_uri_{{i}}">
-                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="hidden" class="form-control" value="{{ source.uri }}"/>
-                            <p class="form-control-static">{{ source.uri }}</p>
-                        </div>
-                    </div>
+                    </div> -->
                     <div class="form-group">
                         <label for="source_citation_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceCitation.display }}
@@ -581,6 +572,15 @@
                         <div class="col-xs-8" id="textarea_source_text_{{i}}">
                             <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" style="display:none;">{{ source.text }}</textarea>
                             <p class="form-control-static">{{ source.text }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="source_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceURI.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sourceURI.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_source_uri_{{i}}">
+                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="hidden" class="form-control" value="{{ source.uri }}"/>
+                            <p class="form-control-static">{{ source.uri }}</p>
                         </div>
                     </div>
 
@@ -665,7 +665,7 @@
 {% endmacro %}
 
 
-{% macro displayResourceRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName) %}
+{% macro displayResourceRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName, control) %}
     {% import 'widgets.html' as widgets %}
     {% import _self as components %}
         <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
@@ -711,38 +711,36 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceDisplayEntry.display }}
-                        </label>
-                        <div class="col-xs-8 form-control-static">
-                            <p>
-                                <span id="resourceRelation_displayEntryText_{{i}}">{{ relation.resource.displayEntry ? relation.resource.displayEntry : '' }}</span><br>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.resourceResource.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceResource.display }}
                         </label>
                         <div class="col-xs-8 form-control-static">
                             <p>
-                                <span style="font-weight: bold" id="resourceRelation_titleText_{{i}}">{{ relation.resource.title ? relation.resource.title : '' }}</span><br>
+                                <span style="font-weight: bold" id="resourceRelation_displayEntryText_{{i}}">{{ relation.resource.displayEntry ? relation.resource.displayEntry : '' }}</span><br>
+                            </p>
+                            <p>
+                                {{X.resourceTitle.display}}:
+                                <span id="resourceRelation_titleText_{{i}}">{{ relation.resource.title ? relation.resource.title : '' }}</span><br>
+                            </p>
+                            <p>
                                 <span id="resourceRelation_abstractText_{{i}}">{{relation.resource.abstract}}</span>
                             </p>
                             <!-- <p>
-                                <span>{{ X.resourceDate.display }}</span>:
-                                <span id="resourceRelation_dateText_{{i}}">{{ relation.resource.date ? relation.resource.displayEntry : 'No Date' }}</span><br>
+                                <span>{# X.resourceDate.display #}</span>:
+                                <span id="resourceRelation_dateText_{#i#}">{# relation.resource.date ? relation.resource.date : 'No Date' #}</span><br>
                             </p> -->
                             <p>
                                 <span id="resourceRelation_documentTypeText_{{i}}">{{relation.resource.documentType.term}}</span>:
                                 <span id="resourceRelation_extentText_{{i}}">{{relation.resource.extent ? relation.resource.extent : ''}}</span>
                             </p>
-                            <p id="resourceRelation_LinkText_{{i}}">
-                                <span id="resourceRelation_linkText_{{i}}">{{relation.resource.link}}
+                            <p id="resourceRelation_linkText_{{i}}">
                                 {% if relation.resource.link %}
-                                    <a class="label label-info" target="_blank" href="{{relation.resource.link}}">View</a>
+                                    <a target="_blank" href="{{relation.resource.link}}">{{relation.resource.link}}</a> <a class="label label-info" target="_blank" href="{{relation.resource.link}}">View</a>
                                 {% endif %}
                             </p>
+                            {% if relation.resource.id %}
+                                <a class="control-label-subtext" target="_blank" href="{{control.snacURL}}/vocab_administrator/resources/{{relation.resource.id}}">View in SNAC</a>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="form-group">
@@ -1602,8 +1600,8 @@
                     </div>
                     {% if inEdit %}
                     <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.scmCitation.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.scmCitation.display }}
+                        <label class="control-label col-xs-4" data-content="{{X.sourceCitation.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.sourceCitation.display }}
                             </label>
                         <div class="col-xs-8" id="select_scm_{{short}}_citation_{{j}}_{{i}}">
                             <input id="scm_{{short}}_citation_id_{{j}}_{{i}}" name="scm_{{short}}_citation_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.citation.id }}"/>
@@ -1615,8 +1613,8 @@
                     </div>
                     {% endif %}
 
-
-                    <div class="form-group">
+                    <!-- Removing SubCitation -->
+                    <!-- <div class="form-group">
                         <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSubCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSubCitation.display }}
                         </label>
@@ -1624,8 +1622,8 @@
                             <input id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.subCitation }}"/>
                             <p class="form-control-static">{{ scm.subCitation }}</p>
                         </div>
-                    </div>
-                    <div class="form-group">
+                    </div> -->
+                    <div class="form-group" style="display: none;">
                         <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSourceData.display }}
                         </label>

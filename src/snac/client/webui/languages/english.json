@@ -235,10 +235,6 @@
 
     "_comment" : "%%% SameAs elements",
 
-    "sameAsText" : {
-        "display" : "Relation Text",
-        "tooltip" : "The human-readable text that appears in a relation entry"
-    },
     "sameAsRole" : {
         "display" : "Role",
         "tooltip" : "How this Identity Constellation is related to the external identity"
@@ -246,6 +242,14 @@
     "sameAsURI" : {
         "display" : "URI",
         "tooltip" : "The permanent link to the external identity"
+    },
+    "sameAsBaseURI" : {
+        "display" : "External Authority",
+        "tooltip" : "The authority hosting the external identity permanent link (e.g. Wikidata)"
+    },
+    "sameAsURIId" : {
+        "display" : "Authority ID",
+        "tooltip" : "The identifier used in the external identity permanent link"
     },
 
     "_comment" : "%%% EntityID elements",
@@ -293,8 +297,8 @@
         "tooltip" : "How this Identity Constellation is related to the resource"
     },
     "resourceURI" : {
-        "display" : "HREF",
-        "tooltip" : "The permanent link (URI) to the external resource"
+        "display" : "Resource Link",
+        "tooltip" : "The preferred permanent link to the finding aid or other descriptive resource."
     },
     "resourceDocumentType" : {
         "display" : "Resource Type",
@@ -336,7 +340,7 @@
     "_comment" : "%%% Source elements",
 
     "sourceDisplayName" : {
-        "display" : "Reference Name",
+        "display" : "Source Name",
         "tooltip" : "The editor/human-readable name of this source, displayed when choosing a Source from the Cite dialog box"
     },
     "sourceURI" : {
@@ -349,7 +353,7 @@
     },
     "sourceCitation" : {
         "display" : "Citation",
-        "tooltip" : "A textual representation of this source, i.e. a full bibliographic citation"
+        "tooltip" : "A full bibliographic citation, i.e. title of publication, web resource, etc., then date of publication, or date a web resource was viewed."
     },
 
     "_comment" : "%%% SCM elements",
@@ -359,7 +363,7 @@
         "tooltip" : "The data for the described data element, as it appeared in the source"
     },
     "scmCitation" : {
-        "display" : "Reference Name",
+        "display" : "Source Name",
         "tooltip" : "The source object from this Constellation where the information on this data element was found"
     },
     "scmSubCitation" : {

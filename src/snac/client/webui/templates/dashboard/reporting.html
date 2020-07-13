@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reporting Dashboard - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script>
+    // Inline script to help out the pop-up menu for constellations
+    var permissions = {
+        {% for permission, value in permissions %}
+            {{permission}}: {{value}},
+        {% endfor %}
+        FakeHolder: false
+    };
+
+    function outboundLinkDomainReport() {
+        var domain = $("#outbound-domain").val()
+        if (!domain)
+            return;
+        var url = "{{control.snacURL}}/reports/outbound?domain=" + domain
+        window.location.href = url
+    }
+
+    function outboundLinkRepoReport() {
+        var repoID = $("#repository-search-id").val()
+        var repoName = $("#repository-search-id").text().trim()
+        if (!repoID)
+            return;
+        var url = "{{control.snacURL}}/reports/outbound?repo_ic_id=" + repoID + "&name=" + repoName
+        window.location.href = url
+    }
+
+    $(document).ready(function() {
+        vocab_select_replace($("#repository-search-id"), "", "holding", 3);
+    });
+
+</script>
+<script>
+$.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+</script>
+
+<meta name="viewport" content="initial-scale = 1.0" />
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+
+
+    <div class="row">
+        <div class="alert alert-01 alert-info" id="status-message" style="display: none">
+            <p></p>
+        </div><!-- end alert -->
+    </div>
+    <div class="row dashboard-title">
+        <div class="col-md-4">
+            <div>
+                <div class="large-icon-box">
+                    <p class="text-center background-icon">
+                        <i class="fa fa-folder" style="color: #E6CBF8;" ></i>
+                    </p>
+                    <p class="text-right overlay-icon" >
+                        <i class="fa fa-pie-chart" style="color: #6F299E"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+                <h1 class="title">Reporting Dashboard</h1>
+                <div class="well-md">
+                    <p>Welcome, {{ user.firstName|default('SNAC User') }}, to the Reporting dashboard!  Here you may find interesting aggregated data about the Constellations in SNAC, their connections, related resources, editing activity, and holding repositories.  Most reports are updated weekly or monthly.</p>
+                </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Left column -->
+            {% if data.messages|length > 0 %}
+            <div class="alert alert-warning">
+                <div class="">
+                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
+                    <a class="list-group-item list-group-item-warning" href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messaging Center</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Public Stats</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Overall SNAC statistics, generated weekly</p>
+                    <div class="list-group">
+                        <a href="{{control.snacURL}}/stats" class="list-group-item"><i class="fa fa-pie-chart fa-fw" aria-hidden="true"></i> Statistics</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
+            {% if permissions.ViewReports %}
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Weekly Reports</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Reports generated weekly</p>
+                    <div class="list-group">
+                        <a href="{{control.snacURL}}/reports/general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
+            {% if permissions.ViewReports %}
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Monthly Reports</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Reports generated monthly</p>
+                    <div class="list-group">
+                        <a href="{{control.snacURL}}/reports/holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Outbound Link Reports </h3>
+                </div>
+                <div class="panel-body">
+                    <h4>By Domain</h4>
+                    <div class="form-group" id="outbound-domain-input">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="outbound-domain" placeholder="Domain Name (e.g. harvard.edu)">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" onclick="outboundLinkDomainReport()">Report</button>
+                            </span>
+                        </div>
+                    </div>
+                    <h4>By Holding Repository</h4>
+                    <div class="form-group">
+                        <div class="input-group" style="width:80%; clear: none; float: left;">
+                            <select class="resource-repo" id="repository-search-id">
+                                <option value="{{resource.repository.id}}" selected>
+                                    {{resource.repository.nameEntries[0].original }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="margin-left: 20%;display:block">
+                            <button type="button" class="btn btn-default"
+                                onclick="outboundLinkRepoReport()">Report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="constellation-settings" tabindex="-1"
+	role="dialog" aria-labelledby="constellation-settings">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="settings-title">Constellation Settings</h4>
+			</div>
+			<div class="modal-body col-xs-12">
+				<ol class="breadcrumb">
+					<li id="settings-name"></li>
+					<li>Settings</li>
+				</ol>
+				<div class="col-xs-12">
+				    <p>You may perform the following actions on this constellation</p>
+
+                    <div class="list-group" id="settings-actions">
+
+                    </div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<form id="send_review_form">
+    {% include '_send_review_pane.html' %}
+</form>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>

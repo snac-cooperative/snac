@@ -4,7 +4,7 @@
  * Contains code that handles searching relations (Constellation and Resource)
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -111,16 +111,17 @@ function setRelationSearchPosition(start) {
                      if (typeof data.results[key].abstract !== 'undefined')
                          html += data.results[key].abstract+"<br>";
                      if (typeof data.results[key].link !== 'undefined')
-                         html += data.results[key].link + " <a class='label label-info' target='_blank' href='"+data.results[key].link+"'>View</a>";
+                         html += "<a target='_blank' href='"+data.results[key].link+"'>"+data.results[key].link+"</a>"+" <a class='label label-info' target='_blank' href='"+data.results[key].link+"'>View</a>";
                      html += "</p>";
                  } else if (typeof data.results[key].link !== 'undefined') {
                      html += "<h4 class='list-group-item-heading'>Unknown Title</h4>";
                      html += "<p class='list-group-item-text'>";
-                     html += data.results[key].link + " <a class='label label-info' target='_blank' href='"+data.results[key].link+"'>View</a>";
+                     html += "<a target='_blank' href='"+data.results[key].link+"'>"+data.results[key].link+"</a>"+" <a class='label label-info' target='_blank' href='"+data.results[key].link+"'>View</a>";
                      html += "</p>";
                  } else {
                      html += "<h4 class='list-group-item-heading'>Ill-formed resource</h4>";
                  }
+                 html += "<a class='control-label-subtext' target='_blank' href='"+snacUrl+"/vocab_administrator/resources/"+data.results[key].id+"'>View in SNAC</a>";
                  html += "</div>";
                  html += "</div></div>";
              } // end for

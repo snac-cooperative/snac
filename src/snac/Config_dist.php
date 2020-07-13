@@ -9,7 +9,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -27,6 +27,11 @@ namespace snac;
  */
 class Config {
 
+
+    /**
+     * @var string Session name to use for SNAC (cookie name)
+     */
+    public static $SESSION_NAME = 'SNACWebUI';
 
     /**
      * @var boolean Whether the system in OFFLINE (Maintenance) mode
@@ -149,9 +154,9 @@ class Config {
      *  @var integer Default for limit selectListByStatus() and selectEditList()
      */
     public static $SQL_LIMIT = 42;
-    
+
     /**
-     * @var string Location of the REST commands file 
+     * @var string Location of the REST commands file
      */
     public static $REST_COMMAND_FILE = "full/path/to/src/snac/client/rest/commands.json";
 
@@ -235,6 +240,11 @@ class Config {
      * @var string Resource type for the resource search functionality of snac
      */
     public static $ELASTIC_SEARCH_RESOURCE_TYPE = "";
+
+    /**
+     * @var integer Maximum number of pages to show on search result pages
+     */
+    public static $MAX_SEARCH_RESULT_PAGES = 15;
 
     /**
      * @var boolean Whether or not to have the server attempt to use Neo4J

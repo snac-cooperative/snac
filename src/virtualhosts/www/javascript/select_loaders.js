@@ -5,7 +5,7 @@
  * pretty-formatted versions using JQuery and Select2
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -24,7 +24,7 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
     if (minLength === undefined) {
         minLength = 2;
     }
-        
+
         if(selectItem.attr('id').endsWith(idMatch)
             && !selectItem.attr('id').endsWith("ZZ")) {
                 selectItem.select2({
@@ -152,7 +152,7 @@ function scm_source_select_replace(selectItem, idMatch) {
                             // need id, text
                             var results = new Array();
                             data.results.forEach(function(res) {
-                                results.push({id: res.id, text: res.displayName});
+                                results.push({id: res.id, text: res.citation});
                             });
                             return { results: results };
                         },
@@ -184,7 +184,7 @@ function scm_source_select_replace(selectItem, idMatch) {
                             } else {
                                 $("#scm_" + shortName + "_source_text_" + j + "_" + i).text("").addClass('hidden');
                                 $("#scm_" + shortName + "_source_text_" + j + "_" + i).closest(".panel-body").addClass('hidden');
-                            
+
                             }
                             // Update the URI of the source
                             if (typeof source.uri !== 'undefined')
@@ -212,38 +212,21 @@ function scm_source_select_replace(selectItem, idMatch) {
  * @param  JQuery selectItem The JQuery item to replace
  */
 function affiliation_select_replace(selectItem) {
-        if(selectItem != null) {
-                selectItem.select2({
-                    ajax: {
-                        url: function() {
-                            var query = snacUrl+"/vocabulary?type=affiliation";
-                                return query;
-                        },
-                        dataType: 'json',
-                        delay: 250,
-                        data: function (params) {
-                            return {
-                                q: params.term,
-                                page: params.page
-                            };
-                        },
-                        processResults: function (data, page) {
-                            return { results: data.results };
-                        },
-                        cache: true
-                    },
-                    width: '100%',
-                    minimumInputLength: 0,
-                    allowClear: false,
-                    theme: 'bootstrap',
-                    placeholder: 'Select Affiliation'
-                });
-            }
+    $.get(snacUrl + "/vocabulary?type=affiliation").done(function(data) {
+        var options = data.results;
+        selectItem.select2({
+            data: options,
+            allowClear: true,
+            theme: "bootstrap",
+            placeholder: "Select Affiliation"
+        });
+    });
 }
 
 function reviewer_select_replace(selectItem) {
         if(selectItem != null) {
                 selectItem.select2({
+                    placeholder: "Reviewer Name or Email...",
                     ajax: {
                         url: function() {
                             var query = snacUrl+"/user_search?role=Reviewer";
@@ -295,21 +278,56 @@ function select_replace_simple(selectItem) {
  *
  * Replaces the select with a select2 object preloaded with an array of options
  *
- * @param  JQuery selectItem The JQuery item to replace
- * @param  string type       The type of the vocabulary term
- * @param  string type       Text placeholder for select 
+ * @param  JQuery selectItem             The JQuery item to replace
+ * @param  string type                   The type of the vocabulary term
+ * @param  string type                   Text placeholder for select
+ * @param  string [useDescription=false] Use description instead of value for text field on return object
  */
-function loadVocabSelectOptions(selectItem, type, placeholder) {
-    $.get(snacUrl + "/vocabulary?type=" + type)
+function loadVocabSelectOptions(selectItem, type, placeholder, useDescription = false) {
+    var loadPromise = new Promise(function(resolve, reject){
+
+    var url = "/vocabulary?type=" + type;
+    if (useDescription == true) {
+     url = url.concat("&use_description=true");
+    }
+    return $.get(snacUrl + url)
     .done(function(data) {
-        var options = data.results;
-        selectItem.select2({
-            data: options,
-            allowClear: false,
-            theme: 'bootstrap',
-            placeholder: placeholder
+            var options = data.results;
+            if (useDescription == true) {
+              options = options.reduce(function(newOptions, option){
+                var newElement = option;
+                newElement["id"] = option["value"]
+                newOptions.push(newElement);
+                return newOptions;
+              },[]);
+            }
+            options.sort(function(a,b) {
+                if(a["text"] < b["text"]){
+                    return -1;
+                }
+                if(a["text"] > b["text"]){
+                    return 1;
+                }
+                return 0;
+            });
+            selectItem.select2({
+                data: options,
+                allowClear: false,
+                theme: 'bootstrap',
+                placeholder: placeholder
+            });
+            resolve("loaded");
         });
     });
+    return loadPromise;
+}
+
+function updateSameAsURI() {
+    var id = this.id;
+    var sequence = id.match(/_([0-9]+)$/)[1];
+    var baseURI = $("#sameAs_baseuri_id_"+sequence).val();
+    var uriId = $("#sameAs_uriid_"+sequence).val();
+    $("#sameAs_uri_"+sequence).val(baseURI.replace(/{id}/,uriId));
 }
 
 /**

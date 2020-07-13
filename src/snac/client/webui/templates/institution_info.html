@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Institutional Stats - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Datatables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+<!-- C3 chart library -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/c3@0.4.18/c3.css">
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/c3@0.4.18/c3.min.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+<style>
+.stat-heading {
+    font-family: Roboto;
+    font-weight: 300;
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+.data-display {
+    margin-bottom: 30px;
+}
+.stats-row {
+    margin-bottom: 40px;
+}
+.stats-date {
+    text-align: right;
+}
+</style>
+</head>
+
+<body role="document">
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+    <h1>Institutional Stats: {{data.constellation.nameEntries.0.original}}</h1>
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <p></p>
+
+        </div>
+    </div>
+    <div class="row stats-row">
+        <div class="col-md-6">
+            <p class="stat-heading">Constellations Edited This Week</p>
+            <div id="weekperc" class="data-display"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        // iris data from R
+                        columns: [
+                            ['{{data.constellation.nameEntries.0.original}}', {{data.stats.week.instEditCount}}],
+                            ['Others', {{data.stats.week.allEditCount}}],
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#weekperc',
+                        size: {
+                            height: 350
+                        }
+                });
+
+            </script>
+        </div>
+        <div class="col-md-6">
+            <p class="stat-heading">Editors This Week</p>
+            <table id="weekEditors">
+                <thead>
+                    <tr>
+                        <th>Editor</th>
+                        <th>Edits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for entry in data.stats.week.topEditors %}
+                <tr>
+                    <td>{{entry.fullname}}</td>
+                    <td>
+                        {{entry.count|number_format}}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <script>
+                $(document).ready(function() {
+                    var datatable = $('#weekEditors').DataTable({ "sorting": false, "searching" : false, "paging" : false, "info" : false});
+                });
+            </script>
+        </div>
+    </div>
+    <div class="row stats-row">
+        <div class="col-md-6">
+            <p class="stat-heading">Constellations Edited This Month</p>
+            <div id="monthperc" class="data-display"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        // iris data from R
+                        columns: [
+                            ['{{data.constellation.nameEntries.0.original}}', {{data.stats.month.instEditCount}}],
+                            ['Others', {{data.stats.month.allEditCount}}],
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#monthperc',
+                        size: {
+                            height: 350
+                        }
+                });
+
+            </script>
+        </div>
+        <div class="col-md-6">
+            <p class="stat-heading">Editors This Month</p>
+            <table id="monthEditors">
+                <thead>
+                    <tr>
+                        <th>Editor</th>
+                        <th>Edits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for entry in data.stats.month.topEditors %}
+                <tr>
+                    <td>{{entry.fullname}}</td>
+                    <td>
+                        {{entry.count|number_format}}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <script>
+                $(document).ready(function() {
+                    var datatable = $('#monthEditors').DataTable({ "sorting": false, "searching" : false, "paging" : false, "info" : false});
+                });
+            </script>
+        </div>
+    </div>
+    <div class="row stats-row">
+        <div class="col-md-6">
+            <p class="stat-heading">Connected Resources</p>
+            <div id="resperc" class="data-display"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        // iris data from R
+                        columns: [
+                            ['{{data.constellation.nameEntries.0.original}}', {{data.counts.instRes}}],
+                            ['Others', {{data.counts.allRes - data.counts.instRes}}],
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#resperc',
+                        size: {
+                            height: 350
+                        }
+                });
+
+            </script>
+        </div>
+        <div class="col-md-6">
+            <p class="stat-heading">Connected Constellations</p>
+            <div id="consperc" class="data-display"></div>
+            <script>
+                var chart = c3.generate({
+                    data: {
+                        // iris data from R
+                        columns: [
+                            ['{{data.constellation.nameEntries.0.original}}', {{data.counts.instCons}}],
+                            ['Others', {{data.counts.allCons - data.counts.instCons}}],
+                        ],
+                        type : 'pie'
+                    },
+                        bindto: '#consperc',
+                        size: {
+                            height: 350
+                        }
+                });
+
+            </script>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <p class="stats-date">Report last generated {{"now"|date('Y-m-d h:i:sa')}}.</p>
+        </div>
+    </div>
+</div>
+{{ footer(X, user, permissions, control) }}
+</body>
+</html>
+

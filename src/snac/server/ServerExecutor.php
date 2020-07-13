@@ -6,7 +6,7 @@
  * Contains the ServerExector class that performs all the tasks for the main Server
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2016 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -58,6 +58,7 @@ class ServerExecutor {
      */
     private $permissions = null;
 
+    private $authType = null;
 
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -69,7 +70,7 @@ class ServerExecutor {
      *
      * @param string[] $user The user array from the Server's input
      */
-    public function __construct($user = null) {
+    public function __construct($user = null, $apikey = null) {
         global $log;
 
         // create a log channel
@@ -84,15 +85,26 @@ class ServerExecutor {
         $this->logger->addDebug("Starting ServerExecutor");
 
         $this->permissions = array();
-        /*
-         * Create the user and fill in their userID from the database We assume that a non-null $user at least
-         * has a valid email. If the getUserName() is null, then user the email as userName.
+        /***************************************
+         * USER AUTHENTICATION PROCESS
+         ***************************************
          *
-         * readUser() will check getUserID(), getUserName() and even getEmail().
+         * If the $user associative array is set, we'll assume the user is authenticating with the OAuth2
+         * login information.  This is likely the WebUI or web-authenticated users.  Here, we will use
+         * authenticateUser, which checks the $user object for id, username, or email to attempt a login.
          *
-         * The expectation is that userID or userName will have valid values. If not then the user probably
-         * lost their userid, so just pull back the first user with the email address in getEmail(). There is
-         * also the expectation that the case of missing both userID and userName is very rare.
+         *      Tom's Aside: The expectation is that userID or userName
+         *      will have valid values. If not then the user probably
+         *      lost their userid, so just pull back the first user with
+         *      the email address in getEmail(). There is
+         *      also the expectation that the case of missing
+         *      both userID and userName is very rare.
+         *
+         * If the $user associative array is NOT set, but we have an API key, we will attempt to
+         * find the user associated with the API key and instantiate that user object.  The call
+         * to authenticateUserByAPIKey will lookup and verify the API key, then return the correct
+         * user object from the database.  Since the user will not have an OAuth2 session, we will
+         * then generate a temporary session to use.
          */
         if ($user != null) {
             // authenticate user here!
@@ -105,8 +117,32 @@ class ServerExecutor {
             $this->logger->addDebug("User authenticated successfully");
 
             $this->getUserPermissions();
+
+            $this->authType = "user";
+        } else if ($user == null && $apikey != null) {
+            // authenticate and get user
+            $userObj = $this->uStore->authenticateUserByAPIKey($apikey);
+            // create a temporary session
+            $userObj->generateTemporarySession();
+
+            // authenticateUser sets $this->user
+            if (!$this->authenticateUser($userObj)) {
+                throw new \snac\exceptions\SNACUserException("User is not authorized", 403);
+            }
+            $this->logger->addDebug("User authenticated successfully");
+
+            $this->getUserPermissions();
+            $this->authType = "apikey";
         }
 
+    }
+
+    public function isAPIKeyAuth() {
+        return $this->authType == "apikey";
+    }
+
+    public function isUserAuth() {
+        return $this->authType == "user";
     }
 
     /**
@@ -133,7 +169,7 @@ class ServerExecutor {
 
             $ownerDetails = $provider->getResourceOwner($accessToken);
 
-            if ($ownerDetails->getEmail() != $user->getEmail()) {
+            if (strtolower($ownerDetails->getEmail()) != strtolower($user->getEmail())) {
                 // This user's token doesn't match the user's email
                 $this->logger->addDebug("Email mismatch from the user and OAuth details");
                 return false;
@@ -522,24 +558,31 @@ class ServerExecutor {
      */
     public function readVocabulary(&$input) {
         $response = array();
+        $term = null;
         if (isset($input["term_id"])) {
-            $term = null;
             if (isset($input["type"]) && $input["type"] == "geoPlace") {
                 $term = $this->cStore->buildGeoTerm($input["term_id"]);
             } else {
                 $term = $this->cStore->populateTerm($input["term_id"]);
             }
-
-            if ($term != null) {
-                $response["term"] = $term->toArray();
-                $response["result"] = "success";
-            } else {
-                $response["term"] = null;
-                $response["result"] = "failure";
-            }
+        } elseif (isset($input["term_value"]) && isset($input["type"])) {
+            $term = $this->cStore->populateTerm(null, $input["term_value"], $input["type"]);
+        } elseif (isset($input["uri"])) {
+            $term = $this->cStore->populateTerm(null, null, null, $input["uri"]);
         }
+
+
+        if ($term !== null) {
+            $response["term"] = $term->toArray();
+            $response["result"] = "success";
+        } else {
+            $response["term"] = null;
+            $response["result"] = "failure";
+        }
+
         return $response;
     }
+
 
     /**
      * Search Vocabulary
@@ -555,6 +598,9 @@ class ServerExecutor {
         if (isset($input["term_id"])) {
             return $this->readVocabulary($input);
         } else {
+            if (!array_key_exists("type", $input) || !array_key_exists("entity_type", $input) || !array_key_exists("query_string", $input)) {
+                throw new \snac\exceptions\SNACInputException("Missing required field.", 400);
+            }
             switch ($input["type"]) {
                 case "holding":
                     $response["results"] = array();
@@ -642,6 +688,170 @@ class ServerExecutor {
         return $response;
     }
 
+
+    /**
+     * Read Concept
+     *
+     * Reads the vocabulary from the database, based on the input given and returns
+     * the result
+     *
+     * @param string[] $input Direct server input
+     * @return string[] The response to send to the client
+     */
+    public function readConcepts() {
+        $response = [];
+        $concepts = $this->cStore->getAllConcepts();
+
+        if (!empty($concepts)) {
+            $response["concepts"] = $concepts;
+            $response["result"] = "success";
+        } else {
+            $response["concepts"] = null;
+            $response["result"] = "failure";
+        }
+        return $response;
+    }
+
+    /**
+     * Read Concept
+     *
+     * Reads a concept from the database for an id
+     *
+     * @param string[] $id Concept id
+     * @return string[] The response to send to the client
+     */
+    public function readConcept($id) {
+        $response = [];
+        $concept = $this->cStore->getConcept($id);
+        $response["concept"] = $concept;
+        return $response;
+    }
+
+    /**
+     * Read Detailed Concept
+     *
+     * Reads a  vocabulary from the database, based on the input given and returns
+     * the result
+     *
+     * @param int $id Concept id
+     * @return string[] The response to send to the client
+     */
+    public function readDetailedConcept($id) {
+        $response = [];
+        $concept = $this->cStore->getDetailedConcept($id);
+        $response["concept"] = $concept;
+        return $response;
+    }
+
+    /**
+     * Search Concepts
+     *
+     * @param string $input Search query
+     * @return string[] The response to send to the client
+     */
+    public function searchConcepts($q) {
+        $response = [];
+        $concepts = $this->cStore->searchConcepts($q);
+        $response["concepts"] = $concepts;
+        $response["result"] = "success";
+        return $response;
+    }
+
+
+    /**
+     * Create Concept
+     *
+     * @param string $value Initial term value of concept
+     * @return string[] The response to send to the client
+     */
+    public function createConcept($value) {
+        $conceptID = $this->cStore->createConcept();
+
+        $response = $this->saveTerm(null, $conceptID, $value, true);
+        $response["concept_id"] = $response["term"]["concept_id"];
+        return $response;
+    }
+
+    /**
+     * Save Term
+     * @param int $conceptID
+     * @param string $value
+     * @param string $isPreferred
+     * @return string[] associative array of inserted term from database
+     */
+    public function saveTerm($termID, $conceptID, $value, $isPreferred) {
+        $response = [];
+        $term =  $this->cStore->saveTerm($termID, $conceptID, $value, $isPreferred);
+        $response["term"] = $term;
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Delete Term
+     * @param int $termID
+     * @param int termID
+     * @return string[] $response
+     */
+    public function deleteTerm($termID) {
+        $this->cStore->deleteTerm($termID);
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Save Related Concepts
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return string[] $response
+     */
+    public function saveRelatedConcepts($id1, $id2) {
+        $response = $this->cStore->saveRelatedConcepts($id1, $id2);
+        $response = ["result" => "success"];
+        return $response;
+    }
+
+    /**
+     * Remove Related Concepts
+     * @param string $id1 Related Concept id
+     * @param string $id2 Related Concept id
+     * @return string[] $response
+     */
+    public function removeRelatedConcepts($id1, $id2) {
+        $this->cStore->removeRelatedConcepts($id1, $id2);
+        $response = ["result" => "success"];
+        return $response;
+    }
+
+
+    /**
+     * Save Broader Concepts
+     *
+     * Relate a narrower and broader concept
+     *
+     * @param string $narrowerID Narrower Concept id
+     * @param string $broaderID Broader Concept id
+     * @return string[] $response
+     */
+    public function saveBroaderConcepts($narrowerID, $broaderID) {
+        $this->cStore->saveBroaderConcept($narrowerID, $broaderID);
+        $response = ["result" => "success"];
+        return $response;
+    }
+
+    /**
+     * Delete Broader Concepts
+     *
+     * @param string $id1 Narrower Concept id
+     * @param string $id2 Broader Concept id
+     * @return string[] $response
+     */
+    public function removeBroaderConcepts($narrowerID, $broaderID) {
+        $response = $this->cStore->removeBroaderConcepts($narrowerID, $broaderID);
+        $response = ["result" => "success"];
+        return $response;
+    }
+
     /**
      * Search Resources
      *
@@ -665,10 +875,12 @@ class ServerExecutor {
             if (isset($response["results"])) {
                 $results = $response["results"];
                 $response["results"] = array();
-                foreach ($results as $result)
-                    array_push(
-                        $response["results"],
-                        $this->cStore->readResource($result["id"])->toArray());
+                foreach ($results as $result) {
+                    $resource = $this->cStore->readResource($result["id"]);
+                    if (isset($resource)) {
+                        $response["results"][] = $resource->toArray();
+                    }
+                }
             }
         }
 
@@ -687,7 +899,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function readResource(&$input) {
-        $response = array();
+        $response = [];
         $resource = null;
 
         try {
@@ -700,8 +912,20 @@ class ServerExecutor {
                 $version = $input["version"];
             $resource = $this->cStore->readResource($id, $version);
 
-            $response["resource"] = $resource->toArray();
-            $this->logger->addDebug("Serialized resource for output to client");
+            if (isset($resource))
+                $response["resource"] = $resource->toArray();
+            $response["related_constellations"] = [];
+
+            if (isset($input["relationships"])) {
+                $icids = $this->neo4J->getResourcesRelatedConstellationIDs($input["resourceid"]);
+                foreach ($icids as $icid) {
+                    $constellation = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+                    if (isset($constellation) && $constellation != false) {
+                        $response["related_constellations"][] = $constellation->toArray();
+                    }
+                }
+            }
+            $this->logger->addDebug("Serialized resource for output to client", $response);
         } catch (Exception $e) {
             $response["error"] = $e;
         }
@@ -802,6 +1026,31 @@ class ServerExecutor {
             array_push($response["messages"], $message->toArray());
         }
         $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Create New SNAC institution
+     *
+     * Takes an existing SNAC constellation id and inserts it as an affiliated institution in SNAC.
+     *
+     * @param string[] $input Input array with constellationid key.
+     * @return string[] The response to send to the client
+     */
+    public function createInstitution($input) {
+        $constellation = new \snac\data\Constellation();
+        $constellation->setID($input["constellationid"]);
+
+        $inserted = $this->uStore->writeInstitution($constellation);
+
+        if ($inserted) {
+            $response = [
+                "result" => "success",
+                "constellation" =>  $constellation->toArray()
+            ];
+        } else {
+            $response["result"] = "failure";
+        }
         return $response;
     }
 
@@ -989,6 +1238,108 @@ class ServerExecutor {
     }
 
     /**
+     * Institutional Information
+     *
+     * Given a constellationid as input or a user object's affiliation, this method
+     * will look up institutional information, including the summary constellation,
+     * the editing stats, and the connectivity of that institution as a holding
+     * repository in SNAC.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function institutionInformation(&$input) {
+        $icid = null;
+        if (isset($input["constellationid"]) && $this->hasPermission("Modify Users")) {
+            $icid = $input["constellationid"];
+        } else {
+            if ($this->user == null || $this->user->getAffiliation() == null) {
+                $response["result"] = "failure";
+                $response["error"] = "The user does not exist.";
+                return $response;
+            }
+            $icid = $this->user->getAffiliation()->getID();
+        }
+
+        if ($icid == null) {
+            $response["result"] = "failure";
+            $response["error"] = "The institution does not exist.";
+            return $response;
+        }
+
+        // Reading the published version will look up the correct Constellation through the Lookup table, in case the
+        // affiliation has been merged
+        $affil = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+
+        $this->logger->addDebug("Getting stats from postgres");
+        $stats = $this->cStore->getInstitutionReportData($affil);
+        $this->logger->addDebug("Done with postgres, getting stats from neo4j");
+        $counts = $this->neo4J->getHoldingInstitutionStats($affil);
+        $this->logger->addDebug("Done with neo4j stats");
+        $response = [
+            "result" => "success",
+            "constellation" => $affil->toArray(),
+            "stats" => $stats,
+            "counts" => $counts
+        ];
+        return $response;
+    }
+
+    /**
+     * Generate User API Key
+     *
+     * Uses the APIKeyGenerator to generate a new API key and stores it in the database.
+     * The process of storing creates an expiration time (currently 1 year after the
+     * generation time).  The first 8 characters of the key are left un-encrypted as a lable
+     * to refer to the key for the user.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     * @return string[] The response to send to the client
+     */
+    public function generateUserAPIKey() {
+        // can only generate an API key for logged-in users
+        if ($this->user != null && $this->user !== false) {
+            $key = $this->uStore->generateUserAPIKey($this->user);
+
+            if ($key == null) {
+                //error
+                throw new \snac\exceptions\SNACDatabaseException("User API key could not be generated.");
+            }
+
+            $response = [
+                "result" => "success",
+                "key" => $key->toArray()
+            ];
+            return $response;
+        }
+    }
+
+    /**
+     * Revoke API Key
+     *
+     * Given the label of an API key, if that key belongs to this user, then this method will
+     * request DBUser to remove the key from the database (revoke it).
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function revokeUserAPIKey($input) {
+        $response = [
+            "result" => "failure"
+        ];
+        // can only generate an API key for logged-in users
+        if ($this->user != null && $this->user !== false && isset($input["apikey_label"])) {
+            $success = $this->uStore->revokeUserAPIKey($this->user, $input["apikey_label"]);
+            if ($success)
+                $response["result"] = "success";
+        }
+        return $response;
+    }
+
+
+    /**
      * Get User Information
      *
      * Gets the user information, including their user information from the database as well
@@ -1007,11 +1358,13 @@ class ServerExecutor {
          */
 
         $user = null;
+        $otherUser = false;
         if ($input == null) {
             $user = $this->user;
         } else {
             if (isset($input["user_edit"])) {
                 $user = $this->uStore->readUser(new \snac\data\User($input["user_edit"]));
+                $otherUser = true;
             }
         }
 
@@ -1022,24 +1375,27 @@ class ServerExecutor {
         }
         $response["result"] = "success";
 
-        $response["user"] = $user->toArray();
+        // User Information array
+        $info = [];
+
+        $info["user"] = $user->toArray();
 
         /*
          * Get the list of Groups the User is a member of
          */
-        $response["groups"] = array();
+        $info["groups"] = array();
         $groups = $this->uStore->listGroupsForUser($user);
         foreach ($groups as $group) {
-            array_push($response["groups"], $group->toArray());
+            array_push($info["groups"], $group->toArray());
         }
 
         /*
          * Get the list of Messages for the user
          */
-        $response["messages"] = array();
+        $info["messages"] = array();
         $messages = $this->uStore->listMessagesToUser($user, true, true);
         foreach ($messages as $message) {
-            array_push($response["messages"], $message->toArray());
+            array_push($info["messages"], $message->toArray());
         }
 
         /*
@@ -1054,21 +1410,21 @@ class ServerExecutor {
         // First look for constellations editable
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "locked editing");
 
-        $response["editing"] = array ();
+        $info["editing"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User has checked out", $item);
-                array_push($response["editing"], $item);
+                array_push($info["editing"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["editing"],
+        usort($info["editing"],
                 function ($a, $b) {
                     return $a['nameEntry'] <=> $b['nameEntry'];
                 });
@@ -1076,21 +1432,21 @@ class ServerExecutor {
         // Next look for currently editing constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "currently editing");
 
-        $response["editing_lock"] = array ();
+        $info["editing_lock"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User was currently editing", $item);
-                array_push($response["editing_lock"], $item);
+                array_push($info["editing_lock"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["editing_lock"],
+        usort($info["editing_lock"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
@@ -1098,21 +1454,21 @@ class ServerExecutor {
         // Next look for sent for review constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "needs review");
 
-        $response["review_lock"] = array ();
+        $info["review_lock"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User had for review", $item);
-                array_push($response["review_lock"], $item);
+                array_push($info["review_lock"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["review_lock"],
+        usort($info["review_lock"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
@@ -1120,38 +1476,46 @@ class ServerExecutor {
         // Next look for needs review by this user constellations
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "needs review", null, null, true);
 
-        $response["review"] = array ();
+        $info["review"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 $item = array (
                         "id" => $constellation->getID(),
                         "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("User needed to review", $item);
-                array_push($response["review"], $item);
+                array_push($info["review"], $item);
             }
         }
 
         // Give the editing list back in alphabetical order
-        usort($response["review"],
+        usort($info["review"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
 
         $editList = $this->cStore->listRecentConstellationsForUser($user, 10);
-        $response["recent"] = array ();
+        $info["recent"] = array ();
         if ($editList !== false) {
             foreach ($editList as $constellation) {
                 if ($constellation->getPreferredNameEntry() != null) {
                     $item = array (
                             "id" => $constellation->getID(),
                             "version" => $constellation->getVersion(),
-                            "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                            "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                     );
-                    array_push($response["recent"], $item);
+                    array_push($info["recent"], $item);
                 }
             }
+        }
+
+
+        // Check to see if we're editing a different user
+        if ($otherUser) {
+            $response["user_edit"] = $info;
+        } else {
+            $response = array_merge($response, $info);
         }
 
         return $response;
@@ -1355,7 +1719,7 @@ class ServerExecutor {
                     $response['resource'] = $resourceCheck->toArray();
                     $response["result"] = "success-notice";
                     $response["message"] = [
-                        "text" => "This resource already exists.",
+                        "text" => "This resource already exists."
                     ];
                     return $response;
                 }
@@ -1386,6 +1750,39 @@ class ServerExecutor {
             $response["error"] = "no resource to write";
         }
         return $response;
+    }
+
+    /**
+     * Merge ResourceS
+     *
+     * Transfer all resource relations from victim resource to target, and delete the victim resource.
+     *
+     * @param int $victimID Id of the resource to be deleted
+     * @param int $targetID Id of the resource to be kept
+     */
+    public function mergeResources($victimID, $targetID) {
+        $victim = $this->cStore->readResource($victimID);
+        $target = $this->cStore->readResource($targetID);
+
+        $this->neo4J->mergeResource($victim, $target);
+
+        // Replace victim's id and version with target's in related_resource.
+        $this->cStore->replaceResourceRelationResource($victim, $target);
+
+        $this->deleteResource($victim);
+    }
+
+    /**
+     * Delete Resource
+     *
+     * Delete Resource from ES, Neo4j and PSQL
+     *
+     * @param \snac\data\Resource
+     */
+    public function deleteResource($resource) {
+        $this->elasticSearch->deleteFromResourceIndices($resource);
+        $this->neo4J->deleteResource($resource);
+        $this->cStore->deleteResource($resource, $this->user);
     }
 
     /**
@@ -1464,8 +1861,10 @@ class ServerExecutor {
                 $assertions = $this->cStore->listAssertions($constellation,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY, $this->uStore);
 
                 $response["assertions"] = array();
-                foreach ($assertions as $key => $assert) {
-                    $response["assertions"][$key] = $assert->toArray();
+                if (isset($assertions) && $assertions) {
+                    foreach ($assertions as $key => $assert) {
+                        $response["assertions"][$key] = $assert->toArray();
+                    }
                 }
 
             } catch (\Exception $e) {
@@ -3140,6 +3539,23 @@ class ServerExecutor {
                 $serializer = new \snac\util\EACCPFSerializer();
                 $response["file"]["content"] = base64_encode($serializer->serialize($constellation));
                 break;
+            case "holdings":
+                $icid = $input["constellationid"];
+                $resources = $this->cStore->getRepoHoldings($icid);
+                $fh = fopen('php://temp', 'rw'); # don't create a file, attempt to use memory instead
+                fputcsv($fh, array_keys(current($resources))); // Add column headings
+                foreach ( $resources as $row ) {
+                    fputcsv($fh, $row);
+                }
+                rewind($fh);
+                $csv = stream_get_contents($fh);
+                fclose($fh);
+
+                $response["file"] = array();
+                $response["file"]["mime-type"] = "text/csv";
+                $response["file"]["filename"] = $icid . "_holdings.csv";
+                $response["file"]["content"] = base64_encode($csv);
+                break;
             default:
                 throw new \snac\exceptions\SNACInputException("Unknown download file type: " . $input["type"], 400);
         }
@@ -3224,7 +3640,7 @@ class ServerExecutor {
                 $item = array (
                     "id" => $constellation->getID(),
                     "version" => $constellation->getVersion(),
-                    "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                    "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
                 $this->logger->addDebug("Listing (".$status.")", $item);
                 array_push($response["results"], $item);
@@ -3475,14 +3891,14 @@ class ServerExecutor {
 
         $results = $this->cStore->browseNameIndex($term, $position, $entityType, $icid);
 
-        foreach ($results as &$result) {
+        foreach ($results as $k => $result) {
             $constellation = new \snac\data\Constellation();
             $constellation->setID($result["ic_id"]);
             if (\snac\Config::$USE_NEO4J) {
                 $this->neo4J->checkHoldingInstitutionStatus($constellation);
             }
             if ($constellation->hasFlag("holdingRepository"))
-                $result["entity_type"] = "holdingRepository";
+                $results[$k]["entity_type"] = "holdingRepository";
         }
 
         $response["results"] = $results;
@@ -3547,7 +3963,9 @@ class ServerExecutor {
                 if (\snac\Config::$USE_NEO4J) {
                     $this->neo4J->checkHoldingInstitutionStatus($constellation);
                 }
-                array_push($searchResults, $constellation->toArray());
+                $constellation = $constellation->toArray();
+                $constellation["resource_count"] = $result["resources"];
+                array_push($searchResults, $constellation);
             }
             $response["results"] = $searchResults;
             $response["count"] = $input["count"];
@@ -3669,16 +4087,22 @@ class ServerExecutor {
             case "public":
                 $reportName = "Public";
                 break;
+            case "outbound":               // Outbound data is generated on the fly, instead of being pulled from a precompiled report
+                return $this->readAnalytics($input);
+                break;
             case "general":
             default:
                 break;
         }
         $report = $this->cStore->readReport($reportName);
 
+
+
         if ($report && $report != null && !empty($report))
             return array("result" => "success",
                          "reports" => json_decode($report["report"], true),
                          "timestamp" => $report["timestamp"]);
+
 
         return array("result" => "failure");
     }
@@ -3709,6 +4133,8 @@ class ServerExecutor {
                 $reportEngine->addReport("NumNewConstellationsThisWeek");
                 $reportEngine->addReport("NumEditsThisWeek");
                 $reportEngine->addReport("PublishesLastMonth");
+                $reportEngine->addReport("ConstellationsConnectedResourcesPercentage");
+                $reportEngine->addReport("ConstellationsConnectedConstellationsPercentage");
                 break;
             case "general":
             default:
@@ -3717,6 +4143,7 @@ class ServerExecutor {
                 $reportEngine->addReport("TopEditorsThisWeek");
                 $reportEngine->addReport("PublishesLastMonth");
                 $reportEngine->addReport("TopHoldingInstitutions");
+                $reportEngine->addReport("OutboundLinks");
                 break;
         }
         $reportEngine->setPostgresConnector($this->cStore->sqlObj()->connectorObj());
@@ -3726,5 +4153,206 @@ class ServerExecutor {
         $this->cStore->storeReport($reportName, $report, $this->user);
 
         return array("result" => "success");
+    }
+
+    /**
+     * Parse EAC and return result
+     *
+     * Parses and EAC-CPF file given on the input and returns the SNAC JSON object
+     * as well as any errors that occurred during the conversion process.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function parseEACCPFToConstellation($input) {
+        if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
+            throw new \snac\exceptions\SNACInputException("No EAC-CPF file specified", 400);
+        }
+
+        $file = base64_decode($input["file"]["content"]);
+        if (!stristr($file, "<eac-cpf")) {
+            throw new \snac\exceptions\SNACInputException("File does not have EAC-CPF tag specified", 400);
+        }
+
+        \libxml_use_internal_errors(true);
+        $testDoc = \simplexml_load_string($file);
+        $testXml = explode("\n", $file);
+        if (!$testDoc) {
+            $errorText = "";
+            $errors = \libxml_get_errors();
+            foreach ($errors as $error) {
+                 $errorText .= \display_xml_error($error, $xml);
+            }
+            \libxml_clear_errors();
+            throw new \snac\exceptions\SNACInputException("File is not correctly-formatted XML:\n".$errorText, 400);
+        }
+
+        $response = array();
+
+        $localVocab = new \snac\util\LocalVocabulary();
+        $localVocab->setConstellationStore($this->cStore);
+        $parser = new \snac\util\EACCPFParser();
+        $parser->setVocabulary($localVocab);
+        $constellation = $parser->parse($file);
+        $errors = $parser->getMissing();
+
+        $response["constellation"] = $constellation->toArray();
+        $response["unparsed"] = $errors;
+
+        if (empty($errors))
+            $response["result"] = "success";
+        else
+            $response["result"] = "failure";
+
+        return $response;
+    }
+
+    /**
+     * Add Constellation SameAs
+     *
+     * Adds External Links to a constellation
+     *
+     * @param integer $constellationID
+     * @param string[] $sameAsUris Array of uris to link this constellation to
+     * @return string[] The response to send to the client
+     */
+    public function addConstellationSameAs($constellationID, $sameAsUris) {
+        $term = new \snac\data\Term;
+        $term->setID(28225); // TODO: query vocab for the 'sameAs' term id
+        $sameAs = new \snac\data\SameAs;
+        $sameAs->setType($term);
+        $sameAs->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+
+        // Make sameAs for each uri
+        $sameAsList = [];
+        foreach ($sameAsUris  as $uri) {
+            $newSameAs = clone $sameAs;
+            $newSameAs->setURI($uri);
+            $sameAsList[] = $newSameAs;
+        }
+
+        //  Check out constellation and get updated version.
+        $input = [];
+        $input["constellationid"] = $constellationID;
+        $editedConstellation = $this->editConstellation($input);
+        $newVersion = $editedConstellation["constellation"]["version"];
+
+        $constellation = new \snac\data\Constellation;
+        $constellation->setID($constellationID);
+        $constellation->setVersion($newVersion);
+
+         // Add SameAs objects
+        foreach ($sameAsList as $sameAs) {
+            $constellation->addOtherRecordID($sameAs);
+        }
+
+        // Set input for writing SameAs to constellation
+        $input["constellation"] = $constellation->toArray();
+        $this->logger->addDebug("going to write constellation: ", $constellation->toArray());
+        $writtenResult = $this->writeConstellation($input);
+
+        // Publish
+        $result = $this->publishConstellation($writtenResult);
+
+        return $result;
+    }
+
+
+
+    /**
+     * Get Holdings
+     *
+     * Get array of all resources held by a Holding Institution
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] A response with an array of resource info from neo4j
+     */
+    public function getHoldings(&$input) {
+        if (!isset($input["constellationid"])) {
+            $response = ["result" => "failure",
+                         "error" => "Must provide a constellation id"
+                        ];
+            return $response;
+        }
+
+        $this->logger->addDebug("Retrieving holdings from Neo4J");
+
+        $icid = $input["constellationid"];
+        $resources = $this->neo4J->getHoldings($icid);
+
+        $response["resources"] = $resources;
+        $response["result"] = "success";
+
+        return $response;
+    }
+
+    /**
+     * Get Shared Resources
+     *
+     * Get array of all resources held by a Holding Institution
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function getSharedResources(&$input) {
+        if (!isset($input["icid1"], $input["icid2"])) {
+            $response = ["result" => "failure",
+                         "error" => "Must provide constellation ids"
+                        ];
+            throw new \snac\exceptions\SNACInputException("Must provide constellation ids", 400);
+            return $response;
+        }
+
+        $icid1 = $this->cStore->getCurrentIDsForID($input["icid1"])[0] ?? null;
+        $icid2 = $this->cStore->getCurrentIDsForID($input["icid2"])[0] ?? null;
+
+
+        $this->logger->addDebug("Retrieving shared resources from Neo4J");
+
+        $resources = $this->neo4J->getSharedResources($icid1, $icid2);
+
+        $response["resources"] = $resources;
+        $response["result"] = "success";
+
+        return $response;
+    }
+
+    /**
+     * Record Analytics
+     *
+     * Record outgoing link traffic hit
+     *
+     * @param string[] $input Input array from the Server object
+     */
+    public function recordAnalytics($input) {
+        $this->cStore->recordAnalytics($input["icid"], $input["url"], $input["repo_ic_id"]);
+    }
+
+    /**
+     * Record Analytics by Domain
+     *
+     * Record outgoing link traffic hit
+     *
+     * @param string[] $input Input array from the Server object
+     */
+    public function readAnalytics($input) {
+        if ($input["domain"]) {
+            $analyticsName = $input["domain"];
+            $visits = $this->cStore->readAnalyticsByDomain($input["domain"]) ?? "";
+
+        } elseif ($input["repo_ic_id"]) {
+            $analyticsName = $input["name"];
+            $repoICID = $input["repo_ic_id"];
+            $visits = $this->cStore->readAnalyticsByRepo($repoICID);
+        }
+        if (!isset($visits)) {
+            return ["result" => "failure"];
+        }
+            $trafficData = ["result" => "success"];
+            $trafficData["analytics_name"] = $analyticsName;
+            $trafficData["dates"]  = json_encode($visits[0]);
+            $trafficData["counts"] = json_encode($visits[1]);
+            $trafficData["total"] = json_encode($visits[2]["Total"]);
+        return $trafficData;
     }
 }

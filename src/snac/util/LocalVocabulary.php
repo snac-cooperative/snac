@@ -3,7 +3,7 @@
  * Local Vocabulary Class File
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -43,23 +43,37 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * to aid in lookups.
      */
     public function __construct() {
-        $this->db = new \snac\server\database\DBUtil();
-        $vocab = $this->db->getAllVocabulary();
-        // Fix up the vocabulary into a nested array
-        foreach($vocab as $v) {
-            if (!isset($this->vocab[$v["type"]]))
-                $this->vocab[$v["type"]] = array();
-            array_push($this->vocab[$v["type"]], 
-                array(
-                    "id"=>$v["id"], 
-                    "value"=>$v["value"],
-                    "uri"=>$v["uri"],
-                    "description"=>$v["description"]));
-        }
-
         $this->serverExecutor = new \snac\server\ServerExecutor();
     }
 
+    /**
+     * Set Contellation Store
+     *
+     * Sets a Constellation Store (DBUtil) into this instance of a
+     * Local Vocabulary.  This is not necessary to be run, since if a
+     * Constellation Store is not available when a term has been requested,
+     * this class will automatically instantiate a DBUtil instance.
+     *
+     * This is best used when calling the EAC-CPF parser from ServerExecutor,
+     * which already has a Constellation Store instantiated.
+     *
+     * @param \snac\server\database\DBUtil $cStore The Constellation Store to set
+     */
+    public function setConstellationStore(&$cStore) {
+        $this->db = $cStore;
+    }
+
+    /**
+     * Setup Constellation Store
+     *
+     * Checks to see if there is a Constellation Store (DBUtil) set for this
+     * instance.  If so, it does nothing.  If not, then this method will attempt
+     * to instantiate a default DBUtil instance.
+     */
+    private function setupConstellationStore() {
+        if ($this->db == null)
+            $this->db = new \snac\server\database\DBUtil();
+    }
 
     /**
      * Get a Term by string value/term
@@ -69,18 +83,8 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * @return \snac\data\Term The Term object for the value
      */
     public function getTermByValue($value, $type) {
-        $term = new \snac\data\Term();
-        if (isset($this->vocab[$type]))
-            foreach ($this->vocab[$type] as $k => $v) {
-                if ($v["value"] == $value) {
-                    $term->setTerm($value);   
-                    $term->setID($v["id"]);
-                    $term->setURI($v["uri"]);
-                    $term->setDescription($v["description"]);
-                    return $term;
-                }
-            }
-        return null;
+        $this->setupConstellationStore();
+        return $this->db->populateTerm(null, $value, $type);
     }
 
     /**
@@ -91,17 +95,8 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * @return \snac\data\Term The Term object for the id
      */
     public function getTermByID($id, $type) {
-        $term = new \snac\data\Term();
-        if (isset($this->vocab[$type]))
-            if (isset($this->vocab[$type][$id])) {
-                $v = $this->vocab[$type][$id];
-                $term->setTerm($v["value"]);   
-                $term->setID($v["id"]);
-                $term->setURI($v["uri"]);
-                $term->setDescription($v["description"]);
-                return $term;
-            }
-        return null;
+        $this->setupConstellationStore();
+        return $this->db->populateTerm($id);
     }
     
 
@@ -112,7 +107,12 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * @return \snac\data\GeoTerm The GeoTerm object for the uri
      */
     public function getGeoTermByURI($uri) {
+        $this->setupConstellationStore();
         return $this->db->getPlaceByURI($uri);
+    }
+
+    public function getConstellation($ark) {
+        return $this->db->readPublishedConstellationByARK($ark, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
     }
 
     /**

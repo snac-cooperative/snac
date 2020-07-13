@@ -11,7 +11,7 @@
  *
  * @author Robbie Hott
  * @author Tom Laudeman
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -353,6 +353,24 @@ class GeoTerm {
     public function getID() {
 
         return $this->id;
+    }
+
+    /**
+     * Is Empty
+     *
+     * Check whether or not this Geoterm object is empty (all null values).
+     *
+     * @return boolean True if the term is empty, false otherwise.
+     */
+    public function isEmpty() {
+        if ($this->name == null &&
+            $this->id == null &&
+            $this->latitude == null &&
+            $this->longitude == null &&
+            $this->administrationCode == null &&
+            $this->countryCode == null)
+            return true;
+        return false;
     }
 
 

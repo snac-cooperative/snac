@@ -104,6 +104,7 @@ drop table if exists resource_origination_name;
 drop table if exists constellation_lookup;
 drop table if exists messages;
 drop table if exists not_same;
+drop table if exists outbound_link
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -116,6 +117,7 @@ drop sequence if exists id_seq;
 drop sequence if exists "message_id_seq";
 drop sequence if exists "resource_id_seq";
 drop sequence if exists "resource_version_id_seq";
+drop table if exists api_keys;
 
 --
 -- Sequences
@@ -186,6 +188,7 @@ create table version_history (
 create index version_history_idx1 on version_history(status);
 create index version_history_idx2 on version_history(user_id);
 create index version_history_idx5 on version_history(user_id_secondary);
+create index version_history_idx6 on version_history(timestamp);
 
 -- Users of the system (editors, authors, researchers, admins etc)
 -- SQL reserved word 'user', instead of always quoting it, change table name to appuser.
@@ -1126,6 +1129,29 @@ create table not_same (
     user_id          int,  -- fk to appuser table, user that made the assertion
     timestamp        timestamp default(now()));
 create index not_same_idx1 on not_same (ic_id1, ic_id2);
+
+-- API keys table
+create table api_keys (
+        id          serial primary key,
+        uid         int not null,       -- fk to appuser.id
+        label       text,               -- user provided name of this api key
+        key         text not null,      -- the key
+        generated   timestamp default(now()), -- time created
+        expires     timestamp default(now() + interval '1 year') -- expiration time
+        );
+create index api_keys_idx2 on api_keys(key);
+create index api_keys_idx3 on api_keys(uid);
+
+create table outbound_link (
+        id          serial primary key,
+        ic_id       int,
+        url         text,
+        repo_ic_id  int,
+        timestamp   timestamp default(CURRENT_DATE)
+        );
+create index url_idx1 on outbound_link(url);
+create index timestamp_idx1 on outbound_link(timestamp);
+create index repo_ic_id_idx1 on outbound_link(repo_ic_id);
 
 -- Views that allow us to query the most recent constellation data
 

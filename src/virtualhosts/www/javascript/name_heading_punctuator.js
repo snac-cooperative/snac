@@ -4,7 +4,7 @@
  * Contains code that combines name components into nameEntry strings with punctuation
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -77,6 +77,7 @@ function combineNameHeading(components, entityType) {
             switch (type) {
                 case "Name":
                 case "JurisdictionName":
+                case "SubdivisionName":
                     if (i < components.length - 1 && components[i+1][0] == 'SubdivisionName') {
                         partText = partText + ".";
                     }

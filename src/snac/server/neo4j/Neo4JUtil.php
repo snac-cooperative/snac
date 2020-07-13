@@ -5,7 +5,7 @@
  * Contains the Neo4J connection and query information
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -126,41 +126,44 @@ class Neo4JUtil {
             );
 
             // List out relations
-            $rels = array();
+            $icRels = array();
             foreach ($result->getRecords() as $record) {
                 $path = $record->pathValue("p");
-                array_push($rels, [
-                    "arcrole" => $path->relationships()[0]->value('arcrole'),
+                array_push($icRels, [
+                    "arcrole" => $path->relationships()[0]->hasValue('arcrole') ? $path->relationships()[0]->value('arcrole') : null,
                     "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
                     "version" => $path->relationships()[0]->hasValue('version') ? $path->relationships()[0]->value('version') : null,
-                        "target" => $path->end()->value("id"),
+                    "target" => $path->end()->value("id"),
                     "operation" => "delete"
                     ]
                 );
             }
 
             $this->logger->addDebug("Reconciling Relationships to Current IC");
-            $relsToDelete = array();
-            $relsToModify = array();
+            $icRelsToDelete = array();
+            $icRelsToModify = array();
             foreach($constellation->getRelations() as $relation) {
                 $add = true;
-                foreach ($rels as &$rel) {
-                    if ($relation->getTargetConstellation() == $rel["target"]) {
+                foreach ($icRels as &$icRel) {
+                    if ($relation->getTargetConstellation() == $icRel["target"]) {
                         // if it's been found, then don't add it to the index
                         $add = false;
-                        if ($relation->getType() && $relation->getVersion() != $rel["version"]) {
-                            $rel["arcrole"] = $relation->getType() ? $relation->getType()->getTerm() : "";
-                            $rel["id"] = $relation->getID();
-                            $rel["version"] = $relation->getVersion();
-                            $rel["operation"] = "update";
+                        if ($relation->getType() && $relation->getVersion() != $icRel["version"]) {
+                            $icRel["arcrole"] = $relation->getType() ? $relation->getType()->getTerm() : "";
+                            $icRel["id"] = $relation->getID();
+                            $icRel["version"] = $relation->getVersion();
+                            $icRel["operation"] = "update";
                         } else {
-                            $rel["operation"] = null;
+                            $icRel["operation"] = null;
                         }
                         break;
                     }
                 }
+                // Be correct with pass by reference foreach loops
+                unset($icRel);
+
                 if ($add)
-                    array_push($rels, [
+                    array_push($icRels, [
                         "target" => $relation->getTargetConstellation(),
                         "id" => $relation->getID(),
                         "version" => $relation->getVersion(),
@@ -168,14 +171,14 @@ class Neo4JUtil {
                         "operation" => "insert"
                     ]);
             }
-            $this->logger->addDebug("List of related identity paths", $rels);
+            $this->logger->addDebug("List of related identity paths", $icRels);
 
             // Make the relationship changes
-            foreach ($rels as $rel) {
+            foreach ($icRels as $rel) {
                 switch($rel["operation"]) {
                     case "insert":
                         $result = $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Identity {id: {id2} })
-                                                            CREATE (a)-[r:ICRELATION {infos}]->(b)",
+                                                            CREATE (a)-[r:ICRELATION {infos}]->(b);",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -214,48 +217,54 @@ class Neo4JUtil {
             // ************************************
             // STEP 3: Check all the resource relations. Update, insert, or delete as appropriate
             $this->logger->addDebug("Reading resource relationships from Neo4J");
-
-            $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:RRELATION]->(b:Resource) return p;",
-                [
-                    'icid' => $constellation->getID()
-                ]
-            );
-
-            // List out relations
-            $rels = array();
-            foreach ($result->getRecords() as $record) {
-                $path = $record->pathValue("p");
-                array_push($rels, [
-                    "target" => $path->end()->value("id"),
-                    "role" => $path->relationships()[0]->value('role'),
-                    "id" => $path->relationships()[0]->value('id'),
-                    "version" => $path->relationships()[0]->value('version'),
-                    "operation" => "delete"
+            $rRels = array();
+            try {
+                $result = $this->connector->run("MATCH p=(a:Identity {id: {icid} })-[r:RRELATION]->(b:Resource) return p;",
+                    [
+                        'icid' => $constellation->getID()
                     ]
                 );
-            }
 
+                // List out relations
+                foreach ($result->getRecords() as $record) {
+                    $path = $record->pathValue("p");
+                    array_push($rRels, [
+                        "target" => $path->end()->value("id"),
+                        "role" => $path->relationships()[0]->hasValue('role') ? $path->relationships()[0]->value('role') : null,
+                        "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
+                        "version" => $path->relationships()[0]->hasValue('version') ? $path->relationships()[0]->value('version') : null,
+                        "operation" => "delete"
+                        ]
+                    );
+                }
+            } catch (\Exception $e) {
+                $this->logger->addError("Neo4J threw an exception: ".$e->getMessage(), $e->getTrace());
+                throw $e;
+            }
             $this->logger->addDebug("Reconciling Resource Relationships to Current IC");
-            $relsToDelete = array();
-            $relsToModify = array();
+            $rRelsToDelete = array();
+            $rRelsToModify = array();
             foreach($constellation->getResourceRelations() as $relation) {
                 $add = true;
-                foreach ($rels as &$rel) {
-                    if ($relation->getResource()->getID() == $rel["target"]) {
+                foreach ($rRels as &$rRel) {
+                    if ($relation->getResource()->getID() == $rRel["target"]) {
                         // if it's been found, then don't add it to the index
                         $add = false;
-                        if ($relation->getVersion() != $rel["version"]) {
-                            $rel["role"] = $relation->getRole() ? $relation->getRole()->getTerm() : "";
-                            $rel["version"] = $relation->getVersion();
-                            $rel["operation"] = "update";
+                        if ($relation->getVersion() != $rRel["version"]) {
+                            $rRel["role"] = $relation->getRole() ? $relation->getRole()->getTerm() : "";
+                            $rRel["version"] = $relation->getVersion();
+                            $rRel["operation"] = "update";
                         } else {
-                            $rel["operation"] = null;
+                            $rRel["operation"] = null;
                         }
                         break;
                     }
                 }
+                // Be correct with pass by reference foreach loops
+                unset($rRel);
+
                 if ($add)
-                    array_push($rels, [
+                    array_push($rRels, [
                         "target" => $relation->getResource()->getID(),
                         "role" => $relation->getRole() ? $relation->getRole()->getTerm() : "",
                         "id" => $relation->getID(),
@@ -263,14 +272,14 @@ class Neo4JUtil {
                         "operation" => "insert"
                     ]);
             }
-            $this->logger->addDebug("List of related resource paths", $rels);
+            $this->logger->addDebug("List of related resource paths", $rRels);
 
             // Make the relationship changes
-            foreach ($rels as $rel) {
+            foreach ($rRels as $rel) {
                 switch($rel["operation"]) {
                     case "insert":
                         $result = $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
-                                                            CREATE (a)-[r:RRELATION {infos}]->(b)",
+                                                            CREATE (a)-[r:RRELATION {infos}]->(b);",
                         [
                             'id1' => $constellation->getID(),
                             'id2' => $rel["target"],
@@ -355,7 +364,7 @@ class Neo4JUtil {
                     'icid' => "{$from->getID()}"
                 ]
             );
-            
+
             foreach ($result->getRecords() as $record) {
                 $path = $record->pathValue("p");
 
@@ -377,7 +386,7 @@ class Neo4JUtil {
                     $type = $relation->type();
 
                     $data = [];
-                    
+
                     // Resource Relations have id/version
                     if ($relation->hasValue('id'))
                         $data["id"] = $relation->value('id');
@@ -488,7 +497,7 @@ class Neo4JUtil {
         if ($count > 0)
             $realCount = $count;
 
-        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity) where a.name_lower STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;",
+        $result = $this->connector->run("MATCH p=(:Resource)-[r:HIRELATION]->(a:Identity) where a.name_lower STARTS WITH {name} return DISTINCT a ORDER BY a.name limit $realCount;",
             [
                 'name' => strtolower($name)
             ]
@@ -514,21 +523,76 @@ class Neo4JUtil {
      * @param  \snac\data\Constellation $constellation Constellation to search
      * @return boolean  Returns true if it's a holding repository, false otherwise
      */
-
     public function checkHoldingInstitutionStatus(&$constellation) {
-        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;",
+        $result = $this->connector->run("RETURN EXISTS((:Resource)-[:HIRELATION]-(:Identity {id: {icid}}));",
             [
                 'icid' => $constellation->getID()
             ]
         );
 
-        if (count($result->getRecords()) == 1) {
-            if ($result->firstRecord()->get('count') > 0) {
+        $isHoldingInstitution = $result->firstRecord()->values()[0];
+
+        if ($isHoldingInstitution === true) {
                 $constellation->setFlag("holdingRepository");
                 return true;
-            }
         }
         return false;
+    }
+
+    /**
+     * Get Holding Institution Statistics
+     *
+     * Returns the statistics of the given Holding Institution.  It currently returns
+     * the number of resources connected to the holding repository as well as the number
+     * of constellations connected to those resources.
+     *
+     * @param  \snac\data\Constellation $constellation Constellation to search
+     * @return string[] An associative array of statistical data
+     */
+    public function getHoldingInstitutionStats(&$constellation) {
+        $return = [];
+        $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(r) as count;",
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['instRes'] = $result->firstRecord()->get('count');;
+            }
+        }
+        $result = $this->connector->run("MATCH (r:Resource) return count(r) as count;",
+            [
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['allRes'] = $result->firstRecord()->get('count');;
+            }
+        }
+
+        $result = $this->connector->run("MATCH p=(c:Identity)-->(:Resource)-[r:HIRELATION]->(a:Identity {id: {icid}}) return count(distinct(c)) as count;",
+            [
+                'icid' => $constellation->getID()
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['instCons'] = $result->firstRecord()->get('count');;
+            }
+        }
+        $result = $this->connector->run("MATCH (r:Identity) return count(r) as count;",
+            [
+            ]
+        );
+        if (count($result->getRecords()) == 1) {
+            if ($result->firstRecord()->get('count') > 0) {
+                $return['allCons'] = $result->firstRecord()->get('count');;
+            }
+        }
+
+        return $return;
+
     }
 
     /**
@@ -644,10 +708,9 @@ class Neo4JUtil {
 
             // If resource has a repository, then add a link
             if ($resource->getRepository() != null && $resource->getRepository()->getID() != null) {
-                $this->connector->run("MATCH (a:Identity {id: {id1} }),(b:Resource {id: {id2} })
-                    CREATE (b)-[r:HIRELATION]->(a);",
+                $this->connector->run("MATCH (a:Identity {id: {id1} }) MATCH (b:Resource {id: {id2} }) CREATE (b)-[r:HIRELATION]->(a);",
                     [
-                        'id1' => $resource->getRepository()->getID(),
+                        'id1' => (string) $resource->getRepository()->getID(),   
                         'id2' => $resource->getID()
                     ]);
             }
@@ -674,4 +737,169 @@ class Neo4JUtil {
         }
 
     }
+
+
+    /**
+     * Get Resource Relationships
+     *
+     * Given a resource id, returns an array of constellation ids related to that resource.
+     *
+     * @param $resource_id The id of the resource
+     * @return string[]    An array of related constellation ids
+     */
+    public function getResourcesRelatedConstellationIDs($resourceID) {
+        if ($this->connector != null) {
+            // Returning a single array of ids using collect()
+            $result = $this->connector->run("MATCH (r:Resource {id: '{$resourceID}' })-[:RRELATION]-(i:Identity) return collect(i.id) as ids ");
+            $relatedConstellationIDs = $result->getRecord()->get("ids");
+            return $relatedConstellationIDs;
+        }
+    }
+
+    /**
+     * Get Holdings
+     *
+     * Given a constellation id, returns an array of resources held by that holding repository.
+     *
+     * @param $icid The constellation id of the holding reposit
+     * @return array $holdings  An array of resources' with id, title, href and count of resource relationships.
+     */
+    public function getHoldings($icid) {
+        if ($this->connector != null) {
+            $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})<-[:HIRELATION]-(r:Resource)
+                return r.id as id, r.title as title, r.href as href, size((r)<-[:RRELATION]-(:Identity)) as relation_count
+                order by r.title");
+            $holdings = [];
+
+            foreach ($result->getRecords() as $record) {
+                $id = $record->get('id');
+                $title = $record->get('title');
+                $href = $record->get('href');
+                $relation_count = $record->get('relation_count');
+                $holdings[] = ["id" => $id, "title" => $title, "href" => $href, "relation_count" => $relation_count];
+            }
+        return $holdings;
+
+        }
+    }
+
+    /**
+     * Count Holdings
+     *
+     * Given a constellation id, returns count of its holdings.
+     *
+     * @param $icid The constellation id of the holding reposity
+     * @return int $count Count of resources
+     */
+    public function countHoldings($icid) {
+        $result = $this->connector->run("MATCH (c:Identity {id: '{$icid}'}) RETURN size((c)<-[:HIRELATION]-(:Resource)) as count");
+        $count = $result->getRecord()->get("count");
+        return $count;
+    }
+
+
+    /**
+     * Get Relations
+     *
+     * Given a constellation id, returns an array of its linked constellations.
+     *
+     * @param $icid The constellation id
+     * @return string[] $constellations' id, entity_type, and name
+     */
+    public function getICRelations($icid) {
+        $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})-[:ICRELATION]-(i:Identity) return i.id, i.entity_type, i.name;");
+        $relations = [];
+        foreach ($result->getRecords() as $record) {
+            $relations[] = [ "id" => $record->get("i.id"),
+                             "entity_type" => $record->get("i.entity_type"),
+                             "name" => $record->get("i.name")
+                           ];
+        }
+        return $relations;
+    }
+
+    /**
+     * Get Resources
+     *
+     * Given a constellation id, returns all its linked resources.
+     *
+     * @param $icid The constellation id
+     * @return string[] Resources
+     */
+    public function getResources($icid) {
+        $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})-[:RRELATION]->(r:Resource)
+            return r.id as id, r.title as title, r.href as href order by r.title");
+        $resources = [];
+
+        foreach ($result->getRecords() as $record) {
+            $id = $record->get('id');
+            $title = $record->get('title');
+            $href = $record->get('href');
+            $resources[] = ["id" => $id, "title" => $title, "href" => $href];
+        }
+        return $resources;
+    }
+
+
+    /**
+     * Merge Resource
+     *
+     * Removes all RRELATIONS from a victim and copies them to the target resource node
+     *
+     * @param \snac\data\Resource $resource The victim object to be discarded
+     * @param \snac\data\Resource $target The target resource object
+     * @return true
+     */
+    public function mergeResource($victim, $target) {
+            // find all related Identities on the target resource
+            $result = $this->connector->run("MATCH (victim:Resource {id: {victimResourceID}})<-[rel1:RRELATION]-(victims_ic:Identity)
+                                             MATCH (target:Resource {id: {targetResourceID}})
+                                             MERGE (target)<-[rel2:RRELATION]-(victims_ic)
+                                             SET rel2 = rel1
+                                             DETACH DELETE (victim);",
+                [
+                    "victimResourceID" => "{$victim->getID()}",
+                    "targetResourceID" => "{$target->getID()}"
+                ]
+            );
+
+            return true;
+    }
+
+    /**
+    * Get Shared Resources
+    *
+    * Given a constellation id, returns all its linked resources.
+    *
+    * @param $icid The constellation id
+    * @return string[] Resources
+    */
+    public function getSharedResources($icid1, $icid2) {
+        $result = $this->connector->run("MATCH (i1:Identity {id: {icid1}})-[rr1:RRELATION]->(r:Resource)<-[rr2:RRELATION]-(i2:Identity {id: {icid2}})
+            USING INDEX i1:Identity(id) USING INDEX i2:Identity(id)
+            return r.id as id, r.title as title, r.href as href, rr1.role as arcrole_1, rr2.role as arcrole_2 order by r.title",
+            [
+                "icid1" => "{$icid1}",
+                "icid2" => "{$icid2}"
+            ]
+        );
+        $resources = [];
+
+        foreach ($result->getRecords() as $record) {
+            $id = $record->get("id");
+            $title = $record->get("title");
+            $href = $record->get("href");
+            $arcrole_1 = $record->get("arcrole_1");
+            $arcrole_2 = $record->get("arcrole_2");
+            $resources[] = [
+                             "id" => $id,
+                             "title" => $title,
+                             "href" => $href,
+                             "arcrole_1" => $arcrole_1,
+                             "arcrole_2" => $arcrole_2
+                            ];
+        }
+        return $resources;
+    }
+
 }

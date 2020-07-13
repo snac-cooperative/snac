@@ -8,7 +8,7 @@
    * @author Tom Laudeman <twl8n@virginia.edu>
    * @copyright 2015 the Rector and Visitors of the University of Virginia, and
    *            the Regents of the University of California
-   * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+   * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
    */
 
 namespace snac\server\database;
@@ -430,6 +430,8 @@ class DBUser
         $user->setWorkPhone($record['work_phone']);
         $user->setUserActive($record['active']);
 
+        $user->setNumUnreadMessages($this->sql->selectNumUnreadMessagesByUserID($record['id']));
+
         /*
          * We may need the functions listUserRoles() and listGroupsForUser() for uses outside of simply building
          * user objects, although no other uses are possible as long as these functions take $user as an
@@ -453,6 +455,10 @@ class DBUser
         }
 
         $user->setPreferredRules($record['preferred_rules']);
+
+
+        $user->setAPIKeyList($this->listUserAPIKeys($user));
+
         return $user;
     }
 
@@ -683,6 +689,118 @@ class DBUser
                 array_push($roleObjList, $roleObj);
             }
         return $roleObjList;
+    }
+
+    /**
+     * List User API Keys
+     *
+     * Lists all the API keys for the given user.
+     *
+     * NOTE: The API Keys do NOT have the 'key' attribute set, since that is generated at
+     * creation time and NEVER stored in clear text in the database.
+     *
+     * @param \snac\data\User $user The user
+     *
+     * @return \snac\data\APIKey[] A list of API Key objects.
+     */
+    public function listUserAPIKeys($user) {
+        $keyData = $this->sql->selectUserKeys($user->getUserID());
+        $keyList = [];
+        foreach ($keyData as $key) {
+            $obj = new \snac\data\APIKey();
+            $obj->setLabel($key["label"]);
+            $obj->setExpires($key["expires"]);
+            $obj->setGenerated($key["generated"]);
+            array_push($keyList, $obj);
+        }
+        return $keyList;
+    }
+
+
+    /**
+     * Generate API Key for user
+     *
+     * Generates an API Key for the given user and returns it.  API key generation
+     * is handled by the APIKeyGenerator, but the expiration time is handled by Postgres
+     * directly by default values (currently 1 year).  That could be overridden.
+     *
+     * The first 8 characters of the key are maintained as the label to show to the user.
+     * The rest of the key is stored only as an encrypted password, meaning that it cannot
+     * be recovered for the user.  If a key is lost, a new one must be generated.
+     *
+     * WARNING: This method sets the 'key' value in the associative array to the generated
+     * key.  This SHOULD NOT be logged on production in any capacity.  It should NEVER be
+     * saved to the database or anywhere else, but only returned to the user once.
+     *
+     * @param \snac\data\User $user The user
+     *
+     * @return \snac\data\APIKey The generated API key WITH THE CLEAR-TEXT KEY INSIDE!
+     */
+    public function generateUserAPIKey($user) {
+        $key = \snac\server\authentication\APIKeyGenerator::generateKey($user->getUserID());
+        $label = substr($key, 0, 8);
+        $keyData = $this->sql->saveUserKey($user->getUserID(), $key, $label);
+        if (isset($keyData["key"])) {
+            $obj = new \snac\data\APIKey();
+            $obj->setKey($key);
+            $obj->setLabel($label);
+            $obj->setExpires($keyData["expires"]);
+            $obj->setGenerated($keyData["generated"]);
+            return $obj;
+        }
+
+        return null;
+    }
+
+    /**
+     * Revoke API Key for user
+     *
+     * Revokes the API key given by the provided $label, if it exists.
+     *
+     * @param \snac\data\User $user The user
+     * @param string $label The label of the key to be revoked
+     *
+     * @return boolean Whether the key was successfully revoked
+     */
+    public function revokeUserAPIKey($user, $label) {
+        $this->logger->addDebug("Attempting to revoke key for user", [$label]);
+        $success = $this->sql->revokeUserKey($user->getUserID(), $label);
+        return $success;
+    }
+
+    /**
+     * Authenticate User by API Key
+     *
+     * This method is the heart of the API key authentication protocol.  Given
+     * an API key ($key), this method grabs the label off of the key, then tries
+     * to find the API key that matches that label and can be correctly validated
+     * using the full key (i.e., the encryption scheme built into PHP can verify
+     * that the stored encrypted full-key given by the label matches the key).
+     *
+     * If it can be found, it then reads the user object out of the database for
+     * the user and returns it.
+     *
+     * @param string $key The API key to authenticate
+     * @return \snac\data\User $user The user for the authenticated key
+     * @throws \snac\exceptions\SNACUserException
+     */
+    public function authenticateUserByAPIKey($key) {
+        $label = substr($key, 0, 8);
+        $keyData = $this->sql->selectAPIKeyByKey($key, $label);
+        if ($keyData == null)
+            throw new \snac\exceptions\SNACUserException("API Key is not authorized", 403);
+        if (strtotime($keyData["expires"]) - time() < 0)
+            throw new \snac\exceptions\SNACUserException("API Key has expired", 403);
+
+        $userid = $keyData["uid"];
+        $tmpUser = new \snac\data\User();
+        $tmpUser->setUserID($userid);
+        $user = $this->readUser($tmpUser);
+
+        if ($user === false)
+            throw new \snac\exceptions\SNACUserException("API Key is not authorized for a user", 403);
+
+        return $user;
     }
 
     /**
@@ -1308,11 +1426,11 @@ class DBUser
      *
      * @param \snac\data\Constellation $institution The SNAC institution in a constellation.
      *
-     * @return \snac\data\Constellation object, summary, holding a SNAC institution
+     * @return string $icid ic_id of the institution.
      */
-    public function writeInstitution($institution)
-    {
-        $this->sql->insertInstitution($institution->getID());
+    public function writeInstitution($institution) {
+        $icid = $this->sql->insertInstitution($institution->getID());
+        return $icid;
     }
 
     /**

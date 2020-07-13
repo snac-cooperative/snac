@@ -5,7 +5,7 @@
  * Contains the main web interface class that instantiates the web ui
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -105,11 +105,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "login2",
                 "search",
                 "view",
+                "snippet",
                 "details",
                 "sources",
                 "download",
                 "error",
                 "vocabulary",
+                "vocab_administrator",
                 "quicksearch",
                 "relations",
                 "maybesame",
@@ -118,18 +120,22 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "visualize",
                 "history",
                 "history_diff",
-                "static",
                 "api_help",
                 "api_test",
                 "contact",
                 "stats",
-                "feedback"
+                "feedback",
+                "resource_search",
+                "get_holdings",
+                "shared_resources",
+                "analytics"
         );
 
         // These are read-only commands that are allowed in read-only mode
         $readOnlyCommands = array(
             "search",
             "view",
+            "snippet",
             "details",
             "sources",
             "download",
@@ -139,7 +145,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "relations",
             "explore",
             "history_diff",
-            "static",
             "api_help",
             "visualize",
             "stats",
@@ -158,7 +163,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Code to take the site into read-only mode (destroys login session)
         if (\snac\Config::$READ_ONLY) {
             // Make sure there is no session to keep track of anymore
-            session_name("SNACWebUI");
+            session_name(\snac\Config::$SESSION_NAME);
             session_start();
             session_destroy();
 
@@ -179,7 +184,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // *****************************************
 
         // Start the session
-        session_name("SNACWebUI");
+        session_name(\snac\Config::$SESSION_NAME);
         session_start();
 
         // Google OAuth Settings (from Config)
@@ -229,8 +234,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Create the PHP User object
             // $user = $executor->createUser($ownerDetails, $token);
 
-            // Set the user information into the display object
-            $display->setUserData($user->toArray());
 
             // Pull out permissions from the $user object and make them available to the template. This could
             // be done faster by storing them in the session variables along with the user object
@@ -240,8 +243,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $permissions[str_replace(" ", "", $privilege->getLabel())] = true;
                 }
             }
-            // NOTE: For use in Twig, the spaces HAVE BEEN REMOVED from the permission labels
-            $display->setPermissionData($permissions);
 
             // Set the user information into the executor and server connection object
             $executor->setUser($user);
@@ -261,7 +262,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Destroy the old session
                 session_destroy();
                 // Restart the session
-                session_name("SNACWebUI");
+                session_name(\snac\Config::$SESSION_NAME);
                 session_start();
 
                 if (isset($this->input["r"])) {
@@ -329,7 +330,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Destroy the old session
                 session_destroy();
                 // Restart the session
-                session_name("SNACWebUI");
+                session_name(\snac\Config::$SESSION_NAME);
                 session_start();
                 $_SESSION = array();
 
@@ -370,6 +371,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "view":
                 $executor->displayViewPage($this->input, $display);
                 break;
+            case "snippet":
+                $executor->displaySnippetPage($this->input, $display);
+                break;
             case "details":
                 $executor->displayDetailedViewPage($this->input, $display);
                 break;
@@ -383,7 +387,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayMaybeSameListPage($this->input, $display);
                 break;
             case "add_maybesame":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if ($permissions["MaybeSameAssertion"]) {
                     $response = $executor->addMaybeSameAssertion($this->input);
                 } else {
                     $executor->displayPermissionDeniedPage("Add Maybe Same", $display);
@@ -447,13 +451,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // User and messaging commands
             case "dashboard":
-                $executor->displayDashboardPage($display);
+                $executor->displayDashboardPage($this->input, $display);
                 break;
             case "profile":
                 $executor->displayProfilePage($display);
                 break;
             case "api_key":
-                $executor->displayAPIInfoPage($display, $user);
+                $executor->displayAPIInfoPage($this->input, $display, $user);
                 break;
             case "api_help":
                 $executor->displayAPIHelpPage($display, $user);
@@ -486,6 +490,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // visualization commands
 			case "visualize":
                 $response = $executor->handleVisualization($this->input, $display);
+                break;
+
+            // Reporting
+            case "reports":
+                $response = $executor->handleReporting($this->input, $display, $user);
                 break;
 
             // Administrator command (the sub method handles admin commands)
@@ -637,19 +646,37 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->drawErrorPage($error, $display);
                 break;
 
-            case "static":
-                $found = $executor->displayStaticPage($this->input, $display);
-                if (!$found)
-                    array_push($this->responseHeaders, "HTTP/1.0 404 Not Found");
-                break;
             case "stats":
                 $response = $executor->displayStatsPage($this->input, $display);
+                break;
+
+            case "institution":
+                $response = $executor->displayInstitutionPage($this->input, $display);
+                break;
+
+            case "save_institution":
+                $response = $executor->saveInstitution($this->input);
                 break;
 
             case "upload":
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;
 
+            case "cart":
+                $response = $executor->handleCartResources($this->input);
+                break;
+
+            case "get_holdings":
+                $response = $executor->getHoldings($this->input);
+                break;
+
+            case "shared_resources":
+                $response = $executor->getSharedResources($this->input);
+                break;
+
+            case "analytics":
+                $executor->recordAnalytics($this->input);
+                break;
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only
@@ -657,6 +684,23 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // The grid page is the "new" landing page
                 $executor->displayGridPage($this->input, $display);
                 break;
+        }
+
+
+        // The server MAY return a newer version of the user, or the WebUI may request
+        // an updated version of the user through its processes.  So in this case, we'll always
+        // serialize to the session the latest version of the user returned to the web ui.  The
+        // ServerConnect utility now checks for the user object and updates its copy with the one
+        // returned from the server rather than keeping the initial one sent by WebUI when the
+        // ServerConnect object was created.
+        if ($executor->getUser() != null) {
+            $_SESSION['snac_user'] = serialize($executor->getUser());
+
+            // Set the user information into the display object
+            $display->setUserData($executor->getUser()->toArray());
+
+            // NOTE: For use in Twig, the spaces HAVE BEEN REMOVED from the permission labels
+            $display->setPermissionData($executor->getPermissionData());
         }
 
         // If the display has been given a template, then use it.  Else, print out JSON.

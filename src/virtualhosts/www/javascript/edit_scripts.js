@@ -4,7 +4,7 @@
  * Scripts used in the edit page
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -16,6 +16,16 @@ var loadingConstellation = false;
 
 // Has anything been edited on this page?
 var somethingHasBeenEdited = false;
+
+function setEditedFlag(val) {
+    if (val == true) {
+       $("#save_and_continue").addClass("save-active");
+    } else {
+       $("#save_and_continue").removeClass("save-active");
+    }
+    somethingHasBeenEdited = val;
+}
+
 
 // Global Undo Set
 var undoSet = new Array();
@@ -235,7 +245,8 @@ function addDateEntry(short, i){
 	//next_date_{{short}}_{{i}}_j
 	var j = parseInt($('#next_date_'+short+'_'+i+'_j').text());
 	var id = j + "_" + i;
-    somethingHasBeenEdited = true;
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
 	var text = $('#sub_date_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/XX/g, j).replace(/SHORT/g, short);
     $('#add_date_'+short+'_'+i+'_div').after(html);
@@ -259,7 +270,8 @@ function addDateRangeEntry(short, i){
 	//next_date_{{short}}_{{i}}_j
 	var j = parseInt($('#next_date_'+short+'_'+i+'_j').text());
 	var id = j + "_" + i;
-    somethingHasBeenEdited = true;
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
 	var text = $('#sub_dateRange_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/XX/g, j).replace(/SHORT/g, short);
     $('#add_date_'+short+'_'+i+'_div').after(html);
@@ -283,7 +295,8 @@ function addSCMEntry(short, i){
 	//next_scm_{{short}}_{{i}}_j
 	var j = parseInt($('#next_scm_'+short+'_'+i+'_j').text());
 	var id = j + "_" + i;
-    somethingHasBeenEdited = true;
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
 	var text = $('#scm_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, j).replace(/SHORT/g, short);
     $('#add_scm_'+short+'_'+i+'_div').after(html);
@@ -383,7 +396,37 @@ function textToSelect(shortName, idStr) {
 
             if (name == "citation")
                 scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
-            else
+            else if (shortName == "sameAs" && name == "baseuri") {
+                //The following block handles the specific case of Same As External Resource association form
+                var loadPromise = loadVocabSelectOptions($("#"+shortName+"_"+name+"_id_"+idStr), "external_sameas_domain", "Base URI", true);
+                loadPromise.then(function(result){
+                    var currentURI = $("#"+shortName+"_uri_"+idStr).val();
+                    if (currentURI) {
+                        var found = false;
+                        $("#"+shortName+"_"+name+"_id_"+idStr+" option").each(function(index,op){
+                            if( found || (!op.hasAttribute("value") || !op.value)) {
+                                return;
+                            }
+                            var uriComponents = op.value.split(/{id}/);
+                            if(currentURI.indexOf(uriComponents[0]) == 0) {
+                                var currOption = op.value;
+                                var currId = currentURI.replace(uriComponents[0],"");
+                                if(!!uriComponents[1]) {
+                                    if(currentURI.indexOf(uriComponents[1]) != -1) {
+                                        currId = currId.replace(/uriComponents[1]$/,"");
+                                    }
+                                }
+                                found = true;
+                                $("#sameAs_baseuri_id_"+idStr).val(currOption);
+                                $("#sameAs_baseuri_id_"+idStr).trigger("change");
+                                $("#sameAs_uriid_"+idStr).val(currId);
+                                $("#sameAs_uri_"+idStr).val(currOption.replace(/{id}/,currId));
+                            }
+                        });
+                    }
+                    $("#"+shortName+"_uri_"+idStr).prop("readonly", true);
+                });
+            } else
                 vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
 
         }
@@ -900,8 +943,22 @@ function subMakeEditable(short, i) {
                 $('#'+short+'_geoplace_id_'+i).val());
         });
     }
+    // Same As add on change functions
+    if (short == 'sameAs') {
+        $("#sameAs_baseuri_id_"+i).change(updateSameAsURI);
+        $("#sameAs_baseuri_container_"+i).css("display","block");
+        $("#sameAs_uriid_"+i).on("input", updateSameAsURI);
+        $("#sameAs_uriid_container_"+i).css("display","block");
+    }
 
-
+    // add parser btn if nameEntry is a computed name, entity is person, and if no btn or extra name components already exist
+    if (short === 'nameEntry' && ($("#entityType").val() === "700") &&
+        ($("#nameEntry_component_0_panel_" + i).find('select:first').text() === "Name") &&
+        (!$("#nameEntry_panel_" + i).find('.name-parser').length &&
+            $("#nameEntry_component_1_panel_" + i).length === 0)) {
+        $('#nameEntry_component_add_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i +
+            '" style="margin-left:5px;"> <i class="fa fa-magic" aria-hidden="true"></i> Parse </button>');
+    }
 
     // Set this data's operation value appropriately
     if ($("#" + short + "_id_" + i).val() != "")
@@ -910,7 +967,8 @@ function subMakeEditable(short, i) {
     	$("#" + short + "_operation_" + i).val("insert");
 
     // Asked to edit something, so make it globally known
-    somethingHasBeenEdited = true;
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
 
     return false;
 }
@@ -1242,7 +1300,8 @@ function subSetDeleted(short, i) {
     }
 
     // Asked to delete something, so make it globally known
-    somethingHasBeenEdited = true;
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
 
     return false;
 }
@@ -1365,7 +1424,8 @@ function newAddressLine(i) {
 	    nextid = parseInt($('#place_address_next_j_'+i).text());
 	}
 	console.log("Creating new address line for place " + i + " with id: " + nextid);
-    somethingHasBeenEdited = true;
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
     var text = $('#addressline_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
     $('#place_address_add_div_'+i).before(html);
@@ -1395,7 +1455,8 @@ function newOriginationName(i) {
 	    nextid = parseInt($('#resource_originationName_next_j_'+i).text());
 	}
 	console.log("Creating new origination name for resource " + i + " with id: " + nextid);
-    somethingHasBeenEdited = true;
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
     var text = $('#originationName_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
     $('#resource_originationName_add_div_'+i).before(html);
@@ -1419,12 +1480,24 @@ function newOriginationName(i) {
  * @return boolean      false to play nice with the browser.
  */
 function newNameEntryComponent(i) {
+    removeParserButton(i);
 	var nextid = 1;
 	if ($('#nameEntry_component_next_j_'+i).exists()) {
 	    nextid = parseInt($('#nameEntry_component_next_j_'+i).text());
 	}
 	console.log("Creating new name entry component for nameEntry " + i + " with id: " + nextid);
-    somethingHasBeenEdited = true;
+
+    // add parser btn if entity is person, and if no btn or other name components already exist
+    if (($("#entityType").val() === "700") && (nextid == 0) &&
+        (!$("#nameEntry_panel_" + i).find('.name-parser').length &&
+            $("#nameEntry_component_1_panel_" + i).length === 0)) {
+        $('#nameEntry_component_add_' + i).after('<button class="btn btn-primary name-parser" id="nameEntry_parse_' + i +
+            '" style="margin-left:5px;"> <i class="fa fa-magic" aria-hidden="true"></i> Parse </button>');
+    }
+
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
+
     var text = $('#component_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
     $('#nameEntry_component_add_div_'+i).before(html);
@@ -1479,7 +1552,8 @@ function newNameEntryRule(i) {
 	    nextid = parseInt($('#nameEntry_rule_next_j_'+i).text());
 	}
 	console.log("Creating new name entry rule for nameEntry " + i + " with id: " + nextid);
-    somethingHasBeenEdited = true;
+    setEditedFlag(true);
+    //somethingHasBeenEdited = true;
     var text = $('#rule_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
     $('#nameEntry_rule_add_div_'+i).before(html);
@@ -1926,26 +2000,145 @@ function magicDefaultFill(selectID, vocabType) {
 
 }
 
+function capitalize(word) {
+    return word[0].toUpperCase() + word.slice(1);
+}
+
+function parseName(e) {
+    $('#name-parser-options').text('');
+    var $nameComponents = $(e.target).closest('.name-components');
+
+    var $partType = $nameComponents.find("select:last");
+    var $textbox = $nameComponents.find('input[type="text"]:last');
+
+    var name = $textbox.val();
+
+    var entityType = $('#entityType').text().trim();
+    $('#name-parser-type').text(capitalize(entityType));
+    $('#name-parser-original').text(name);
+
+    var parser = new NameParser();
+    guesses = parser.guessPerson(name);
+
+    var parsedOption = '';
+
+    var counter = 0;
+    guesses.forEach(function(guess) {
+        // attach name data object to radio
+        for (var key in guess) {
+            if (guess[key] && guess[key].length != 0) {
+                parsedOption += "<li><span style='font-weight: bold;'>" + key + "</span>: " + guess[key] + "</li>";
+            }
+        }
+
+        $('#name-parser-options').append("<div class='radio'>" +
+            "<label class='radio form-inline' for='name-parser-option-" + counter + "'>" +
+            "<input type='radio' name='parsed-names' id='name-parser-option-" + counter + "'>" +
+            "<ul class='list-unstyled'>" + parsedOption + "</ul></label> </div>");
+
+
+        $('#name-parser-options').find("input[type='radio']:last").data("parsed-name", guess);
+
+        parsedOption = '';
+        counter++;
+    })
+
+    $('#name-parser-options').find("input[type='radio']:first").prop('checked', true)
+
+
+    $('#parser-accept-btn').unbind('click')
+    $('#parser-accept-btn').on('click', function() {
+        var selectedName = $('#name-parser input[type="radio"]:checked').data('parsed-name')
+        $.get( snacUrl + "/vocabulary/?type=name_component&entity_type=700")
+            .done(function(data) {
+            acceptParsedName(selectedName, $nameComponents, name, data.results)
+        })
+    })
+}
+
+function acceptParsedName(selectedName, $nameComponents, name, nameComponentIDs) {
+    var i = $nameComponents.attr('id').split('_')[2];
+    var $nameComponent = $nameComponents.find('.reorderable'); ///
+    $nameComponent.replaceWith('<div style="margin-left:10%; font-size: 14x; font-style:italic; color: #777777;"> Name: ' + name + '</div>');
+
+    var nameComponentMap = {};
+
+    for (var k = 0; k < nameComponentIDs.length; k++) {
+        nameComponentMap[nameComponentIDs[k].text] = nameComponentIDs[k].id
+    }
+    // var nameComponentMap = {
+    //     'Surname': 400223,
+    //     'Forename': 400224,
+    //     'NameAddition': 400236,
+    //     'Date': 400237,
+    //     'NameExpansion': 400226,
+    //     'Numeration': 400225
+    // };
+
+    for (var key in selectedName) {
+        if (key == 'NameAdditions') {
+            key = 'NameAddition';
+            for (var j = 0; j < selectedName['NameAdditions'].length; j++) {
+                newNameEntryComponent(i);
+                var option = new Option(key, nameComponentMap[key], false, true);
+                $partType = $nameComponents.find("select:last");
+                $partType.append(option).trigger('change');
+                $textbox = $nameComponents.find("input[type='text']:last");
+                $textbox.val(selectedName["NameAdditions"][j]);
+
+                $partType.append(option).trigger('change');
+            }
+        } else if (selectedName[key] && nameComponentMap[key]) {
+            newNameEntryComponent(i);
+            var option = new Option(key, nameComponentMap[key], false, true);
+            $partType = $nameComponents.find("select:last");
+            $partType.append(option).trigger('change');
+            $textbox = $nameComponents.find("input[type='text']:last");
+            $textbox.val(selectedName[key]);
+
+            $partType.append(option).trigger('change');
+        }
+    }
+
+    $("#nameEntry_datapart_" + i).find(".name-parser").remove();
+    updateNameEntryHeading(i);
+}
+
+function removeParserButton(i) {
+    $('#nameEntry_datapart_' + i).find('.name-parser').remove();
+}
 
 /**
  * Things to do when the page finishes loading
  */
 $(document).ready(function() {
-
     // Load the place cache, if needed
     loadGeoPlaceResultCache();
+
+    // listen for name-parsing
+    $('#nameEntries').on('click', '.name-parser', function(event) {
+        event.preventDefault();
+        parseName(event);
+        $("#name-parser").modal('toggle');
+    });
+
+    $('#name-parser').on('shown.bs.modal', function () {
+        $('#parser-accept-btn').focus();
+    })
 
     // If the constellation is in "insert" mode, then we should automatically set "somethingHasBeenEdited"
     // to be true...
     if ($('#operation').val() == 'insert')
-        somethingHasBeenEdited = true;
+        setEditedFlag(true);
+        //somethingHasBeenEdited = true;
 
     turnOnEditDeleteButtons();
 
 	// Attach functions to the entityType select
 	if ($('#entityType').exists()) {
 		$('#entityType').change(function() {
-            somethingHasBeenEdited = true;
+            setEditedFlag(true);
+            //somethingHasBeenEdited = true;
             // If there is an ID, then we need to set this to update
             // Else, the main-level operation should be and remain insert
 			if ($('#constellationid').val() != null &&
@@ -1963,7 +2156,8 @@ $(document).ready(function() {
 	console.log("Next NameEntry ID: " + nameEntryid);
 	if ($('#btn_add_nameEntry').exists()){
 		$('#btn_add_nameEntry').click(function(){
-            somethingHasBeenEdited = true;
+            setEditedFlag(true);
+            //somethingHasBeenEdited = true;
 			var text = $('#nameEntry_template').clone();
 	        var html = text.html().replace(/ZZ/g, nameEntryid);
 	        $('#add_nameEntry_div').after(html);
@@ -1999,7 +2193,8 @@ $(document).ready(function() {
                 console.log("Next Gender ID: " + genderid);
                 if ($('#btn_add_gender').exists()){
                     $('#btn_add_gender').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#gender_template').clone();
                         var html = text.html().replace(/ZZ/g, genderid);
                         $('#add_gender_div').after(html);
@@ -2037,7 +2232,8 @@ $(document).ready(function() {
                 console.log("Next Exist Date ID: " + existid);
                 if ($('#btn_add_exist_date').exists()){
                     $('#btn_add_exist_date').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#exist_date_template').clone();
                         var html = text.html().replace(/ZZ/g, existid);
                         $('#add_exist_div').after(html);
@@ -2050,7 +2246,8 @@ $(document).ready(function() {
                 }
                 if ($('#btn_add_exist_dateRange').exists()){
                     $('#btn_add_exist_dateRange').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#exist_dateRange_template').clone();
                         var html = text.html().replace(/ZZ/g, existid);
                         $('#add_exist_div').after(html);
@@ -2074,6 +2271,11 @@ $(document).ready(function() {
             // Don't open a second time
             if (sameAsOpen)
                 return;
+            //set sameAs vocab type id
+            $.get(snacUrl+"/vocabulary?type=record_type&q=SameAs", null, function(data) {
+                sameAsTermId = data.results[0].id;
+                $("#sameAs_type_id_ZZ").val(sameAsTermId);
+            });
 
             $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=sameAs", null, function (data) {
                 sameAsOpen = true;
@@ -2087,7 +2289,8 @@ $(document).ready(function() {
                 console.log("Next sameAs ID: " + sameAsid);
                 if ($('#btn_add_sameAs').exists()){
                     $('#btn_add_sameAs').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#sameAs_template').clone();
                         var html = text.html().replace(/ZZ/g, sameAsid);
                         $('#add_sameAs_div').after(html);
@@ -2125,7 +2328,8 @@ $(document).ready(function() {
                 console.log("Next entityID ID: " + entityIDid);
                 if ($('#btn_add_entityID').exists()){
                     $('#btn_add_entityID').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#entityID_template').clone();
                         var html = text.html().replace(/ZZ/g, entityIDid);
                         $('#add_entityID_div').after(html);
@@ -2162,7 +2366,8 @@ $(document).ready(function() {
                 console.log("Next source ID: " + sourceid);
                 if ($('#btn_add_source').exists()){
                     $('#btn_add_source').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#source_template').clone();
                         var html = text.html().replace(/ZZ/g, sourceid);
                         $('#add_source_div').after(html);
@@ -2233,9 +2438,10 @@ $(document).ready(function() {
                 console.log("Next resourceRelation ID: " + resourceRelationid);
                  if ($('#btn_create_resourceRelation').exists()){
                     $('#btn_create_resourceRelation').click(function(){
-                        var rid = $('input[name=resourceChoice]:checked', '#resource_search_form').val()
+                        var rid = $('input[name=resourceChoice]:checked', '#resource_search_form').val();
                         if (rid != null && resourceResults != null && rid != 'new') {
-                            somethingHasBeenEdited = true;
+                            setEditedFlag(true);
+                            //somethingHasBeenEdited = true;
                             var text = $('#resourceRelation_template').clone();
                             var html = text.html().replace(/ZZ/g, resourceRelationid);
                             $('#add_resourceRelation_div').after(html);
@@ -2246,7 +2452,8 @@ $(document).ready(function() {
                                 $('#resourceRelation_resourceversion_'+resourceRelationid).val(resourceResults[rid].version);
 
                             if (typeof resourceResults[rid].link !== 'undefined')
-                                $('#resourceRelation_linkText_'+resourceRelationid).html(resourceResults[rid].link + " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
+                                $('#resourceRelation_linkText_'+resourceRelationid).html("<a target='_blank' href='"+resourceResults[rid].link+"'>"+resourceResults[rid].link+"</a>" +
+                                    " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
                             if (typeof resourceResults[rid].displayEntry !== 'undefined')
                                 $('#resourceRelation_displayEntryText_'+resourceRelationid).text(resourceResults[rid].displayEntry);
                             if (typeof resourceResults[rid].title !== 'undefined') {
@@ -2263,6 +2470,8 @@ $(document).ready(function() {
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
 
                             $('#resourceRelation_closebutton_'+resourceRelationid).remove();
+                            $('#resourceRelation_linkText_'+resourceRelationid).after("<a class='control-label-subtext' target='_blank' href='" +
+                                snacUrl+"/vocab_administrator/resources/"+resourceResults[rid].id+"'>View in SNAC</a>");
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);
@@ -2288,7 +2497,7 @@ $(document).ready(function() {
                         $('#resource-create-box').html(html);
                         var $resourceForm = $("#resource_create_form");
                         // Copy the search contents to title or href
-                        if ($("#resource-searchbox").val().indexOf("http:") == -1)
+                        if ($("#resource-searchbox").val().indexOf("http") == -1)
                             $resourceForm.find("#resource-title").val($("#resource-searchbox").val());
                         else
                             $resourceForm.find("#resource-url").val($("#resource-searchbox").val());
@@ -2330,7 +2539,8 @@ $(document).ready(function() {
 
                             $.post(snacUrl+"/save_resource", $("#resource_create_form").serialize(), function (data) {
                                 if (typeof data.result !== 'undefined' && data.result !== 'false') {
-                                    somethingHasBeenEdited = true;
+                                    setEditedFlag(true);
+                                    //somethingHasBeenEdited = true;
                                     var text = $('#resourceRelation_template').clone();
                                     var html = text.html().replace(/ZZ/g, resourceRelationid); // clones DOM, replaces zz with next ids
                                     $('#add_resourceRelation_div').after(html);
@@ -2341,7 +2551,8 @@ $(document).ready(function() {
                                         $('#resourceRelation_resourceversion_'+resourceRelationid).val(data.resource.version);
 
                                     if (typeof data.resource.link !== 'undefined')
-                                        $('#resourceRelation_linkText_'+resourceRelationid).html(data.resource.link + " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
+                                        $('#resourceRelation_linkText_'+resourceRelationid).html("<a target='_blank' href='"+data.resource.link+"'>"+data.resource.link+"</a>" +
+                                            " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
                                     if (typeof data.resource.displayEntry !== 'undefined')
                                         $('#resourceRelation_displayEntryText_'+resourceRelationid).text(data.resource.displayEntry);
                                     if (typeof data.resource.title !== 'undefined') {
@@ -2358,6 +2569,8 @@ $(document).ready(function() {
 
                                     $('#resourceRelation_closebutton_'+resourceRelationid).remove();
 
+                                    $('#resourceRelation_linkText_'+resourceRelationid).after("<a class='control-label-subtext' target='_blank' href='" +
+                                        snacUrl+"/vocab_administrator/resources/"+data.resource.id+"'>View in SNAC</a>");
                                     turnOnButtons("resourceRelation", resourceRelationid);
                                     turnOnTooltips("resourceRelation", resourceRelationid);
                                     makeEditable("resourceRelation", resourceRelationid);
@@ -2402,7 +2615,8 @@ $(document).ready(function() {
                     $('#btn_create_constellationRelation').click(function(){
                         var cid = $('input[name=relationChoice]:checked', '#relation_search_form').val()
                         if (cid != null) {
-                            somethingHasBeenEdited = true;
+                            setEditedFlag(true);
+                            //somethingHasBeenEdited = true;
                             var text = $('#constellationRelation_template').clone();
                             var html = text.html().replace(/ZZ/g, constellationRelationid);
                             $('#add_constellationRelation_div').after(html);
@@ -2457,7 +2671,8 @@ $(document).ready(function() {
                 console.log("Next language ID: " + languageid);
                 if ($('#btn_add_language').exists()){
                     $('#btn_add_language').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#language_template').clone();
                         var html = text.html().replace(/ZZ/g, languageid);
                         $('#add_language_div').after(html);
@@ -2494,7 +2709,8 @@ $(document).ready(function() {
                 console.log("Next subject ID: " + subjectid);
                 if ($('#btn_add_subject').exists()){
                     $('#btn_add_subject').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#subject_template').clone();
                         var html = text.html().replace(/ZZ/g, subjectid);
                         $('#add_subject_div').after(html);
@@ -2531,7 +2747,8 @@ $(document).ready(function() {
                 console.log("Next nationality ID: " + nationalityid);
                 if ($('#btn_add_nationality').exists()){
                     $('#btn_add_nationality').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#nationality_template').clone();
                         var html = text.html().replace(/ZZ/g, nationalityid);
                         $('#add_nationality_div').after(html);
@@ -2568,7 +2785,8 @@ $(document).ready(function() {
                 console.log("Next function ID: " + functionid);
                 if ($('#btn_add_function').exists()){
                     $('#btn_add_function').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#function_template').clone();
                         var html = text.html().replace(/ZZ/g, functionid);
                         $('#add_function_div').after(html);
@@ -2605,7 +2823,8 @@ $(document).ready(function() {
                 console.log("Next occupation ID: " + occupationid);
                 if ($('#btn_add_occupation').exists()){
                     $('#btn_add_occupation').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#occupation_template').clone();
                         var html = text.html().replace(/ZZ/g, occupationid);
                         $('#add_occupation_div').after(html);
@@ -2642,7 +2861,8 @@ $(document).ready(function() {
                 console.log("Next legalStatus ID: " + legalStatusid);
                 if ($('#btn_add_legalStatus').exists()){
                     $('#btn_add_legalStatus').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#legalStatus_template').clone();
                         var html = text.html().replace(/ZZ/g, legalStatusid);
                         $('#add_legalStatus_div').after(html);
@@ -2682,7 +2902,8 @@ $(document).ready(function() {
                 console.log("Next place ID: " + placeid);
                 if ($('#btn_add_place').exists()){
                     $('#btn_add_place').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#place_template').clone();
                         var html = text.html().replace(/ZZ/g, placeid);
                         $('#add_place_div').after(html);
@@ -2719,7 +2940,8 @@ $(document).ready(function() {
                 console.log("Next conventionDeclaration ID: " + conventionDeclarationid);
                 if ($('#btn_add_conventionDeclaration').exists()){
                     $('#btn_add_conventionDeclaration').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#conventionDeclaration_template').clone();
                         var html = text.html().replace(/ZZ/g, conventionDeclarationid);
                         $('#add_conventionDeclaration_div').after(html);
@@ -2756,7 +2978,8 @@ $(document).ready(function() {
                 console.log("Next generalContext ID: " + generalContextid);
                 if ($('#btn_add_generalContext').exists()){
                     $('#btn_add_generalContext').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#generalContext_template').clone();
                         var html = text.html().replace(/ZZ/g, generalContextid);
                         $('#add_generalContext_div').after(html);
@@ -2793,7 +3016,8 @@ $(document).ready(function() {
                 console.log("Next structureOrGenealogy ID: " + structureOrGenealogyid);
                 if ($('#btn_add_structureOrGenealogy').exists()){
                     $('#btn_add_structureOrGenealogy').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#structureOrGenealogy_template').clone();
                         var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
                         $('#add_structureOrGenealogy_div').after(html);
@@ -2830,7 +3054,8 @@ $(document).ready(function() {
                 console.log("Next mandate ID: " + mandateid);
                 if ($('#btn_add_mandate').exists()){
                     $('#btn_add_mandate').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#mandate_template').clone();
                         var html = text.html().replace(/ZZ/g, mandateid);
                         $('#add_mandate_div').after(html);
@@ -2867,7 +3092,8 @@ $(document).ready(function() {
                 console.log("Next biogHist ID: " + biogHistid);
                 if ($('#btn_add_biogHist').exists()){
                     $('#btn_add_biogHist').click(function(){
-                        somethingHasBeenEdited = true;
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
                         var text = $('#biogHist_template').clone();
                         var html = text.html().replace(/ZZ/g, biogHistid);
                         $('#add_biogHist_div').after(html);
@@ -2885,5 +3111,11 @@ $(document).ready(function() {
     }
 
     turnOnTooltipsForTab();
+
+
+    $("#info-dropdown").click(function(e) {
+        $(this).parent().toggleClass("open");
+        e.stopPropagation();
+    });
 
 });

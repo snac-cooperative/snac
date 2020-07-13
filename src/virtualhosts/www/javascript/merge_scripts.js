@@ -4,7 +4,7 @@
  * Scripts used in merging and diffing identity constellations in the UI
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -84,10 +84,10 @@ $(document).ready(function() {
         return false;
     });
 
-    $("#simplified_preview_button").click(function() {
+    $("#basic_preview_button").click(function() {
         bootbox.confirm({
-            title: "Simplified View Preview Notice",
-            message: "The Simplified View does not evidence all portions of the Identity Constellation.  Some data, such as places, sources, SCMs, and more, are not currently visible on the HRT.  This preview should only be used for aesthetic purposes.  Use the main \"Preview\" button to see the full potential-merged Constellation.",
+            title: "Basic View Preview Notice",
+            message: "The Basic View does not evidence all portions of the Identity Constellation.  Some data, such as places, sources, SCMs, and more, are not currently visible on the HRT.  This preview should only be used for aesthetic purposes.  Use the main \"Preview\" button to see the full potential-merged Constellation.",
             buttons: {
                 cancel: {
                     label: '<i class="fa fa-times"></i> Cancel'

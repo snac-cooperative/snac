@@ -5,7 +5,7 @@
  * Creates an instance of the Rest class and runs it
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -24,6 +24,7 @@ include ("../../../vendor/autoload.php");
 use \snac\client\rest\Rest as Rest;
 use \Monolog\Logger;
 use \Monolog\Handler\StreamHandler;
+use \snac\Config;
 
 // Set up the global log stream
 $loglevel = Logger::WARNING;
@@ -33,23 +34,28 @@ if (\snac\Config::$DEBUG_MODE) {
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$REST_LOGFILE, $loglevel);
 
 try {
+
+    if (Config::$READ_ONLY || Config::$SITE_OFFLINE) {
+        throw new \snac\exceptions\SNACException("SNAC is undergoing maintenance. Please try again later.", 503);
+    }
+
     // Get the request body for processing
     $input = file_get_contents("php://input");
-    
+
     if ($input == null) {
         throw new \snac\exceptions\SNACInputException("No input given to the server", 400);
     }
-    
+
     // Parse the JSON input
     $jsonInput = json_decode($input, true);
     if ($jsonInput == null) {
         throw new \snac\exceptions\SNACInputException("Could not parse input", 400);
     }
-    
+
     // Instantiate and run the server
     $server = new Rest($jsonInput);
     $server->run();
-    
+
     // Return the content type and output of the server
     foreach ($server->getResponseHeaders() as $header)
         header($header);

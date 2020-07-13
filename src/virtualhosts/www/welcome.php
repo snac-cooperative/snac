@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Session destruction and Script reload page
  *
@@ -7,7 +7,7 @@
  * used in editing.
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -19,7 +19,7 @@
 <html>
 <title>SNAC Prototype</title>
 <!-- JQuery -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -30,19 +30,15 @@
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
-<!-- Helper Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-
 <!-- CodeMirror XML editor -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
 
 <!-- Select Upgrades -->
-<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
-<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
@@ -84,13 +80,13 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             updateProgress(100, "Done");
             $('#continue').css("display", "");
         }, 5000);
-        
+
     }
 
     function loadScripts() {
         setTimeout(function(){
             var requests = [];
-        
+
             for (var i = 0; i < scripts.length; i++) {
                 requests.push($.ajax({
                     url : scripts[i],
@@ -105,13 +101,13 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
             ($.when.apply($,requests)).then(function() {
                 updateProgress(75, "Preparing SNAC...");
-                openSNACButton(); 
+                openSNACButton();
             }, function() {
                 somethingWrong("Scripts");
             });
 
         }, 5000);
-        
+
     }
     /**
      * Only load this script once the document is fully loaded
@@ -120,7 +116,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
         setTimeout(function(){
             updateProgress(75, "Preparing SNAC...");
-            openSNACButton(); 
+            openSNACButton();
         }, 5000);
 
 
@@ -134,7 +130,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         <div class="well well-lg">
             <div class="progress">
                 <div class="progress-bar progress-bar-striped active" id="progress-bar"
-                        role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" 
+                        role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"
                         style="width: 30%">
                     <span class="sr-only"><span id="progress-text">30%</span> Complete</span>
                 </div>

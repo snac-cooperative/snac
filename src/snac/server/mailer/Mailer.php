@@ -5,7 +5,7 @@
  * Contains the mailer information
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -79,7 +79,10 @@ class Mailer {
      */
     public function sendUserMail($toUser, $subject, $body) {
         $this->mailer->setFrom($this->fromEmail, $this->fromName);
-        $this->mailer->addAddress($toUser->getEmail(), $toUser->getFullName()); // Add a recipient
+        $toEmail = $toUser->getEmail();
+        if ($toUser->getWorkEmail() !== null)
+            $toEmail = $toUser->getWorkEmail();
+        $this->mailer->addAddress($toEmail, $toUser->getFullName()); // Add a recipient
         //$this->mailer->addAddress('ellen@example.com');                       // Name is optional
         //$this->mailer->addReplyTo('info@example.com', 'Information');
         //$this->mailer->addCC('cc@example.com');
@@ -116,7 +119,12 @@ class Mailer {
     public function sendUserMessage(&$message) {
         $this->logger->addDebug('Trying to send message', $message->toArray());
         $this->mailer->setFrom($this->fromEmail, $this->fromName);
-        $this->mailer->addAddress($message->getToUser()->getEmail(), $message->getToUser()->getFullName()); // Add a recipient
+        
+        $toEmail = $message->getToUser()->getEmail();
+        if ($message->getToUser()->getWorkEmail() !== null)
+            $toEmail = $message->getToUser()->getWorkEmail();
+        
+        $this->mailer->addAddress($toEmail, $message->getToUser()->getFullName()); // Add a recipient
         $this->mailer->isHTML(true);                                            // Set email format to HTML
 
         $this->mailer->Subject = "SNAC Mail: " . $message->getSubject();

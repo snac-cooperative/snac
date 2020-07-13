@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <title>Resource Management</title>
+    <title>Resources - Social Networks and Archival Context</title>
 
     <!-- JQuery -->
-    <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -16,23 +16,16 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
-    <!-- Helper Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
-    <script language="javascript">
-        $('.selectpicker').selectpicker();
-    </script>
-
     <!-- Select Upgrades -->
-    <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
     <link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
 
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <!-- Datatables -->
-    <link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
-    <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 
     <!-- SNAC Styles -->
     <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
@@ -41,14 +34,14 @@
     <script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
     <script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
     <script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+    <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+    <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
 
 
     <script>
         $(document).ready(function() {
 
             // Use select2 to display the select dropdowns
-            // rather than the HTML default
-
             $('select').each(function() {
                 $(this).select2({
                     minimumResultsForSearch: Infinity,
@@ -59,7 +52,25 @@
 
             // Load the table into a datatable
             var datatable = $('.table').DataTable({
-                "searching": false
+                "searching": false,
+                {% if not permissions.EditResources %}
+                    "columns": [ { "width": "5%" },
+                        { "width": "30%" },
+                        { "width": "25%" },
+                        { "width": "15%" },
+                        { "width": "10%" },
+                        { "width": "10%" },
+                    ],
+                {% endif %}
+                columnDefs: [
+                    { width: 150, targets: 0 },
+                    { width: 200, targets: 1 },
+                    { width: 200, targets: 2 },
+                    { width: 50, targets: 3 },
+                    { width: 150, targets: 4 },
+                    { width: 50, targets: 5 }
+                ],
+                fixedColumns: true
             });
 
             $('#searchbutton').click(function() {
@@ -67,34 +78,50 @@
                 return false;
             });
 
-
             function searchResource() {
-                resourceResults = null;
-                $.post("{{control.snacURL}}/resource_search?count=100", $("#search-form").serialize(), function(data) {
-                    resourceResults = data;
+                var serializedForm = $("#search-form").find(':input').filter(function () {
+                            return $(this).val() != '';
+                        }).serialize();
+
+                $.post("{{control.snacURL}}/resource_search?count=100", serializedForm, function(data) {
                     var results = [];
-                    // console.log($("#search_form").serialize());
-                    // console.log(data);
                     datatable.clear();
                     if (data.results.length > 0) {
                         for (var key in data.results) {
-                            result = data.results[key];
-                            var editIcon = "<a href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
-                                result.id + "/" + result.version + "'> <i class='fa fa-edit'></i> </a>";
-                            var title = result.title || "";
-                            var type = result.documentType.term || "";
-                            var abstract = result.abstract || "";
-                            var href = result.link || "";
-                            href = "<a href=" + href + " target='_blank'>" + href + "</a>";
+                            resource = data.results[key];
+                            var title = shortenIfLong(resource.title || "", 300);
+                            var type = resource.documentType.term || "";
+                            var abstract = shortenIfLong(resource.abstract || "", 300);
+                            var href = resource.link || "";
+                            var repo = resource.repository || "";
+                            var repoID = "";
+                            if (repo.length) {
+                                repoID = repo.id;
+                            }
+                            href = "<a href=" + href + " target='_blank' title='" + href + "' class='outbound-repo-link' data-repo-ic-id='"+ repo.id +"'>"
+                                + shortenIfLong(href, 35, false) + "</a>";
 
-                            var repo = result.repository || "";
                             var holdingInstitution = "";
                             if (repo) {
                                 holdingInstitution = repo.nameEntries[0].original || "";
                                 var holding_href = "{{control.snacURL}}/view/" + repo.id;
                                 holdingInstitution = "<a href=" + holding_href + " target='_blank'>" + holdingInstitution + "</a>";
                             }
-                            var row = new Array(editIcon, title, abstract, href, holdingInstitution, type);
+
+                            var icons = "<div style='display:inline-block'>"
+                            {% if permissions.EditResources %}
+                            icons += "<button type='button' class='btn btn-primary btn-circle add-cart-resource-btn' title='Add to Cart' data-id='" +
+                                resource.id+"' data-title='"+title+"'> <i class='fa fa-plus'></i></button>"
+                            {% endif %}
+                            icons += "<div class='btn-group' style='margin-left:10px;'><a class='btn btn-success' title='View' target='_blank' href ='{{control.snacURL}}/vocab_administrator/resources/" +
+                                resource.id + "'> <i class='fa fa-eye'></i> </a>"
+                            {% if permissions.EditResources %}
+                            icons += "<a class='btn btn-primary' title='Edit' target='_blank' href ='{{control.snacURL}}/vocab_administrator/edit_resource/" +
+                                resource.id + "'> <i class='fa fa-edit'></i> </a>"
+                            {% endif %}
+                            icons += "</div></div>";
+
+                            var row = new Array(icons, title, abstract, href, holdingInstitution, type);
                             datatable.row.add(row);
                         }
                     }
@@ -102,8 +129,77 @@
                 });
             }
 
-            loadVocabSelectOptions($('#resource-type-select'), "document_type")
+            loadVocabSelectOptions($('#resource-type-select'), "document_type").then(function() {
+                var newOption = new Option("All Resources", '', false, false)
+                $('#resource-type-select').append(newOption)
+            })
+
+            $('#shoppingCart').popover({
+              html : true,
+              placement: "bottom",
+              content: function() {
+                return $('#shoppingCart-content-wrapper').html();
+              }
+            });
+
+            // fix jquery popover double-click bug
+            $('body').on('hidden.bs.popover', function (e) {
+                $(e.target).data("bs.popover").inState.click = false;
+            });
+
+
+            $( "#resourceList").on("click", "button", function(event) {
+                event.preventDefault();
+                var resourceData = $(event.target).closest("button").data();
+                addResourceToCart(resourceData.id, resourceData.title);
+            })
+
+            $("#resourceList").on( "click", ".outbound-repo-link", function(event) {
+                handleOutboundLinkClicks(event);
+            });
         });
+
+        function cartResources() {
+            return $("#shoppingCart-content-wrapper").find('li')
+        }
+
+        function clearResourceCart() {
+            $(".cart-resources").html("");
+            $('#shoppingCartCount').text(0)
+            $.get("{{control.snacURL}}/cart?clear_cart_resources=true");
+            $("#compare-resource-btn").toggleClass("disabled", true);
+            $('#shoppingCart').popover('hide')
+            $("#compareBox").collapse("hide")
+        }
+
+        function addResourceToCart(id, title) {
+            $("#compareBox").collapse("show")
+            var exists = false
+            cartResources().each(function() {
+                if ($(this).data('id') === id) {
+                    exists = true
+                }
+            });
+            if (exists) return;
+
+            var resource = "<li class='list-group-item' data-id="+id+"><a href={{control.snacURL}}/vocab_administrator/resources/"+id+">"+title+"</li></a>"
+            $(".cart-resources").append(resource);
+            $('#shoppingCartCount').text(parseInt($('#shoppingCartCount').text()) + 1)
+            $.post("{{control.snacURL}}/cart?add_resource=true&id="+id+"&title="+title);
+
+            var canMerge = ($('#shoppingCartCount').text() == 2);
+            $("#compare-resource-btn").toggleClass("disabled", !canMerge);
+        }
+
+        function compareResources() {
+            var ids = [];
+            cartResources().each(function() {
+                ids.push($(this).data('id'));
+            });
+            if (ids.length === 2)  {
+                window.location.href = "{{control.snacURL}}/vocab_administrator/compare_resource?resource1=" + ids[0] + "&resource2=" + ids[1];
+            }
+        }
     </script>
 
 </head>
@@ -112,17 +208,29 @@
     {% from 'page_navigation.html' import topNavigation,footer %} {{ topNavigation(X, user, permissions, control) }}
 
     <div class="container snac" role="main">
-        <h1>Resource Management</h1>
+        <h1>Resources</h1>
 
         <ol class="breadcrumb">
-            <li><a href="{{control.snacURL}}/vocab_administrator/dashboard">Vocabulary</a></li>
-            <li>Resource Management</li>
+            <li>Resources</li>
         </ol>
+
+        <!--  Shopping Cart Wrapper-->
+        <div id="shoppingCart-content-wrapper" style="display:none">
+            <p>You have the following Resources selected:</p>
+            <ul class="list-group cart-resources">
+                {% for resource in data.cart.resources%}
+                    <li class="list-group-item" data-id="{{resource.id}}"><a href={{control.snacURL}}/vocab_administrator/resources/{{resource.id}}>{{resource.title}}</li></a>
+                {% endfor %}
+            </ul>
+            <p class="text-center"><button id="shoppingCartEmpty" class="btn btn-default" onclick="clearResourceCart()">
+            <i class="fa fa-trash" aria-hidden="true"></i> Clear Resource</button></p>
+        </div>
+        <!--  -->
 
         <div class="row">
             <div class="col-md-12">
                 <div class="well well-lg">
-                    <p><span style="font-weight: bold;">Instructions: </span>Search for existing resources by title, HREF, and abstract.</p>
+                    <p><span style="font-weight: bold;">Instructions: </span>Search for existing resources by title, link, and abstract.</p>
                 </div>
 
                 <form class="form-horizontal" id="search-form" method="GET">
@@ -150,11 +258,34 @@
 
                 </form>
 
+                {% if permissions.EditResources %}
+                <div id="compareBox" class="collapse {{(data.cart.resources| length) == 0 ? '' : 'in'}}">
+                    <div class="well well-sm">
+                        <div class="row">
+                            <div class="col-xs-8 text-center">
+                                <div class="" style="margin-top: 8px;">Select two resources to compare them.</div>
+                            </div>
+                            <div class="col-xs-4 text-right">
+
+                                <button class="btn btn-default"  id="shoppingCart" data-toggle="popover" aria-label="View your selected items" title="Resource Cart">
+                                    <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                                    <span class="badge" id="shoppingCartCount">{{data.cart.resources| length}}</span>
+                                </button>
+                                <button class="btn btn-warning {{(data.cart.resources| length) != 2 ? 'disabled' : ''}}"
+                                    id="compare-resource-btn" onclick="compareResources()">
+                                    Compare
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="text-center">
                     <a href="{{control.snacURL}}/vocab_administrator/add_resource" class="btn btn-success">
                         <i class="fa fa-fw fa-plus"></i> Add New Resource
                     </a>
                 </div>
+                {% endif %}
 
                 <div class="form-horizontal">
                     <table class="table">
@@ -163,7 +294,7 @@
                                 <th></th>
                                 <th>Title</th>
                                 <th>Abstract</th>
-                                <th>HREF</th>
+                                <th>Link</th>
                                 <th>Holding Institution</th>
                                 <th>Type</th>
                             </tr>

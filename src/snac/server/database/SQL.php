@@ -9,7 +9,7 @@
  *
  *
  * @author Tom Laudeman
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -405,7 +405,7 @@ class SQL
      *
      * I'm sure there are Postgres docs for extract(), epoch from, at time zone 'utc', but this is a nice example.
      *
-     * http://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
+     * https://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
      *
      * @param integer $appUserID The user id
      *
@@ -519,7 +519,7 @@ class SQL
      */
     public function selectUserByEmail($email)
     {
-        $result = $this->sdb->query("select id from appuser where email=$1 limit 1",
+        $result = $this->sdb->query("select id from appuser where lower(email) = lower($1) limit 1",
                                     array($email));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('id', $row))
@@ -545,7 +545,7 @@ class SQL
      */
     public function selectUserByUserName($userName)
     {
-        $result = $this->sdb->query("select id from appuser where username=$1",
+        $result = $this->sdb->query("select id from appuser where lower(username) = lower($1)",
                                     array($userName));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('id', $row))
@@ -947,6 +947,133 @@ class SQL
         return $all;
     }
 
+
+    /**
+     * Select user API key data
+     *
+     * Selects all API key data for the given user id
+     *
+     * @param int $appUserID The numeric ID for the user
+     *
+     * @return string[][] A 2-d associative array of the user's API-key data out of Postgres
+     */
+    public function selectUserKeys($appUserID)
+    {
+        $result = $this->sdb->query("select * from api_keys
+                                    where uid=$1 order by generated asc",
+                                    array($appUserID));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Save User Key
+     *
+     * Save the given API key with provided label for the given user.  This method will
+     * also have Postgres auto-generate an expiration time and unique database ID for the
+     * key.  The key is stored using PHP's built-in password hashing scheme, which is
+     * cryptographically secure; the key is unrecoverable from the database since this method
+     * is a one-way hash.
+     *
+     * @param int $appUserID The numeric ID for the user
+     * @param string $key The clear-text key to save (encrypted)
+     * @param string $label The label for the key (stored in clear text)
+     *
+     * @return string[] All data for the inserted key as an associative array (includes expires and generated time)
+     */
+    public function saveUserKey($appUserID, $key, $label)
+    {
+        // encrypt the key in the database
+        $encrypt = password_hash($key, PASSWORD_DEFAULT);
+        if ($encrypt === false)
+            return null;
+
+        $result = $this->sdb->query("insert into api_keys (uid, label, key) values ($1, $2, $3)
+                                        returning *;", [$appUserID, $label, $encrypt]);
+
+        // Return only the data returned (one row);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $all = $row;
+        }
+        return $all;
+    }
+
+    /**
+     * Revoke User Key
+     *
+     * Deletes the key in the database associtated with the given user id and label.
+     *
+     * @param int $appUserID The numeric ID for the user
+     * @param string $label The label for the key
+     *
+     * @return boolean True if successfully removed, false otherwise
+     */
+    public function revokeUserKey($appUserID, $label)
+    {
+        // Check to see if the key exists for the user first
+        $result = $this->sdb->query("select id from api_keys where uid=$1 and label=$2;", [$appUserID, $label]);
+
+        // Return only the data returned (one row);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $all = $row;
+        }
+
+        // If key exists for the user, then delete it
+        if (!empty($all) && isset($all["id"])) {
+            $result = $this->sdb->query("delete from api_keys where id=$1 returning *;", [$all["id"]]);
+            // Return only the data returned (one row);
+            $check = array();
+            while($row = $this->sdb->fetchrow($result))
+            {
+                $check = $row;
+            }
+
+            // Sanity check: did we actually delete something?
+            if (empty($all))
+                return false;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Select Key Data by Key
+     *
+     * This method is used for authentication purposes, when we have the clear-text key
+     * (which can NOT be used to index the database) and the label (which can be used
+     * to index the database).  This method gets all keys matching the provided label (which
+     * may be multiple).  Then, for each key, it uses PHP's built-in cryptographically
+     * secure password verifier to see if the encrypted key in the database matches the
+     * provided clear-text key.  If the keys match, it returns that row's data (including
+     * userID, expires, and generated times).
+     *
+     * WARNING: No part of this method should be logged on production! It contains clear-text
+     * API keys.
+     *
+     * @param string $key The CLEAR-TEXT API Key
+     * @param string $label The label for the API Key
+     * @return string[]|null The associated data for the key (userid, expires, generated) or null if not found
+     */
+    public function selectAPIKeyByKey($key, $label)
+    {
+        $result = $this->sdb->query("select * from api_keys where label = $1;", [$label]);
+
+        while($row = $this->sdb->fetchrow($result))
+        {
+            if (password_verify($key, $row["key"]))
+                return $row;
+        }
+        return null;
+    }
 
 
 
@@ -3694,6 +3821,33 @@ class SQL
         return $id;
     }
 
+    /**
+     * Replace Resource Relation Resource
+     *
+     * Replace
+     * to sql fields. Note keys in $argList have a fixed order.
+     *
+     * @param int $victimID The resource ID for the discarded resource
+     * @param int $victimVersion The version of the discarded resource
+     * @param int $targetID The resource ID for target resource
+     * @param int $targetVersion The version of target resource
+     *
+     * @return true
+     *
+     */
+    public function replaceResourceRelationResource($victimID, $victimVersion , $targetID, $targetVersion) {
+        $query = "UPDATE related_resource
+                  SET resource_id = $1,
+                      resource_version = $2
+                  WHERE resource_id = $3
+                    AND resource_version = $4";
+
+        $result = $this->sdb->query($query, array( $targetID, $targetVersion, $victimID, $victimVersion));
+
+
+        return true;
+    }
+
 
     /**
      * Insert a Controlled Vocabulary Term
@@ -3818,6 +3972,7 @@ class SQL
      * @param  text|null $date            Text entry date of this resource
      * @param  text|null $displayEntry    Display Entry of resource
      * @param  int $userID               The userid of the user
+     * @param  bool $isDeleted           Whether resource is deleted
      * @return string[]                  Array containing id, version
      */
     public function insertResource(        $resourceID,
@@ -3832,7 +3987,8 @@ class SQL
                                            $objectXMLWrap,
                                            $date,
                                            $displayEntry,
-                                           $userID)
+                                           $userID,
+                                           $isDeleted = false)
     {
         if (! $resourceID)
         {
@@ -3841,12 +3997,15 @@ class SQL
         if (! $resourceVersion) {
             $resourceVersion = $this->selectResourceVersion();
         }
+
+        $isDeleted = $this->sdb->boolToPg($isDeleted);
+
         $qq = 'insert_resource';
         $this->sdb->prepare($qq,
                             'insert into resource_cache
-                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry, user_id)
+                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap, date, display_entry, user_id, is_deleted)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
@@ -3862,7 +4021,8 @@ class SQL
                           $objectXMLWrap,     // 10
                           $date,              // 11
                           $displayEntry,      // 12
-                          $userID);          // 13
+                          $userID,            // 13
+                          $isDeleted);        // 14
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return array($resourceID, $resourceVersion);
@@ -4041,6 +4201,51 @@ class SQL
                             id, type, value, uri, description
                             from vocabulary where $1=id');
         $result = $this->sdb->execute($qq, array($termID));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+
+    /**
+     * Get a single vocabulary record by Type and Value
+     *
+     * @param string $value The value of a vocabulary term
+     *
+     * @param string $type The type of a vocabulary term
+     *
+     * @return string[] A list with keys: id, type, value, uri, description
+     *
+     */
+    public function selectTermByValueAndType($value, $type)
+    {
+        $qq = 's_term_by_value';
+        $this->sdb->prepare($qq,
+                            'select
+                            id, type, value, uri, description
+                            from vocabulary where value=$1 and type=$2');
+        $result = $this->sdb->execute($qq, array($value, $type));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+    /**
+     * Get a single vocabulary record by URI
+     *
+     * @param string $uri The uri of a vocabulary term
+     *
+     * @return string[] A list with keys: id, type, value, uri, description
+     *
+     */
+    public function selectTermByUri($uri)
+    {
+        $qq = 's_term_by_uri';
+        $this->sdb->prepare($qq,
+                            'select
+                            id, type, value, uri, description
+                            from vocabulary where uri=$1');
+        $result = $this->sdb->execute($qq, array($uri));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
@@ -4618,10 +4823,35 @@ class SQL
      */
     public function selectResourceRelation($vhInfo)
     {
+        $qq = 'select_resources';
+        $this->sdb->prepare($qq,
+            'select r.id as resource_id, r.version as resource_version, r.type as document_type, r.href, r.object_xml_wrap,
+                r.title, r.extent, r.abstract, r.date, r.display_entry, r.repo_ic_id from
+                (select id, max(version) as version from resource_cache where id in
+                    (select aa.resource_id
+                        from related_resource as aa,
+                            (select id, max(version) as version from related_resource where version<=$1
+                                and ic_id=$2 group by id) as bb
+                        where not aa.is_deleted and
+                        aa.id=bb.id
+                        and aa.version=bb.version)
+                    group by id) as ridvers,
+                resource_cache r
+                where not r.is_deleted and r.id = ridvers.id and r.version = ridvers.version;');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id']));
+        $resources = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            $resources[$row["resource_id"]] = $row;
+        }
+        $this->sdb->deallocate($qq);
+
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
-            'select rr.*, r.type as document_type, r.href, r.object_xml_wrap, r.title, r.extent,
-                    r.abstract, r.date, r.display_entry, r.repo_ic_id from
+            'select rr.* from
                 (select aa.id, aa.version, aa.ic_id,
                         aa.relation_entry, aa.descriptive_note, aa.arcrole,
                         aa.resource_id, aa.resource_version
@@ -4629,8 +4859,7 @@ class SQL
                         (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
                     where not aa.is_deleted and
                     aa.id=bb.id
-                    and aa.version=bb.version) rr
-                left join resource_cache r on rr.resource_id = r.id and rr.resource_version = r.version');
+                    and aa.version=bb.version) rr;');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
@@ -4638,9 +4867,17 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            array_push($all, $row);
+            // the following merge will preserve the resource_version from the resource_cache table and drop the one from related_resource
+            // since the resource_cache results are merged first.
+            array_push($all, array_merge($resources[$row["resource_id"]], $row));
         }
         $this->sdb->deallocate($qq);
+
+
+
+
+
+
         return $all;
     }
 
@@ -4698,6 +4935,37 @@ class SQL
                                                                                   $title,
                                                                                   $type));
 
+        return $this->sdb->fetchAll($result);
+    }
+
+
+    /**
+     * Select Holdings
+     *
+     * Selects all resource holdings of a holding repository.
+     *
+     * @param integer $icid The id of the holding repository
+     * @return string[] Returns associative array of resources data
+     */
+    public function selectHoldings($icid) {
+        // Check for merged repo_ic_ids
+        $result = $this->sdb->query('select ic_id from constellation_lookup where current_ic_id = $1', array($icid));
+        $icids = [];
+
+        while ($row = $this->sdb->fetchrow($result)) {
+            $icids[] = $row["ic_id"];
+        }
+        $icids = implode(", " , $icids);
+
+        $query = "SELECT r1.id as snac_resource_id, r1.version, r1.href, v.value as resource_type,
+                      r1.title, r1.display_entry, r1.abstract, r1.extent, r1.date, r1.updated_at
+                  FROM resource_cache r1
+                  LEFT JOIN vocabulary v on r1.type = v.id
+                  INNER JOIN (SELECT id, max(version) AS version FROM resource_cache
+                  WHERE repo_ic_id IN ({$icids}) AND NOT is_deleted GROUP BY id) AS r2
+                  ON r1.id = r2.id AND r1.version = r2.version";
+
+        $result = $this->sdb->query($query, array());
         return $this->sdb->fetchAll($result);
     }
 
@@ -4844,7 +5112,7 @@ class SQL
     *
     * @param integer $icid Constellation ID.
     *
-    * @param inteter $version Version number.
+    * @param integer $version Version number.
     *
     * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
     */
@@ -5999,21 +6267,22 @@ class SQL
     /**
      * Insert a new institution.
      *
-     * Insert a new institution and return the institution's id. We aren't using snac_institution.id so we
-     * need to check for a record before inserting, just in calse.
+     * Insert a new institution and return the institution's id. If institution already exists, simply return id.
      *
-     * @param string $ic_id Institution ic_id, aka a constellation ic_id.
+     * @param string $ic_id Institution's ic_id.
+     * @return string[] $row Institution ic_id.
      */
-    public function insertInstitution($ic_id)
-    {
-        $result = $this->sdb->query("select * from snac_institution where ic_id=$1",
-                                    array($ic_id));
+    public function insertInstitution($ic_id) {
 
-        if (! $this->sdb->fetchrow($result))
-        {
-            $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1)",
-                                        array($ic_id));
+        $result = $this->sdb->query("select * from snac_institution where ic_id=$1", array($ic_id));
+        $row = $this->sdb->fetchrow($result);
+
+        if (!$row) {
+            $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1) returning ic_id", array($ic_id));
+            $row = $this->sdb->fetchrow($result);
         }
+
+        return $row["ic_id"];
     }
 
     /**
@@ -6225,6 +6494,28 @@ class SQL
     }
 
     /**
+     * Unread Message Count
+     *
+     * Selects the unread message count for the given user id.
+     *
+     * @param int $userid The numeric userid for a user
+     * @return int The number of messages unread for this user
+     */
+    public function selectNumUnreadMessagesByUserID($userid) {
+        $retVal = 0;
+
+        $result = $this->sdb->query(
+            'select count(*) as count from messages m where to_user = $1 and not read',
+            array($userid));
+
+        while ($row = $this->sdb->fetchrow($result)) {
+            $retVal = $row["count"];
+        }
+
+        return $retVal;
+    }
+
+    /**
      * Select Messages from User
      *
      * Selects all messages for the given userID.
@@ -6311,4 +6602,509 @@ class SQL
 
         return $this->sdb->fetchrow($result);
     }
+
+
+    // Concepts
+
+    /**
+     * Select all concepts
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @param integer $id Record id
+     *
+     * @param integer $termID Vocabulary foreign key for the term.
+     *
+     */
+    public function selectAllConcepts() {
+        $sql = "SELECT c.id, t.value
+                FROM concept c
+                LEFT JOIN term t
+                ON c.id = t.concept_id
+                WHERE c.deprecated = 'f'
+                AND t.is_preferred = 't'
+                ORDER BY t.value";
+        // $sql = "SELECT * FROM term";
+
+        $result = $this->sdb->query($sql, array());
+        $concepts = array();
+        while ($row = $this->sdb->fetchrow($result)){
+            array_push($concepts, $row);
+        }
+        return $concepts;
+    }
+
+    /**
+     * Select Concept
+     *
+     * Gets the concept from database
+     *
+     * @param int $id Concept ID
+     * @return string[] Associative array of concept and terms
+     */
+    public function selectConcept($id) {
+        $qq = 'select_concept';
+
+        $sql = "SELECT t.id
+                    t.value
+                    t.is_preferred
+                FROM concept c
+                LEFT JOIN term t
+                ON c.id = t.concept_id
+                WHERE c.id = $1
+                AND c.deprecated = 'f'
+                ORDER BY t.is_preferred DESC, t.value";
+
+       $this->sdb->prepare($qq, $sql);
+
+       $result = $this->sdb->execute($qq, array($id));
+        $concept = [];
+       while ($row = $this->sdb->fetchrow($result)) {
+           $concept[] = $row;
+       }
+       return $concept;
+   }
+
+
+    /**
+    * Delete Concept
+    *
+    * Delete a concept and its dependent terms from the database
+    *
+    * @param int $id Concept ID
+    * @return bool True if the concept is deleted
+    */
+    public function deleteConcept($id) {
+        $this->sdb->query("DELETE FROM term where term.concept_id = $1;", array($id));
+        $this->sdb->query("DELETE FROM concept WHERE id = $1;", array($id));
+
+        return true;
+    }
+
+    /**
+     * Insert Concept
+     *
+     * Creates a new concept in the database
+     *
+     * @param term $term
+     * @return int $id Concept ID
+     */
+    public function insertConcept() {
+        $result = $this->sdb->query("INSERT INTO concept DEFAULT VALUES RETURNING id;", array());
+        $row = $this->sdb->fetchrow($result);
+        $conceptID = $row['id'];
+        return $conceptID;
+    }
+
+    /**
+     * Insert Term
+     *
+     * Creates a new term in the database
+     *
+     * @param int $conceptID Concept ID
+     * @param string $value Value
+     * @param bool $isPreferred Whether term is preferred term for concept
+     * @return
+     */
+    public function insertTerm($conceptID, $value, $isPreferred) {
+        $isPreferred = $this->sdb->boolToPg($isPreferred);
+        $sql = "INSERT INTO term(concept_id, value, is_preferred)
+                VALUES($1, $2, $3) RETURNING *";
+
+        $result = $this->sdb->query($sql, array($conceptID, $value, $isPreferred));
+        $term = $this->sdb->fetchrow($result);
+        return $term;
+    }
+
+    /**
+     * Save Term
+     *
+     * Updates term value and concept in the database
+     *
+     * @param int $termID Term ID
+     * @param int $conceptID Concept ID
+     * @param string $value Value
+     * @param bool $isPreferred Whether term is preferred term for concept
+     * @return
+     */
+    public function updateTerm($termID, $conceptID, $value, $isPreferred) {
+        $isPreferred = $this->sdb->boolToPg($isPreferred);
+        $sql = "UPDATE term
+                SET concept_id = $1,
+                    value = $2,
+                    is_preferred = $3
+                WHERE id = $4
+                RETURNING *";
+
+        $result = $this->sdb->query($sql, array($conceptID, $value, $isPreferred, $termID));
+        $term = $this->sdb->fetchrow($result);
+        return $term;
+    }
+
+    /**
+     * Delete Term
+     *
+     * Deletes a term from the database
+     *
+     * @param int $termID
+     * @return int $id Concept ID
+     */
+    public function deleteTerm($termID) {
+        $sql = "DELETE FROM term WHERE id = $1";
+        $this->sdb->query($sql, array($termID));
+        return true;
+    }
+
+    /**
+     * Select Detailed Concept
+     *
+     * Gets a detailed concept from database
+     *
+     * @param int $id Concept ID
+     * @return string[] Associative array of resource data
+     */
+    public function selectDetailedConcept($id) {
+        $sql = "SELECT t.id, t.value, t.is_preferred
+                FROM concept c
+                JOIN term t
+                ON c.id = t.concept_id
+                LEFT JOIN concept_properties cp ON cp.concept_id = c.id
+                WHERE c.id = $1
+                ORDER BY t.is_preferred DESC, t.value";
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+
+    /**
+     * Select Related Concept
+     *
+     * Gets all related concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectRelatedConcepts($id) {
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                JOIN related_concept rc
+                ON rc.related_id = t.concept_id
+                WHERE rc.concept_id = $1
+                AND t.is_preferred = 't'";
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * Select Broader Concepts
+     *
+     * Gets all broader concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectBroaderConcepts($id) {
+
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                JOIN broader_concept bc
+                ON bc.broader_id = t.concept_id
+                WHERE bc.narrower_id = $1
+                AND t.is_preferred = 't'";
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * Select Narrower Concepts
+     *
+     * Gets all narrower concepts
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function selectNarrowerConcepts($id) {
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                JOIN broader_concept bc
+                ON bc.narrower_id = t.concept_id
+                WHERE bc.broader_id = $1
+                AND t.is_preferred = 't'";
+
+
+        $result = $this->sdb->query($sql, array($id));
+        $concept = $this->sdb->fetchAll($result);
+        return $concept;
+    }
+
+    /**
+     * UpdatePreferredTerm
+     *
+     * Sets one term's preference to true and all others to false for a given concept
+     *
+     * @param int $id Concept ID
+     * @return string[] Array of concept id and value pairs
+     */
+    public function updatePreferredTerm($conceptID, $termID) {
+        $sql = "UPDATE term t
+                    SET is_preferred =
+                    CASE
+                        WHEN t.id = $1
+                            THEN TRUE
+                            ELSE FALSE
+                        END
+                WHERE t.concept_id = $2";
+
+        $result = $this->sdb->query($sql, array($termID, $conceptID));
+    }
+
+    /**
+    * Search Concepts
+    *
+    * Search for a concept by its preferred term
+    *
+    * @param string $query Search query
+    * @return string[] Array of concept id and value pairs
+    */
+    public function searchConcepts($query) {
+
+        $sql = "SELECT t.concept_id as id, t.value
+                FROM term t
+                WHERE value ILIKE $1
+                AND t.is_preferred = 't'";
+
+
+        $result = $this->sdb->query($sql, array("%$query%"));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
+
+    /**
+    * Insert Related Concepts
+    *
+    * Relate two concepts
+    *
+    * @param string $id1 Related Concept id
+    * @param string $id2 Related Concept id
+    * @return string[] Array of related concept ids
+    */
+    public function insertRelatedConcepts($id1, $id2) {
+        $sql = "INSERT INTO related_concept VALUES ($1, $2), ($2,$1)";
+        $result = $this->sdb->query($sql, array($id1, $id2));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
+    /**
+    * Delete Related Concepts
+    *
+    * Remove relationship between two related concepts
+    *
+    * @param string $id1 Related Concept id
+    * @param string $id2 Related Concept id
+    * @return
+    */
+    public function deleteRelatedConcepts($id1, $id2) {
+        $sql = "DELETE FROM related_concept WHERE concept_id = $1 AND related_id = $2 OR concept_id = $2 AND related_id = $1";
+        $result = $this->sdb->query($sql, array($id1, $id2));
+        $deleteCount = $this->sdb->fetchAll($result);
+        return $deleteCount;
+    }
+
+    /**
+    * Insert Broader Concepts
+    *
+    * Relate a narrower and broader concept
+    *
+    * @param string $id1 Narrower Concept id
+    * @param string $id2 Broader Concept id
+    * @return
+    */
+    public function insertBroaderConcepts($narrowerID, $broaderID) {
+        $sql = "INSERT INTO broader_concept VALUES ($1, $2)";
+        $result = $this->sdb->query($sql, array($narrowerID, $broaderID));
+        $concepts = $this->sdb->fetchAll($result);
+        return $concepts;
+    }
+
+
+    /**
+    * Delete Broader Concepts
+    *
+    * Remove relationship between two related concepts
+    *
+    * @param string $id1 Broader Concept id
+    * @param string $id2 Broader Concept id
+    * @return
+    */
+    public function deleteBroaderConcepts($narrowerID, $broaderID) {
+        $sql = "DELETE FROM broader_concept WHERE narrower_id = $1 AND broader_id = $2";
+        $result = $this->sdb->query($sql, array($narrowerID, $broaderID));
+        // $deleteCount = $this->sdb->fetchAll($result);
+        // return $deleteCount;
+        return true;
+    }
+
+
+    /**
+     * Get Institutional Reporting Data
+     *
+     * Given an ICID, queries through Postgres to get statistical data
+     * on the institution denoted by that IC.  This includes the number of recent
+     * updates to constellations and the top editors at that institution.
+     *
+     * @param int $icid The Constellation ID to query
+     * @return string[] The statistical data from the database
+     */
+    public function getInstitutionReportData($icid) {
+        $return = [
+            "week" => [],
+            "month" => []
+        ];
+
+        $result = $this->sdb->query("select count(distinct id) from version_history
+            where timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days'
+                and status != 'published' and status != 'deleted'
+                and status != 'tombstoned' and status != 'needs review';", array());
+
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["week"]["allEditCount"] = $all[0]["count"];
+        }
+
+        $result = $this->sdb->query("select count(distinct v.id) from
+            version_history v, appuser u
+            where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days'
+                and v.status != 'published' and v.status != 'deleted'
+                and v.status != 'tombstoned' and v.status != 'needs review'
+                and v.user_id = u.id and u.affiliation = $1", array($icid));
+
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["week"]["instEditCount"] = $all[0]["count"];
+        }
+
+        $result = $this->sdb->query("select fullname, count(*) from
+                (select distinct u.fullname, v.id from
+                version_history v, appuser u
+                where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '7 days'
+                    and v.status != 'published' and v.status != 'deleted'
+                    and v.status != 'tombstoned' and v.status != 'needs review'
+                    and v.user_id = u.id and u.affiliation = $1) a
+            group by fullname
+            order by count desc, fullname asc", array($icid));
+
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["week"]["topEditors"] = $all;
+        }
+
+        $result = $this->sdb->query("select count(distinct id) from version_history
+            where timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days'
+                and status != 'published' and status != 'deleted'
+                and status != 'tombstoned' and status != 'needs review';", array());
+
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["month"]["allEditCount"] = $all[0]["count"];
+        }
+
+        $result = $this->sdb->query("select count(distinct v.id) from
+            version_history v, appuser u
+            where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days'
+                and v.status != 'published' and v.status != 'deleted'
+                and v.status != 'tombstoned' and v.status != 'needs review'
+                and v.user_id = u.id and u.affiliation = $1", array($icid));
+
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["month"]["instEditCount"] = $all[0]["count"];
+        }
+
+        $result = $this->sdb->query("select fullname, count(*) from
+                (select distinct u.fullname, v.id from
+                version_history v, appuser u
+                where v.timestamp > CURRENT_TIMESTAMP - INTERVAL '30 days'
+                    and v.status != 'published' and v.status != 'deleted'
+                    and v.status != 'tombstoned' and v.status != 'needs review'
+                    and v.user_id = u.id and u.affiliation = $1) a
+            group by fullname
+            order by count desc, fullname asc", array($icid));
+
+        if ($result) {
+            $all = $this->sdb->fetchAll($result);
+            $return["month"]["topEditors"] = $all;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Record Analytics
+     *
+     * Saves outbound link traffic for analytics
+     *
+     * @param int $icid The icid of the constellation page the link was clicked on, if any
+     * @param string $url Url of the resource clicked
+     * @param int $repo_ic_id Repository id of the resource clicked
+     */
+    public function recordAnalytics($icid, $url, $repoICID) {
+        $sql = "INSERT INTO outbound_link (ic_id, url, repo_ic_id) VALUES ($1, $2, $3)";
+        $result = $this->sdb->query($sql, array($icid, $url, $repoICID));
+    }
+
+    /**
+     * Read Analytics by Domain
+     *
+     * Read outbound link traffic analytics
+     *
+     * @param string $domain The unique domain to return counts for
+     * @return array $results Array of dates and hit counts
+     */
+    public function selectAnalyticsbyDomain($domain) {
+        $sql = "SELECT count(*), to_char(timestamp, 'yyyy-mm') AS date
+                FROM outbound_link
+                WHERE url ilike $1
+                AND timestamp > (NOW() - INTERVAL '1 year')
+                GROUP BY date;";
+
+        $result = $this->sdb->query($sql, ["%".$domain."%"]);
+        $results = $this->sdb->fetchAll($result);
+        return $results;
+    }
+
+    /**
+     * Read Analytics by Repository
+     *
+     * Read outbound link traffic analytics by holding repository
+     *
+     * @param string $icid The id of the holding repository
+     * @return array $results Array of dates and hit counts
+     */
+    public function selectAnalyticsByRepo($icid) {
+        $sql = "SELECT count(*), to_char(timestamp, 'yyyy-mm') AS date
+                FROM outbound_link o
+                LEFT JOIN constellation_lookup c
+                    ON o.repo_ic_id = c.ic_id
+                WHERE repo_ic_id IN
+                    (SELECT ic_id
+                    FROM constellation_lookup
+                    WHERE current_ic_id = $1)
+                AND timestamp > (NOW() - INTERVAL '1 year')
+                GROUP BY date;";
+
+        $result = $this->sdb->query($sql, [$icid]);
+        $results = $this->sdb->fetchAll($result);
+        return $results;
+    }
+
+
+
 }

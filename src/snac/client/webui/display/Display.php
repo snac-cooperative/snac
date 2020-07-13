@@ -5,7 +5,7 @@
  * File for the display interface
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -171,9 +171,10 @@ class Display {
         $this->data["control"] = array();
 
         // Put some PHP variables into the control section
-        $this->data["control"]["currentURL"] = $this->cleanString("http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
+        $this->data["control"]["currentURL"] = $this->cleanString("https://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
         $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
         $this->data["control"]["snacURL"] = \snac\Config::$WEBUI_URL;
+        $this->data["control"]["restURL"] = \snac\Config::$REST_URL;
 
         if (isset(\snac\Config::$INTERFACE_VERSION)) {
             if (\snac\Config::$INTERFACE_VERSION === "development")
@@ -191,14 +192,20 @@ class Display {
         // caching of javascript.
         if (\snac\Config::$DEBUG_MODE == true) {
             $this->data["control"]["noCache"] = trim("?_=".`git rev-parse HEAD`);
+        } else if (isset(\snac\Config::$CACHE_COOKIE)) {
+            $this->data["control"]["noCache"] = trim("?_=".\snac\Config::$CACHE_COOKIE);
         }
 
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array(
+                'debug' => \snac\Config::$DEBUG_MODE,
                 //'cache' => \snac\Config::$TEMPLATE_CACHE,
             ));
         $twig->addExtension(new \Jasny\Twig\PcreExtension());
         $twig->addExtension(new \Twig_Extensions_Extension_Text());
+        if (\snac\Config::$DEBUG_MODE == true) {
+            $twig->addExtension(new \Twig_Extension_Debug());
+        }
 
         return $twig->render($this->templateFileName, $this->data);
     }

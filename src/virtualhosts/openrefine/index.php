@@ -5,7 +5,7 @@
  * Loads the input, instantiates, and runs the OpenRefine client
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -34,6 +34,8 @@ try {
         if ($decode = json_decode($part, true))
             $part = $decode;
     }
+    // Be correct with foreach pass by reference
+    unset($part);
     
     // Instantiate and run the server
     $server = new OpenRefine($input);

@@ -9,7 +9,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -113,11 +113,25 @@ class User implements \Serializable {
     private $preferredRules = null;
 
     /**
+     * Number of Unread Messages
+     *
+     * @var int Number of unread messages in the system
+     */
+    private $numUnreadMessages = 0;
+
+
+    /**
      * Whether the user is active
      *
      * @var boolean User is active
      */
     private $active = false;
+
+    /**
+     * API keys
+     * @var snac\data\APIKey[] Api Key info
+     */
+    private $apikeys = null;
 
     /**
      * Constructor
@@ -127,6 +141,7 @@ class User implements \Serializable {
     public function __construct($data = null) {
 
         $this->roleList = array();
+        $this->apikeys = array();
         if ($data != null)
             $this->fromArray($data);
     }
@@ -172,6 +187,15 @@ class User implements \Serializable {
     }
 
     /**
+     * Get the number of unread messages
+     * @return string the username
+     */
+    public function getNumUnreadMessages()
+    {
+        return $this->numUnreadMessages;
+    }
+
+    /**
      * Get the list of roles
      *
      * Return the role list
@@ -192,11 +216,6 @@ class User implements \Serializable {
      */
     public function setRoleList($roleList)
     {
-        /*
-         * Interesting that we set the whole list at once, and don't use addRole() (which doesn't exist) or
-         * something like that. That is probably due to writing user role links to the db, then getting back the
-         * whole role list from the db.
-         */
         $this->roleList = $roleList;
     }
 
@@ -211,6 +230,39 @@ class User implements \Serializable {
         array_push($this->roleList, $role);
     }
 
+    /**
+     * Get the list of API Keys 
+     *
+     * Return the api key list
+     *
+     * @return snac\data\APIKey[] a list of APIKey objects
+     */
+    public function getAPIKeyList()
+    {
+        return $this->apikeys;
+    }
+
+    /**
+     * Set API Key list
+     *
+     * @param \snac\data\APIKey[] $keyList A list of API Keys.
+     */
+    public function setAPIKeyList($keyList)
+    {
+        $this->apikeys = $keyList;
+    }
+
+    /**
+     * Add an API Key
+     *
+     * Adds an API Key to this User.
+     *
+     * @param \snac\data\APIKey $key The API key to add to this user
+     */
+    public function addAPIKey($key) {
+        array_push($this->apikeys, $key);
+    }
+
 
     /**
      * Set the UserID
@@ -220,6 +272,16 @@ class User implements \Serializable {
     public function setUserID($id) {
 
         $this->userid = $id;
+    }
+
+    /**
+     * Set the number of unread messages
+     *
+     * @param int $count The number of unread messages
+     */
+    public function setNumUnreadMessages($count) {
+
+        $this->numUnreadMessages = $count;
     }
 
     /**
@@ -520,15 +582,19 @@ class User implements \Serializable {
                 "email" => $this->email,
                 "workEmail" => $this->workEmail,
                 "workPhone" => $this->workPhone,
+                "unreadMessageCount" => $this->numUnreadMessages,
                 "active" => $this->active,
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token,
-                "roleList" => array()
+                "roleList" => array(),
+                "apikeys" => array()
         );
 
         foreach ($this->roleList as $i => $v)
             $return["roleList"][$i] = $v->toArray($shorten);
 
+        foreach ($this->apikeys as $i => $v)
+            $return["apikeys"][$i] = $v->toArray($shorten);
 
         // Shorten if necessary
         if ($shorten) {
@@ -550,76 +616,27 @@ class User implements \Serializable {
      * @return boolean true on success, false on failure
      */
     public function fromArray($data) {
+        $this->userid = $data["userid"] ?? null;
+        $this->userName = $data["userName"] ?? null;
+        $this->firstName = $data["firstName"] ?? null;
+        $this->lastName = $data["lastName"] ?? null;
+        $this->fullName = $data["fullName"] ?? null;
+        $this->avatar = $data["avatar"] ?? null;
+        $this->avatarSmall = $data["avatarSmall"] ?? null;
+        $this->avatarLarge = $data["avatarLarge"] ?? null;
+        $this->email = $data["email"] ?? null;
+        $this->workEmail = $data["workEmail"] ?? null;
+        $this->workPhone = $data["workPhone"] ?? null;
+        $this->numUnreadMessages = $data["unreadMessageCount"] ?? 0;
+        $this->token = $data["token"] ?? null;
+        $this->active = $data["active"] ?? false;
 
-        if (isset($data["userid"]))
-            $this->userid = $data["userid"];
-        else
-            $this->userid = null;
-
-        if (isset($data["userName"]))
-            $this->userName = $data["userName"];
-        else
-            $this->userName = null;
-
-        if (isset($data["firstName"]))
-            $this->firstName = $data["firstName"];
-        else
-            $this->firstName = null;
-
-        if (isset($data["lastName"]))
-            $this->lastName = $data["lastName"];
-        else
-            $this->lastName = null;
-
-        if (isset($data["fullName"]))
-            $this->fullName = $data["fullName"];
-        else
-            $this->fullName = null;
-
-        if (isset($data["avatar"]))
-            $this->avatar = $data["avatar"];
-        else
-            $this->avatar = null;
-
-        if (isset($data["avatarSmall"]))
-            $this->avatarSmall = $data["avatarSmall"];
-        else
-            $this->avatarSmall = null;
-
-        if (isset($data["avatarLarge"]))
-            $this->avatarLarge = $data["avatarLarge"];
-        else
-            $this->avatarLarge = null;
-
-        if (isset($data["email"]))
-            $this->email = $data["email"];
-        else
-            $this->email = null;
-
-        if (isset($data["workEmail"]))
-            $this->workEmail = $data["workEmail"];
-        else
-            $this->workEmail = null;
-
-        if (isset($data["workPhone"]))
-            $this->workPhone = $data["workPhone"];
-        else
-            $this->workPhone = null;
-
-        if (isset($data["affiliation"]) && $data['affiliation'] != null)
+        if (isset($data["affiliation"]) && $data['affiliation'] != null) {
             $this->affiliation = new \snac\data\Constellation($data["affiliation"]);
-        else
+        } else {
             $this->affiliation = null;
+        }
 
-        if (isset($data["token"]))
-            $this->token = $data["token"];
-        else
-            $this->token = null;
-
-        if (isset($data["active"]))
-            $this->active = $data["active"];
-        else
-            $this->active = false;
 
         unset($this->roleList);
         $this->roleList = array();
@@ -627,6 +644,15 @@ class User implements \Serializable {
             foreach ($data["roleList"] as $i => $entry) {
                 if ($entry != null)
                     $this->roleList[$i] = new \snac\data\Role($entry);
+            }
+        }
+        
+        unset($this->apikeys);
+        $this->apikeys = array();
+        if (isset($data["apikeys"])) {
+            foreach ($data["apikeys"] as $i => $entry) {
+                if ($entry != null)
+                    $this->apikeys[$i] = new \snac\data\APIKey($entry);
             }
         }
 

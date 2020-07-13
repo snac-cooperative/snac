@@ -6,7 +6,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -26,24 +26,9 @@ $(document).ready(function() {
     if($('#save_and_continue').exists()) {
         $('#save_and_continue').click(function(){
 
-        	// If EntityType and NameEntry do not have values, then don't let the user save
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
-        		return;
-        	}
-
-
+            if (!validateConstellation()) {
+                return false;
+            }
         	// If nothing has changed, alert the user and do nothing
         	if (somethingHasBeenEdited == false) {
                 $('#notification-message').html("<p>No new changes to save.</p>");
@@ -53,7 +38,7 @@ $(document).ready(function() {
                 setTimeout(function(){
                     $('#notification-message').slideUp();
                 }, 7000);
-        		return;
+        		return false;
         	}
 
             // Open up the warning alert box and note that we are saving
@@ -117,6 +102,8 @@ $(document).ready(function() {
                     $('.deleted-component').remove();
 
 
+                    var preferredNamePanelNumbers = getPreferredNamePanelNumbers();
+
                 	// Return edited items back to unedited state
                 	$("div[id*='_panel_']").each(function() {
                 		// for any div that has _panel_ in its name, we should check the ID
@@ -155,8 +142,12 @@ $(document).ready(function() {
 
                 	});
 
+                    // If there are multiple preferred nameEntries, mark them as preferred on the edit interface
+                    updateNameEntryPanelToPreferred(preferredNamePanelNumbers);
+
                     // Everything's been saved, so mark not in editing
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     // Clear the undo set
                     undoSet = new Array();
@@ -177,6 +168,7 @@ $(document).ready(function() {
                     displayErrorMessage(data.error,data);
                 }
             });
+            return false;
         });
     }
 
@@ -184,23 +176,9 @@ $(document).ready(function() {
     if($('#save_and_dashboard').exists()) {
         $('#save_and_dashboard').click(function(){
 
-        	// If EntityType and NameEntry do not have values, then don't let the user save
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
-        		return;
-        	}
-
+            if (!validateConstellation()) {
+                return false;
+            }
         	// If nothing has changed, alert the user and unlock
         	if (somethingHasBeenEdited == false) {
 		        $('#notification-message').html("<p>No new changes to save.  Updating Constellation state... Please wait.</p>");
@@ -211,7 +189,8 @@ $(document).ready(function() {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
-		                somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+		                //somethingHasBeenEdited = false;
 
 		                $('#notification-message').slideUp();
 
@@ -232,6 +211,7 @@ $(document).ready(function() {
                         displayErrorMessage(data.error,data);
 		            }
 		        });
+                return false;
         	} else {
 
 	            // Open up the warning alert box and note that we are saving
@@ -276,7 +256,8 @@ $(document).ready(function() {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // No longer in editing, save succeeded
-	                    somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+	                    //somethingHasBeenEdited = false;
 
 	                    $('#notification-message').slideUp();
 
@@ -297,6 +278,7 @@ $(document).ready(function() {
                         displayErrorMessage(data.error,data);
 	                }
 	            });
+                return false;
         	}
         });
     }
@@ -305,23 +287,9 @@ $(document).ready(function() {
     if($('#save_and_publish').exists()) {
         $('#save_and_publish').click(function(){
 
-        	// If EntityType and NameEntry do not have values, then don't let the user save or publish
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
-        		return;
-        	}
-
+            if (!validateConstellation()) {
+                return false;
+            }
         	// If nothing has changed, alert the user and publish
         	if (somethingHasBeenEdited == false) {
 		        $('#notification-message').html("<p>No new changes to save.  Publishing Constellation... Please wait.</p>");
@@ -332,7 +300,8 @@ $(document).ready(function() {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
-		                somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+		                //somethingHasBeenEdited = false;
 
 		                $('#notification-message').slideUp();
 
@@ -398,7 +367,8 @@ $(document).ready(function() {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // Edit succeeded, so save mode off
-	                    somethingHasBeenEdited = false;
+                        setEditedFlag(false);
+	                    //somethingHasBeenEdited = false;
 
 	                    $('#notification-message').slideUp();
 
@@ -420,27 +390,15 @@ $(document).ready(function() {
 	                }
 	            });
         	}
+            return false;
         });
     }
 
     function save_and_review(){
-        // If EntityType and NameEntry do not have values, then don't let the user save or publish
-        var noNameEntryText = true;
-        $("input[id^='nameEntry_original_']").each(function() {
-            if ($(this).val() != "")
-                noNameEntryText = false;
-        });
-        if ($('#entityType').val() == "" || noNameEntryText) {
-            $('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-            setTimeout(function(){
-                $('#error-message').slideDown();
-            }, 500);
-            setTimeout(function(){
-                $('#error-message').slideUp();
-            }, 10000);
-            return;
-        }
 
+        if (!validateConstellation()) {
+            return false;
+        }
         // Copy the review message from the modal into the form body
         $("#reviewmessage").val($("#sendReviewMessage").val());
 
@@ -454,7 +412,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -519,7 +478,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -541,25 +501,16 @@ $(document).ready(function() {
                 }
             });
         }
+        return false;
     }
 
     function save_and_send_editor(){
-        // If EntityType and NameEntry do not have values, then don't let the user save or publish
-        var noNameEntryText = true;
-        $("input[id^='nameEntry_original_']").each(function() {
-            if ($(this).val() != "")
-                noNameEntryText = false;
-        });
-        if ($('#entityType').val() == "" || noNameEntryText) {
-            $('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
-            setTimeout(function(){
-                $('#error-message').slideDown();
-            }, 500);
-            setTimeout(function(){
-                $('#error-message').slideUp();
-            }, 10000);
-            return;
+
+        if (!validateConstellation()) {
+            return false;
         }
+        // Copy the review message from the modal into the form body
+        $("#reviewmessage").val($("#reviewerNotebook").val());
 
         // If nothing has changed, alert the user and publish
         if (somethingHasBeenEdited == false) {
@@ -571,7 +522,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -637,7 +589,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -659,12 +612,14 @@ $(document).ready(function() {
                 }
             });
         }
+        return false;
     }
 
     // Save and Send Back to Editor button
     if($('#save_and_send_back').exists()) {
         $('#save_and_send_back').click(function() {
             save_and_send_editor();
+            return false;
         });
     }
 
@@ -674,6 +629,7 @@ $(document).ready(function() {
         $('#save_and_review_touser').click(function() {
             $("#reviewer").val($("#reviewersearchbox").val());
             save_and_review();
+            return false;
         });
     }
 
@@ -681,6 +637,7 @@ $(document).ready(function() {
         $('#save_and_review_general').click(function() {
             $("#reviewer").val("");
             save_and_review();
+            return false;
         });
     }
 
@@ -693,12 +650,13 @@ $(document).ready(function() {
             if(somethingHasBeenEdited){
                 if (!confirm('You may have unsaved changes on this Constellation.  Are you sure you want to cancel and lose those edits?')) {
                     // Don't want to cancel, so exit!
-                    return;
+                    return false;
                 }
             }
 
             // By setting this to false, the page will not prompt on exit
-            somethingHasBeenEdited = false;
+            setEditedFlag(false);
+            //somethingHasBeenEdited = false;
 
         	// If Constellation ID or EntityType or NameEntry do not have values, don't update state and go to dashboard
         	var noNameEntryText = true;
@@ -718,7 +676,8 @@ $(document).ready(function() {
 	        $.post(snacUrl+"/unlock", $("#constellation_form").serialize(), function (data) {
 	            // Check the return value from the ajax. If success, then go to dashboard
 	            if (data.result == "success") {
-	                somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+	                //somethingHasBeenEdited = false;
 	                $('#success-message').html("<p>Constellation unlocked. Going to dashboard.</p>");
 	                setTimeout(function(){
 	                    $('#success-message').slideDown();
@@ -736,6 +695,7 @@ $(document).ready(function() {
                     displayErrorMessage(data.error,data);
 	            }
 	        });
+            return false;
         });
     }
 
@@ -769,25 +729,9 @@ $(document).ready(function() {
     if($('#continue_and_reconcile').exists()) {
         $('#continue_and_reconcile').click(function(){
 
-            // If EntityType and NameEntry do not have values, then don't let the user save
-            var noNameEntryText = true;
-            $("input[id^='nameEntry_original_']").each(function() {
-                if ($(this).val() != "")
-                noNameEntryText = false;
-            });
-            if ($('#entityType').val() == "" || noNameEntryText) {
-                $('#error-message').html("<p>Entity Type and at least one Name Entry required for continuing.</p>");
-                setTimeout(function(){
-                    $('#error-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#error-message').slideUp();
-                }, 10000);
-                return;
+            if (!validateConstellation()) {
+                return false;
             }
-
-
-
             // Open up the warning alert box and note that we are saving
             $('#notification-message').html("<p>Reconciling Constellation... Please wait.</p>");
             $('#notification-message').slideDown();
@@ -830,7 +774,8 @@ $(document).ready(function() {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
-                    somethingHasBeenEdited = false;
+                    setEditedFlag(false);
+                    //somethingHasBeenEdited = false;
 
                     $('#notification-message').slideUp();
 
@@ -872,6 +817,8 @@ $(document).ready(function() {
                     displayErrorMessage(data.error,data);
                 }
             });
+
+            return false;
         });
     }
 
@@ -880,6 +827,7 @@ $(document).ready(function() {
         $('#confirm_create_new').click(function(){
             // Send the data back by AJAX call
             $("#constellation_form").submit();
+            return false;
         });
     }
 
@@ -947,3 +895,89 @@ $(document).ready(function() {
 
 
 });
+
+
+/**
+ * Get Preferred Name Panel Numbers
+ *
+ * Find all the preferred names and return their panel numbers
+ *
+ * @return Array of the preferred name panel numbers
+ */
+
+function getPreferredNamePanelNumbers() {
+    var preferredNames = $("#nameEntries").find("input[id*='nameEntry_preferenceScore_']").serialize();
+    var nameRegex = /nameEntry_preferenceScore_\d+=checked/g;
+    preferredNames = preferredNames.match(nameRegex);
+
+    var preferredNamePanels = [];
+    if (preferredNames) {
+        preferredNames.forEach( function(name ) {
+            var panelNumber = parseInt(name.slice(26));
+            preferredNamePanels.push(panelNumber);
+        });
+    }
+    return preferredNamePanels;
+}
+
+/**
+ * Update Name Entry Panel To Preferred
+ *
+ * Update nameEntry UI panel to show preferred status
+ *
+ * @param Array NameEntry panel numbers
+ */
+
+function updateNameEntryPanelToPreferred(numbers) {
+    if (numbers.length) {
+        numbers.forEach(function(number) {
+            $("#nameEntry_preferenceScore_" + number).val('checked');
+            $("#checkbox_nameEntry_preferenceScore_" + number).find("p").html("Preferred");
+        });
+    }
+}
+
+
+/**
+* Validate Constellation
+*
+* Validates that there are no edited components to be saved with empty term fields.
+*
+* @param Boolean True if valid, else false.
+*/
+function validateConstellation() {
+    var errorMessage = ""
+
+    // Validate Term Fields
+    var emptyTermCount = $(".edited-component select[id*='term']")
+        .find("option:selected").filter( function() {
+                return this.value == '';
+            }).length;
+    if (emptyTermCount) {
+        var plural = emptyTermCount > 1 ? "s" : "";
+        errorMessage += `<p>You have ${emptyTermCount} empty term field${plural}. Please enter a valid value for each term field and save again.</p>`
+    }
+
+    // Validate entityType and nameEntry
+    var noNameEntryText = true;
+    $("input[id^='nameEntry_original_']").each(function() {
+        if ($(this).val() != "")
+            noNameEntryText = false;
+    });
+    if ($("#entityType").val() == "" || noNameEntryText) {
+        errorMessage += "<p>Entity Type and at least one Name Entry required in order to save.</p>"
+    }
+
+    if (errorMessage.length) {
+        $("#error-message").html(errorMessage);
+        setTimeout(function() {
+            $("#error-message").slideDown();
+        }, 500);
+        setTimeout(function() {
+            $("#error-message").slideUp();
+        }, 10000);
+        return false;
+    } else {
+        return true;
+    }
+}

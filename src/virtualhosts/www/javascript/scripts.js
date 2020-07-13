@@ -4,7 +4,7 @@
  * Collection of generic scripts used throughout the interface.
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -45,9 +45,9 @@ function openGeoPlaceViewer(id) {
             setTimeout(function() {
                 // Create the Map and add it
                 geoMapView = L.map('geoPlaceMap').setView([data.term.latitude, data.term.longitude], 6);
-                L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
-                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(geoMapView);
                 var marker = L.marker([data.term.latitude, data.term.longitude]).addTo(geoMapView);
 
@@ -87,6 +87,8 @@ $(document).ready(function() {
         // call the normal startup scripts
         startupScript();
     }
+
+    trackOutboundRepoLinks();
 });
 
 function displayHoldingsMap() {
@@ -96,9 +98,9 @@ function displayHoldingsMap() {
     // Add a slight delay to the map viewing so that the modal window has time to load
     setTimeout(function() {
         holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
-        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(holdingsMapView);
         var bounds = new L.LatLngBounds();
 
@@ -229,4 +231,49 @@ $(function () {
     container: 'body'
     })
 })
+}
+
+function shortenIfLong(str, maxLength, pretty=true) {
+    if (str.length <= maxLength) return str;
+
+    var cutoff = pretty ? str.lastIndexOf(' ', maxLength) : maxLength
+    return str.slice(0, cutoff) + '...'
+}
+
+function toggleProfile() {
+    $("#profile-sidebar").toggleClass("collapsed");
+    $("#content-column").toggleClass("col-md-12 col-md-8");
+
+    var profileButtonText = ($("#profile-toggle-text").text() === "Hide") ? "Show" : "Hide";
+    $("#profile-toggle-text").text(profileButtonText);
+}
+
+function trackOutboundRepoLinks() {
+
+        $("body").on("click", ".outbound-repo-link", function(event) {
+            handleOutboundLinkClicks(event);
+        });
+}
+
+// Send Outbound link clicks to Google Analytics for logging
+function handleOutboundLinkClicks(event) {
+    if (typeof ga === "function") {  // check for Google Analytics
+        ga('send', 'event', {
+            eventCategory: 'Outbound Link',
+            eventAction: 'click',
+            eventLabel: event.target.href
+        });
+    }
+    
+    var logInfo = "url=" + event.target.href;
+    var icid = $('#constellationid').val();
+    var repoICID = $(event.target).data('repoIcId');
+
+    if (icid) {
+        logInfo += ("&icid=" + icid);
+    }
+    if (repoICID) {
+        logInfo += ("&repo_ic_id=" + repoICID);
+    }
+    navigator.sendBeacon(snacUrl + "/analytics?" + logInfo );
 }

@@ -8,7 +8,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -378,6 +378,12 @@ class SNACDate extends AbstractData {
             foreach ($return as $i => $v)
                 if ($v != null && !empty($v))
                     $return2[$i] = $v;
+
+            if (isset($return2["fromRange"]) && $return2["fromRange"]["notBefore"] == null && $return2["fromRange"]["notAfter"] == null)
+                unset($return2["fromRange"]);
+            if (isset($return2["toRange"]) && $return2["toRange"]["notBefore"] == null && $return2["toRange"]["notAfter"] == null)
+                unset($return2["toRange"]);
+
             unset($return);
             $return = $return2;
         }

@@ -64,23 +64,30 @@ while($row = $db->fetchrow($result))
 
 echo "Querying the relations from the database.\n";
 
-$allRel = $db->query("select r.id, r.version, r.ic_id, r.related_id, r.related_ark, r.arcrole from
-                related_identity r,
+$allRel = $db->query("select r.id, r.version, r.ic_id, cl.current_ic_id as related_id, cl.current_ark_id as related_ark, r.arcrole from
+                related_identity r, constellation_lookup cl,
                 (select distinct id, max(version) as version from related_identity group by id) a
-                where a.id = r.id and a.version = r.version and not r.is_deleted", array());
+                where a.id = r.id and a.version = r.version and not r.is_deleted and cl.ic_id = r.related_id", array());
+
+echo "Finished base query, now reading through results.\n";
+
+$rcount = 0;
 while($row = $db->fetchrow($allRel))
 {
     if (!isset($rels[$row["ic_id"]]))
         $rels[$row["ic_id"]] = array();
-    
+
     $rels[$row["ic_id"]][$row["id"]] = [
         "id" => $row["id"],
         "version" => $row["version"],
         "source" => $row["ic_id"],
-        "target" => $row["related_id"], 
+        "target" => $row["related_id"],
         "target_ark" => $row["related_ark"],
         "arcrole" => isset($lookup["relation_type"][$row["arcrole"]]) ? $lookup["relation_type"][$row["arcrole"]]["value"] : null
     ];
+    $rcount++;
+    if ($rcount % 1000 == 0)
+        echo "   Read 1000 lines from the table into memory ($rcount)\n";
 }
 
 /*
@@ -98,7 +105,6 @@ while($c = $db->fetchrow($allRelCount))
 }
  */
 
-$previousICID = -1;
 
 
 echo "Querying the names from the database.\n";
@@ -112,7 +118,7 @@ $allNames = $db->query("select one.ic_id, one.version, one.ark_id, two.id as nam
             left join (select v.id as ic_id, v.version, nrd.ark_id
                     from version_history v
                     left join (select bb.id, max(bb.version) as version from
-                    (select id, version from version_history where status in ('published', 'deleted')) bb
+                    (select id, version from version_history where status in ('published', 'deleted', 'tombstone')) bb
                     group by id order by id asc) mv
                     on v.id = mv.id and v.version = mv.version
                     left join nrd on v.id = nrd.ic_id
@@ -131,7 +137,7 @@ $allNames = $db->query("select one.ic_id, one.version, one.ark_id, two.id as nam
     from
         version_history v,
         (select bb.id, max(bb.version) as version from
-            (select id, version from version_history where status in ('published', 'deleted')) bb
+            (select id, version from version_history where status in ('published', 'deleted', 'tombstone')) bb
             group by id order by id asc) mv,
         vocabulary etv,
         nrd n
@@ -147,6 +153,7 @@ where
 order by
     one.ic_id asc, two.preference_score desc, two.id asc;", array());
 
+$previousICID = -1;
 
 $nodes = array();
 while($name = $db->fetchrow($allNames))
@@ -161,7 +168,8 @@ while($name = $db->fetchrow($allNames))
             "ark" => $name["ark_id"],
             "version" => $name["version"],
             "entity_type" => $name["entity_type"],
-            "name" => $name["original"]
+            "name" => $name["original"],
+	    'name_lower' => strtolower($name["original"])
         ];
     }
     $previousICID = $name["ic_id"];
@@ -172,9 +180,9 @@ echo "Updating the Neo4J Graph. This may take a while...\n";
 $stack = $connector->stack();
 $i = 0;
 foreach ($nodes as $node) {
-    $stack->push('CREATE (n:Identity) SET n += {infos}', 
+    $stack->push('CREATE (n:Identity) SET n += {infos}',
         [
-            'infos' => $node 
+            'infos' => $node
         ]);
     if ($i++ > 10000) {
         $txn = $connector->transaction();
@@ -190,18 +198,22 @@ $txn = $connector->transaction();
 $txn->runStack($stack);
 $txn->commit();
 
-$connector->run('CREATE INDEX ON :Identity(id)');
+$connector->run('CREATE CONSTRAINT ON (i:Identity) ASSERT i.id IS UNIQUE');
+$connector->run('CREATE INDEX ON :Identity(name_lower)');
+
 
 $stack = $connector->stack();
 $i = 0;
 foreach ($rels as $noderel) {
     foreach ($noderel as $edge) {
         $stack->push("MATCH (a:Identity {id: {id1} }),(b:Identity {id: {id2} })
-            CREATE (a)-[r:ICRELATION {infos}]->(b)", 
+            CREATE (a)-[r:ICRELATION {infos}]->(b)",
             [
                 'id1' => $edge["source"],
                 'id2' => $edge["target"],
                 'infos' => [
+                    "id" => $edge["id"],
+                    "version" => $edge["version"],
                     "arcrole" => $edge["arcrole"]
                 ]
             ]);
@@ -218,4 +230,3 @@ foreach ($rels as $noderel) {
 $txn = $connector->transaction();
 $txn->runStack($stack);
 $txn->commit();
-

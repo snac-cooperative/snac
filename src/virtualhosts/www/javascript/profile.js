@@ -6,7 +6,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -44,6 +44,28 @@ function makeProfileUneditable() {
 
 }
 
+function loadUserPreferences() {
+    if (localStorage.getItem("hide_profile") === "true") {
+        $("#hide_profile").prop("checked", true);
+    }
+    if (localStorage.getItem("show_map") === "true") {
+        $("#show_map").prop("checked", true);
+    }
+}
+
+function setUserPreferences() {
+    $(".user-preferences").find("input[type=checkbox]").each(function() {
+        $(this).on('change', function() {
+            localStorage.setItem(this.name, this.checked);
+            // console.log(this.name, this.checked);
+            $('#notification-message').fadeIn(700, function() {
+                setTimeout(function() {
+                    $('#notification-message').fadeOut();
+                }, 1000)
+            });
+        });
+    });
+}
 
 /**
  * Only load this script once the document is fully loaded
@@ -54,9 +76,13 @@ $(document).ready(function() {
     if($('#edit').exists()) {
         $('#edit').click(function(){
             makeProfileEditable();
-
         });
-    };
+    }
+
+    loadUserPreferences();
+    setUserPreferences();
+
+
 
     // Save and Continue button
     if($('#update').exists()) {

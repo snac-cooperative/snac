@@ -61,6 +61,7 @@ deployment:
   script:
     - ssh snac-server "cd /lv2/snac && composer update && git fetch origin && git merge"
     - ssh snac-web "cd /lv2/snac && composer update && git fetch origin && git merge"
+    - ssh snac-web "cd /lv2/snac && sed -i \"s/CACHE_COOKIE = .*;/CACHE_COOKIE = '`git rev-parse HEAD`';/g\" src/snac/Config.php"
   stage: deploy
   only:
     - master
@@ -68,6 +69,7 @@ deployment:
 dev_deployment:
   script:
     - ssh snac-dev "cd /lv2/snac && composer update && git fetch origin && git merge"
+    - ssh snac-dev "cd /lv2/snac && sed -i \"s/CACHE_COOKIE = .*;/CACHE_COOKIE = '`git rev-parse HEAD`';/g\" src/snac/Config.php"
   stage: deploy
   only:
     - development
@@ -75,6 +77,7 @@ dev_deployment:
 alpha_deployment:
   script:
     - ssh snac-dev "cd /lv2/snac_alpha && composer update && git fetch origin && git merge"
+    - ssh snac-dev "cd /lv2/snac_alpha && sed -i \"s/CACHE_COOKIE = .*;/CACHE_COOKIE = '`git rev-parse HEAD`';/g\" src/snac/Config.php"
   stage: deploy
   only:
     - alpha

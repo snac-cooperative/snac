@@ -9,7 +9,7 @@
  *
  *
  * @author Robbie Hott
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @license https://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
@@ -281,23 +281,29 @@ class EACCPFParser {
                             ), $catts);
                         break;
                     case "maintenanceAgency":
-                        $agencyInfo = $this->getChildren($control);
-                        for($i = 1; $i < count($agencyInfo); $i++)
-                            $this->markUnknownTag(
-                                array (
-                                    $node->getName,
-                                    $control->getName()
-                                ),
-                                array (
-                                    $agencyInfo[$i]
-                                ));
-                        $identity->setMaintenanceAgency(trim((string) $agencyInfo[0]));
-                        $this->markUnknownAtt(
-                            array (
-                                $node->getName(),
-                                $control->getName(),
-                                $agencyInfo[0]->getName()
-                            ), $this->getAttributes($agencyInfo[0]));
+                        foreach ($this->getChildren($control) as $agency) {
+                            $aatts = $this->getAttributes($agency);
+                            switch ($agency->getName()) {
+                                case "agencyName":
+                                    $identity->setMaintenanceAgency(trim((string) $agency));
+                                    $this->markUnknownAtt(
+                                        array (
+                                            $node->getName(),
+                                            $control->getName(),
+                                            $agency->getName()
+                                        ), $aatts);
+                                    break;
+                                default:
+                                    $this->markUnknownTag(
+                                        array (
+                                            $node->getName,
+                                            $control->getName()
+                                        ),
+                                        array (
+                                            $agency
+                                        ));
+                            }
+                        }
                         $this->markUnknownAtt(
                             array (
                                 $node->getName(),
@@ -1174,85 +1180,103 @@ class EACCPFParser {
 
                                     $relation->setType($this->getTerm($this->getValue($ratts["arcrole"]), "relation_type"));
                                     $relation->setSourceArkID($identity->getArk());
-                                    $relation->setTargetArkID($ratts['href']);
-                                    if (isset($ratts["role"]))
-                                        $relation->setTargetEntityType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
-                                    /*
-                                     * cpfRelation/@type cpfRelation@xlink:type
-                                     *
-                                     * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
-                                     * serializing export.
-                                     */
-                                    $relation->setAltType($this->getTerm($this->getValue($ratts["type"]), "relation_type"));
-                                    if (isset($ratts['cpfRelationType'])) {
-                                        $relation->setCPFRelationType($this->getTerm($ratts['cpfRelationType'], "relation_type"));
-                                        unset($ratts["cpfRelationType"]);
-                                    }
-                                    unset($ratts["arcrole"]);
-                                    unset($ratts["href"]);
-                                    unset($ratts["role"]);
-                                    unset($ratts["type"]);
-                                    $children = $this->getChildren($rel);
-                                    if (! empty($children)) {
-                                        $relation->setContent((string) $children[0]);
-                                    }
-                                    foreach ($children as $child) {
-                                        switch ($child->getName()) {
-                                        case "relationEntry":
-                                            $relation->setContent((string) $child);
-                                            break;
-                                        case "date":
-                                        case "dateRange":
-                                            /*
-                                             * setDates() changed to addDate()
-                                             */
-                                            $relation->addDate(
-                                                $this->parseDate($child,
-                                                                 array (
-                                                                     $node->getName(),
-                                                                     $desc->getName(),
-                                                                     $rel->getName()
-                                                                 )));
-                                            break;
-                                        case "descriptiveNote":
-                                            $relation->setNote($child->asXML());
-                                            $this->markUnknownAtt(
-                                                array (
-                                                    $node->getName(),
-                                                    $desc->getName(),
-                                                    $rel->getName(),
-                                                    $child->getName()
-                                                ), $this->getAttributes($child));
-                                            break;
-                                        default:
-                                            $this->markUnknownTag(
-                                                array (
-                                                    $node->getName(),
-                                                    $desc->getName(),
-                                                    $rel->getName()
-                                                ),
-                                                array (
-                                                    $child
-                                                ));
+
+                                    if (isset($ratts["href"]) && ($targetC = $this->vocabulary->getConstellation($ratts['href'])) !== false) {
+                                        $relation->setTargetArkID($ratts['href']);
+                                        $relation->setTargetConstellation($targetC->getID());
+                                        $relation->setTargetEntityType($targetC->getEntityType());
+                                        $relation->setContent($targetC->getPreferredNameEntry()->getOriginal());
+                                        //$relation->setTargetArkID($ratts['href']);
+                                        //if (isset($ratts["role"]))
+                                        //    $relation->setTargetEntityType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
+
+                                        /*
+                                         * cpfRelation/@type cpfRelation@xlink:type
+                                         *
+                                         * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+                                         * serializing export.
+                                         */
+                                        $relation->setAltType($this->getTerm($this->getValue($ratts["type"]), "relation_type"));
+                                        if (isset($ratts['cpfRelationType'])) {
+                                            $relation->setCPFRelationType($this->getTerm($ratts['cpfRelationType'], "relation_type"));
+                                            unset($ratts["cpfRelationType"]);
                                         }
+                                        unset($ratts["arcrole"]);
+                                        unset($ratts["href"]);
+                                        unset($ratts["role"]);
+                                        unset($ratts["type"]);
+                                        $children = $this->getChildren($rel);
+                                        if (! empty($children)) {
+                                            $relation->setContent((string) $children[0]);
+                                        }
+                                        foreach ($children as $child) {
+                                            switch ($child->getName()) {
+                                            case "relationEntry":
+                                                //$relation->setContent((string) $child);
+                                                break;
+                                            case "date":
+                                            case "dateRange":
+                                                /*
+                                                 * setDates() changed to addDate()
+                                                 */
+                                                $relation->addDate(
+                                                    $this->parseDate($child,
+                                                                     array (
+                                                                         $node->getName(),
+                                                                         $desc->getName(),
+                                                                         $rel->getName()
+                                                                     )));
+                                                break;
+                                            case "descriptiveNote":
+                                                $relation->setNote($child->asXML());
+                                                $this->markUnknownAtt(
+                                                    array (
+                                                        $node->getName(),
+                                                        $desc->getName(),
+                                                        $rel->getName(),
+                                                        $child->getName()
+                                                    ), $this->getAttributes($child));
+                                                break;
+                                            default:
+                                                $this->markUnknownTag(
+                                                    array (
+                                                        $node->getName(),
+                                                        $desc->getName(),
+                                                        $rel->getName()
+                                                    ),
+                                                    array (
+                                                        $child
+                                                    ));
+                                            }
+                                        }
+                                        $relation->setOperation($this->operation);
+                                        $identity->addRelation($relation);
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $rel->getName()
+                                            ), $ratts);
+
+                                    } else {
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName()
+                                            ), array($rel));
+
                                     }
-                                    $this->markUnknownAtt(
-                                        array (
-                                            $node->getName(),
-                                            $desc->getName(),
-                                            $rel->getName()
-                                        ), $ratts);
-                                    $relation->setOperation($this->operation);
-                                    $identity->addRelation($relation);
                                 }
                                 break;
                             case "resourceRelation":
                                 $relation = new \snac\data\ResourceRelation();
                                 $resource = new \snac\data\Resource();
-                                $resource->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "document_type"));
+                                if (isset($ratts["role"]))
+                                    $resource->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "document_type"));
                                 $resource->setLink($ratts['href']);
                                 $resource->setLinkType($this->getTerm($this->getValue($ratts['type']), "document_type"));
-                                $relation->setRole($this->getTerm($this->getValue($ratts['arcrole']), "document_role"));
+                                if (isset($ratts['arcrole']))
+                                    $relation->setRole($this->getTerm($this->getValue($ratts['arcrole']), "document_role"));
                                 foreach ($this->getChildren($rel) as $relItem) {
                                     switch ($relItem->getName()) {
                                     case "relationEntry":

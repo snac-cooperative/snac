@@ -20,7 +20,7 @@
     margin-top: 4px!important;
 }
 
-.panel-heading a:hover, 
+.panel-heading a:hover,
 .panel-heading a:active,
 .panel-heading a:focus {
     text-decoration: none;
@@ -759,7 +759,7 @@ pre code {
 
 @media (min-width: 768px) {
 .container {
-    width:750px
+    width:100%
 }
 
 
@@ -767,7 +767,7 @@ pre code {
 
 @media (min-width: 992px) {
 .container {
-    width:970px
+    width:100%
 }
 
 
@@ -775,7 +775,7 @@ pre code {
 
 @media (min-width: 1200px) {
 .container {
-    width:1170px
+    width:1200px
 }
 
 
@@ -6583,8 +6583,9 @@ div#identity .last {
     background-color:#ffffff;
     border:1px solid #dddddd;
     border-radius:4px;
-    -webkit-transition:all 0.2s ease-in-out;
-    transition:all 0.2s ease-in-out;
+    /* Causes Safari 13 flickering bug on grid page */
+    /* -webkit-transition:all 0.2s ease-in-out;
+    transition:all 0.2s ease-in-out; */
     display:inline-block;
     max-width:100%;
     height:auto
