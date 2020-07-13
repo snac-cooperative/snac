@@ -3,7 +3,7 @@
 	"secure-http":false
 	},
     "require": {
-        "php": "~7.0",
+        "php": "~7.2",
         "twig/twig": "~1.23",
         "monolog/monolog": "^1.18",
         "elasticsearch/elasticsearch": "*",
@@ -38,11 +38,11 @@
         },
         {
             "type": "vcs",
-            "url": "git@gitlab.iath.virginia.edu:snac/ark-manager.git"
+            "url": "http://gitlab.iath.virginia.edu/snac/ark-manager.git"
         },
         {
             "type": "vcs",
-            "url": "git@gitlab.iath.virginia.edu:snac/eac-validator.git"
+            "url": "http://gitlab.iath.virginia.edu/snac/eac-validator.git"
         }
 
     ]
