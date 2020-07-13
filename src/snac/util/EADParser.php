@@ -266,7 +266,7 @@ class EADParser {
 						$xml->load($eaddir . $file);
 
 						if ($fullValidate) {
-								$xml->schemaValidate(\snac\Config::$EAD_SCHEMA_FILE);
+								@$xml->schemaValidate(\snac\Config::$EAD_SCHEMA_FILE);
 						}
 						$errors = array_merge($errors, $this->getXMLErrors());	
 					}

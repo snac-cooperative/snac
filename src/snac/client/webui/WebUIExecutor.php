@@ -1326,8 +1326,8 @@ class WebUIExecutor {
 			}
 
 			// You should also check filesize here.
-			if ($_FILES['eadfile']['size'] > 100000000) {
-				return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us."]);
+			if ($_FILES['eadfile']['size'] > 10000000000) {
+				return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us. (B)"]);
 			}
 
 			$finfo = new \finfo(FILEINFO_MIME_TYPE);

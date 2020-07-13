@@ -727,7 +727,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
      * @see \snac\interfaces\ServerInterface::getResponse()
      */
     public function getResponse() {
-		$this->logger->addDebug("Sending response: ".$this->response);
+		$this->logger->addDebug("Sending response: ", [$this->response]);
         return $this->response;
     }
 
