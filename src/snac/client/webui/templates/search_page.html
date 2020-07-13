@@ -198,7 +198,7 @@
                         <span>({{"holdingRepository" in result.flags ? 'Holding Repository' : result.entityType.term}})</span>
                     </p>
                     {% if result.biogHists.0.text %}
-                    <p>{{result.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}</p>
+                    <p>{{result.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | u.truncate(500, '...') }}</p>
                     {% else %}
                         <p class="missing">No biographical history available for this identity.</p>
                     {% endif %}

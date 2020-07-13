@@ -6,7 +6,7 @@
 <meta property="og:title" content="{{data.nameEntries.0.original}} @ SNAC">
 <meta property="og:image" content="{{control.snacURL}}/images/snac-icon.png">
 {% if data.biogHists.0.text %}
-    <meta property="og:description" content="{{data.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}">
+    <meta property="og:description" content="{{data.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | u.truncate(500, '...') }}">
 {% else %}
     <meta property="og:description" content="No biographical history available for this identity.">
 {% endif %}
