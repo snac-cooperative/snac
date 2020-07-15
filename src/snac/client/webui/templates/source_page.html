@@ -74,11 +74,11 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 <div class="panel-heading">
                                     Source Citation
                                 </div>
-                                <div class="panel-body {{not source.text ? 'hidden'}}">
-                                    <p class="{{not source.text ? 'hidden'}}" style="">{{source.text|e|raw|nl2br}}</p>
+                                <div class="panel-body {{ (not source.text) ? 'hidden'}}">
+                                    <p class="{{ (not source.text) ? 'hidden'}}" style="">{{source.text|e|raw|nl2br}}</p>
                                 </div>
                                 <div class="panel-footer">
-                                    <p class="{{ not source.citation ? 'hidden'}}">{{source.citation|e}}</p>
+                                    <p class="{{ (not source.citation) ? 'hidden'}}">{{source.citation|e}}</p>
                                     <p>
                                         {% if source.uri %}
                                         <a href="{{source.uri}}" target="_blank">{{source.uri}}</a>
