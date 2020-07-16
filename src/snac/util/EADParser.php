@@ -154,11 +154,11 @@ class EADParser {
 			$result = $zip->open($infile, \ZipArchive::CHECKCONS);
 			if ($result !== true) {
 				switch($result) {
-				case ZipArchive::ER_NOZIP:
+				case \ZipArchive::ER_NOZIP:
 					throw new \Exception('Uploaded file is not a zip archive.');
-				case ZipArchive::ER_INCONS :
+				case \ZipArchive::ER_INCONS :
 					throw new \Exception('Uploaded file failed consistency check.');
-				case ZipArchive::ER_CRC :
+				case \ZipArchive::ER_CRC :
 					throw new \Exception('Uploaded file failed checksum.');
 				default:
 					throw new \Exception('An error occurred: ' . $res);
@@ -261,6 +261,7 @@ class EADParser {
 					while (($file = readdir($dh)) !== false) {
 						if ($file == '.' || $file == '..')
 							continue;
+                        $this->logger->addDebug("Validating: $eaddir$file");
 
 						$xml = new \DOMDocument();
 						$xml->load($eaddir . $file);
