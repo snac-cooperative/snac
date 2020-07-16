@@ -345,10 +345,31 @@
                     </div>
 
                     <div class="tab-pane" id="constellationRelations">
-                        <div class="loading-box text-center">
-                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
-                            <p>Loading ...</p>
+                        <h2>Internal CPF Relations</h2>
+
+
+                        <table id="constellationRelationsTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:10%;">Relation</th>
+                                    <th style="width:auto;">Name</th>
+                                    <th style="width:10%;">Options</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        
+                        <div class="form-group" id="add_constellationRelation_div">
+                            <div class="col-xs-12 text-center" style="margin-top: 15px;">
+                                <button class="btn btn-success" id="btn_add_constellationRelation" data-toggle="modal" data-target="#relationSearchPane" onClick='return false;'>
+                                    <span class="glyphicon glyphicon-plus"></span> Add New Constellation Relation
+                                </button>
+                            </div>
                         </div>
+
+                        {% set i = 0 %}
+                        <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
                     </div>
 
 

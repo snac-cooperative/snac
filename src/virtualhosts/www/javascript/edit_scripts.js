@@ -43,6 +43,7 @@ var defaults = {
 
     
 var resourceRelationid = 1;
+var constellationRelationid = 1;
 
 function displayResourceInfoModal(rId) {
     return false;
@@ -65,6 +66,15 @@ function applyTableChanges(shortName, i) {
             // The only thing resource relation editing can change is the role
             table.cell(row, 0).data($("#"+shortName + "_role_term_" + i).val());
             table.draw(false);
+        }
+    }
+    if (shortName == "constellationRelation") {
+        var table = $("#constellationRelationsTable").DataTable();
+        var row = table.row($("#"+shortName+"_panel_"+i).data('tableIndex'));
+        if (row) {
+            // The only thing resource relation editing can change is the role
+            table.cell(row, 0).data($("#"+shortName + "_type_term_" + i).val());
+            table.draw(true);
         }
     }
 }
@@ -151,6 +161,81 @@ function openResourceRelationEditPanel(rId, cur) {
     //makeEditable("resourceRelation", resourceRelationid);
     resourceRelationid = resourceRelationid + 1;
 
+
+    //TODO Must also add all SCMs that are inside!
+    
+    return false;
+}
+
+function openConstellationRelationEditPanel(rId, cur) {
+    if ($(cur).data('panelId')) {
+        $("#" + $(cur).data('panelId')).show();
+    
+        // Disable the open button
+        $(cur).addClass("disabled");
+        $(cur).closest('tr').addClass('table-row-disabled');
+
+        return false;
+    }
+
+
+    var cRel = null;
+    constellation.relations.forEach(function(relation) {
+        if (relation.id == rId) {
+            cRel = relation;
+            return;
+        }
+    });
+    if (cRel == null)
+        return false;
+
+    var text = $('#constellationRelation_template').clone();
+    var html = text.html().replace(/ZZ/g, constellationRelationid);
+    $('#add_constellationRelation_div').after(html);
+    
+    testing = cur;
+    var tableRow = $("#constellationRelationsTable").DataTable().row($(cur).closest("tr").get(0));
+    $("#constellationRelation_panel_"+constellationRelationid).data({tableIndex: tableRow.index()});
+    // Disable the open button
+    $(cur).addClass("disabled");
+    $(cur).closest('tr').addClass("table-row-disabled");
+
+    
+    if (typeof cRel.id !== 'undefined')
+        $('#constellationRelation_id_'+constellationRelationid).val(cRel.id);
+    if (typeof cRel.version !== 'undefined')
+        $('#constellationRelation_version_'+constellationRelationid).val(cRel.version);
+    if (typeof cRel.targetConstellation !== 'undefined')
+        $('#constellationRelation_targetID_'+constellationRelationid).val(cRel.targetConstellation);
+    if (typeof cRel.content !== 'undefined') {
+        $('#constellationRelation_content_'+constellationRelationid).val(cRel.content);
+        $('#constellationRelation_contentText_'+constellationRelationid).text(cRel.content);
+    }
+    if (typeof cRel.targetArkID !== 'undefined') {
+        $('#constellationRelation_targetArkID_'+constellationRelationid).val(cRel.targetArkID);
+        $('#constellationRelation_targetArkIDText_'+constellationRelationid).text(cRel.targetArkID);
+    }
+    if (typeof cRel.targetEntityType !== 'undefined')
+        $('#constellationRelation_targetEntityType_'+constellationRelationid).val(cRel.targetEntityType.id);
+    if (typeof cRel.type !== 'undefined') {
+        $('#constellationRelation_type_id_'+constellationRelationid).val(cRel.type.id);
+        $('#constellationRelation_type_term_'+constellationRelationid).val(cRel.type.term);
+        $('#constellationRelation_typeText_'+constellationRelationid).text(cRel.type.term);
+    }
+    if (typeof cRel.note !== 'undefined') {
+        $('#constellationRelation_note_'+constellationRelationid).val(cRel.note);
+        $('#constellationRelation_noteText_'+constellationRelationid).text(cRel.note);
+    }
+
+    updatePictureIcon('constellationRelation', constellationRelationid, cRel.targetEntityType.term);
+    updatePictureTitle('constellationRelation', constellationRelationid, cRel.content);
+
+
+    turnOnButtons("constellationRelation", constellationRelationid);
+    turnOnTooltips("constellationRelation", constellationRelationid);
+    //makeEditable("constellationRelation", constellationRelationid);
+
+    constellationRelationid = constellationRelationid + 1;
 
     //TODO Must also add all SCMs that are inside!
     
@@ -2600,54 +2685,70 @@ $(document).ready(function() {
             // Don't open a second time
             if (constellationRelationOpen)
                 return;
+            
+            getEditData(function() {
+                var relationDataTable = $('#constellationRelationsTable').DataTable({
+                    order: [],
+                    pageLength: 10
+                    /*dom: 'Bfrtip',
+                    buttons: [
+                        'copy', 'excel'
+                    ]*/
+                });
 
-            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=constellationRelations", null, function (data) {
-                constellationRelationOpen = true;
-                $('#constellationRelations').html(data);
+                if (typeof(constellation.relations) != "undefined") {
+                    constellation.relations.forEach(function(relation) {
+                        displayName = relation.content;
 
-                turnOnEditDeleteButtons("constellationRelations");
-
-                if ($('#next_constellationRelation_i').exists()) {
-                    constellationRelationid = parseInt($('#next_constellationRelation_i').text());
-                }
-                console.log("Next constellationRelation ID: " + constellationRelationid);
-                if ($('#btn_create_constellationRelation').exists()){
-                    $('#btn_create_constellationRelation').click(function(){
-                        var cid = $('input[name=relationChoice]:checked', '#relation_search_form').val()
-                        if (cid != null) {
-                            setEditedFlag(true);
-                            //somethingHasBeenEdited = true;
-                            var text = $('#constellationRelation_template').clone();
-                            var html = text.html().replace(/ZZ/g, constellationRelationid);
-                            $('#add_constellationRelation_div').after(html);
-                            $('#constellationRelation_targetID_'+constellationRelationid).val(cid);
-                            $('#constellationRelation_content_'+constellationRelationid).val($('#relationChoice_nameEntry_'+cid).val());
-                            $('#constellationRelation_targetArkID_'+constellationRelationid).val($('#relationChoice_arkID_'+cid).val());
-                            $('#constellationRelation_targetEntityType_'+constellationRelationid).val($('#relationChoice_entityType_'+cid).val());
-
-                            updatePictureIcon('constellationRelation', constellationRelationid, $('#relationChoice_entityTypeText_'+cid).val());
-                            updatePictureTitle('constellationRelation', constellationRelationid, $('#relationChoice_nameEntry_'+cid).val());
-
-                            $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
-                            $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
-
-                            turnOnButtons("constellationRelation", constellationRelationid);
-                            turnOnTooltips("constellationRelation", constellationRelationid);
-                            makeEditable("constellationRelation", constellationRelationid);
-
-                            constellationRelationid = constellationRelationid + 1;
-
-                            return true;
-
-                        }
-
-
-                        return false;
+                        relationDataTable.row.add( [
+                                relation.type.term,
+                                displayName,
+                                "<a class='btn btn-primary' href='#' onClick='return openConstellationRelationEditPanel("+relation.id+", this);'>Open</a>"
+                        ] );
                     });
+                    relationDataTable.draw();
                 }
-
-                turnOnTooltipsForTab("constellationRelations");
             });
+
+
+            constellationRelationOpen = true;
+            console.log("Next constellationRelation ID: " + constellationRelationid);
+            if ($('#btn_create_constellationRelation').exists()){
+                $('#btn_create_constellationRelation').click(function(){
+                    var cid = $('input[name=relationChoice]:checked', '#relation_search_form').val()
+                    if (cid != null) {
+                        setEditedFlag(true);
+                        //somethingHasBeenEdited = true;
+                        var text = $('#constellationRelation_template').clone();
+                        var html = text.html().replace(/ZZ/g, constellationRelationid);
+                        $('#add_constellationRelation_div').after(html);
+                        $('#constellationRelation_targetID_'+constellationRelationid).val(cid);
+                        $('#constellationRelation_content_'+constellationRelationid).val($('#relationChoice_nameEntry_'+cid).val());
+                        $('#constellationRelation_targetArkID_'+constellationRelationid).val($('#relationChoice_arkID_'+cid).val());
+                        $('#constellationRelation_targetEntityType_'+constellationRelationid).val($('#relationChoice_entityType_'+cid).val());
+
+                        updatePictureIcon('constellationRelation', constellationRelationid, $('#relationChoice_entityTypeText_'+cid).val());
+                        updatePictureTitle('constellationRelation', constellationRelationid, $('#relationChoice_nameEntry_'+cid).val());
+
+                        $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
+                        $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
+
+                        turnOnButtons("constellationRelation", constellationRelationid);
+                        turnOnTooltips("constellationRelation", constellationRelationid);
+                        makeEditable("constellationRelation", constellationRelationid);
+
+                        constellationRelationid = constellationRelationid + 1;
+
+                        return true;
+
+                    }
+
+
+                    return false;
+                });
+            }
+
+            turnOnTooltipsForTab("constellationRelations");
         });
     }
 

@@ -931,7 +931,7 @@
                 </div>
 
                 {{ widgets.scmModal(X, inEdit, showSubElements, "constellationRelation", i, relation.content, "Constellation Relation", relation) }}
-                {{ widgets.optionsList(X, inEdit, showSubElements, "constellationRelation", i) }}
+                {{ widgets.optionsListClosable(X, inEdit, showSubElements, "constellationRelation", i) }}
             </div>
         </div>
 
@@ -1586,11 +1586,11 @@
                         <div class="panel-heading">
                             Source Citation
                         </div>
-                        <div class="panel-body {{not scm.citation.text ? 'hidden'}}">
-                            <p id="scm_{{short}}_source_text_{{j}}_{{i}}" class="{{not scm.citation.text ? 'hidden'}}" style="">{{scm.citation.text|e|raw|nl2br}}</p>
+                        <div class="panel-body {{(not scm.citation.text) ? 'hidden'}}">
+                            <p id="scm_{{short}}_source_text_{{j}}_{{i}}" class="{{(not scm.citation.text) ? 'hidden'}}" style="">{{scm.citation.text|e|raw|nl2br}}</p>
                         </div>
                         <div class="panel-footer">
-                            <p id="scm_{{short}}_source_citation_{{j}}_{{i}}" class="scm-source-panel {{ not scm.citation.citation ? 'hidden'}}">{{scm.citation.citation|raw}}</p>
+                            <p id="scm_{{short}}_source_citation_{{j}}_{{i}}" class="scm-source-panel {{ (not scm.citation.citation) ? 'hidden'}}">{{scm.citation.citation|raw}}</p>
                             <p id="scm_{{short}}_source_uri_{{j}}_{{i}}" class="">
                                 {% if scm.citation.uri %}
                                 <a href="{{scm.citation.uri}}" target="_blank">{{scm.citation.uri}}</a>
