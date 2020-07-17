@@ -82,7 +82,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      *
      * This is run before each test, not just once before all tests.
      */
-    public function setUp()
+    public function setUp(): void
     {
         // Consider creating a single parser instance here, and reusing it throughout.
     }
@@ -214,7 +214,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($firstDateList[0], $secondDateList[0]);
         $this->assertEquals($firstDateList[1], $secondDateList[1]);
         $this->assertEquals($firstDateList[2], $secondDateList[2]);
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -264,7 +264,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         $objList = $this->dbu->listConstellationsWithStatusForAny('published', 10, 10);
         $this->assertTrue(count($objList)==10);
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -325,7 +325,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals("TestName", $newContribName);
         $this->assertEquals($nameVersion, $newNameVersion);
         $this->assertTrue($newContribVersion > $contribVersion);
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -356,7 +356,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
          * you want status you must call readConstellationStatus() and get it directly from the db.
          */
         $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -432,7 +432,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
          * you want status you must call readConstellationStatus() and get it directly from the db.
          */
         $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -480,7 +480,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
              */
             $this->assertFalse($gObj->getIsRange());
         }
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -580,7 +580,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         $finalObj = $this->dbu->readConstellation($xObj->getID(), $xObj->getVersion());
         $this->assertEquals($finalObj->getEntityType()->getTerm(), 'family');
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -660,7 +660,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         $longerSourceList = $postAddObj->getSources();
         $this->assertEquals(count($sourceList)+1, count($longerSourceList));
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -698,7 +698,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $this->logger->addDebug(sprintf("delete via status version: %s ic_id: %s", $delVersion, $retObj->getID()));
 
         $this->assertNotFalse($delVersion);
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -874,7 +874,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
             fwrite($cfile, $postDeleteJSON);
             fclose($cfile);
         }
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -893,7 +893,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
          */
         $numRows = $this->dbu->sqlObj()->countVocabulary();
         $this->assertTrue($numRows > 100000);
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -999,7 +999,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         $modObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
         $this->assertEquals($modName, $modObj->getNameEntries()[0]->getOriginal());
         $this->assertTrue($origNCount == count($modObj->getNameEntries()));
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -1103,7 +1103,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         $this->assertTrue($retObj->getVersion() < $updatedObj->getVersion());
         $this->assertEquals($retObj->getID(), $updatedObj->getID());
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 
@@ -1113,7 +1113,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function testIngestAnotherProblemCPF()
     {
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
@@ -1139,7 +1139,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
         // Assert that we could change the status
         $this->assertNotFalse($ret, "Error writing deleted status to object");
-        
+
         $this->logger->addDebug("Ending: " . __METHOD__);
     }
 }

@@ -73,7 +73,7 @@ class EACCPFSerializerTest extends \PHPUnit\Framework\TestCase {
      *
      * This is run before each test, not just once before all tests.
      */
-    public function setUp() {
+    public function setUp(): void {
     }
 
     /**

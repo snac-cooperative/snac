@@ -30,7 +30,7 @@ class OperationValidatorTest extends \PHPUnit\Framework\TestCase {
     /**
      * Setup function
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->ve = new ValidationEngine();
         $operationValidator = new OperationValidator();
         $this->ve->addValidator($operationValidator);

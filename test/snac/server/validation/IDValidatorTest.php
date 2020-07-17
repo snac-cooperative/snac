@@ -31,7 +31,7 @@ class IDValidatorTest extends \PHPUnit\Framework\TestCase {
      * {@inheritDoc}
      * @see PHPUnit_Framework_TestCase::setUp()
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->ve = new ValidationEngine();
         $idValidator = new IDValidator();
         $this->ve->addValidator($idValidator);

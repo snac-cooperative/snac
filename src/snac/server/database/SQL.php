@@ -5542,7 +5542,7 @@ class SQL
             array($recID));
 
         $row = $this->sdb->fetchrow($result);
-        $mainID = $row['ic_id'];
+        $mainID = $row['ic_id'] ?? null;
 
         /*
          * Use the ic_id to find not is_deleted sibling names.

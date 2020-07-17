@@ -111,7 +111,7 @@ class DBUserTest extends \PHPUnit\Framework\TestCase
      *
      * This is run before each test, not just once before all tests.
      */
-    public function setUp()
+    public function setUp(): void
     {
         /*
          * In retrospect, leaving old users in the db after testing was a bad idea. If you need to do
