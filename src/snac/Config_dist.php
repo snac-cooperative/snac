@@ -322,4 +322,8 @@ class Config {
      */
     public static $SAXON_JARFILE = "/home/jrhott/snac/lib/saxon9he.jar";
 
+    /**
+     * @var string Maximum upload file size
+     */
+    public static $MAX_UPLOAD_SIZE = "500000000";
 }
