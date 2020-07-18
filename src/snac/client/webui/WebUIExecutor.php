@@ -1433,7 +1433,7 @@ class WebUIExecutor {
             }
 
             // You should also check filesize here.
-            if ($_FILES['eadfile']['size'] > 100000000) {
+            if ($_FILES['eadfile']['size'] > \snac\Config::$MAX_UPLOAD_SIZE) {
                 return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us."]);
             }
 
