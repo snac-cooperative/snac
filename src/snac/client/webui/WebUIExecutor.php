@@ -1298,102 +1298,115 @@ class WebUIExecutor {
      * This method handles the uploading of EAD to parse. 
      *
      * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param string[] $headers Response headers for the return
      * @return string The response to the client (The content of the file)
      */
     public function handleParseEAD(&$input, &$display, &$headers) {
-		$url = null;
-		if (isset($input["url"]))
-			$url = $input["url"];
+        $url = null;
+        if (isset($input["url"]))
+            $url = $input["url"];
 
-		$response = [
-			"result" => "failure"
-		];
-			
-		$file = null;
-		if ( $url == null && isset($_FILES['eadfile']) && !(!isset($_FILES['eadfile']['error']) ||
-			is_array($_FILES['eadfile']['error']))) {
-			// Check $_FILES[$name]['error'] value.
-			switch ($_FILES['eadfile']['error']) {
-			case UPLOAD_ERR_OK:
-				break;
-			case UPLOAD_ERR_NO_FILE:
-				return array_merge($response, ["error" => "No file selected."]);
-			case UPLOAD_ERR_INI_SIZE:
-			case UPLOAD_ERR_FORM_SIZE:
-				return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us."]);
-			default:
-				return array_merge($response, ["error" => "An unknown error occurred in uploading the file"]);
-			}
+        $response = [
+            "result" => "failure"
+        ];
 
-			// You should also check filesize here.
-			if ($_FILES['eadfile']['size'] > 10000000000) {
-				return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us. (B)"]);
-			}
+        $file = null;
+        if ( $url == null && isset($_FILES['eadfile']) && !(!isset($_FILES['eadfile']['error']) ||
+            is_array($_FILES['eadfile']['error']))) {
+            // Check $_FILES[$name]['error'] value.
+            switch ($_FILES['eadfile']['error']) {
+                case UPLOAD_ERR_OK:
+                    break;
+                case UPLOAD_ERR_NO_FILE:
+                    return array_merge($response, ["error" => "No file selected."]);
+                case UPLOAD_ERR_INI_SIZE:
+                case UPLOAD_ERR_FORM_SIZE:
+                    return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us."]);
+                default:
+                    return array_merge($response, ["error" => "An unknown error occurred in uploading the file"]);
+            }
 
-			$finfo = new \finfo(FILEINFO_MIME_TYPE);
-			if (false === $ext = array_search(
-				$finfo->file($_FILES['eadfile']['tmp_name']),
-				array(
-					'zip' => 'application/zip'
-				),
-				true
-			)) {
-				return array_merge($response, ["error" => "Invalid upload file format: " .$finfo->file($_FILES['eadfile']['tmp_name']). ".  Please upload a ZIP file."]);
-			}
+            // You should also check filesize here.
+            if ($_FILES['eadfile']['size'] > 10000000000) {
+                return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us. (B)"]);
+            }
 
-			$file = base64_encode(file_get_contents($_FILES['eadfile']['tmp_name']));
-		} else {
-			if ($url == null)
-				return array_merge($response, ["error" => "An error occurred in uploading the file."]);
-		}
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            if (false === $ext = array_search(
+                $finfo->file($_FILES['eadfile']['tmp_name']),
+                array(
+                    'zip' => 'application/zip'
+                ),
+                true
+            )) {
+                return array_merge($response, ["error" => "Invalid upload file format: " .$finfo->file($_FILES['eadfile']['tmp_name']). ".  Please upload a ZIP file."]);
+            }
+
+            $file = base64_encode(file_get_contents($_FILES['eadfile']['tmp_name']));
+        } else {
+            if ($url == null)
+                return array_merge($response, ["error" => "An error occurred in uploading the file."]);
+        }
 
 
 
-		$query = [
-			"command" => "parse_ead"
-		];
+        $query = [
+            "command" => "parse_ead"
+        ];
 
-		if ($url != null) {
+        if ($url != null) {
 
-			$query["url"] = $url;
+            $query["url"] = $url;
 
-		} else if ($file != null) {
+        } else if ($file != null) {
 
-			$query["file"] = [
-				"mime-type" => "application/zip",
-				"content" => $file	
-			];
-		}
+            $query["file"] = [
+                "mime-type" => "application/zip",
+                "content" => $file	
+            ];
+        }
 
-		$this->logger->addDebug("Sending query to the server", $query);
-		$serverResponse = $this->connect->query($query);
-		$this->logger->addDebug("Received server response", [$serverResponse]);
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", [$serverResponse]);
 
-		/*
-			Ask server to "parse_ead"
+        /*
+            Ask server to "parse_ead"
 
-			$response["file"] = array();
-			$response["file"]["mime-type"] = "application/zip";
-			$response["file"]["filename"] = "filename.zip";
-			$response["file"]["content"] = base64_encode(zipfile);
-		 */
+            $response["file"] = array();
+            $response["file"]["mime-type"] = "application/zip";
+            $response["file"]["filename"] = "filename.zip";
+            $response["file"]["content"] = base64_encode(zipfile);
+         */
 
-		if (isset($serverResponse["file"])) {
-			$filedata = base64_decode($serverResponse["file"]["content"]);
-			array_push($headers, "Content-Type: application/x-zip");
-			array_push($headers, 'Content-Disposition: attachment; filename="parsed.zip"');
-			array_push($headers, "Expires: 0"); 
-			array_push($headers, "Cache-Control: must-revalidate, post-check=0, pre-check=0"); 
-			array_push($headers, 'Content-Length: ' . strlen($filedata));
-			$this->logger->addDebug("Content-length: ".  strlen($filedata));
-			$this->logger->addDebug("Content: $filedata");
-			return $filedata;
-		} else {
-			$this->drawErrorPage($serverResponse, $display);
-		}
+        if (isset($serverResponse["file"])) {
+            $filedata = base64_decode($serverResponse["file"]["content"]);
+            array_push($headers, "Content-Type: application/x-zip");
+            array_push($headers, 'Content-Disposition: attachment; filename="parsed.zip"');
+            array_push($headers, "Expires: 0"); 
+            array_push($headers, "Cache-Control: must-revalidate, post-check=0, pre-check=0"); 
+            array_push($headers, 'Content-Length: ' . strlen($filedata));
+            $this->logger->addDebug("Content-length: ".  strlen($filedata));
+            $this->logger->addDebug("Content: $filedata");
+            return $filedata;
+        } else {
+            $this->drawErrorPage($serverResponse, $display);
+        }
 
-		return null;
-	}
+        return null;
+    }
+    
+    /**
+     * Handle validting EAD
+     *
+     * This method handles the uploading of EAD to validate. 
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param string[] $headers Response headers for the return
+     * @return string The response to the client (The content of the file)
+     */
     public function handleValidateEAD(&$input, &$display, &$headers) {
 		$url = null;
 		if (isset($input["url"]))
@@ -1462,15 +1475,6 @@ class WebUIExecutor {
 		$this->logger->addDebug("Sending query to the server", $query);
 		$serverResponse = $this->connect->query($query);
 		$this->logger->addDebug("Received server response", $serverResponse);
-
-		/*
-			Ask server to "parse_ead"
-
-			$response["file"] = array();
-			$response["file"]["mime-type"] = "application/zip";
-			$response["file"]["filename"] = "filename.zip";
-			$response["file"]["content"] = base64_encode(zipfile);
-		 */
 
 		return $serverResponse;
 	}

@@ -656,8 +656,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
 
             case "validate_ead":
-				$response = $executor->handleValidateEAD($this->input, $display, $this->responseHeaders);
-				break;
+                $response = $executor->handleValidateEAD($this->input, $display, $this->responseHeaders);
+                break;
             case "parse_ead":
                 $this->response = $executor->handleParseEAD($this->input, $display, $this->responseHeaders);
                 if ($display->hasTemplate()) {
@@ -727,7 +727,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
      * @see \snac\interfaces\ServerInterface::getResponse()
      */
     public function getResponse() {
-		$this->logger->addDebug("Sending response: ", [$this->response]);
+        $this->logger->addDebug("Sending response: ", [$this->response]);
         return $this->response;
     }
 
