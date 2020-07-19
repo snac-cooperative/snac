@@ -1038,18 +1038,25 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function createInstitution($input) {
-        $constellation = new \snac\data\Constellation();
-        $constellation->setID($input["constellationid"]);
+        // Try to read the constellation
+        $response = [
+            "result" => "failure"
+        ];
+        $constellation = $this->cStore->readPublishedConstellationByID($input["constellationid"], \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
 
-        $inserted = $this->uStore->writeInstitution($constellation);
+        if ($constellation) {
+            $inserted = $this->uStore->writeInstitution($constellation);
 
-        if ($inserted) {
-            $response = [
-                "result" => "success",
-                "constellation" =>  $constellation->toArray()
-            ];
+            if ($inserted) {
+                $response = [
+                    "result" => "success",
+                    "constellation" =>  $constellation->toArray()
+                ];
+            } else {
+                $response["error"] = "Could not write Institution";
+            }
         } else {
-            $response["result"] = "failure";
+            $response["error"] = "No Constellation found";
         }
         return $response;
     }
