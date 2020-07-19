@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>New Simplified Constellation - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<link href="https://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<script type='text/javascript' src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+<!-- Tiny MCE text editor
+<script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
+<script>
+//tinymce.init(X, {selector:'#biogHist', plugins:'code', min_height: 300});
+</script>
+-->
+
+<!-- CodeMirror XML editor -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
+
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/name_heading_punctuator.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/edit_scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/relation_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/name_parser.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/simple_actions.js{{control.noCache}}"></script>
+
+<script>
+$.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+
+/**
+ * Only load this script once the document is fully loaded
+ */
+$(document).ready(function() {
+
+    // make the first name entry editable
+    makeEditable("nameEntry", 0);
+});
+</script>
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+</head>
+<body role="document">
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+
+    <form class="form-horizontal" id="constellation_form" action="{{control.snacURL}}/new_simple" method="post">
+        <h1>New Simplified Constellation</h1>
+
+        <!-- Constellation Data -->
+        <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
+        <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+        <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>
+
+
+        <div class="row">
+            <div class="col-md-12">
+
+                        <div class="well well-lg">
+                            <p><span style="font-weight: bold;">Instructions: </span> To suggest creating a new constellation, please
+                                enter at least the <em>Entity Type</em> and one <em>Name Entry</em> (required).  You may also add a biography,
+                                resource relation, and dates.  After that, we'll check to make sure that the constellation doesn't already exist 
+                                in SNAC and give you the option to create a new Constellation or suggest changes to the current Constellation.
+                        </div>
+
+                        <div class="panel panel-default">
+                        	<div class="panel-heading">Information</div>
+                            <div class="panel-body">
+                                <div class="col-xs-12">
+                                    <div class="form-group">
+                                        <label for="entityType" class="control-label col-xs-2" data-content="{{X.entitytype.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{X.entitytype.display}} <span style="color: #b40404">*</span>
+                                        </label>
+                                        <div class="col-xs-10">
+                                            <select id="entityType" name="entityType" class="form-control">
+                                                <option></option>
+                                                <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                        	<div class="panel-heading">Name Entry</div>
+                            <div class="panel-body" id="nameEntry_pane">
+
+                                {% set i = 0 %}
+                                <div class="panel-body">
+                                    <div class="col-sm-12" id="nameEntry_datapart_{{i}}">
+                                        <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ data.nameEntries[0].id }}"/>
+                                        <input id="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ data.nameEntries[0].version }}"/>
+                                        <input id="nameEntry_operation_{{i}}" name="nameEntry_operation_{{i}}" type="hidden" value="{{ data.nameEntries[0].operation }}"/>
+                                        <div class="form-group">
+                                        <label for="nameEntry_original_{{i}}" class="control-label col-xs-2" data-content="{{X.nameEntry.tooltip}}" data-toggle="popover" data-placement="top">
+                                            Name String <span style="color: #b40404">*</span>
+                                        </label>
+                                            <div class="col-xs-10">
+                                                <input id="nameEntry_original_{{i}}" name="nameEntry_original_{{i}}" class="form-control" value="{{ data.nameEntries[0].original }}"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-xs-2">
+                                            </div>
+                                            <div class="col-xs-10" id="nameEntry_info_{{i}}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% set i = i + 1 %}
+                                <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                        	<div class="panel-heading">Biographical History</div>
+                            <div class="panel-body" id="biogHist_pane">
+
+                                {% set i = 0 %}
+                                <div class="panel-body" id="biogHist_panel_{{i}}">
+                                    <div class="col-sm-12" id="biogHist_datapart_{{i}}">
+                                        <input type="hidden" id="biogHist_id_{{i}}" name="biogHist_id_{{i}}" value="{{data.biogHists[0].id}}"/>
+                                        <input type="hidden" id="biogHist_version_{{i}}" name="biogHist_version_{{i}}" value="{{data.biogHists[0].version}}"/>
+                                        {% if data.biogHists[0]..id %}
+                                            <input type="hidden" id="biogHist_operation_{{i}}" name="biogHist_operation_{{i}}" value=""/>
+                                        {% else %}
+                                            <input type="hidden" id="biogHist_operation_{{i}}" name="biogHist_operation_{{i}}" value="insert"/>
+                                        {% endif %}
+                                        <div class="bioghist-text" id="textarea_biogHist_text_{{i}}">
+                                            <textarea id="biogHist_text_{{i}}" name="biogHist_text_{{i}}">{{ data.biogHists[0].text|e }}</textarea>
+                                        </div>
+
+<script>
+    // Turn on CodeMirror Editors
+    $("#biogHist_text_0").CodeMirror = CodeMirror.fromTextArea($("#biogHist_text_0").get(0), {
+                  lineNumbers: true,
+                  lineWrapping: true,
+                  viewportMargin: Infinity,
+                  mode: {name: "xml"}
+                });
+</script>
+                                        <input type="hidden" id="biogHist_language_id_{{i}}" name="biogHist_language_id_{{i}}" value="{{data.biogHists[0].language.id}}"/>
+                                        <input type="hidden" id="biogHist_language_version_{{i}}" name="biogHist_language_version_{{i}}" value="{{data.biogHists[0].language.version}}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% set i = i + 1 %}
+                                <span id='next_biogHist_i' style='display:none;'>{{i}}</span>
+                            </div>
+                </div>
+            </div>
+            <div class="row">
+            <div class="col-md-6">
+                    <!-- Right Column -->
+
+                    <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+                        <p>Saving Constellation...</p>
+                    </div><!-- end alert -->
+                    <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+                        <p>Successfully saved!</p>
+                    </div><!-- end alert -->
+                    <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
+                        <p>An error occured while saving</p>
+                    </div><!-- end alert -->
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-right">
+                            <a href="#" class="btn btn-primary" id="continue_and_reconcile"><i class="fa fa-fw fa-floppy-o"></i> Continue</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div id="hidden_field_options" style="display:none">
+            <div id="component_template" style="display:none">
+                {{ components.displayComponent(X, true, true, null, 'ZZ', 'YY') }}
+            </div>
+            <div id="rule_template" style="display:none">
+            {{ components.displayNameRule(X, true, true, null, 'ZZ', 'YY') }}
+            </div>
+        </div>
+
+        <div class="modal fade" id="reconcilePane" tabindex="-1" role="dialog" aria-labelledby="reconcilePane">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header primary">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="reconcileLabel">Reconciliation Results</h4>
+                    </div>
+                    <div class="modal-body" id="reconcileModalContent">
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-info" id="confirm_create_new">Suggest New Constellation</button> &nbsp;
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include '_name_parser.html' %}
+
+    </div>
+    {{ footer(X, user, permissions, control) }}
+    </body>
+    </html>

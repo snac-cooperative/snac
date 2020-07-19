@@ -248,6 +248,26 @@ class WebUIExecutor {
     }
 
     /**
+     * Display New Simple Create Page
+     *
+     * Creates a blank "new constellation" simple edit page and loads it into the display.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySimpleCreatePage(&$display) {
+        $display->setTemplate("simple_edit_page");
+        $constellation = new \snac\data\Constellation();
+        $constellation->setOperation(\snac\data\Constellation::$OPERATION_INSERT);
+        $constellation->addNameEntry(new \snac\data\NameEntry());
+        $constellation->addBiogHist(new \snac\data\BiogHist());
+        if (\snac\Config::$DEBUG_MODE == true) {
+            $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+        }
+        $this->logger->addDebug("Setting constellation data into the page template");
+        $display->setData($constellation);
+    }
+
+    /**
      * Display New Simple Page
      *
      * Creates a blank "new constellation" simple edit page and loads it into the display.

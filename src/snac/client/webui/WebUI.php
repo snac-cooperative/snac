@@ -347,6 +347,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $executor->displayPermissionDeniedPage("Edit Constellation", $display);
                 }
                 break;
+            case "new_simple2":
+                if (isset($permissions["Create"]) && $permissions["Create"]) {
+                    $executor->displaySimpleCreatePage($display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Simple Create Constellation", $display);
+                }
+                break;
+            case "new_simple_create":
+                if (isset($permissions["Create"]) && $permissions["Create"]) {
+                    $executor->displaySimpleCreatePostPage($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Simple Create Constellation", $display);
+                }
+                break;
             case "new":
                 if (isset($permissions["Create"]) && $permissions["Create"]) {
                     $executor->displayNewPage($display);
