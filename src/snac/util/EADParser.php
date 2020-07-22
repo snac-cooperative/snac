@@ -161,7 +161,7 @@ class EADParser {
                 case \ZipArchive::ER_CRC :
                     throw new \Exception('Uploaded file failed checksum.');
                 default:
-                    throw new \Exception('An error occurred: ' . $res);
+                    throw new \Exception('An error occurred: ' . $result);
                 }
             }
             // TODO make this a little prettier, flatten the structure and only get xml files
