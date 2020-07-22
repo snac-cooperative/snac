@@ -4202,7 +4202,7 @@ class ServerExecutor {
 
         return $response;
     }
-    
+
     /**
      * Parse EAD and return result
      *
@@ -4216,32 +4216,32 @@ class ServerExecutor {
         if (!isset($input["url"]) && (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"]))) {
             throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
         }
-		
-		$response = array();
+
+        $response = array();
         $parser = new \snac\util\EADParser();
         $output = null;
 
-		if (isset($input["file"])) {
-			$file = base64_decode($input["file"]["content"]);
-			$output = $parser->parseZip($file);
-		}
+        if (isset($input["file"])) {
+            $file = base64_decode($input["file"]["content"]);
+            $output = $parser->parseZip($file);
+        }
 
-		if ($output && !is_array($output)) {
-				$response["file"] = [
-					"mime-type" => "application/zip",
-					"content" => base64_encode($output)
-				];
+        if ($output && !is_array($output)) {
+                $response["file"] = [
+                    "mime-type" => "application/zip",
+                    "content" => base64_encode($output)
+                ];
 
-				$response["result"] = "success";
-		} else {
-				// an error occurred
-				$response["result"] = "failure";
-				if (is_array($output))
-						$response["errors"] = $output;
-		}
-		return $response;
-	}
-    
+                $response["result"] = "success";
+        } else {
+                // an error occurred
+                $response["result"] = "failure";
+                if (is_array($output))
+                        $response["errors"] = $output;
+        }
+        return $response;
+    }
+
     /**
      * VAlidate EAD and return result
      *
@@ -4255,22 +4255,22 @@ class ServerExecutor {
         if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
             throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
         }
-		
-		$response = array();
+
+        $response = array();
         $parser = new \snac\util\EADParser();
 
-		$file = base64_decode($input["file"]["content"]);
-		$errors = $parser->validateZip($file);
+        $file = base64_decode($input["file"]["content"]);
+        $errors = $parser->validateZip($file);
 
-		if (empty($errors))
-			$response["result"] = "success";
-		else
-			$response = [
-				"result" => "failure",
-				"errors" => $errors
-			];
-		return $response;
-	}
+        if (empty($errors))
+            $response["result"] = "success";
+        else
+            $response = [
+                "result" => "failure",
+                "errors" => $errors
+            ];
+        return $response;
+    }
 
     /**
      * Add Constellation SameAs

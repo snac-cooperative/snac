@@ -15,56 +15,56 @@ $(document).ready( function() {
     // When the Validate EAD button is pushed, the form is submitted
     // This provides an AJAX call that expects JSON as a return
     // It displays and fills the well of progress
-	$("#upload_form").submit(function(){
-		var formData = new FormData($(this)[0]);
-		$("#submit").prop('disabled', true).addClass('disabled');
-		$("#parse").prop('disabled', true).addClass('disabled');
-		$("#progress-div").css('visibility', 'visible');
-		$('.progress-bar').css('width', '50%').attr('aria-valuenow', '10');
-		$('.progress-text').text("Uploading and Validating EAD");
-		$('#errors').text("");
-		$.ajax({
-			url:$(this).attr("action"),
-			type: 'POST',
-			data: formData,
-			async: false,
-			success: function (data) {
-				if (data.result == "success") {
-					// Validation is complete, now parse
-					$('.progress-bar').css('width', '100%').attr('aria-valuenow', '50');
-					$('.progress-text').text("Validation Complete, No Errors Detected");
-				} else { // validation or other errors
-					$('.progress-text').text("Validation Errors");
-					if (typeof data.errors != "undefined") {
-						data.errors.forEach(function(error) {
-							$('#errors').append("<p><b>"+error.filename+":"+error.line+": </b> "+error.message);
-						});
-					} else {
-						$('#errors').append("<p>"+data.error.message+"</p>");
-					}
-				}
+    $("#upload_form").submit(function(){
+        var formData = new FormData($(this)[0]);
+        $("#submit").prop('disabled', true).addClass('disabled');
+        $("#parse").prop('disabled', true).addClass('disabled');
+        $("#progress-div").css('visibility', 'visible');
+        $('.progress-bar').css('width', '50%').attr('aria-valuenow', '10');
+        $('.progress-text').text("Uploading and Validating EAD");
+        $('#errors').text("");
+        $.ajax({
+            url:$(this).attr("action"),
+            type: 'POST',
+            data: formData,
+            async: false,
+            success: function (data) {
+                if (data.result == "success") {
+                    // Validation is complete, now parse
+                    $('.progress-bar').css('width', '100%').attr('aria-valuenow', '50');
+                    $('.progress-text').text("Validation Complete, No Errors Detected");
+                } else { // validation or other errors
+                    $('.progress-text').text("Validation Errors");
+                    if (typeof data.errors != "undefined") {
+                        data.errors.forEach(function(error) {
+                            $('#errors').append("<p><b>"+error.filename+":"+error.line+": </b> "+error.message);
+                        });
+                    } else {
+                        $('#errors').append("<p>"+data.error.message+"</p>");
+                    }
+                }
                 $("#submit").removeAttr('disabled').removeClass('disabled');
                 $("#parse").removeAttr('disabled').removeClass('disabled');
-			},
-			cache: false,
-			contentType: false,
-			processData: false
-		});
-		return false;
-	});
-    
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+        return false;
+    });
+
 
     // When the Parse EAD to TSV button is pushed, this makes an ajax call using XHR
     // This provides an AJAX call that expects either a zip or JSON as return.
     // It displays and fills the well of progress, then also auto-loads the zip for download.
     var parseEAD = function () {
-		var formData = new FormData($("#upload_form")[0]);
-		$("#submit").prop('disabled', true).addClass('disabled');
-		$("#parse").prop('disabled', true).addClass('disabled');
-		$("#progress-div").css('visibility', 'visible');
-		$('.progress-bar').css('width', '50%').attr('aria-valuenow', '10');
-		$('.progress-text').text("Uploading and Parsing EAD");
-		$('#errors').text("");
+        var formData = new FormData($("#upload_form")[0]);
+        $("#submit").prop('disabled', true).addClass('disabled');
+        $("#parse").prop('disabled', true).addClass('disabled');
+        $("#progress-div").css('visibility', 'visible');
+        $('.progress-bar').css('width', '50%').attr('aria-valuenow', '10');
+        $('.progress-text').text("Uploading and Parsing EAD");
+        $('#errors').text("");
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'parse_ead' , true);
         xhr.responseType = 'arraybuffer';
@@ -143,6 +143,3 @@ $(document).ready( function() {
     });
 
 });
-
-
-
