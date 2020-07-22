@@ -157,12 +157,20 @@ class EADParser {
 
             $this->logger->addDebug("Unzipping");
             $zip = new \ZipArchive();
+
+            // NOTE: Mac OS Zip files seem to fail consistency checks
+            // It works to ignore this check, but we should NOT let everyone upload
+            // files -- only trusted sources!
             $result = $zip->open($infile, \ZipArchive::CHECKCONS);
             if ($result !== true) {
                 switch($result) {
                 case \ZipArchive::ER_NOZIP:
                     throw new \Exception('Uploaded file is not a zip archive.');
                 case \ZipArchive::ER_INCONS :
+                    // Workaround for Mac zip files -- if they are inconsistent, that's okay
+                    $result = $zip->open($infile);
+                    if ($result === true)
+                        break;
                     throw new \Exception('Uploaded file failed consistency check.');
                 case \ZipArchive::ER_CRC :
                     throw new \Exception('Uploaded file failed checksum.');
@@ -176,13 +184,12 @@ class EADParser {
                 $innerPath = $zip->getNameIndex($i);
                 $fileinfo = pathinfo($innerPath);
                 
-                // check for MACOSX folder, too. Use the copy command (but I don't like this)
-                // see: https://www.php.net/manual/en/ziparchive.extractto.php
+                // check for MACOSX folder, too. 
                 if (strpos($innerPath, 'MACOSX') === false && isset($fileinfo['extension']) && 
                         ($fileinfo['extension'] == 'xml' || $fileinfo['extension'] == 'XML'))
-                    copy("zip://".$infile."#".$innerPath, "$eaddir".$fileinfo['basename']);
+                    file_put_contents($eaddir.$fileinfo['basename'], $zip->getFromIndex($i));
             }
-            //$zip->extractTo($eaddir);
+
             $zip->close();
 
             $this->logger->addDebug("Unzipped");
