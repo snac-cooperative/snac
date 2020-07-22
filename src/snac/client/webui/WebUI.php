@@ -651,9 +651,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->saveInstitution($this->input);
                 break;
 
-            case "upload":
+            case "processing":
                 $response = $executor->displayUploadPage($this->input, $display);
                 break;
+
+            case "validate_ead":
+                $response = $executor->handleValidateEAD($this->input, $display, $this->responseHeaders);
+                break;
+            case "parse_ead":
+                $this->response = $executor->handleParseEAD($this->input, $display, $this->responseHeaders);
+                if ($display->hasTemplate()) {
+                    break;
+                } else {
+                    return;
+                }
 
             case "cart":
                 $response = $executor->handleCartResources($this->input);
@@ -716,7 +727,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
      * @see \snac\interfaces\ServerInterface::getResponse()
      */
     public function getResponse() {
-
+        $this->logger->addDebug("Sending response: ", [$this->response]);
         return $this->response;
     }
 

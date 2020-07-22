@@ -43,18 +43,13 @@ class SNACException extends \Exception {
      */
     public function __toString() {
 
-        $toPrint = "{ \"error\" : ";
-        $toPrint .= "{ \"type\": \"";
-        $toPrint .= $this->type;
-        $toPrint .= "\", \"message\" : ";
-        if (is_string($this->message))
-            $toPrint .= "\"".$this->message."\"";
-        else
-            $toPrint .= $this->message;
-        $toPrint .= "},";
-        $toPrint .= "\"timing\" : " . round((microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) * 1000, 2);
-        $toPrint .= "}";
+        $json = [
+            "error" => [
+                "type" => $this->type,
+                "message" => $this->message
+            ], "timing" => round((microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) * 1000, 2)
+        ];
 
-        return $toPrint;
+        return json_encode($json, JSON_PRETTY_PRINT);
     }
 }

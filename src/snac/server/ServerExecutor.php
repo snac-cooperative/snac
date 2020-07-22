@@ -4204,6 +4204,75 @@ class ServerExecutor {
     }
 
     /**
+     * Parse EAD and return result
+     *
+     * Calls EAD Parser on zip file given on the input and returns TSV files
+     * as well as any errors that occurred during the conversion process.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function parseEADToTSV($input) {
+        if (!isset($input["url"]) && (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"]))) {
+            throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
+        }
+
+        $response = array();
+        $parser = new \snac\util\EADParser();
+        $output = null;
+
+        if (isset($input["file"])) {
+            $file = base64_decode($input["file"]["content"]);
+            $output = $parser->parseZip($file);
+        }
+
+        if ($output && !is_array($output)) {
+                $response["file"] = [
+                    "mime-type" => "application/zip",
+                    "content" => base64_encode($output)
+                ];
+
+                $response["result"] = "success";
+        } else {
+                // an error occurred
+                $response["result"] = "failure";
+                if (is_array($output))
+                        $response["errors"] = $output;
+        }
+        return $response;
+    }
+
+    /**
+     * VAlidate EAD and return result
+     *
+     * Calls EAD Parser on zip file given on the input and returns
+     * any errors that occurred during the validation process.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function validateEAD($input) {
+        if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
+            throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
+        }
+
+        $response = array();
+        $parser = new \snac\util\EADParser();
+
+        $file = base64_decode($input["file"]["content"]);
+        $errors = $parser->validateZip($file);
+
+        if (empty($errors))
+            $response["result"] = "success";
+        else
+            $response = [
+                "result" => "failure",
+                "errors" => $errors
+            ];
+        return $response;
+    }
+
+    /**
      * Add Constellation SameAs
      *
      * Adds External Links to a constellation

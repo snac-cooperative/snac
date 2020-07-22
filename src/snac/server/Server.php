@@ -582,7 +582,17 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->removeBroaderConcepts($this->input["narrower_id"], $this->input["broader_id"]);
 
                 break;
+            case "parse_ead":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse EAD.");
+                $this->response = $executor->parseEADToTSV($this->input);
+                break;
 
+            case "validate_ead":
+                if (!$executor->hasPermission("Create"))
+                  throw new \snac\exceptions\SNACPermissionException("User not authorized to parse EAD.");
+                $this->response = $executor->validateEAD($this->input);
+                break;
 
             case "analytics":
                 $executor->recordAnalytics($this->input);
