@@ -35,7 +35,7 @@ class ServerTest extends \PHPUnit\Framework\TestCase {
      *
      * Creates the User object with testing@localhost and generates a temporary session
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->user = new \snac\data\User();
 
         $this->user->setUserName("testing@localhost");
