@@ -8,6 +8,7 @@
         "snac/ark-manager": "*",
         "snac/eac-validator": "*",
         "snac/snac-public-web": "*",
+        "snac/snac-ead-parser": "*",
         "graphaware/neo4j-php-client": "^4.8",
         "jasny/twig-extensions": "^1.1",
         "twig/extensions": "^1.5",
@@ -32,6 +33,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/snac-cooperative/snac-public-web.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/snac-cooperative/ead-parser.git"
         },
         {
             "type": "vcs",
