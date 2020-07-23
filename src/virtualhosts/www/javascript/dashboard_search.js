@@ -33,10 +33,11 @@ function searchAndUpdate() {
             //previewWindow.document.write(data);
 
             var html = "";
-            html += "<h4 class='text-left'>Quick Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
+            html += "<h4 class='text-left'>Quick Search Results</h4><div class='list-group text-left search-results' style='margin-bottom:0px'>";
             if (data.results.length > 0) {
                 for (var key in data.results) {
-                    html += "<a href='"+snacUrl+"/view/"+data.results[key].id+"' class='list-group-item'>"+data.results[key].nameEntries[0].original+"</a>";
+                    html += "<a href='"+snacUrl+"/view/"+data.results[key].id+"' class='list-group-item search-result'>"+
+                        data.results[key].nameEntries[0].original+"</a>";
                 }
             }
             html += "</div>";

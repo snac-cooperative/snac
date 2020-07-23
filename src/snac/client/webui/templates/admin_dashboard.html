@@ -42,14 +42,14 @@
     }
 
     $(document).ready(function() {
-        $("#search_form").on("click", "a", function(event) {
+        $("#search_form").on("click", "a.search-result", function(event) {
             event.preventDefault()
             $link = $(event.target)
             var href = $link.attr("href")
             var name = $link.text()
             var id = href.slice(href.lastIndexOf("/") + 1)
 
-            if (confirm(`Are you sure you want to make ${name} (ID: ${id}) a SNAC Institution?`)) {
+            if (id && confirm(`Are you sure you want to make ${name} (ID: ${id}) a SNAC Institution?`)) {
                 addSNACInstitution(id);
                 $("#search-results-box").html("")
             }
