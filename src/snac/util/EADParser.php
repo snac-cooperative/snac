@@ -32,6 +32,11 @@ class EADParser {
     private $logger = null;
 
     /**
+     * @var string $eadVersion Version of EAD 
+     */
+    private $eadVersion = null;
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -62,11 +67,11 @@ class EADParser {
         try {
             $errors = $this->validateDirectory($eaddir, false); // only check for well-formedness
 
-            if (!empty($errors)) {
+            if (!empty($errors) || $this->eadVersion === false) {
                 return $errors;
             }
-            $xmlfile = \snac\Config::$EAD_PARSE_XSLT_DIR."/ead_parse_driver.xml";
-            $xslfile = \snac\Config::$EAD_PARSE_XSLT_DIR."/eadToORxsl.xsl";
+            $xmlfile = \snac\Config::$EAD_PARSER_DIR."/ead_parse_driver.xml";
+            $xslfile = \snac\Config::$EAD_PARSER_DIR."/{$this->eadVersion}ToOR.xsl";
             $tmpoutfile = $tmpdir."/tmpoutput.xml";
 
             $descriptorspec = array(
@@ -143,6 +148,7 @@ class EADParser {
         mkdir($tmpdir);
         $infile = $tmpdir."/upload.zip";
         $eaddir = $tmpdir."/ead/";
+        mkdir($eaddir);
         $errors = [];
 
         try {
@@ -164,8 +170,19 @@ class EADParser {
                     throw new \Exception('An error occurred: ' . $result);
                 }
             }
-            // TODO make this a little prettier, flatten the structure and only get xml files
-            $zip->extractTo($eaddir);
+
+            // Loop through all files in the zip and find those that have xml/XML extension
+            for($i = 0; $i < $zip->numFiles; $i++) {
+                $innerPath = $zip->getNameIndex($i);
+                $fileinfo = pathinfo($innerPath);
+                
+                // check for MACOSX folder, too. Use the copy command (but I don't like this)
+                // see: https://www.php.net/manual/en/ziparchive.extractto.php
+                if (strpos($innerPath, 'MACOSX') === false && isset($fileinfo['extension']) && 
+                        ($fileinfo['extension'] == 'xml' || $fileinfo['extension'] == 'XML'))
+                    copy("zip://".$infile."#".$innerPath, "$eaddir".$fileinfo['basename']);
+            }
+            //$zip->extractTo($eaddir);
             $zip->close();
 
             $this->logger->addDebug("Unzipped");
@@ -255,6 +272,7 @@ class EADParser {
         try {
             // Enable user error handling
             libxml_use_internal_errors(true);
+            
 
             if (is_dir($eaddir)) {
                 if ($dh = opendir($eaddir)) {
@@ -265,13 +283,26 @@ class EADParser {
 
                         $xml = new \DOMDocument();
                         $xml->load($eaddir . $file);
+                        
+                        if ($this->eadVersion == null)
+                            $this->getEADVersion($xml);
 
                         if ($fullValidate) {
-                                @$xml->schemaValidate(\snac\Config::$EAD_SCHEMA_FILE);
+                            if ($this->eadVersion)
+                                @$xml->schemaValidate(\snac\Config::$EAD_PARSER_DIR."/{$this->eadVersion}.xsd");
                         }
                         $errors = array_merge($errors, $this->getXMLErrors());
                     }
                     closedir($dh);
+
+                    if ($this->eadVersion === false) {
+                        array_push($errors, [
+                            "filename" => "",
+                            "message" => "Unrecognized EAD Namespace",
+                            "code" => "",
+                            "line" => ""
+                        ]);
+                    }
                 }
             }
             $this->logger->addDebug("EAD Validation Complete");
@@ -303,5 +334,29 @@ class EADParser {
 
         $this->logger->addDebug("Returning results");
         return $errors;
+    }
+
+    /**
+     * Get Schema Version 
+     *
+     * Returns the EAD version based on the default namespace.  Returns false 
+     * if it can not be determined
+     *
+     * @param $xml DOMDocument containing the EAD
+     * @return string|boolean The ead version or false if not found 
+     */
+    private function getEADVersion($xml) {
+        $namespace = $xml->documentElement->lookupnamespaceURI(null);
+        $version = false;
+        switch($namespace) {
+            case 'urn:isbn:1-931666-22-9':
+                $version = 'ead2002';
+                break;
+            case 'http://ead3.archivists.org/schema/':
+                $version = 'ead3';
+                break;
+        }
+        $this->eadVersion = $version;
+        return $version;
     }
 }

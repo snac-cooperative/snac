@@ -308,14 +308,9 @@ class Config {
     public static $EAD_PARSETMP_DIR = "/tmp";
 
     /**
-     * @var string Location of EAD XSLT file
+     * @var string Location of EAD XSLT and schema files
      */
-    public static $EAD_PARSE_XSLT_DIR = "/path/to/snac/src/snac/util";
-
-    /**
-     * @var string Location of EAD2002 schema file
-     */
-    public static $EAD_SCHEMA_FILE = "/path/to/snac/src/snac/util/ead2002.xsd";
+    public static $EAD_PARSER_DIR = "/path/to/snac/vendor/snac/snac-ead-parser";
 
     /**
      * @var string Location of SAXON jar file
