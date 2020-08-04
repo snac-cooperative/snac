@@ -1,6 +1,6 @@
 <?php
 /**
- * Mailer class 
+ * Mailer class
  *
  * Contains the mailer information
  *
@@ -13,6 +13,7 @@
 namespace snac\server\mailer;
 
 use \snac\Config as Config;
+use PHPMailer\PHPMailer\PHPMailer;
 
 /**
  * Mailer Class
@@ -52,8 +53,8 @@ class Mailer {
         // create a log channel
         $this->logger = new \Monolog\Logger('Mailer');
         $this->logger->pushHandler($log);
-        
-        $this->mailer = new \PHPMailer();
+
+        $this->mailer = new PHPMailer();
         if (\snac\Config::$EMAIL_SMTP) {
             $this->mailer->isSMTP();                                                // Set mailer to use SMTP
             $this->mailer->SMTPAuth = \snac\Config::$EMAIL_CONFIG["smtp_auth"];     // Enable SMTP authentication
@@ -102,10 +103,9 @@ class Mailer {
         $textBody = $twig->render("default.txt", array("body" => \Html2Text\Html2Text::convert($body)));
         $this->mailer->AltBody    = $textBody;
 
-
         if(!$this->mailer->send()) {
             $this->logger->addDebug('Message could not be sent: ' . $this->mailer->ErrorInfo);
-        } 
+        }
         $this->resetMailer();
     }
 
@@ -119,11 +119,11 @@ class Mailer {
     public function sendUserMessage(&$message) {
         $this->logger->addDebug('Trying to send message', $message->toArray());
         $this->mailer->setFrom($this->fromEmail, $this->fromName);
-        
+
         $toEmail = $message->getToUser()->getEmail();
         if ($message->getToUser()->getWorkEmail() !== null)
             $toEmail = $message->getToUser()->getWorkEmail();
-        
+
         $this->mailer->addAddress($toEmail, $message->getToUser()->getFullName()); // Add a recipient
         $this->mailer->isHTML(true);                                            // Set email format to HTML
 
@@ -147,7 +147,7 @@ class Mailer {
         if(!$this->mailer->send()) {
             $this->logger->addDebug('Message could not be sent: ' . $this->mailer->ErrorInfo);
         }
-        
+
         $this->resetMailer();
     }
 
@@ -168,4 +168,3 @@ class Mailer {
         $this->mailer->AltBody = "";
     }
 }
-
