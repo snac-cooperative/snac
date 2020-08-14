@@ -32,7 +32,7 @@ class EADParser {
     private $logger = null;
 
     /**
-     * @var string $eadVersion Version of EAD 
+     * @var string $eadVersion Version of EAD
      */
     private $eadVersion = null;
 
@@ -80,6 +80,7 @@ class EADParser {
                 2 => array("pipe", "a")
             );
             $pipes = array();
+            // TODO: Rework sourceID
             $process = proc_open("java -cp ".\snac\Config::$SAXON_JARFILE." net.sf.saxon.Transform -s:$xmlfile -xsl:$xslfile -o:$tmpoutfile sourceFolderPath=$eaddir outputFolderPath=$outputdir sourceID=snac 2>&1", $descriptorspec, $pipes);
 
             $procOutput = "";
@@ -107,9 +108,11 @@ class EADParser {
                 throw new \Exception("Could not create output Zip file");
             }
             $this->logger->addDebug("Adding Zip Content");
-            $zip->addFile($outputdir."/CPF-Join-Table.tsv", "CPF-Join-Table.tsv");
-            $zip->addFile($outputdir."/CPF-Table.tsv", "CPF-Table.tsv");
-            $zip->addFile($outputdir."/RD-Table.tsv", "RD-Table.tsv");
+            // NOTE: 8/14/20 JHG: Saxon has appended the sourceID (i.e. "snac") to $outputdir and prepended it to the .tsv table names
+            // See $outputFolderPath and .tsv filenames in snac-ead-parser ead2002ToOR.xsl and ead3ToOR.xsl
+            $zip->addFile($outputdir."snac/snacCPF-Join-Table.tsv", "CPF-Join-Table.tsv");
+            $zip->addFile($outputdir."snac/snacCPF-Table.tsv", "CPF-Table.tsv");
+            $zip->addFile($outputdir."snac/snacRD-Table.tsv", "RD-Table.tsv");
 
             $this->logger->addDebug("Done writing Zip");
             // close zip for downloading
@@ -183,9 +186,9 @@ class EADParser {
             for($i = 0; $i < $zip->numFiles; $i++) {
                 $innerPath = $zip->getNameIndex($i);
                 $fileinfo = pathinfo($innerPath);
-                
-                // check for MACOSX folder, too. 
-                if (strpos($innerPath, 'MACOSX') === false && isset($fileinfo['extension']) && 
+
+                // check for MACOSX folder, too.
+                if (strpos($innerPath, 'MACOSX') === false && isset($fileinfo['extension']) &&
                         ($fileinfo['extension'] == 'xml' || $fileinfo['extension'] == 'XML'))
                     file_put_contents($eaddir.$fileinfo['basename'], $zip->getFromIndex($i));
             }
@@ -279,7 +282,7 @@ class EADParser {
         try {
             // Enable user error handling
             libxml_use_internal_errors(true);
-            
+
 
             if (is_dir($eaddir)) {
                 if ($dh = opendir($eaddir)) {
@@ -290,7 +293,7 @@ class EADParser {
 
                         $xml = new \DOMDocument();
                         $xml->load($eaddir . $file);
-                        
+
                         if ($this->eadVersion == null)
                             $this->getEADVersion($xml);
 
@@ -344,13 +347,13 @@ class EADParser {
     }
 
     /**
-     * Get Schema Version 
+     * Get Schema Version
      *
-     * Returns the EAD version based on the default namespace.  Returns false 
+     * Returns the EAD version based on the default namespace.  Returns false
      * if it can not be determined
      *
      * @param $xml DOMDocument containing the EAD
-     * @return string|boolean The ead version or false if not found 
+     * @return string|boolean The ead version or false if not found
      */
     private function getEADVersion($xml) {
         $namespace = $xml->documentElement->lookupnamespaceURI(null);
