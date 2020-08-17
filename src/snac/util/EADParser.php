@@ -80,8 +80,7 @@ class EADParser {
                 2 => array("pipe", "a")
             );
             $pipes = array();
-            // TODO: Rework sourceID
-            $process = proc_open("java -cp ".\snac\Config::$SAXON_JARFILE." net.sf.saxon.Transform -s:$xmlfile -xsl:$xslfile -o:$tmpoutfile sourceFolderPath=$eaddir outputFolderPath=$outputdir sourceID=snac 2>&1", $descriptorspec, $pipes);
+            $process = proc_open("java -cp ".\snac\Config::$SAXON_JARFILE." net.sf.saxon.Transform -s:$xmlfile -xsl:$xslfile -o:$tmpoutfile sourceFolderPath=$eaddir outputFolderPath=$outputdir 2>&1", $descriptorspec, $pipes);
 
             $procOutput = "";
 
@@ -108,11 +107,9 @@ class EADParser {
                 throw new \Exception("Could not create output Zip file");
             }
             $this->logger->addDebug("Adding Zip Content");
-            // NOTE: 8/14/20 JHG: Saxon has appended the sourceID (i.e. "snac") to $outputdir and prepended it to the .tsv table names
-            // See $outputFolderPath and .tsv filenames in snac-ead-parser ead2002ToOR.xsl and ead3ToOR.xsl
-            $zip->addFile($outputdir."snac/snacCPF-Join-Table.tsv", "CPF-Join-Table.tsv");
-            $zip->addFile($outputdir."snac/snacCPF-Table.tsv", "CPF-Table.tsv");
-            $zip->addFile($outputdir."snac/snacRD-Table.tsv", "RD-Table.tsv");
+            $zip->addFile($outputdir."/CPF-Join-Table.tsv", "CPF-Join-Table.tsv");
+            $zip->addFile($outputdir."/CPF-Table.tsv", "CPF-Table.tsv");
+            $zip->addFile($outputdir."/RD-Table.tsv", "RD-Table.tsv");
 
             $this->logger->addDebug("Done writing Zip");
             // close zip for downloading
@@ -356,7 +353,10 @@ class EADParser {
      * @return string|boolean The ead version or false if not found
      */
     private function getEADVersion($xml) {
-        $namespace = $xml->documentElement->lookupnamespaceURI(null);
+        $namespace = null;
+        if (isset($xml->documentElement)) {
+            $namespace = $xml->documentElement->lookupnamespaceURI(null);
+        }
         $version = false;
         switch($namespace) {
             case 'urn:isbn:1-931666-22-9':
