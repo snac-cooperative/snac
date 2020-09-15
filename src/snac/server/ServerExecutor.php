@@ -2332,6 +2332,21 @@ class ServerExecutor {
     }
 
     /**
+     * Insert and Publish Constellation
+     *
+     * Takes a new constellation object and inserts it into the database and publishes it.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \Exception
+     * @return string[] The response to send to the client
+     */
+    public function insertAndPublishConstellation(&$input) {
+        $constellation = $this->writeConstellation($input);
+        $response = $this->publishConstellation($constellation);
+        return $response;
+    }
+
+    /**
      * Publish Functionality
      *
      * This method actually does the publishing of a constellation.  If the constellation does not

@@ -331,6 +331,12 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->publishConstellation($this->input);
                 break;
 
+            case "insert_and_publish_constellation":
+                if (!$executor->hasPermission("Publish"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to publish constellations.", 403);
+                    $this->response = $executor->insertAndPublishConstellation($this->input);
+                break;
+
             case "review_constellation":
                 if (!$executor->hasPermission("Edit"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to send constellation for review.", 403);
