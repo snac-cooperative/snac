@@ -2276,7 +2276,7 @@ class ServerExecutor {
                 $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
                 $info = $this->cStore->readConstellationUserStatus($constellation->getID());
-                if ($info === null) {
+                if (!$info) {
                     throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status", 403);
                 }
                 $currentStatus = $info["status"];

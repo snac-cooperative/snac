@@ -261,7 +261,7 @@ class ResourceValidator extends Validator {
             return false;
         }
         $resource = $relation->getResource();
-        if ($resource->getID() == null || $resource->getVersion() == null) {
+        if ($resource->getID() == null) {
             $this->addError("Resource missing ID or version", $relation);
             return false;
         }
