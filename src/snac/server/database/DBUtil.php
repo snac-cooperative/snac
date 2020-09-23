@@ -3032,9 +3032,15 @@ class DBUtil
             $rid = $fdata->getID();
             if ($this->prepOperation($vhInfo, $fdata))
             {
+                $resourceVersion = $fdata->getResource()->getVersion();
+                if (!$resourceVersion)
+                {
+                    $resourceVersion = $this->sql->selectCurrentResourceVersion($fdata->getResource()->getID());
+                }
+
                 $rid = $this->sql->insertResourceRelation($vhInfo,
                                                           $fdata->getResource()->getID(),
-                                                          $fdata->getResource()->getVersion(),
+                                                          $resourceVersion,
                                                           $this->termID($fdata->getRole()), // xlink:arcrole
                                                           $fdata->getContent(), // relationEntry
                                                           $fdata->getNote(), // descriptiveNote
