@@ -196,15 +196,15 @@ class Display {
             $this->data["control"]["noCache"] = trim("?_=".\snac\Config::$CACHE_COOKIE);
         }
 
-        $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
-        $twig = new \Twig_Environment($loader, array(
+        $loader = new \Twig\Loader\FilesystemLoader(\snac\Config::$TEMPLATE_DIR);
+        $twig = new \Twig\Environment($loader, array(
                 'debug' => \snac\Config::$DEBUG_MODE,
                 //'cache' => \snac\Config::$TEMPLATE_CACHE,
             ));
         $twig->addExtension(new \Jasny\Twig\PcreExtension());
-        $twig->addExtension(new \Twig_Extensions_Extension_Text());
+        $twig->addExtension(new \Twig\Extra\String\StringExtension());
         if (\snac\Config::$DEBUG_MODE == true) {
-            $twig->addExtension(new \Twig_Extension_Debug());
+            $twig->addExtension(new \Twig\Extension\DebugExtension());
         }
 
         return $twig->render($this->templateFileName, $this->data);

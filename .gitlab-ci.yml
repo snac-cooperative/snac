@@ -7,7 +7,7 @@ before_script:
     - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
     - ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
     - ln -s `pwd`/src/snac/util ~/cpf_templates
-    - mkdir -p coverage/ 
+    - mkdir -p coverage/
 
 
 stages:
@@ -43,7 +43,7 @@ run_test:
 
 run_test_coverage:
   script:
-    - vendor/bin/phpunit -v --coverage-html coverage/ --coverage-text 
+    - vendor/bin/phpunit -v --coverage-html coverage/ --coverage-text
     - rsync -avO coverage /lv2/snac/docs/
   stage: test
   only:
@@ -55,7 +55,7 @@ generate_docs:
     - rsync -av doc/ /lv2/snac/docs/
   stage: documentation
   only:
-    - development
+    - never_run_this
 
 deployment:
   script:
