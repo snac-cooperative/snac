@@ -64,7 +64,7 @@
         </div><!-- end alert -->
     </div>
     <div class="row">
-        {% if permissions.EditVocabulary %}
+        {% if permissions.EditVocabulary and control.includeDevelopmentFeatures %}
         <div class="col-md-4">
             <!-- Left column -->
             <div class="panel panel-success">
@@ -74,8 +74,8 @@
                 <div class="panel-body">
                     <p>Manage concept vocabularies.</p>
                     <div class="list-group">
-                        <a href="{{control.snacURL}}/vocab_administrator/add_concept" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Concept Term</a>
-                        <a href="{{control.snacURL}}/vocab_administrator/concepts" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Concepts</a>
+                        <a href="{{control.snacURL}}/v2/concepts" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Concept Term</a>
+                        <a href="{{control.snacURL}}/v2/concepts" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Concepts</a>
                     </div>
                 </div>
             </div>
