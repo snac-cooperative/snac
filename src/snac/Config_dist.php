@@ -49,6 +49,11 @@ class Config {
     public static $INTERFACE_VERSION = "production";
 
     /**
+     * @var boolean Whether or not to include development features. Include development feautures (true) or hide development features (false)
+     */
+    public static $INCLUDE_DEVELOPMENT_FEATURES = false;
+
+    /**
      * @var boolean Whether the system is in DEBUG mode
      */
     public static $DEBUG_MODE = true;

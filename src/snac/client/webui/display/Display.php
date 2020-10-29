@@ -183,6 +183,8 @@ class Display {
                 $this->data["control"]["interfaceVersion"] = "demo";
         }
 
+        $this->data["control"]["includeDevelopmentFeatures"] = \snac\Config::$INCLUDE_DEVELOPMENT_FEATURES ?? false;
+
         if (isset(\snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID) &&
             \snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID != null && \snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID != "" ) {
             $this->data["control"]["googleAnalyticsID"] = \snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID;
