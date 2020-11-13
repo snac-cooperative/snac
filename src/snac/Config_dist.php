@@ -34,6 +34,41 @@ class Config {
     public static $SESSION_NAME = 'SNACWebUI';
 
     /**
+     * @var string URL to redirect after Login
+     */
+    public static $REDIRECT_AFTER_LOGIN_URL = 'http://localhost/dashboard';
+
+    /**
+     * @var string URL to redirect after Logout
+     */
+    public static $REDIRECT_AFTER_LOGOUT_URL = 'http://localhost';
+
+    /**
+     * @var string URL for SNAC Laravel login endpoint
+     */
+    public static $LARAVEL_LOGIN_URL = 'http://localhost:8000/login/snac';
+
+    /**
+     * @var string URL for SNAC Laravel logout endpoint
+     */
+    public static $LARAVEL_LOGOUT_URL = 'http://localhost:8000/logoff';
+
+    /**
+     * @var string URL for SNAC Laravel redirect after login
+     */
+    public static $LARAVEL_REDIRECT_AFTER_LOGIN_URL = 'http://localhost:8000';
+
+    /**
+     * @var string URL for SNAC Laravel redirect after logout
+     */
+    public static $LARAVEL_REDIRECT_AFTER_LOGOUT_URL = 'http://localhost:8000/logoff';
+
+    /**
+     * @var boolean Whether or not to have the server attempt to use Laravel Authentication
+     */
+    public static $USE_LARAVEL_AUTHENTICATION = true;
+
+    /**
      * @var boolean Whether the system in OFFLINE (Maintenance) mode
      */
     public static $SITE_OFFLINE = false;
