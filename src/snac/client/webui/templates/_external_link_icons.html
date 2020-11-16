@@ -1,0 +1,88 @@
+{% macro displayExternalIcons(sameas) %}
+    {% if 'wikipedia' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-wikipedia' %}
+        {% set link_text = 'Wikipedia' %}
+    {% elseif 'loc.gov/authorities' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-idlocgov' %}
+        {% set link_text = 'LC/NACO' %}
+    {% elseif 'viaf.org' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-viaf' %}
+        {% set link_text = 'Virtual International Authority File' %}
+    {% elseif 'worldcat.org/identities' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-worldcat' %}
+        {% set link_text = 'WorldCat Identities' %}
+    {% elseif 'cbw.iath.virginia.edu' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-cbw' %}
+        {% set link_text = 'Collective Biographies of Women' %}
+    {% elseif 'familysearch.org' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-fs' %}
+        {% set link_text = 'FamilySearch' %}
+    {% elseif 'discovery.nationalarchives.gov.uk' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-national-archives-uk' %}
+        {% set link_text = 'National Archives (U.K.)' %}
+    {% elseif 'archives.gov/' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-nara' %}
+        {% set link_text = 'National Archives and Records Administration' %}
+    {% elseif 'wikidata.org' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-wikidata' %}
+        {% set link_text = 'Wikidata' %}
+    {% elseif 'numismatics.org' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-numismatic' %}
+        {% set link_text = 'American Numismatic Society' %}
+    {% elseif 'thehistorymakers.org' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-historymakers' %}
+        {% set link_text = 'The HistoryMakers' %}
+    {% elseif 'catalogue.bnf.fr' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-bnf' %}
+        {% set link_text = 'BnF' %}
+    {% elseif 'getty.edu' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-getty' %}
+        {% set link_text = 'ULAN' %}
+    {% elseif 'isni.org' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-isni' %}
+        {% set link_text = 'ISNI' %}
+    {% elseif 'idref.fr' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-sudoc' %}
+        {% set link_text = 'SUDOC' %}
+    {% elseif 'datos.bne.es' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-bne' %}
+        {% set link_text = 'BNE' %}
+    {% elseif 'd-nb.info' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-dnb' %}
+        {% set link_text = 'DNB GND' %}
+    {% elseif 'findagrave' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-findagrave' %}
+        {% set link_text = 'FindAGrave' %}
+    {% elseif 'imdb.com' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-imdb' %}
+        {% set link_text = 'IMDb' %}
+    {% elseif 'opac.sbn.it/opacsbn/opac/iccu' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-iccu' %}
+        {% set link_text = 'ICCU (Italy)' %}
+    {% elseif 'collectionscanada.gc.ca' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-lac' %}
+        {% set link_text = 'LAC' %}
+    {% elseif 'trove.nla.gov.au/people' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-trove' %}
+        {% set link_text = 'NLA Trove' %}
+    {% elseif 'americanart.si.edu' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-americanart' %}
+        {% set link_text = 'SAAM' %}
+    {% elseif 'axaemarchives.utah.gov' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-utah-state-archives' %}
+        {% set link_text = 'Utah State Archive' %}
+    {% elseif 'siv.archives-nationales.culture.gouv.fr' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-archives-nationales' %}
+        {% set link_text = 'ANFrance' %}
+    {% else %}
+        {% set default = true %}
+    {% endif %}
+
+    {% if default %}
+        <a class="list-group-item" href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
+    {% else %}
+        <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
+            <span class="sprite-icon {{ icon_class }}"></span>{{ link_text }}
+        </a>
+    {% endif %}
+{% endmacro %}
