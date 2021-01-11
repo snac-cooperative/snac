@@ -158,7 +158,7 @@
                   </span>
                </h1>
                {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
-               <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
+               <a data-toggle="modal" style="display: inline; position: relative;" data-target="#variant_names" href="#variant_names">Variant names</a>
                {% endif %}
 
                {% if 'holdingRepository' in data.flags %}
@@ -1178,16 +1178,16 @@
 
               </div> <!-- end of others -->
                <div>
-                  <div class="modal fade" id="alternative_names" tabindex="-1" role="dialog"
+                  <div class="modal fade" id="variant_names" tabindex="-1" role="dialog"
                        aria-hidden="true">
                      <div class="modal-dialog">
                         <div class="modal-content">
                            <div class="modal-header">
                               <button type="button" class="close" data-dismiss="modal" aria-labelledby="myModalLabel"
                                       aria-hidden="true">×</button>
-                              <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
+                              <h4 class="modal-title" id="myModalLabel">Variant Names</h4>
                            </div>
-                           <div title="alternative forms of name" class="extra-names modal-body">
+                           <div title="variant forms of name" class="extra-names modal-body">
                               {# ignore the preferred name #}
                               {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
                                   {% for nameEntry in data.new.nameEntries|slice(1) %}

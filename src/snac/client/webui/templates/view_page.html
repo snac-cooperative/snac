@@ -711,7 +711,7 @@ $(document).ready(function() {
                  {{data.nameEntries.0.original}}
             </h1>
             {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
-            <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative-names" href="#alternative-names">Alternative names</a>
+            <a data-toggle="modal" style="display: inline; position: relative;" data-target="#variant-names" href="#variant-names">Variant names</a>
             {% endif %}
             {% if 'holdingRepository' in data.flags %}
                 <br><span class="label label-default"><i class="fa fa-archive" aria-hidden="true"></i> Holding Repository</span>
@@ -1185,7 +1185,7 @@ $(document).ready(function() {
                                 <table class="listtable">
                                     <thead>
                                         <tr>
-                                            <th>Alternative Name</th>
+                                            <th>variant Name</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1361,16 +1361,16 @@ $(document).ready(function() {
                 </div>
 
 
-                <div class="modal fade" id="alternative-names" tabindex="-1" role="dialog"
+                <div class="modal fade" id="variant-names" tabindex="-1" role="dialog"
                      aria-hidden="true">
                    <div class="modal-dialog">
                       <div class="modal-content">
                          <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-labelledby="myModalLabel"
                                     aria-hidden="true">×</button>
-                            <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
+                            <h4 class="modal-title" id="myModalLabel">Variant Names</h4>
                          </div>
-                         <div title="alternative forms of name" class="extra-names modal-body">
+                         <div title="variant forms of name" class="extra-names modal-body">
                             {# ignore the preferred name #}
                             {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
                                 {% for nameEntry in data.new.nameEntries|slice(1) | sort %}

@@ -173,7 +173,7 @@ body {
             {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Select Alternative Names</h3>
+                    <h3 class="panel-title">Select Variant Names</h3>
                 </div>
                 <div class="panel-body list-group">
                     {% for nameEntry in data.nameEntries|slice(1,4)|sort %}
@@ -256,4 +256,3 @@ body {
             </div>
             {% endif %}
         </div>
-
