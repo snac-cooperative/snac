@@ -124,7 +124,6 @@
     padding: 20px;
 }
 
-
 @media screen and (-webkit-min-device-pixel-ratio: 1),
 screen and (min--moz-device-pixel-ratio: 1),
 screen and (-o-min-device-pixel-ratio: 100 / 100),
@@ -132,12 +131,11 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
     .sprite-icons-archivegrid,.sprite-icons-cbw,.sprite-icons-dpla,.sprite-icons-fs,.sprite-icons-idlocgov,.sprite-icons-nara,
     .sprite-icons-viaf,.sprite-icons-wikipedia,.sprite-icons-worldcat,.sprite-icons-nara,.sprite-icons-wikidata,.sprite-icons-numismatic {
         background-image:url('{{control.snacURL}}/css/hrt/icons.png{{control.noCache}}');
-        -webkit-background-size:64px 64px;
-        -moz-background-size:64px 64px;
-        background-size:64px 64px
+        -webkit-background-size:96px 96px;
+        -moz-background-size:96px 96px;
+        background-size:96px 96px
     }
 }
-
 
 
 .geoplace-map {
@@ -678,6 +676,7 @@ $(document).ready(function() {
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
+{% from '_external_link_icons.html' import displayExternalIcons %}
 
 
     <div class="container snac" role="main">
@@ -1285,52 +1284,7 @@ $(document).ready(function() {
                     <div class="list-group">
                     {% for sameas in data.sameAsRelations %}
                         {% if sameas.type.term == 'sameAs' %}
-                            {% if 'wikipedia' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-wikipedia"></span>
-                                    Wikipedia</a>
-                            {% elseif 'loc.gov/authorities' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-idlocgov"></span>
-                                    LC Name Authority File</a>
-                            {% elseif 'viaf.org' in sameas.uri %}
-
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-viaf"></span>
-                                    Virtual International Authority File</a>
-                            {% elseif 'worldcat.org/identities' in sameas.uri %}
-
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-worldcat"></span>
-                                    WorldCat Identities</a>
-                            {% elseif 'cbw.iath.virginia.edu' in sameas.uri %}
-
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-cbw"></span>
-                                    Collective Biographies of Women</a>
-                            {% elseif 'familysearch.org' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-fs"></span>
-                                    FamilySearch</a>
-                            {% elseif 'archives.gov' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-nara"></span>
-                                    National Archives and Records Administration</a>
-                            {% elseif 'wikidata.org' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-wikidata"></span>
-                                    Wikidata</a>
-                            {% elseif 'numismatics.org' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-numismatic"></span>
-                                    American Numismatic Society</a>
-                            {% elseif 'thehistorymakers.org' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-historymakers"></span>
-                                    The HistoryMakers</a>
-                            {% else %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
-                            {% endif %}
+                            {{ displayExternalIcons(sameas)}}
                         {% endif %}
                     {% endfor %}
                     </div>
