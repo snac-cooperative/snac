@@ -20,7 +20,7 @@ var last = "";
 var lastID = 0;
 var datatable;
 
-function queryBrowse(position, term, entityType, icid) {
+function queryBrowse(position, term, entityType, icid, isEditor) {
 
     $.post(snacUrl+"/browse_data?position="+position+"&term="+term+"&entity_type="+entityType+"&ic_id="+icid, null, function (data) {
         var results = [];
@@ -52,15 +52,20 @@ function queryBrowse(position, term, entityType, icid) {
                 }
                 entityType += "</span>";
                 var link = "<a target=\"_blank\" href=\""+snacUrl+"/view/"+result.ic_id+"\">"+result.name_entry+"</a>";
-                var checkbox = "<input class=\"compare-checkbox\" type=\"checkbox\" value=\""+result.ic_id+"\"";
-                var checked = false;
-                toCompare.forEach(function(obj){
-                    if (obj.icid == result.ic_id)
-                        checked = true;
-                });
-                if (checked)
-                    checkbox += " checked";
-                checkbox += ">";
+
+                var checkbox = "";
+                if (isEditor) {
+                    checkbox = "<input class=\"compare-checkbox\" type=\"checkbox\" value=\""+result.ic_id+"\"";
+                    var checked = false;
+                    toCompare.forEach(function(obj) {
+                        if (obj.icid == result.ic_id)
+                            checked = true;
+                    });
+                    if (checked)
+                        checkbox += " checked";
+                    checkbox += ">";
+                }
+
                 var row = new Array(checkbox, entityType + " " + link, result.resources, result.degree);
                 var node = datatable.row.add(row).draw().node();
 
@@ -286,8 +291,8 @@ function enableShiftSelectCheckboxes() {
         if(!lastChecked) {
             lastChecked = this;
             return;
-        }    
-        if(e.shiftKey) { 
+        }
+        if(e.shiftKey) {
             var start = $checkboxes.index(this);
             var end = $checkboxes.index(lastChecked);
             $checkboxes.slice(Math.min(start,end), Math.max(start,end) + 1).prop('checked', lastChecked.checked);
@@ -309,24 +314,26 @@ $(document).ready(function() {
             });
         });
 
+        var isEditor = $("#isEditor").val();
+
         // Load the table into a datatable
         datatable = $('.table').DataTable({ "sorting": false, "searching" : false, "paging" : false, "info" : false});
 
         // Get the first bit of data
-        queryBrowse("after", "", "", 0);
+        queryBrowse("after", "", "", 0, isEditor);
 
         // Set up the search/next/previous buttons
         $('#searchbutton').click(function() {
             disableButtons();
-            return queryBrowse("middle", $("#searchbox").val(), $("#entityType").val(), 0);
+            return queryBrowse("middle", $("#searchbox").val(), $("#entityType").val(), 0, isEditor);
         });
         $('#nextbutton').click(function() {
             disableButtons();
-            return queryBrowse("after", last, $("#entityType").val(), lastID);
+            return queryBrowse("after", last, $("#entityType").val(), lastID, isEditor);
         });
         $('#prevbutton').click(function() {
             disableButtons();
-            return queryBrowse("before", first, $("#entityType").val(), firstID);
+            return queryBrowse("before", first, $("#entityType").val(), firstID, isEditor);
         });
 
 
