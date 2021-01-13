@@ -128,7 +128,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "resource_search",
                 "get_holdings",
                 "shared_resources",
-                "analytics"
+                "analytics",
+                "browse",
+                "browse_data"
         );
 
         // These are read-only commands that are allowed in read-only mode
@@ -148,7 +150,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "api_help",
             "visualize",
             "stats",
-            "history"
+            "history",
+            "browse",
         );
 
 
