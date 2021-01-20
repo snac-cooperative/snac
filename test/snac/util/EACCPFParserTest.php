@@ -50,12 +50,12 @@ class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
             $identity = $parser->parseFile("test/snac/util/eac-cpf/test1.xml");
 
             // Check that attributes matched the parsed versions
-            $this->assertAttributeEquals("http://n2t.net/ark:/99166/w6kw9c2x", "ark", $identity);
+            $this->assertEquals("http://n2t.net/ark:/99166/w6kw9c2x", $identity->getArk());
 
             // Check that the entity type is person
             $this->assertEquals($identity->getEntityType()->getTerm(), "person");
 
-            $this->assertAttributeEquals("SNAC: Social Networks and Archival Context Project", "maintenanceAgency", $identity);
+            $this->assertEquals("SNAC: Social Networks and Archival Context Project", $identity->getMaintenanceAgency());
 
             // Check that the language Used makes it through
             $this->assertNotEmpty($identity->getLanguagesUsed(), "Did not parse any languages used");
