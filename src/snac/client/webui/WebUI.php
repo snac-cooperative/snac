@@ -103,6 +103,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $publicCommands = array(
                 "login",
                 "login2",
+                "login3",
+                "logout3",
                 "search",
                 "view",
                 "snippet",
@@ -327,6 +329,57 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 header("Location: $redirect");
                 return;
 
+            case "login3":
+                // This login should only be called from SNAC Laravel, when logging in Snac Laravel
+                // Laravel does the Oauth and here we are only passing the Token
+                // OAuth Stuff //
+                // Build an Access Token for the OAuth Library used in the project
+                $accessTokenOptions = [
+                    'access_token' => $_GET['code']
+                ];
+                $accessToken = new AccessToken($accessTokenOptions);
+
+                // Set the token in session variable
+                $_SESSION['token'] = serialize($accessToken);
+
+                // We got an access token, let's now get the owner details
+                $ownerDetails = $provider->getResourceOwner($accessToken);
+
+                // Set the user details in the session
+                $_SESSION['user_details'] = serialize($ownerDetails);
+
+                $redirect = \snac\Config::$LARAVEL_REDIRECT_AFTER_LOGIN_URL;
+                if(isset($_GET['r'])) {
+                    $redirect = urldecode($_GET['r']);
+                }
+
+                $tokenUnserialized = unserialize($_SESSION['token']);
+                $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
+                // Create the PHP User object
+                $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
+                $executor->setUser($user);
+                $tmpUser = $executor->startSNACSession();
+
+                if ($tmpUser === false) {
+                    session_destroy();
+                    $display->setTemplate("error_page");
+                    $display->setData(array(
+                        "type" => "Invalid User",
+                        "message" => "The Google account does not exist in our system. Please log-in again with a different account."
+                    ));
+                    array_push($this->responseHeaders, "Content-Type: text/html");
+                    $this->response = $display->getDisplay();
+                    return;
+
+                }
+                $user = $tmpUser;
+
+                $_SESSION['snac_user'] = serialize($user);
+
+                // Go directly to the Dashboard, do not pass Go, do not collect $200
+                header("Location: $redirect");
+                return;
+
             case "logout":
                 $executor->endSNACSession();
 
@@ -339,6 +392,24 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
                 // Go to the homepage
                 header('Location: ' . \snac\Config::$WEBUI_URL);
+                return;
+
+            case "logout3":
+                $executor->endSNACSession();
+
+                // Destroy the old session
+                session_destroy();
+                // Restart the session
+                session_start();
+                $_SESSION = array();
+
+                $redirect = \snac\Config::$LARAVEL_LOGOUT_URL;
+                if(isset($_GET['r'])) {
+                    $redirect .= '?redirect=' . $_GET['r'];
+                }
+
+                // Return to laravel homepage
+                header("Location: $redirect");
                 return;
 
             // Editing, Preview, View, and Other Commands

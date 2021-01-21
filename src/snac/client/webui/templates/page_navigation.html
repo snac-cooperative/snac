@@ -100,11 +100,19 @@
                         <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
                         <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         <li><a href="{{control.snacURL}}/api_key"><i class="fa fa-fw fa-key" aria-hidden="true"></i> Rest API Key</a></li>
-                        <li><a href="{{control.snacURL}}/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                        {% if (control.useLaravelAuthentication) %}
+                            <li><a href="{{control.snacURL}}/index.php?command=logout3&r={{control.redirectAfterLogout}}"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                         {% else %}
+                            <li><a href="{{control.snacURL}}/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                         {% endif %}
                     </ul>
                     </li>
             <!-- {% else %} -->
-                <li><a href="{{control.snacURL}}/login?r={{control.currentURL | url_encode}}"><i class="fa fa-sign-in"></i> Login</a></li>
+                        {% if (control.useLaravelAuthentication) %}
+                            <li><a href="{{control.laravelLoginURL}}?redirect={{control.redirectAfterLogin}}"><i class="fa fa-sign-in"></i> Login</a></li>
+                         {% else %}
+                            <li><a href="{{control.snacURL}}/login?r={{control.currentURL | url_encode}}"><i class="fa fa-sign-in"></i> Login</a></li>
+                         {% endif %}
             <!-- {% endif %}  -->
                 </ul>
             </div>
