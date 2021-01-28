@@ -34,6 +34,41 @@ class Config {
     public static $SESSION_NAME = 'SNACWebUI';
 
     /**
+     * @var string URL to redirect after Login
+     */
+    public static $REDIRECT_AFTER_LOGIN_URL = 'http://localhost/dashboard';
+
+    /**
+     * @var string URL to redirect after Logout
+     */
+    public static $REDIRECT_AFTER_LOGOUT_URL = 'http://localhost';
+
+    /**
+     * @var string URL for SNAC Laravel login endpoint
+     */
+    public static $LARAVEL_LOGIN_URL = 'http://localhost:8000/login/snac';
+
+    /**
+     * @var string URL for SNAC Laravel logout endpoint
+     */
+    public static $LARAVEL_LOGOUT_URL = 'http://localhost:8000/logoff';
+
+    /**
+     * @var string URL for SNAC Laravel redirect after login
+     */
+    public static $LARAVEL_REDIRECT_AFTER_LOGIN_URL = 'http://localhost:8000';
+
+    /**
+     * @var string URL for SNAC Laravel redirect after logout
+     */
+    public static $LARAVEL_REDIRECT_AFTER_LOGOUT_URL = 'http://localhost:8000/logoff';
+
+    /**
+     * @var boolean Whether or not to have the server attempt to use Laravel Authentication
+     */
+    public static $USE_LARAVEL_AUTHENTICATION = true;
+
+    /**
      * @var boolean Whether the system in OFFLINE (Maintenance) mode
      */
     public static $SITE_OFFLINE = false;
@@ -47,6 +82,11 @@ class Config {
      * @var string The interface version: "development", "demo", or "production"
      */
     public static $INTERFACE_VERSION = "production";
+
+    /**
+     * @var boolean Whether or not to include development features. Include development feautures (true) or hide development features (false)
+     */
+    public static $INCLUDE_DEVELOPMENT_FEATURES = false;
 
     /**
      * @var boolean Whether the system is in DEBUG mode
@@ -300,4 +340,25 @@ class Config {
      * @var boolean Whether or not to treat feedback recipients as email addresses (true) or snac usernames (false)
      */
     public static $FEEDBACK_EMAIL_ONLY = false;
+
+
+    /**
+     * @var string Temporary directory to parse EAD 
+     */
+    public static $EAD_PARSETMP_DIR = "/tmp";
+
+    /**
+     * @var string Location of EAD XSLT and schema files
+     */
+    public static $EAD_PARSER_DIR = "/path/to/snac/vendor/snac/snac-ead-parser";
+
+    /**
+     * @var string Location of SAXON jar file
+     */
+    public static $SAXON_JARFILE = "/home/jrhott/snac/lib/saxon9he.jar";
+
+    /**
+     * @var string Maximum upload file size
+     */
+    public static $MAX_UPLOAD_SIZE = "500000000";
 }

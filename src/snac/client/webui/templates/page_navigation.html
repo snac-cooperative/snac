@@ -38,8 +38,9 @@
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <li><a href="{{control.snacURL}}/search"><i class="fa fa-search" aria-hidden="true"></i> Search</a></li>
+                <li><a href="{{control.snacURL}}/browse"><i class="fa fa-address-book" aria-hidden="true"></i> Browse</a></li>
+                <li><a href="{{control.snacURL}}/vocab_administrator/resources"><i class="fa fa-book" aria-hidden="true"></i> Resource Descriptions</a></li>
                 <!-- {% if user.userName %} -->
-                <li><a href="{{control.snacURL}}/browse"><i class="fa fa-book" aria-hidden="true"></i> Browse</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-tachometer" aria-hidden="true"></i> Dashboards <span class="caret"></span>
@@ -58,6 +59,7 @@
                         {% endif %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">System Dashboards</li>
+                        <li><a href="{{control.snacURL}}/processing"><i class="fa fa-fw fa-wrench" aria-hidden="true"></i> Processing</a></li>
                         <li><a href="{{control.snacURL}}/reports/dashboard"><i class="fa fa-fw fa-pie-chart" aria-hidden="true"></i> Reporting</a></li>
                         {% if permissions.ViewAdminDashboard %}
                         <li><a href="{{control.snacURL}}/administrator"><i class="fa fa-fw fa-cog" aria-hidden="true"></i> Administrator</a></li>
@@ -98,11 +100,19 @@
                         <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
                         <li><a href="{{control.snacURL}}/messages"><i class="fa fa-fw fa-comments-o" aria-hidden="true"></i> Messaging Center</a></li>
                         <li><a href="{{control.snacURL}}/api_key"><i class="fa fa-fw fa-key" aria-hidden="true"></i> Rest API Key</a></li>
-                        <li><a href="{{control.snacURL}}/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                        {% if (control.useLaravelAuthentication) %}
+                            <li><a href="{{control.snacURL}}/index.php?command=logout3&r={{control.redirectAfterLogout}}"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                         {% else %}
+                            <li><a href="{{control.snacURL}}/logout"><i class="fa fa-fw fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+                         {% endif %}
                     </ul>
                     </li>
             <!-- {% else %} -->
-                <li><a href="{{control.snacURL}}/login?r={{control.currentURL | url_encode}}"><i class="fa fa-sign-in"></i> Login</a></li>
+                        {% if (control.useLaravelAuthentication) %}
+                            <li><a href="{{control.laravelLoginURL}}?redirect={{control.redirectAfterLogin}}"><i class="fa fa-sign-in"></i> Login</a></li>
+                         {% else %}
+                            <li><a href="{{control.snacURL}}/login?r={{control.currentURL | url_encode}}"><i class="fa fa-sign-in"></i> Login</a></li>
+                         {% endif %}
             <!-- {% endif %}  -->
                 </ul>
             </div>

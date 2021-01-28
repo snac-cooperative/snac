@@ -1288,9 +1288,196 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayUploadPage(&$input, &$display) {
-        $display->setTemplate("upload");
+        $display->setTemplate("dashboard/processing");
         return true;
     }
+
+    /**
+     * Handle parsing EAD
+     *
+     * This method handles the uploading of EAD to parse.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param string[] $headers Response headers for the return
+     * @return string The response to the client (The content of the file)
+     */
+    public function handleParseEAD(&$input, &$display, &$headers) {
+        $url = null;
+        if (isset($input["url"]))
+            $url = $input["url"];
+
+        $response = [
+            "result" => "failure"
+        ];
+
+        $file = null;
+        if ( $url == null && isset($_FILES['eadfile']) && !(!isset($_FILES['eadfile']['error']) ||
+            is_array($_FILES['eadfile']['error']))) {
+            // Check $_FILES[$name]['error'] value.
+            switch ($_FILES['eadfile']['error']) {
+                case UPLOAD_ERR_OK:
+                    break;
+                case UPLOAD_ERR_NO_FILE:
+                    return array_merge($response, ["error" => "No file selected."]);
+                case UPLOAD_ERR_INI_SIZE:
+                case UPLOAD_ERR_FORM_SIZE:
+                    return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us."]);
+                default:
+                    return array_merge($response, ["error" => "An unknown error occurred in uploading the file"]);
+            }
+
+            // You should also check filesize here.
+            if ($_FILES['eadfile']['size'] > \snac\Config::$MAX_UPLOAD_SIZE) {
+                return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us."]);
+            }
+
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            if (false === $ext = array_search(
+                $finfo->file($_FILES['eadfile']['tmp_name']),
+                array(
+                    'zip' => 'application/zip'
+                ),
+                true
+            )) {
+                return array_merge($response, ["error" => "Invalid upload file format: " .$finfo->file($_FILES['eadfile']['tmp_name']). ".  Please upload a ZIP file."]);
+            }
+
+            $file = base64_encode(file_get_contents($_FILES['eadfile']['tmp_name']));
+        } else {
+            if ($url == null)
+                return array_merge($response, ["error" => "An error occurred in uploading the file."]);
+        }
+
+
+
+        $query = [
+            "command" => "parse_ead"
+        ];
+
+        if ($url != null) {
+
+            $query["url"] = $url;
+
+        } else if ($file != null) {
+
+            $query["file"] = [
+                "mime-type" => "application/zip",
+                "content" => $file
+            ];
+        }
+
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", [$serverResponse]);
+
+        /*
+            Ask server to "parse_ead"
+
+            $response["file"] = array();
+            $response["file"]["mime-type"] = "application/zip";
+            $response["file"]["filename"] = "filename.zip";
+            $response["file"]["content"] = base64_encode(zipfile);
+         */
+
+        if (isset($serverResponse["file"])) {
+            $filedata = base64_decode($serverResponse["file"]["content"]);
+            array_push($headers, "Content-Type: application/x-zip");
+            array_push($headers, 'Content-Disposition: attachment; filename="parsed.zip"');
+            array_push($headers, "Expires: 0");
+            array_push($headers, "Cache-Control: must-revalidate, post-check=0, pre-check=0");
+            array_push($headers, 'Content-Length: ' . strlen($filedata));
+            $this->logger->addDebug("Content-length: ".  strlen($filedata));
+            $this->logger->addDebug("Content: $filedata");
+            return $filedata;
+        } else {
+            $this->drawErrorPage($serverResponse, $display);
+        }
+
+        return null;
+    }
+
+    /**
+     * Handle validting EAD
+     *
+     * This method handles the uploading of EAD to validate.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param string[] $headers Response headers for the return
+     * @return string The response to the client (The content of the file)
+     */
+    public function handleValidateEAD(&$input, &$display, &$headers) {
+        $url = null;
+        if (isset($input["url"]))
+            $url = $input["url"];
+
+        $response = [
+            "result" => "failure"
+        ];
+
+        $file = null;
+        if ( $url == null && isset($_FILES['eadfile']) && !(!isset($_FILES['eadfile']['error']) ||
+            is_array($_FILES['eadfile']['error']))) {
+            // Check $_FILES[$name]['error'] value.
+            switch ($_FILES['eadfile']['error']) {
+            case UPLOAD_ERR_OK:
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                return array_merge($response, ["error" => "No file selected."]);
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us."]);
+            default:
+                return array_merge($response, ["error" => "An unknown error occurred in uploading the file"]);
+            }
+
+            // You should also check filesize here.
+            if ($_FILES['eadfile']['size'] > \snac\Config::$MAX_UPLOAD_SIZE) {
+                return array_merge($response, ["error" => "File exceeded the filesize limit.  Please contact us."]);
+            }
+
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            if (false === $ext = array_search(
+                $finfo->file($_FILES['eadfile']['tmp_name']),
+                array(
+                    'zip' => 'application/zip'
+                ),
+                true
+            )) {
+                return array_merge($response, ["error" => "Invalid upload file format: " .$finfo->file($_FILES['eadfile']['tmp_name']). ".  Please upload a ZIP file."]);
+            }
+
+            $file = base64_encode(file_get_contents($_FILES['eadfile']['tmp_name']));
+        } else {
+            if ($url == null)
+                return array_merge($response, ["error" => "An error occurred in uploading the file."]);
+        }
+
+
+
+        $query = [
+            "command" => "validate_ead"
+        ];
+
+        if ($url != null) {
+
+            $query["url"] = $url;
+
+        } else if ($file != null) {
+
+            $query["file"] = [
+                "mime-type" => "application/zip",
+                "content" => $file
+            ];
+        }
+
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", $serverResponse);
+
+        return $serverResponse;
+	}
 
     /**
      * Display Preview Page
@@ -2026,109 +2213,6 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
-            // Concepts and Concept Terms
-            // case "add_concept":
-            //         $display->setData(array("title"=> "Test Vocab", "response" => "success"));
-            //         $display->setTemplate("concepts/new");
-            //     break;
-            // case "add_concept_post":
-            //         return $response = $this->postNewConcept($input, $user);
-            //     break;
-            // case "concepts":
-            //     $id = $input["constellationid"] ?? null;   // actually conceptID
-            //     $request = [ "command" => "concepts" ];
-            //
-            //     if ($id) {
-            //         $request["id"] = $id;
-            //         $response = $this->connect->query($request);
-            //         $display->setData(array("title"=> "Concept" ,  "response" => $response));
-            //         $display->setTemplate("concepts/view");
-            //
-            //     } else {
-            //         $response = $this->connect->query($request);
-            //         $display->setData(array("title"=> "Concepts",  "response" => $response));
-            //         $display->setTemplate("concepts/index");
-            //     }
-            //     break;
-            // case "search_concepts":
-            //     $json = isset($input["json"]) && $input["json"] == "true";
-            //     $query = $input["q"] ?? null;
-            //     $request = [
-            //         "command" => "search_concepts",
-            //         "q" => $query
-            //     ];
-            //
-            //     $response = $this->connect->query($request);
-            //
-            //     if (!$json ) {
-            //         $display->setData(array("title"=> "Searching - ".$query ,  "response" => $response));
-            //         $display->setTemplate("concepts/index");
-            //     }
-            //
-            //     return $response;
-            //     break;
-            // case "save_concept_term":
-            //     if (isset($this->permissions["EditVocabulary"])) {
-            //         return $this->saveConceptTerm($input, $user);
-            //     } else {
-            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-            //     }
-            //     break;
-            // case "delete_concept_term":
-            //     if (isset($this->permissions["EditVocabulary"])) {
-            //         return $this->deleteConceptTerm($input);
-            //     } else {
-            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-            //     }
-            //     break;
-            // case "save_related_concepts":
-            //     if (isset($this->permissions["EditVocabulary"])) {
-            //         $request = [];
-            //         $request["command"] = "save_related_concepts";
-            //         $request["id1"] = $input["id1"];
-            //         $request["id2"] = $input["id2"];
-            //         $response = $this->connect->query($request);
-            //         return $response;  // check if needed
-            //     } else {
-            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-            //     }
-            //     break;
-            // case "delete_related_concepts":
-            //     if (isset($this->permissions["EditVocabulary"])) {
-            //         $request = [];
-            //         $request["command"] = "delete_related_concepts";
-            //         $request["id1"] = $input["id1"];
-            //         $request["id2"] = $input["id2"];
-            //         $response = $this->connect->query($request);
-            //         return $response;  // check if needed
-            //     } else {
-            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-            //     }
-            //     break;
-            // case "save_broader_concepts":
-            //     if (isset($this->permissions["EditVocabulary"])) {
-            //         $request = [];
-            //         $request["command"] = "save_broader_concepts";
-            //         $request["narrower_id"] = $input["narrower_id"];
-            //         $request["broader_id"] = $input["broader_id"];
-            //         $response = $this->connect->query($request);
-            //         return $response;  // check if needed
-            //     } else {
-            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-            //     }
-            //     break;
-            // case "delete_broader_concepts":
-            //     if (isset($this->permissions["EditVocabulary"])) {
-            //         $request = [];
-            //         $request["command"] = "delete_broader_concepts";
-            //         $request["narrower_id"] = $input["narrower_id"];
-            //         $request["broader_id"] = $input["broader_id"];
-            //         $response = $this->connect->query($request);
-            //         return $response;  // check if needed
-            //     } else {
-            //         $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
-            //     }
-            //     break;
 
             // Resources
             case "add_resource":
@@ -3916,57 +4000,6 @@ class WebUIExecutor {
 
 
         return true;
-    }
-
-    /**
-     * Post New Concept
-     *
-     *
-     * @param string[] $input Post/Get inputs from the webui
-     * @return string[] The web ui's response to the client (array ready for json_encode)
-     */
-    protected function postNewConcept(&$input) {
-        $request = [];
-        $request["command"] = "add_concept";
-        $request["value"] = $input["term-value"];
-        $response = $this->connect->query($request);
-        return $response;
-    }
-
-
-    /**
-     * Save Concept Term
-     *
-     *
-     * @param string[] $input Post/Get inputs from the webui
-     * @return string[] The web ui's response to the client (array ready for json_encode)
-     */
-    protected function saveConceptTerm(&$input) {
-        $request = [];
-        $request["command"] = "save_term";
-        $request["term_id"] = $input["term-id"] ?? null;
-        $request["concept_id"] = $input["concept-id"];
-        $request["value"] = $input["term-value"];
-
-        $preferred = ($input["is-preferred"] ?? null == "checked") ? "true" : "false";;
-        $request["is_preferred"] = $preferred;
-        $response = $this->connect->query($request);
-        return $response;
-    }
-
-    /**
-     * Delete Concept Term
-     *
-     *
-     * @param string[] $input Post/Get inputs from the webui
-     * @return string[] The web ui's response to the client (array ready for json_encode)
-     */
-    protected function deleteConceptTerm(&$input) {
-        $request = [];
-        $request["command"] = "delete_term";
-        $request["term_id"] = $input["term-id"];
-        $response = $this->connect->query($request);
-        return $response;
     }
 
     /**

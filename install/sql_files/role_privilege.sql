@@ -24,6 +24,7 @@ insert into privilege (label, description) values ('Edit Vocabulary', 'Edit cont
 insert into role (label, description) values ('Contributor', 'Create simplified constellations, suggest edits');
 insert into role (label, description) values ('Editor, Training', 'Editor in training');
 insert into role (label, description) values ('Editor, Full', 'Full editor');
+insert into role (label, description) values ('Editor, Independent', 'Independent editor');
 insert into role (label, description) values ('Reviewer', 'Editor and moderator');
 insert into role (label, description) values ('Administrator', 'Manage users, roles, groups');
 insert into role (label, description) values ('System Administrator', 'SNAC developers, super users');
@@ -40,7 +41,11 @@ select (select id from role where label='Editor, Training'), id from privilege w
 
 insert into privilege_role_link (rid, pid)
 select (select id from role where label='Editor, Full'), id from privilege where
-    label in ('Create', 'Edit', 'Publish');
+    label in ('Create', 'Edit', 'Publish', 'Merge', 'Edit Resources', 'Maybe Same Assertion', 'Not Same Assertion');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Editor, Independent'), id from privilege where
+    label in ('Create', 'Edit', 'Publish', 'Merge', 'Edit Resources', 'Maybe Same Assertion', 'Not Same Assertion');
 
 insert into privilege_role_link (rid, pid)
 select (select id from role where label='Reviewer'), id from privilege where

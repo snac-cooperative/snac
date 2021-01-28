@@ -688,170 +688,6 @@ class ServerExecutor {
         return $response;
     }
 
-
-    /**
-     * Read Concept
-     *
-     * Reads the vocabulary from the database, based on the input given and returns
-     * the result
-     *
-     * @param string[] $input Direct server input
-     * @return string[] The response to send to the client
-     */
-    public function readConcepts() {
-        $response = [];
-        $concepts = $this->cStore->getAllConcepts();
-
-        if (!empty($concepts)) {
-            $response["concepts"] = $concepts;
-            $response["result"] = "success";
-        } else {
-            $response["concepts"] = null;
-            $response["result"] = "failure";
-        }
-        return $response;
-    }
-
-    /**
-     * Read Concept
-     *
-     * Reads a concept from the database for an id
-     *
-     * @param string[] $id Concept id
-     * @return string[] The response to send to the client
-     */
-    public function readConcept($id) {
-        $response = [];
-        $concept = $this->cStore->getConcept($id);
-        $response["concept"] = $concept;
-        return $response;
-    }
-
-    /**
-     * Read Detailed Concept
-     *
-     * Reads a  vocabulary from the database, based on the input given and returns
-     * the result
-     *
-     * @param int $id Concept id
-     * @return string[] The response to send to the client
-     */
-    public function readDetailedConcept($id) {
-        $response = [];
-        $concept = $this->cStore->getDetailedConcept($id);
-        $response["concept"] = $concept;
-        return $response;
-    }
-
-    /**
-     * Search Concepts
-     *
-     * @param string $input Search query
-     * @return string[] The response to send to the client
-     */
-    public function searchConcepts($q) {
-        $response = [];
-        $concepts = $this->cStore->searchConcepts($q);
-        $response["concepts"] = $concepts;
-        $response["result"] = "success";
-        return $response;
-    }
-
-
-    /**
-     * Create Concept
-     *
-     * @param string $value Initial term value of concept
-     * @return string[] The response to send to the client
-     */
-    public function createConcept($value) {
-        $conceptID = $this->cStore->createConcept();
-
-        $response = $this->saveTerm(null, $conceptID, $value, true);
-        $response["concept_id"] = $response["term"]["concept_id"];
-        return $response;
-    }
-
-    /**
-     * Save Term
-     * @param int $conceptID
-     * @param string $value
-     * @param string $isPreferred
-     * @return string[] associative array of inserted term from database
-     */
-    public function saveTerm($termID, $conceptID, $value, $isPreferred) {
-        $response = [];
-        $term =  $this->cStore->saveTerm($termID, $conceptID, $value, $isPreferred);
-        $response["term"] = $term;
-        $response["result"] = "success";
-        return $response;
-    }
-
-    /**
-     * Delete Term
-     * @param int $termID
-     * @param int termID
-     * @return string[] $response
-     */
-    public function deleteTerm($termID) {
-        $this->cStore->deleteTerm($termID);
-        $response["result"] = "success";
-        return $response;
-    }
-
-    /**
-     * Save Related Concepts
-     * @param string $id1 Related Concept id
-     * @param string $id2 Related Concept id
-     * @return string[] $response
-     */
-    public function saveRelatedConcepts($id1, $id2) {
-        $response = $this->cStore->saveRelatedConcepts($id1, $id2);
-        $response = ["result" => "success"];
-        return $response;
-    }
-
-    /**
-     * Remove Related Concepts
-     * @param string $id1 Related Concept id
-     * @param string $id2 Related Concept id
-     * @return string[] $response
-     */
-    public function removeRelatedConcepts($id1, $id2) {
-        $this->cStore->removeRelatedConcepts($id1, $id2);
-        $response = ["result" => "success"];
-        return $response;
-    }
-
-
-    /**
-     * Save Broader Concepts
-     *
-     * Relate a narrower and broader concept
-     *
-     * @param string $narrowerID Narrower Concept id
-     * @param string $broaderID Broader Concept id
-     * @return string[] $response
-     */
-    public function saveBroaderConcepts($narrowerID, $broaderID) {
-        $this->cStore->saveBroaderConcept($narrowerID, $broaderID);
-        $response = ["result" => "success"];
-        return $response;
-    }
-
-    /**
-     * Delete Broader Concepts
-     *
-     * @param string $id1 Narrower Concept id
-     * @param string $id2 Broader Concept id
-     * @return string[] $response
-     */
-    public function removeBroaderConcepts($narrowerID, $broaderID) {
-        $response = $this->cStore->removeBroaderConcepts($narrowerID, $broaderID);
-        $response = ["result" => "success"];
-        return $response;
-    }
-
     /**
      * Search Resources
      *
@@ -1038,18 +874,25 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function createInstitution($input) {
-        $constellation = new \snac\data\Constellation();
-        $constellation->setID($input["constellationid"]);
+        // Try to read the constellation
+        $response = [
+            "result" => "failure"
+        ];
+        $constellation = $this->cStore->readPublishedConstellationByID($input["constellationid"], \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
 
-        $inserted = $this->uStore->writeInstitution($constellation);
+        if ($constellation) {
+            $inserted = $this->uStore->writeInstitution($constellation);
 
-        if ($inserted) {
-            $response = [
-                "result" => "success",
-                "constellation" =>  $constellation->toArray()
-            ];
+            if ($inserted) {
+                $response = [
+                    "result" => "success",
+                    "constellation" =>  $constellation->toArray()
+                ];
+            } else {
+                $response["error"] = "Could not write Institution";
+            }
         } else {
-            $response["result"] = "failure";
+            $response["error"] = "No Constellation found";
         }
         return $response;
     }
@@ -2322,6 +2165,21 @@ class ServerExecutor {
         }
         return $response;
 
+    }
+
+    /**
+     * Insert and Publish Constellation
+     *
+     * Takes a new constellation object and inserts it into the database and publishes it.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \Exception
+     * @return string[] The response to send to the client
+     */
+    public function insertAndPublishConstellation(&$input) {
+        $constellation = $this->writeConstellation($input);
+        $response = $this->publishConstellation($constellation);
+        return $response;
     }
 
     /**
@@ -4200,6 +4058,75 @@ class ServerExecutor {
         else
             $response["result"] = "failure";
 
+        return $response;
+    }
+
+    /**
+     * Parse EAD and return result
+     *
+     * Calls EAD Parser on zip file given on the input and returns TSV files
+     * as well as any errors that occurred during the conversion process.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function parseEADToTSV($input) {
+        if (!isset($input["url"]) && (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"]))) {
+            throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
+        }
+
+        $response = array();
+        $parser = new \snac\util\EADParser();
+        $output = null;
+
+        if (isset($input["file"])) {
+            $file = base64_decode($input["file"]["content"]);
+            $output = $parser->parseZip($file);
+        }
+
+        if ($output && !is_array($output)) {
+                $response["file"] = [
+                    "mime-type" => "application/zip",
+                    "content" => base64_encode($output)
+                ];
+
+                $response["result"] = "success";
+        } else {
+                // an error occurred
+                $response["result"] = "failure";
+                if (is_array($output))
+                        $response["errors"] = $output;
+        }
+        return $response;
+    }
+
+    /**
+     * VAlidate EAD and return result
+     *
+     * Calls EAD Parser on zip file given on the input and returns
+     * any errors that occurred during the validation process.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function validateEAD($input) {
+        if (!isset($input["file"]) || !isset($input["file"]["mime-type"]) || !isset($input["file"]["content"])) {
+            throw new \snac\exceptions\SNACInputException("No zip file or url specified", 400);
+        }
+
+        $response = array();
+        $parser = new \snac\util\EADParser();
+
+        $file = base64_decode($input["file"]["content"]);
+        $errors = $parser->validateZip($file);
+
+        if (empty($errors))
+            $response["result"] = "success";
+        else
+            $response = [
+                "result" => "failure",
+                "errors" => $errors
+            ];
         return $response;
     }
 

@@ -530,6 +530,119 @@
             }
         ]
     },
+    "insert_and_publish_constellation" : {
+        "category": "modification",
+        "permissions" : [
+            "Publish"
+        ],
+        "title" : "Insert And Publish New Constellation",
+        "description" : "Insert a new Constellation into SNAC. The Constellation must have the operation flags set to \"insert\".",
+        "parameters" : {
+            "apikey" : {
+                "type" : "String",
+                "description" : "Valid API Key"
+            },
+            "constellation" : {
+                "type": "Object",
+                "description": "Full Constellation object"
+            },
+            "message" : {
+                "optional": true,
+                "type": "String",
+                "description": "A commit message"
+            }
+        },
+        "returns" : {
+            "constellation" : {
+                "type": "Object",
+                "description": "Full Constellation object with current id and version numbers"
+            },
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "title": "Insert a simple Constellation",
+                "description": "Inserting a Constellation with only one nameEntry",
+                "query": {
+                    "command": "insert_constellation",
+                    "apikey" : "...",
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "operation": "insert",
+                        "entityType": {
+                            "dataType": "Term",
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (1963-2018)",
+                                "preferenceScore": 99,
+                                "operation": "insert",
+                                "components": [
+                                    {
+                                        "dataType": "NameComponent",
+                                        "text": "Smith, John (1963-2018)",
+                                        "operation": "insert",
+                                        "order": 0,
+                                        "type": {
+                                            "id": 400228
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "message": "Example insert message."
+                },
+                "response":{
+                    "constellation": {
+                        "dataType": "Constellation",
+                        "status": "published",
+                        "entityType": {
+                            "id": 700,
+                            "term": "person"
+                        },
+                        "nameEntries": [
+                            {
+                                "dataType": "NameEntry",
+                                "original": "Smith, John (1963-2018)",
+                                "preferenceScore": 99,
+                                "components": [
+                                    {
+                                        "dataType": "NameComponent",
+                                        "text": "Smith, John (1963-2018)",
+                                        "type": {
+                                            "id": 400228
+                                        },
+                                        "id": "76813081",
+                                        "version": "11244084",
+                                        "operation": "insert"
+                                    }
+                                ],
+                                "id": "76813080",
+                                "version": "11244084",
+                                "operation": "insert"
+                            }
+                        ],
+                        "id": "76813079",
+                        "version": "11244085",
+                        "operation": "insert"
+                    },
+                    "result": "success",
+                    "timing": 686.91
+                }
+            }
+        ]
+    },
     "update_constellation" : {
         "category": "modification",
         "permissions" : [

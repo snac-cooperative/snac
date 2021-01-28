@@ -47,6 +47,7 @@
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
 
+<input type="hidden" id="isEditor" value="{{ permissions.Edit ? true : false }}">
 
 <div class="container snac" role="main">
     <h1>Browse</h1>

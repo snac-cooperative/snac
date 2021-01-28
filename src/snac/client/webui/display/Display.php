@@ -175,6 +175,10 @@ class Display {
         $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
         $this->data["control"]["snacURL"] = \snac\Config::$WEBUI_URL;
         $this->data["control"]["restURL"] = \snac\Config::$REST_URL;
+        $this->data["control"]["redirectAfterLogin"] = \snac\Config::$REDIRECT_AFTER_LOGIN_URL;
+        $this->data["control"]["redirectAfterLogout"] = \snac\Config::$REDIRECT_AFTER_LOGOUT_URL;
+        $this->data["control"]["laravelLoginURL"] = \snac\Config::$LARAVEL_LOGIN_URL;
+        $this->data["control"]["useLaravelAuthentication"] = \snac\Config::$USE_LARAVEL_AUTHENTICATION;
 
         if (isset(\snac\Config::$INTERFACE_VERSION)) {
             if (\snac\Config::$INTERFACE_VERSION === "development")
@@ -182,6 +186,8 @@ class Display {
             if (\snac\Config::$INTERFACE_VERSION === "demo")
                 $this->data["control"]["interfaceVersion"] = "demo";
         }
+
+        $this->data["control"]["includeDevelopmentFeatures"] = \snac\Config::$INCLUDE_DEVELOPMENT_FEATURES ?? false;
 
         if (isset(\snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID) &&
             \snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID != null && \snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID != "" ) {
@@ -196,15 +202,15 @@ class Display {
             $this->data["control"]["noCache"] = trim("?_=".\snac\Config::$CACHE_COOKIE);
         }
 
-        $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
-        $twig = new \Twig_Environment($loader, array(
+        $loader = new \Twig\Loader\FilesystemLoader(\snac\Config::$TEMPLATE_DIR);
+        $twig = new \Twig\Environment($loader, array(
                 'debug' => \snac\Config::$DEBUG_MODE,
                 //'cache' => \snac\Config::$TEMPLATE_CACHE,
             ));
         $twig->addExtension(new \Jasny\Twig\PcreExtension());
-        $twig->addExtension(new \Twig_Extensions_Extension_Text());
+        $twig->addExtension(new \Twig\Extra\String\StringExtension());
         if (\snac\Config::$DEBUG_MODE == true) {
-            $twig->addExtension(new \Twig_Extension_Debug());
+            $twig->addExtension(new \Twig\Extension\DebugExtension());
         }
 
         return $twig->render($this->templateFileName, $this->data);

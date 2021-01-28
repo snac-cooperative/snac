@@ -30,7 +30,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Tiny MCE text editor -->
-<script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.6.2/tinymce.min.js" integrity="sha384-fPYbu2VaXTDuM6wPh2f7vikhCeSvDZiBDuXQX8/CVQG5SNOyI1isjcTdIb/gmtdE" crossorigin="anonymous"></script>
 
 <!-- Datatables -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
@@ -124,7 +124,6 @@
     padding: 20px;
 }
 
-
 @media screen and (-webkit-min-device-pixel-ratio: 1),
 screen and (min--moz-device-pixel-ratio: 1),
 screen and (-o-min-device-pixel-ratio: 100 / 100),
@@ -132,12 +131,11 @@ screen and (min-device-pixel-ratio: 1), screen and (min-resolution: 1dppx) {
     .sprite-icons-archivegrid,.sprite-icons-cbw,.sprite-icons-dpla,.sprite-icons-fs,.sprite-icons-idlocgov,.sprite-icons-nara,
     .sprite-icons-viaf,.sprite-icons-wikipedia,.sprite-icons-worldcat,.sprite-icons-nara,.sprite-icons-wikidata,.sprite-icons-numismatic {
         background-image:url('{{control.snacURL}}/css/hrt/icons.png{{control.noCache}}');
-        -webkit-background-size:64px 64px;
-        -moz-background-size:64px 64px;
-        background-size:64px 64px
+        -webkit-background-size:96px 96px;
+        -moz-background-size:96px 96px;
+        background-size:96px 96px
     }
 }
-
 
 
 .geoplace-map {
@@ -678,6 +676,7 @@ $(document).ready(function() {
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
+{% from '_external_link_icons.html' import displayExternalIcons %}
 
 
     <div class="container snac" role="main">
@@ -711,7 +710,7 @@ $(document).ready(function() {
                  {{data.nameEntries.0.original}}
             </h1>
             {% if (data.nameEntries|length + data.new.nameEntries|length) > 1 %}
-            <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative-names" href="#alternative-names">Alternative names</a>
+            <a data-toggle="modal" style="display: inline; position: relative;" data-target="#variant-names" href="#variant-names">Variant names</a>
             {% endif %}
             {% if 'holdingRepository' in data.flags %}
                 <br><span class="label label-default"><i class="fa fa-archive" aria-hidden="true"></i> Holding Repository</span>
@@ -1185,7 +1184,7 @@ $(document).ready(function() {
                                 <table class="listtable">
                                     <thead>
                                         <tr>
-                                            <th>Alternative Name</th>
+                                            <th>variant Name</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1285,52 +1284,7 @@ $(document).ready(function() {
                     <div class="list-group">
                     {% for sameas in data.sameAsRelations %}
                         {% if sameas.type.term == 'sameAs' %}
-                            {% if 'wikipedia' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-wikipedia"></span>
-                                    Wikipedia</a>
-                            {% elseif 'loc.gov/authorities' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-idlocgov"></span>
-                                    LC Name Authority File</a>
-                            {% elseif 'viaf.org' in sameas.uri %}
-
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-viaf"></span>
-                                    Virtual International Authority File</a>
-                            {% elseif 'worldcat.org/identities' in sameas.uri %}
-
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-worldcat"></span>
-                                    WorldCat Identities</a>
-                            {% elseif 'cbw.iath.virginia.edu' in sameas.uri %}
-
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-cbw"></span>
-                                    Collective Biographies of Women</a>
-                            {% elseif 'familysearch.org' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-fs"></span>
-                                    FamilySearch</a>
-                            {% elseif 'archives.gov' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-nara"></span>
-                                    National Archives and Records Administration</a>
-                            {% elseif 'wikidata.org' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-wikidata"></span>
-                                    Wikidata</a>
-                            {% elseif 'numismatics.org' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-numismatic"></span>
-                                    American Numismatic Society</a>
-                            {% elseif 'thehistorymakers.org' in sameas.uri %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">
-                                    <span class="sprite-icon sprite-icons-historymakers"></span>
-                                    The HistoryMakers</a>
-                            {% else %}
-                                <a class="list-group-item" href="{{sameas.uri}}" target="_blank">{{sameas.text|default(sameas.uri)}}</a>
-                            {% endif %}
+                            {{ displayExternalIcons(sameas)}}
                         {% endif %}
                     {% endfor %}
                     </div>
@@ -1361,16 +1315,16 @@ $(document).ready(function() {
                 </div>
 
 
-                <div class="modal fade" id="alternative-names" tabindex="-1" role="dialog"
+                <div class="modal fade" id="variant-names" tabindex="-1" role="dialog"
                      aria-hidden="true">
                    <div class="modal-dialog">
                       <div class="modal-content">
                          <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-labelledby="myModalLabel"
                                     aria-hidden="true">×</button>
-                            <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
+                            <h4 class="modal-title" id="myModalLabel">Variant Names</h4>
                          </div>
-                         <div title="alternative forms of name" class="extra-names modal-body">
+                         <div title="variant forms of name" class="extra-names modal-body">
                             {# ignore the preferred name #}
                             {% if data.new and data.new.nameEntries.0 and data.new.nameEntries.0.preferenceScore >= data.nameEntries.0.preferenceScore %}
                                 {% for nameEntry in data.new.nameEntries|slice(1) | sort %}
