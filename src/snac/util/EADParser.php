@@ -107,7 +107,7 @@ class EADParser {
                 throw new \Exception("Could not create output Zip file");
             }
             $this->logger->addDebug("Adding Zip Content");
-            $zip->addFile($outputdir."/CPF-Join-Table.tsv", "CPF-Join-Table.tsv");
+            $zip->addFile($outputdir."/Join-Table.tsv", "Join-Table.tsv");
             $zip->addFile($outputdir."/CPF-Table.tsv", "CPF-Table.tsv");
             $zip->addFile($outputdir."/RD-Table.tsv", "RD-Table.tsv");
 
