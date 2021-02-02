@@ -124,7 +124,7 @@
                         </div>
                         <div id="facetedSearch" class="faceted-search text-left collapse {{ data.facets|length > 0 or data.biog_hist ? 'in' }}">
                             <div class="col-xs-12" style="margin-top: 20px;">
-                                <p>Use the following boxes to narrow your search to multiple subjects, functions, or occupations.  These are cumulative filters, so only results matching all selected values will be returned.</p>
+                                <p>Use the following boxes to narrow your search to multiple subjects, activities, or occupations.  These are cumulative filters, so only results matching all selected values will be returned.</p>
                                 <div class="form-horizontal">
                                     <div class="form-group">
                                         <label class="control-label col-xs-2">Subjects</label>
@@ -147,10 +147,10 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-2">Functions</label>
+                                        <label class="control-label col-xs-2">Activities</label>
                                         <div class="col-xs-10">
-                                            <select id="function" name="function[]" class="facet-select" multiple="multiple">
-                                                {% for facet in data.facets.function %}
+                                            <select id="activity" name="activity[]" class="facet-select" multiple="multiple">
+                                                {% for facet in data.facets.activity %}
                                                     <option value='{{facet}}' selected="selected">{{facet}}</option>
                                                 {% endfor %}
                                             </select>
@@ -256,11 +256,11 @@
                     </div>
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <h4 class="panel-title">Functions</h4>
+                            <h4 class="panel-title">Activities</h4>
                         </div>
-                        <div class="list-group" id="function_agg">
-                            {% for facet in data.aggregations.function %}
-                            <a href="#" class="list-group-item" onclick='searchFacet("function", "{{facet.term|e('js')}}"); return false;'>{{ facet.term }} ({{facet.count}})</a>
+                        <div class="list-group" id="activity_agg">
+                            {% for facet in data.aggregations.activity %}
+                            <a href="#" class="list-group-item" onclick='searchFacet("activity", "{{facet.term|e('js')}}"); return false;'>{{ facet.term }} ({{facet.count}})</a>
                             {% endfor %}
                         </div>
                     </div>

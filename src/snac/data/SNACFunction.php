@@ -3,7 +3,7 @@
 /**
  * Snac Function File
  *
- * Contains the data class for functions
+ * Contains the data class for activities
  *
  * License:
  *
@@ -23,7 +23,7 @@ namespace snac\data;
  * @author Robbie Hott
  *
  */
-class SNACFunction extends AbstractData {
+class SNACActivity extends AbstractData {
 
     /**
      * Vocabulary Term
@@ -41,9 +41,9 @@ class SNACFunction extends AbstractData {
      *
      * From EAC-CPF tag(s):
      *
-     * * function/@localType
+     * * activity/@localType
      *
-     * @var \snac\data\Term Type of the function
+     * @var \snac\data\Term Type of the activity
      */
     private $type;
 
@@ -55,7 +55,7 @@ class SNACFunction extends AbstractData {
      *
      * * function/descriptiveNote
      *
-     * @var string Descriptive note for the function
+     * @var string Descriptive note for the activity
      */
     private $note;
 
@@ -66,7 +66,7 @@ class SNACFunction extends AbstractData {
      *
      * * function/term/@vocabularySource
      *
-     * @var string Vocabulary source for the function
+     * @var string Vocabulary source for the activity
      */
     private $vocabularySource = '';
 
@@ -86,9 +86,9 @@ class SNACFunction extends AbstractData {
 
 
     /**
-     * Get the Term for this function
+     * Get the Term for this activity
      *
-     * * function/term
+     * * activity/term
      *
      * @return \snac\data\Term Function controlled vocabulary term
      *
@@ -99,11 +99,11 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * Get the type of this function
+     * Get the type of this activity
      *
-     * * function/@localType
+     * * activity/@localType
      *
-     * @return \snac\data\Term Type of the function
+     * @return \snac\data\Term Type of the activity
      *
      */
     public function getType()
@@ -115,11 +115,11 @@ class SNACFunction extends AbstractData {
     /**
      * Get Descriptive Note
      *
-     * Get the human-readable descriptive note for this function
+     * Get the human-readable descriptive note for this activity
      *
-     * * function/descriptiveNote
+     * * activity/descriptiveNote
      *
-     * @return string Descriptive note for the function
+     * @return string Descriptive note for the activity
      *
      */
     public function getNote()
@@ -130,9 +130,9 @@ class SNACFunction extends AbstractData {
     /**
      * Get the vocabulary source
      *
-     * * function/term/@vocabularySource
+     * * activity/term/@vocabularySource
      *
-     * @return string Vocabulary source for the function
+     * @return string Vocabulary source for the activity
      *
      */
     public function getVocabularySource()
@@ -160,7 +160,7 @@ class SNACFunction extends AbstractData {
      */
     public function toArray($shorten = true) {
         $return = array(
-            "dataType" => "SNACFunction",
+            "dataType" => "SNACActivity",
             "term" => $this->term == null ? null : $this->term->toArray($shorten),
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
@@ -189,7 +189,7 @@ class SNACFunction extends AbstractData {
      * @return boolean true on success, false on failure
      */
     public function fromArray($data) {
-        if (!isset($data["dataType"]) || $data["dataType"] != "SNACFunction")
+        if (!isset($data["dataType"]) || $data["dataType"] != "SNACActivity")
             return false;
 
         parent::fromArray($data);
@@ -219,7 +219,7 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * Set the term of this function
+     * Set the term of this activity
      *
      * This comes from the controlled vocabulary
      *
@@ -231,7 +231,7 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * Set the type of this function
+     * Set the type of this activity
      *
      * @param \snac\data\Term $type type
      */
@@ -251,7 +251,7 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * Set the descriptive note for this function
+     * Set the descriptive note for this activity
      *
      * @param string $note Descriptive note string
      */
@@ -264,7 +264,7 @@ class SNACFunction extends AbstractData {
      *
      * {@inheritDoc}
      *
-     * @param \snac\data\SNACFunction $other Other object
+     * @param \snac\data\SNACActivity $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true on equality, false otherwise
@@ -273,7 +273,7 @@ class SNACFunction extends AbstractData {
      */
     public function equals($other, $strict = true, $checkSubcomponents = true) {
 
-        if ($other == null || ! ($other instanceof \snac\data\SNACFunction))
+        if ($other == null || ! ($other instanceof \snac\data\SNACActivity))
             return false;
 
         if (! parent::equals($other, $strict, $checkSubcomponents))

@@ -140,7 +140,7 @@ class EACCPFParser {
      * Create a Term object. Assume the vocab has already been initialized.
      *
      *  record_type, script_code, entity_type, event_type, name_type, occupation, language_code, gender,
-     *  nationality, maintenance_status, agent_type, document_role, document_type, function_type, function,
+     *  nationality, maintenance_status, agent_type, document_role, document_type, activity_type, activity,
      *  subject, date_type, relation_type, place_match, place_type, place_role, source_type
      *
      *  Contributor uses name_type. Find the type 'name_type' for contributor by querying the vocabulary
@@ -1014,20 +1014,20 @@ class EACCPFParser {
                                         $desc2->getName()
                                     ), $this->getAttributes($desc2));
                                 break;
-                            case "function":
-                                $function = new \snac\data\SNACFunction();
+                            case "activity":
+                                $activity = new \snac\data\SNACActivity();
                                 foreach ($this->getChildren($desc2) as $fun) {
                                     $fatts = $this->getAttributes($fun);
                                     switch ($fun->getName()) {
                                     case "term":
-                                        $function->setTerm($this->getTerm((string) $fun, "function"));
+                                        $activity->setTerm($this->getTerm((string) $fun, "activity"));
                                         if (isset($fatts["vocabularySource"])) {
-                                            $function->setVocabularySource($fatts["vocabularySource"]);
+                                            $activity->setVocabularySource($fatts["vocabularySource"]);
                                             unset($fatts["vocabularySource"]);
                                         }
                                         break;
                                     case "descriptiveNote":
-                                        $function->setNote((string) $fun);
+                                        $activity->setNote((string) $fun);
                                         break;
                                     case "dateRange":
                                         $date = $this->parseDate($fun,
@@ -1041,7 +1041,7 @@ class EACCPFParser {
                                          *
                                          * change setDateRange() to addDate()
                                          */
-                                        $function->addDate($date);
+                                        $activity->addDate($date);
                                         break;
                                     default:
                                         $this->markUnknownTag(
@@ -1064,11 +1064,11 @@ class EACCPFParser {
                                 }
                                 $fatts = $this->getAttributes($desc2);
                                 if (isset($fatts["localType"])) {
-                                    $function->setType(new \snac\data\Term($fatts["localType"]));
+                                    $activity->setType(new \snac\data\Term($fatts["localType"]));
                                     unset($fatts["localType"]);
                                 }
-                                $function->setOperation($this->operation);
-                                $identity->addFunction($function);
+                                $activity->setOperation($this->operation);
+                                $identity->addActivity($activity);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),

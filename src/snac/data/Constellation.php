@@ -219,15 +219,15 @@ class Constellation extends AbstractData {
     private $resourceRelations = null;
 
     /**
-     * Function list
+     * Activity list
      *
      * From EAC-CPF tag(s):
      *
      * * eac-cpf/cpfDescription/description/function/*
      *
-     * @var \snac\data\SNACFunction[] Functions
+     * @var \snac\data\SNACActivity[] Activities
      */
-    private $functions = null;
+    private $activities = null;
 
     /**
      * Place list
@@ -356,7 +356,7 @@ class Constellation extends AbstractData {
             $this->occupations = array();
             $this->relations = array();
             $this->resourceRelations = array();
-            $this->functions = array();
+            $this->activities = array();
             $this->places = array();
             $this->subjects = array();
             $this->legalStatuses = array();
@@ -649,14 +649,14 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the Functions
+     * Get the Activities
      *
-     * @return \snac\data\SNACFunction[] Functions
+     * @return \snac\data\SNACActivity[] Activities
      *
      */
-    public function getFunctions()
+    public function getActivities()
     {
-        return $this->functions;
+        return $this->activities;
     }
 
     /**
@@ -854,7 +854,7 @@ class Constellation extends AbstractData {
             "relations" => array(),
             "sameAsRelations" => array(),
             "resourceRelations" => array(),
-            "functions" => array(),
+            "activities" => array(),
             "places" => array(),
             "subjects" => array(),
             "nationalities" => array(),
@@ -917,8 +917,8 @@ class Constellation extends AbstractData {
         foreach ($this->resourceRelations as $i => $v)
             $return["resourceRelations"][$i] = $v->toArray($shorten);
 
-        foreach ($this->functions as $i => $v)
-            $return["functions"][$i] = $v->toArray($shorten);
+        foreach ($this->activities as $i => $v)
+            $return["activities"][$i] = $v->toArray($shorten);
 
         foreach ($this->places as $i => $v)
             $return["places"][$i] = $v->toArray($shorten);
@@ -1128,12 +1128,12 @@ class Constellation extends AbstractData {
                     $this->resourceRelations[$i] = new ResourceRelation($entry);
         }
 
-        unset($this->functions);
-        $this->functions = array();
-        if (isset($data["functions"])) {
-            foreach ($data["functions"] as $i => $entry)
+        unset($this->activities);
+        $this->activities = array();
+        if (isset($data["activities"])) {
+            foreach ($data["activities"] as $i => $entry)
                 if ($entry != null)
-                    $this->functions[$i] = new SNACFunction($entry);
+                    $this->activities[$i] = new SNACActivity($entry);
         }
 
         unset($this->places);
@@ -1350,13 +1350,13 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Add function
+     * Add Activity
      *
-     * @param \snac\data\SNACFunction $function Function object
+     * @param \snac\data\SNACActivity $activity Activity object
      */
-    public function addFunction($function) {
+    public function addActivity($activity) {
 
-        array_push($this->functions, $function);
+        array_push($this->activities, $activity);
     }
 
     /**
@@ -1600,7 +1600,7 @@ class Constellation extends AbstractData {
             return false;
         if (!$this->checkArrayEqual($this->getResourceRelations(), $other->getResourceRelations(), $strict, $checkSubcomponents))
             return false;
-        if (!$this->checkArrayEqual($this->getFunctions(), $other->getFunctions(), $strict, $checkSubcomponents))
+        if (!$this->checkArrayEqual($this->getActivities(), $other->getActivities(), $strict, $checkSubcomponents))
             return false;
         if (!$this->checkArrayEqual($this->getPlaces(), $other->getPlaces(), $strict, $checkSubcomponents))
             return false;
@@ -1701,7 +1701,7 @@ class Constellation extends AbstractData {
         foreach ($this->resourceRelations as &$element)
             $element->collateSCMCitationsBySource($sources);
 
-        foreach ($this->functions as &$element)
+        foreach ($this->activities as &$element)
             $element->collateSCMCitationsBySource($sources);
 
         foreach ($this->places as &$element)
@@ -1775,7 +1775,7 @@ class Constellation extends AbstractData {
         foreach ($this->resourceRelations as &$element)
             $element->updateSCMCitation($oldSource, $newSource);
 
-        foreach ($this->functions as &$element)
+        foreach ($this->activities as &$element)
             $element->updateSCMCitation($oldSource, $newSource);
 
         foreach ($this->places as &$element)
@@ -1883,10 +1883,10 @@ class Constellation extends AbstractData {
         $first->resourceRelations = $result["first"];
         $second->resourceRelations = $result["second"];
 
-        $result = $this->diffArray($this->getFunctions(), $other->getFunctions(), $strict, $checkSubcomponents);
-        $intersection->functions = $result["intersection"];
-        $first->functions = $result["first"];
-        $second->functions = $result["second"];
+        $result = $this->diffArray($this->getActivities(), $other->getActivities(), $strict, $checkSubcomponents);
+        $intersection->activities = $result["intersection"];
+        $first->activities = $result["first"];
+        $second->activities = $result["second"];
 
         $result = $this->diffArray($this->getPlaces(), $other->getPlaces(), $strict, $checkSubcomponents);
         $intersection->places = $result["intersection"];
@@ -2131,12 +2131,12 @@ class Constellation extends AbstractData {
             $this->addResourceRelation($element);
         }
 
-        foreach ($combine->functions as &$element) {
+        foreach ($combine->activities as &$element) {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
             $element->cleanseSubElements();
-            $this->addFunction($element);
+            $this->addActivity($element);
         }
 
         foreach ($combine->places as &$element) {

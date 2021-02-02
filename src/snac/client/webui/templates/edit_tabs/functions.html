@@ -2,18 +2,18 @@
 {% import 'edit_components.html' as components %}
 {% import 'date_entry.html' as dates %}
 
-<h2>Functions</h2>
+<h2>Activities</h2>
 
 
-<div class="form-group" id="add_function_div">
+<div class="form-group" id="add_activity_div">
     <div class="col-xs-12 text-center">
-        <button class="btn btn-success" id="btn_add_function"><span class="glyphicon glyphicon-plus"></span> Add New Function</button>
+        <button class="btn btn-success" id="btn_add_activity"><span class="glyphicon glyphicon-plus"></span> Add New Activity</button>
     </div>
 </div>
 
 {% set i = 0 %}
-{% for function in data.functions %}
-    {{ components.displayFunction(X, true, true, function, i) }}
+{% for activity in data.activities %}
+    {{ components.displayActivity(X, true, true, activity, i) }}
     {% set i = i + 1 %}
 {% endfor %}
-<span id='next_function_i' style='display:none;'>{{i}}</span>
+<span id='next_activity_i' style='display:none;'>{{i}}</span>

@@ -156,28 +156,28 @@ if (is_dir($argv[1])) {
 
         }
 
-        // Functions
-        $functions = array();
-        $functionUse = array();
-        $functionUpdate = array();
+        // Activities
+        $activities = array();
+        $activityUse = array();
+        $activityUpdate = array();
 
-        foreach ($read->getFunctions() as $function) {
-            if ($function->getTerm() === null) {
-                array_push($functionUse, array("id"=>$function->getID(), "version"=>$function->getVersion()));
+        foreach ($read->getActivities() as $activity) {
+            if ($activity->getTerm() === null) {
+                array_push($activityUse, array("id"=>$activity->getID(), "version"=>$activity->getVersion()));
             } else {
-                array_push($functions, array("id"=>$function->getTerm()->getID(), "value"=>$function->getTerm()->getTerm()));
+                array_push($activities, array("id"=>$activity->getTerm()->getID(), "value"=>$activity->getTerm()->getTerm()));
             }
         }
 
-        foreach ($constellation->getFunctions() as $function) {
-            if ($function->getTerm() === null) {
+        foreach ($constellation->getActivities() as $activity) {
+            if ($activity->getTerm() === null) {
                 echo "ERROR: empty parsed function. ICID: $icID\n";
                 continue;
             }
             $found = false;
-            foreach ($functions as $search) {
-                if ($function->getTerm()->getTerm() === $search["value"]) {
-                    if ($function->getTerm()->getID() !== $search["id"])
+            foreach ($activities as $search) {
+                if ($activity->getTerm()->getTerm() === $search["value"]) {
+                    if ($activity->getTerm()->getID() !== $search["id"])
                         echo "WARN:  values match but ids don't, ignoring: {$search["value"]}\n";
                 
                     $found = true;
@@ -185,11 +185,11 @@ if (is_dir($argv[1])) {
                 }
             }
             if (!$found) {
-                $toupdate = array_pop($functionUse);
+                $toupdate = array_pop($activityUse);
                 if ($toupdate === null || $toupdate === false) {
                     die("ERROR: no additional functions to pull from!\n");
                 }
-                array_push($functionUpdate, array_merge($toupdate, array("term_id" => $function->getTerm()->getID())));
+                array_push($activityUpdate, array_merge($toupdate, array("term_id" => $activity->getTerm()->getID())));
             }
 
         }
@@ -224,9 +224,9 @@ if (is_dir($argv[1])) {
             $res = $db->query("update subject set term_id = $1 where id = $2 and version = $3;", 
                 array($subject["term_id"], $subject["id"], $subject["version"]));
         }
-        foreach ($functionUpdate as $function) {
+        foreach ($activityUpdate as $activity) {
             $res = $db->query("update function set function_id = $1 where id = $2 and version = $3;", 
-                array($function["term_id"], $function["id"], $function["version"]));
+                array($activity["term_id"], $activity["id"], $activity["version"]));
         }
         foreach ($occupationUpdate as $occupation) {
             $res = $db->query("update occupation set occupation_id = $1 where id = $2 and version = $3;", 

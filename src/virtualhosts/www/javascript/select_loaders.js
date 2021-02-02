@@ -348,8 +348,8 @@ $(document).ready(function() {
             // Replace the subject selects
             vocab_select_replace($(this), "subject_", "subject", 4);
 
-            // Replace the function selects
-            vocab_select_replace($(this), "function_", "function", 4);
+            // Replace the activity selects
+            vocab_select_replace($(this), "activity_", "activity", 4);
 
             // Replace the occupation selects
             vocab_select_replace($(this), "occupation_", "occupation", 4);

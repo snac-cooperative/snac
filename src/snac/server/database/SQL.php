@@ -3096,9 +3096,9 @@ class SQL
     }
 
     /**
-     * Insert a function record
+     * Insert a activity record
      *
-     * The SQL returns the inserted id which is used when inserting a date into table date_range. Function
+     * The SQL returns the inserted id which is used when inserting a date into table date_range. Activity
      * uses the same vocabulary terms as occupation.
      *
      * If the $id arg is null, get a new id. Always return $id.
@@ -3107,27 +3107,27 @@ class SQL
      *
      * @param integer $id Record id
      *
-     * @param integer $type Function type controlled vocab term id
+     * @param integer $type Activity type controlled vocab term id
      *
      * @param string $vocabularySource The vocabulary source
      *
-     * @param string $note Note for this function
+     * @param string $note Note for this activity
      *
-     * @param integer $term Function term controlled vocab id
+     * @param integer $term Activity term controlled vocab id
      *
-     * @return integer id of this function
+     * @return integer id of this activity
      *
      */
-    public function insertFunction($vhInfo, $id, $type, $vocabularySource, $note, $term)
+    public function insertActivity($vhInfo, $id, $type, $vocabularySource, $note, $term)
     {
         if (! $id)
         {
             $id = $this->selectID();
         }
-        $qq = 'insert_function';
+        $qq = 'insert_activity';
         $this->sdb->prepare($qq,
-                            'insert into function
-                            (version, ic_id, id, function_type, vocabulary_source, note, function_id)
+                            'insert into activity
+                            (version, ic_id, id, activity_type, vocabulary_source, note, activity_id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7)');
         $eArgs = array($vhInfo['version'],
@@ -4973,23 +4973,23 @@ class SQL
     /**
      * Select all function records
      *
-     * Constrain on version and ic_id. Code in DBUtils turns the return value into a SNACFunction object.
+     * Constrain on version and ic_id. Code in DBUtils turns the return value into a SNACActivity object.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return a list of list. The inner list has keys: id, version, ic_id, function_type,
+     * @return string[][] Return a list of list. The inner list has keys: id, version, ic_id, activity_type,
      * note, date.
      *
      */
-    public function selectFunction($vhInfo)
+    public function selectActivity($vhInfo)
     {
-        $qq = 'select_function';
+        $qq = 'select_activity';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.ic_id, aa.function_type, aa.vocabulary_source, aa.note,
-                            aa.function_id
-                            from function as aa,
-                            (select id, max(version) as version from function where version<=$1 and ic_id=$2 group by id) as bb
+                            aa.id, aa.version, aa.ic_id, aa.activity_type, aa.vocabulary_source, aa.note,
+                            aa.activity_id
+                            from activity as aa,
+                            (select id, max(version) as version from activity where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
@@ -5668,7 +5668,7 @@ class SQL
                                'gender' => 1,
                                'nationality' => 1,
                                'subject' => 1,
-                               'function' => 1,
+                               'activity' => 1,
                                'occupation' => 1);
         $likeStr = "%$query%";
         if (isset($useStartsWith[$term]))

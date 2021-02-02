@@ -261,15 +261,15 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <span id='next_nationality_i' style='display:none;'>{{i}}</span>
                         </div>
 
-                        <div class="tab-pane" id="functions">
-                            <h2>Functions</h2>
+                        <div class="tab-pane" id="activities">
+                            <h2>Activities</h2>
 
                             {% set i = 0 %}
-                            {% for function in data.functions %}
-                                {{ components.displayFunction(X, false, true, function, i) }}
+                            {% for activity in data.activities %}
+                                {{ components.displayActivity(X, false, true, activity, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
-                            <span id='next_function_i' style='display:none;'>{{i}}</span>
+                            <span id='next_activity_i' style='display:none;'>{{i}}</span>
 
                         </div>
 

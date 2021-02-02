@@ -459,8 +459,8 @@ class ConstellationPostMapper {
             }
         }
 
-        foreach ($this->constellation->getFunctions() as $fn) {
-            foreach ($constellation->getFunctions() as $other) {
+        foreach ($this->constellation->getActivities() as $fn) {
+            foreach ($constellation->getActivities() as $other) {
                 $this->reconcileObject($fn, $other);
             }
         }
@@ -654,7 +654,7 @@ class ConstellationPostMapper {
         $nested["biogHist"] = array ();
         $nested["language"] = array ();
         $nested["nationality"] = array ();
-        $nested["function"] = array ();
+        $nested["activity"] = array ();
         $nested["legalStatus"] = array ();
         $nested["conventionDeclaration"] = array ();
         $nested["generalContext"] = array ();
@@ -909,24 +909,24 @@ class ConstellationPostMapper {
             $this->constellation->addNationality($nationality);
         }
 
-        foreach ($nested["function"] as $k => $data) {
+        foreach ($nested["activity"] as $k => $data) {
             // If the user added an object, but didn't actually edit it
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
-            $fun = new \snac\data\SNACFunction();
+            $activity = new \snac\data\SNACActivity();
             if (!$this->mapAsNew) {
-                $fun->setID($data["id"]);
-                $fun->setVersion($data["version"]);
+                $activity->setID($data["id"]);
+                $activity->setVersion($data["version"]);
             }
-            $fun->setOperation($this->getOperation($data));
+            $activity->setOperation($this->getOperation($data));
 
-            $fun->setTerm($this->parseTerm($data["term"]));
+            $activity->setTerm($this->parseTerm($data["term"]));
 
-            $fun->setAllSNACControlMetadata($this->parseSCM($data, "function", $k));
+            $activity->setAllSNACControlMetadata($this->parseSCM($data, "activity", $k));
 
-            $this->addToMapping("function", $k, $data, $fun);
+            $this->addToMapping("activity", $k, $data, $activity);
 
-            $this->constellation->addFunction($fun);
+            $this->constellation->addActivity($activity);
         }
 
         foreach ($nested["legalStatus"] as $k => $data) {

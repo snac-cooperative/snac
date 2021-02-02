@@ -93,13 +93,13 @@ class ResourceValidator extends Validator {
     }
 
     /**
-     * Validate a Function
+     * Validate an Activity
      *
-     * @param \snac\data\SNACFunction $fn SNACFunction to validate
+     * @param \snac\data\SNACActivity $fn SNACActivity to validate
      * @param mixed[] $context optional Any context information needed for validation
      * @return boolean true if valid, false otherwise
      */
-    public function validateFunction($fn, $context=null) {
+    public function validateActivity($fn, $context=null) {
         return true;
     }
 
