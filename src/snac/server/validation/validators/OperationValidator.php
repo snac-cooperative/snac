@@ -200,7 +200,7 @@ class OperationValidator extends \snac\server\validation\validators\Validator {
     /**
      * Validate an Activity
      *
-     * @param \snac\data\SNACActivity $fn SNACActivity to validate
+     * @param \snac\data\Activity $fn Activity to validate
      * @param mixed[] $context optional Any context information needed for validation
      * @return boolean true if valid, false otherwise
      */

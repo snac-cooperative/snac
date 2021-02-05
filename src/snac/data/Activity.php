@@ -23,7 +23,7 @@ namespace snac\data;
  * @author Robbie Hott
  *
  */
-class SNACActivity extends AbstractData {
+class Activity extends AbstractData {
 
     /**
      * Vocabulary Term
@@ -160,7 +160,7 @@ class SNACActivity extends AbstractData {
      */
     public function toArray($shorten = true) {
         $return = array(
-            "dataType" => "SNACActivity",
+            "dataType" => "Activity",
             "term" => $this->term == null ? null : $this->term->toArray($shorten),
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
@@ -189,7 +189,7 @@ class SNACActivity extends AbstractData {
      * @return boolean true on success, false on failure
      */
     public function fromArray($data) {
-        if (!isset($data["dataType"]) || $data["dataType"] != "SNACActivity")
+        if (!isset($data["dataType"]) || $data["dataType"] != "Activity")
             return false;
 
         parent::fromArray($data);
@@ -264,7 +264,7 @@ class SNACActivity extends AbstractData {
      *
      * {@inheritDoc}
      *
-     * @param \snac\data\SNACActivity $other Other object
+     * @param \snac\data\Activity $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @param boolean $checkSubcomponents optional Whether or not to check SNACControlMetadata, nameEntries contributors & components
      * @return boolean true on equality, false otherwise
@@ -273,7 +273,7 @@ class SNACActivity extends AbstractData {
      */
     public function equals($other, $strict = true, $checkSubcomponents = true) {
 
-        if ($other == null || ! ($other instanceof \snac\data\SNACActivity))
+        if ($other == null || ! ($other instanceof \snac\data\Activity))
             return false;
 
         if (! parent::equals($other, $strict, $checkSubcomponents))

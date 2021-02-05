@@ -225,7 +225,7 @@ class Constellation extends AbstractData {
      *
      * * eac-cpf/cpfDescription/description/function/*
      *
-     * @var \snac\data\SNACActivity[] Activities
+     * @var \snac\data\Activity[] Activities
      */
     private $activities = null;
 
@@ -651,7 +651,7 @@ class Constellation extends AbstractData {
     /**
      * Get the Activities
      *
-     * @return \snac\data\SNACActivity[] Activities
+     * @return \snac\data\Activity[] Activities
      *
      */
     public function getActivities()
@@ -1133,7 +1133,7 @@ class Constellation extends AbstractData {
         if (isset($data["activities"])) {
             foreach ($data["activities"] as $i => $entry)
                 if ($entry != null)
-                    $this->activities[$i] = new SNACActivity($entry);
+                    $this->activities[$i] = new Activity($entry);
         }
 
         unset($this->places);
@@ -1352,7 +1352,7 @@ class Constellation extends AbstractData {
     /**
      * Add Activity
      *
-     * @param \snac\data\SNACActivity $activity Activity object
+     * @param \snac\data\Activity $activity Activity object
      */
     public function addActivity($activity) {
 

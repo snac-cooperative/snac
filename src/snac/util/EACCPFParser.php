@@ -1015,7 +1015,7 @@ class EACCPFParser {
                                     ), $this->getAttributes($desc2));
                                 break;
                             case "activity":
-                                $activity = new \snac\data\SNACActivity();
+                                $activity = new \snac\data\Activity();
                                 foreach ($this->getChildren($desc2) as $fun) {
                                     $fatts = $this->getAttributes($fun);
                                     switch ($fun->getName()) {

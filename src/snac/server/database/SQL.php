@@ -4973,7 +4973,7 @@ class SQL
     /**
      * Select all function records
      *
-     * Constrain on version and ic_id. Code in DBUtils turns the return value into a SNACActivity object.
+     * Constrain on version and ic_id. Code in DBUtils turns the return value into a Activity object.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *

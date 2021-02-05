@@ -913,7 +913,7 @@ class ConstellationPostMapper {
             // If the user added an object, but didn't actually edit it
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
-            $activity = new \snac\data\SNACActivity();
+            $activity = new \snac\data\Activity();
             if (!$this->mapAsNew) {
                 $activity->setID($data["id"]);
                 $activity->setVersion($data["version"]);

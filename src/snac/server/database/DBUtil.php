@@ -308,7 +308,7 @@ class DBUtil
         $this->canDelete = array('snac\data\BiogHist' => 'biog_hist',
                                  'snac\data\ConventionDeclaration' => 'convention_declaration',
                                  'snac\data\SNACDate' => 'date_range',
-                                 'snac\data\SNACActivity' => 'activity',
+                                 'snac\data\Activity' => 'activity',
                                  'snac\data\Gender' => 'gender',
                                  'snac\data\GeneralContext' => 'general_context',
                                  'snac\data\Language' => 'language',
@@ -3531,7 +3531,7 @@ class DBUtil
 
 
     /**
-     * Populate the SNACActivity object(s)
+     * Populate the Activity object(s)
      *
      * Select, create object, then add to an existing Constellation object.
      *
@@ -3545,7 +3545,7 @@ class DBUtil
         $funcRows = $this->sql->selectActivity($vhInfo);
         foreach ($funcRows as $oneActivity)
         {
-            $aObj = new \snac\data\SNACActivity();
+            $aObj = new \snac\data\Activity();
             $aObj->setType($oneActivity['activity_type']);
             $aObj->setTerm($this->populateTerm($oneActivity['activity_id']));
             $aObj->setVocabularySource($oneActivity['vocabulary_source']);
