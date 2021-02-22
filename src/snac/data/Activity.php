@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Snac Function File
+ * Snac Activity File
  *
  * Contains the data class for activities
  *
@@ -16,7 +16,7 @@
 namespace snac\data;
 
 /**
- * Function data storage class
+ * Activity data storage class
  *
  *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
  *
@@ -32,16 +32,16 @@ class Activity extends AbstractData {
      *
      * * function/term
      *
-     * @var \snac\data\Term Function controlled vocabulary term
+     * @var \snac\data\Term Activity controlled vocabulary term
      */
     private $term;
 
     /**
-     * Type of Function
+     * Type of Activity
      *
      * From EAC-CPF tag(s):
      *
-     * * activity/@localType
+     * * function/@localType
      *
      * @var \snac\data\Term Type of the activity
      */
@@ -149,7 +149,7 @@ class Activity extends AbstractData {
      * @return string A human-readable summary string of this object
      */
     public function toString() {
-        return "Function: " . $this->term->getTerm();
+        return "Activity: " . $this->term->getTerm();
     }
 
     /**

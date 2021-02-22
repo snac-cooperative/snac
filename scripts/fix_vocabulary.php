@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Fix the vocabulary 
+ * Fix the vocabulary
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
@@ -49,7 +49,7 @@ if (is_dir($argv[1])) {
     while (($row = $db->fetchRow($res)) != null) {
         $icIDs[$row["ic_id"]] = true;
     }
-    $res = $db->query("select distinct ic_id from function where function_id is null order by ic_id asc;", array());
+    $res = $db->query("select distinct ic_id from activity where activity_id is null order by ic_id asc;", array());
     while (($row = $db->fetchRow($res)) != null) {
         $icIDs[$row["ic_id"]] = true;
     }
@@ -60,7 +60,7 @@ if (is_dir($argv[1])) {
 
     echo "Going to parse over " . count($icIDs) . " constellations...\n\n";
     $count = 0;
-    
+
     foreach ($icIDs as $icID => $junkBoolean) {
 
         //$icID = 372;//84;
@@ -69,7 +69,7 @@ if (is_dir($argv[1])) {
         // read the full constellation
         echo "Reading: $icID\n";
         $read = $dbu->readConstellation($icID, null, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
-        
+
         // Create a full path file name
         list($junk, $parts) = explode("ark:/", $read->getArk());
         list($p1, $p2) = explode("/", $parts);
@@ -80,7 +80,7 @@ if (is_dir($argv[1])) {
 
         $constellation = $e->parseFile($filename);
 
-        // SUBJECTS 
+        // SUBJECTS
         $subjects = array();
         $subjectUse = array();
         $subjectUpdate = array();
@@ -103,7 +103,7 @@ if (is_dir($argv[1])) {
                 if ($subject->getTerm()->getTerm() === $search["value"]) {
                     if ($subject->getTerm()->getID() !== $search["id"])
                         echo "WARN:  values match but ids don't, ignoring: {$search["value"]}\n";
-                
+
                     $found = true;
                     break;
                 }
@@ -141,7 +141,7 @@ if (is_dir($argv[1])) {
                 if ($occupation->getTerm()->getTerm() === $search["value"]) {
                     if ($occupation->getTerm()->getID() !== $search["id"])
                         echo "WARN:  values match but ids don't, ignoring: {$search["value"]}\n";
-                
+
                     $found = true;
                     break;
                 }
@@ -179,7 +179,7 @@ if (is_dir($argv[1])) {
                 if ($activity->getTerm()->getTerm() === $search["value"]) {
                     if ($activity->getTerm()->getID() !== $search["id"])
                         echo "WARN:  values match but ids don't, ignoring: {$search["value"]}\n";
-                
+
                     $found = true;
                     break;
                 }
@@ -221,19 +221,20 @@ if (is_dir($argv[1])) {
 
         // Update the database
         foreach ($subjectUpdate as $subject) {
-            $res = $db->query("update subject set term_id = $1 where id = $2 and version = $3;", 
+            $res = $db->query("update subject set term_id = $1 where id = $2 and version = $3;",
                 array($subject["term_id"], $subject["id"], $subject["version"]));
         }
         foreach ($activityUpdate as $activity) {
-            $res = $db->query("update function set function_id = $1 where id = $2 and version = $3;", 
+            $res = $db->query(
+                "update activity set activity_id = $1 where id = $2 and version = $3;",
                 array($activity["term_id"], $activity["id"], $activity["version"]));
         }
         foreach ($occupationUpdate as $occupation) {
-            $res = $db->query("update occupation set occupation_id = $1 where id = $2 and version = $3;", 
+            $res = $db->query("update occupation set occupation_id = $1 where id = $2 and version = $3;",
                 array($occupation["term_id"], $occupation["id"], $occupation["version"]));
         }
         foreach ($nationalityUpdate as $nationality) {
-            $res = $db->query("update nationality set term_id = $1 where id = $2 and version = $3;", 
+            $res = $db->query("update nationality set term_id = $1 where id = $2 and version = $3;",
                 array($nationality["term_id"], $nationality["id"], $nationality["version"]));
         }
 

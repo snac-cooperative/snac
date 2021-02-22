@@ -1016,21 +1016,21 @@ class EACCPFParser {
                                 break;
                             case "activity":
                                 $activity = new \snac\data\Activity();
-                                foreach ($this->getChildren($desc2) as $fun) {
-                                    $fatts = $this->getAttributes($fun);
-                                    switch ($fun->getName()) {
+                                foreach ($this->getChildren($desc2) as $act) {
+                                    $activity_atts = $this->getAttributes($act);
+                                    switch ($act->getName()) {
                                     case "term":
-                                        $activity->setTerm($this->getTerm((string) $fun, "activity"));
-                                        if (isset($fatts["vocabularySource"])) {
-                                            $activity->setVocabularySource($fatts["vocabularySource"]);
-                                            unset($fatts["vocabularySource"]);
+                                        $activity->setTerm($this->getTerm((string) $act, "activity"));
+                                        if (isset($activity_atts["vocabularySource"])) {
+                                            $activity->setVocabularySource($activity_atts["vocabularySource"]);
+                                            unset($activity_atts["vocabularySource"]);
                                         }
                                         break;
                                     case "descriptiveNote":
-                                        $activity->setNote((string) $fun);
+                                        $activity->setNote((string) $act);
                                         break;
                                     case "dateRange":
-                                        $date = $this->parseDate($fun,
+                                        $date = $this->parseDate($act,
                                                                  array (
                                                                      $node->getName(),
                                                                      $desc->getName(),
@@ -1051,21 +1051,21 @@ class EACCPFParser {
                                                 $desc2->getName()
                                             ),
                                             array (
-                                                $fun
+                                                $act
                                             ));
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $desc2->getName(),
-                                                $fun->getName()
-                                            ), $fatts);
+                                                $act->getName()
+                                            ), $activity_atts);
                                     }
                                 }
-                                $fatts = $this->getAttributes($desc2);
-                                if (isset($fatts["localType"])) {
-                                    $activity->setType(new \snac\data\Term($fatts["localType"]));
-                                    unset($fatts["localType"]);
+                                $activity_atts = $this->getAttributes($desc2);
+                                if (isset($activity_atts["localType"])) {
+                                    $activity->setType(new \snac\data\Term($activity_atts["localType"]));
+                                    unset($activity_atts["localType"]);
                                 }
                                 $activity->setOperation($this->operation);
                                 $identity->addActivity($activity);
@@ -1074,7 +1074,7 @@ class EACCPFParser {
                                         $node->getName(),
                                         $desc->getName(),
                                         $desc2->getName()
-                                    ), $fatts);
+                                    ), $activity_atts);
                                 break;
                             case "biogHist":
                                 $bh = new \snac\data\BiogHist();

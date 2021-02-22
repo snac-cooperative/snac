@@ -3542,8 +3542,8 @@ class DBUtil
     private function populateActivity($vhInfo, $cObj)
     {
         $tableName = 'activity';
-        $funcRows = $this->sql->selectActivity($vhInfo);
-        foreach ($funcRows as $oneActivity)
+        $activityRows = $this->sql->selectActivity($vhInfo);
+        foreach ($activityRows as $oneActivity)
         {
             $aObj = new \snac\data\Activity();
             $aObj->setType($oneActivity['activity_type']);

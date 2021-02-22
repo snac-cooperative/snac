@@ -3,7 +3,7 @@
 /**
  * Test postgres ids across snac
  *
- * Give the end point id numbers on the command line and it will print out all ids between them throughout the system 
+ * Give the end point id numbers on the command line and it will print out all ids between them throughout the system
  *
  *
  * @author Robbie Hott
@@ -34,7 +34,7 @@ $tables = array("appuser",
 "biog_hist",
 "convention_declaration",
 "date_range",
-"function",
+"activity",
 "gender",
 "general_context",
 "language",
@@ -68,7 +68,7 @@ foreach ($tables as $table) {
         $results = $db->query("select * from $table where id >= $from and id < $to", array());
         while ($row = $db->fetchRow($results)) {
             $data[$row["id"]] = array_merge(array("table"=>$table),$row);
-        }   
+        }
     } catch (\Exception $e) {
 
     }
@@ -79,7 +79,3 @@ ksort($data);
 foreach ($data as $id => $row) {
     echo "$id\t\t".trim(preg_replace('/\s\s+/', ' ', implode("|", $row)))."\n";
 }
-
-
-
-
