@@ -43,10 +43,10 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     } catch (\Exception $e) {
         echo "   - could not delete resource search index. It did not exist.\n";
     }
-    
+
     echo "Querying the resources from the database.\n";
-    
-    $allResources = $db->query("select rc.*, tv.value as document_type from 
+
+    $allResources = $db->query("select rc.*, tv.value as document_type from
                     (select r.id, r.title, r.href, r.abstract, r.type from
                         resource_cache r,
                         (select distinct id, max(version) as version from resource_cache group by id) a
@@ -55,9 +55,10 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
 
 
+    createResourceIndex($eSearch);
+    
     echo "Updating the Elastic Search indices. This may take a while...\n";
-    while($resource = $db->fetchrow($allResources))
-    {
+    while($resource = $db->fetchrow($allResources)) {
         indexMain((int) $resource["id"], $resource["title"], $resource["abstract"], $resource["href"], $resource["document_type"], (int) $resource["type"]);
     }
 
@@ -70,51 +71,68 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     echo "This version of SNAC does not currently use Elastic Search.  Please check your configuration file.\n";
 }
 
-function indexMain($id, $title, $abstract, $url, $type, $typeid) {
-    global $eSearch, $primaryBody, $primaryStart, $primaryCount;
-    if ($eSearch != null) {
-        // do one first to get the index going
-        if (!$primaryStart) {
-            $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
-                    'id' => $id,
-                    'body' => [
-                            'id' => $id,
-                            'title' => $title,
-                            'abstract' => $abstract,
-                            'url' => $url,
-                            'type' => $type,
-                            'type_id' => $typeid,
-                            'timestamp' => date("c")
-                    ]
-            ];
 
-            $eSearch->index($params);
-            $primaryStart = true;
-        } else {
-            if ($primaryCount == 100000) {
-                echo "  Running Primary bulk update\n";
-                bulkUpdate($primaryBody, $primaryCount);
-            }
-            $primaryBody['body'][] = [
-                'index' => [
-                    '_index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
-                    '_type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
-                    '_id' => $id
+function createResourceIndex($ESClientBuilder) {
+    $params = [
+        'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
+        // 'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,  // 'type' is now deprecated
+
+        'body' => [
+            'settings' => [
+                'analysis' => [
+                    'analyzer' => [
+                        'standard_asciifolding' => [
+                            'tokenizer' => 'standard',
+                            'preserve_original' => 'true',
+                            'filter' => ['lowercase', 'asciifolding']
+                        ]
+                    ]
                 ]
-            ];
-            $primaryBody['body'][] = [
-                'id' => $id,
-                'title' => $title,
-                'abstract' => $abstract,
-                'url' => $url,
-                'type' => $type,
-                'type_id' => $typeid,
-                'timestamp' => date("c")
-            ];
-            $primaryCount++;
+            ],
+            'mappings' => [
+                '_source' => ['enabled' => true],
+                'properties' => [
+                    'id' => ['type' => 'long'],
+                    'title' => [
+                        'type' => 'text',
+                        'analyzer' => 'standard_asciifolding',
+                    ],
+                    'abstract' => ['type' => 'text'],
+                    'url' => ['type' => 'keyword'],
+                    'resource_type' => ['type' => 'keyword'],
+                    'type_id' => ['type' => 'keyword'],
+                    'timestamp' => ['type' => 'date'],
+                ]
+            ]
+        ]
+    ];
+
+    $ESClientBuilder->indices()->create($params);
+}
+
+function indexMain($id, $title, $abstract, $url, $type, $typeid) {
+    global $eSearch, $primaryBody, $primaryCount;
+    if ($eSearch != null) {
+        if ($primaryCount == 100000) {
+            echo "  Running Primary bulk update\n";
+            bulkUpdate($primaryBody, $primaryCount);
         }
+        $primaryBody['body'][] = [
+            'index' => [
+                '_index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
+                '_id' => $id
+            ]
+        ];
+        $primaryBody['body'][] = [
+            'id' => $id,
+            'title' => $title,
+            'abstract' => $abstract,
+            'url' => $url,
+            'type' => $type,
+            'type_id' => $typeid,
+            'timestamp' => date("c")
+        ];
+        $primaryCount++;
     }
 }
 
@@ -132,4 +150,3 @@ function bulkUpdate(&$body, &$count) {
         unset($responses);
     }
 }
-
