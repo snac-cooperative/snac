@@ -67,7 +67,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
             "index" => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
             "body" => [
                 "mappings" => [
-                     \snac\Config::$ELASTIC_SEARCH_BASE_TYPE => [
+                    //  \snac\Config::$ELASTIC_SEARCH_BASE_TYPE => [
                         "properties"=> [
                             "arkID"=> [
                                 "type"=> "string"
@@ -170,7 +170,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
                                 "type"=> "date"
                             ]
                         ]
-                    ]
+                    // ]
                 ]
             ]
         ];
@@ -393,7 +393,6 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
         if (!$primaryStart) {
             $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     'id' => $icid,
                     'body' => [
                             'nameEntry' => $nameText,
@@ -423,7 +422,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
             $primaryBody['body'][] = [
                 'index' => [
                     '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    '_type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                    // '_type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     '_id' => $icid
                 ]
             ];

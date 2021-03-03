@@ -90,7 +90,7 @@ abstract class Elastic implements Stage {
 
         $searchParams = array();
         $searchParams['index'] = \snac\Config::$ELASTIC_SEARCH_BASE_INDEX;
-        $searchParams['type']  = \snac\Config::$ELASTIC_SEARCH_BASE_TYPE;
+        // $searchParams['type']  = \snac\Config::$ELASTIC_SEARCH_BASE_TYPE;
         $searchParams['body']['query']['match'][$this->field]["query"] = $search_string;
         if ($this->minMatch != null)
             $searchParams['body']['query']['match'][$this->field]['minimum_should_match'] = $this->minMatch;
