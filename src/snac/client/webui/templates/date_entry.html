@@ -2,7 +2,7 @@
     {% import 'widgets.html' as widgets %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
 	<div class="panel-heading">{{ name }} - {{ X.singleDate.display }}</div>
-	<div class="panel-body">
+	<div class="panel-body date-panel">
 		<div class="col-sm-10" id="{{short}}_datapart_{{i}}">
             <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
             <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
@@ -45,7 +45,8 @@
                     <p class="form-control-static">{{ snacDate.fromType.term }}</p>
                 </div>
             </div>
-			<div class="form-group">
+
+			<div class="form-group fuzzy-date" style="display:none">
 				<label for="{{short}}_startnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.fuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
 					{{ X.fuzzyRange.display }} </label>
 				<div class="col-xs-3" id="text_{{short}}_startnotBefore_{{i}}">
@@ -68,7 +69,7 @@
 					<input id="{{short}}_startnotAfter_placeholder_{{i}}"
 						type="hidden" class="form-control"
 						value="YYYY-MM-DD"/>
-					<input id="{{short}}_startnotAfter_size_{{i}}"
+					<inpu t id="{{short}}_startnotAfter_size_{{i}}"
 						type="hidden" class="form-control"
 						value="10"/>
                     <p class="form-control-static">{{ snacDate.fromRange.notAfter }}</p>
@@ -84,6 +85,7 @@
                     <p class="form-control-static">{{ snacDate.note }}</p>
                 </div>
             </div>
+			<a class="form-group" onclick="$(this).hide().closest('.date-panel').find('div.fuzzy-date').slideToggle()">Show Fuzzy Range Fields</a>
 		</div>
 
         <!-- TODO: need to fix this up! -->
@@ -101,7 +103,7 @@
     {% import 'widgets.html' as widgets %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
 	<div class="panel-heading">{{ name }} - {{ X.dateRange.display }}</div>
-	<div class="panel-body">
+	<div class="panel-body date-panel">
 		<div class="col-sm-10" id="{{short}}_datapart_{{i}}">
             <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
             <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
@@ -139,7 +141,8 @@
                     <p class="form-control-static">{{ snacDate.fromType.term }}</p>
                 </div>
             </div>
-			<div class="form-group">
+			<!-- FUZZY -->
+			<div class="form-group fuzzy-date" style="display:none">
 				<label for="{{short}}_startnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.startFuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
 					{{ X.startFuzzyRange.display }} </label>
 				<div class="col-xs-3" id="text_{{short}}_startnotBefore_{{i}}">
@@ -200,7 +203,8 @@
                     <p class="form-control-static">{{ snacDate.toType.term }}</p>
                 </div>
             </div>
-			<div class="form-group">
+			<!-- FUZZY -->
+			<div class="form-group fuzzy-date" style="display:none">
 				<label for="{{short}}_endnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.endFuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
 					{{ X.endFuzzyRange.display }} </label>
 				<div class="col-xs-3" id="text_{{short}}_endnotBefore_{{i}}">
@@ -240,6 +244,7 @@
                     <p class="form-control-static">{{ snacDate.note }}</p>
                 </div>
             </div>
+			<a class="form-group" onclick="$(this).hide().closest('.date-panel').find('div.fuzzy-date').slideToggle()">Show Fuzzy Range Fields</a>
 		</div>
 
         <!-- TODO: need to fix this up! -->
