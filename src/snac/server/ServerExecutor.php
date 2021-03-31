@@ -3623,7 +3623,7 @@ class ServerExecutor {
 
             $results = $this->elasticSearch->listRandomConstellations(
                         \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                        \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                        // \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                         $withImages);
 
             $return = array();
@@ -3690,8 +3690,8 @@ class ServerExecutor {
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
             $results = $this->elasticSearch->listRecentlyUpdated(
-                        \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                        \snac\Config::$ELASTIC_SEARCH_BASE_TYPE);
+                        \snac\Config::$ELASTIC_SEARCH_BASE_INDEX);
+                        // \snac\Config::$ELASTIC_SEARCH_BASE_TYPE);
 
             $return = array();
             foreach ($results as $i => $val) {

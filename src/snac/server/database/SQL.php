@@ -4958,14 +4958,14 @@ class SQL
         $icids = implode(", " , $icids);
 
         $query = "SELECT r1.id as snac_resource_id, r1.version, r1.href, v.value as resource_type,
-                      r1.title, r1.display_entry, r1.abstract, r1.extent, r1.date, r1.updated_at
+                      r1.title, r1.display_entry, r1.abstract, r1.extent, r1.date, $1 as repository_id, r1.updated_at
                   FROM resource_cache r1
                   LEFT JOIN vocabulary v on r1.type = v.id
                   INNER JOIN (SELECT id, max(version) AS version FROM resource_cache
                   WHERE repo_ic_id IN ({$icids}) AND NOT is_deleted GROUP BY id) AS r2
                   ON r1.id = r2.id AND r1.version = r2.version";
 
-        $result = $this->sdb->query($query, array());
+        $result = $this->sdb->query($query, array($icid));
         return $this->sdb->fetchAll($result);
     }
 
