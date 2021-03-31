@@ -55,7 +55,7 @@ $(document).ready(function() {
                     data: null,
                     dataType: 'json',
                     type: 'POST',
-                    headers: { 'Api-User-Agent': 'SNAC-Web-Client/1.0 (http://socialarchive.iath.virginia.edu/)' },
+                    headers: { 'Api-User-Agent': 'SNAC-Web-Client/1.0 (https://snaccooperative.org/)', 'Accept-Encoding': 'gzip,deflate' },
                     success: function(info) {
                         var caption = "<span class='wikipedia-caption'><a href=\"https://commons.wikimedia.org/wiki/File:"+file+"\">Image from Wikimedia Commons</a></span>";
                         var realAuthor = null;

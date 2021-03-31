@@ -115,8 +115,9 @@ class ElasticSearchUtil {
             $this->connector->index($params);
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
+                    // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
+                    // 'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $entry->getID(),
                     'body' => [
                         'nameEntry' => $entry->getOriginal(),
@@ -157,8 +158,9 @@ class ElasticSearchUtil {
             }
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
+                    // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
+                    // 'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $entry->getID()
                 ];
                 try {
@@ -228,7 +230,7 @@ class ElasticSearchUtil {
 
         $params = [
             'index' => $index,
-            'type' => $type,
+            // 'type' => $type,
             'body' => $json
 
         ];
@@ -317,7 +319,7 @@ class ElasticSearchUtil {
             }
 
             $response = array();
-            $response["total"] = $results["hits"]["total"];
+            $response["total"] = $results["hits"]["total"]["value"];    // ES 7 syntax adds ["value"]
             $response["results"] = $return;
 
             if ($response["total"] == 0 || $count == 0) {
@@ -587,7 +589,8 @@ class ElasticSearchUtil {
                 foreach ($values as $value) {
                     array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                         'match' => [
-                            $type.".untokenized" => [
+                            // $type.".untokenized" => [
+                            $type => [
                                 'query' => $value
                             ]
                         ]
@@ -619,22 +622,43 @@ class ElasticSearchUtil {
             $body["from"] = $start;
             $body["size"] = $count;
 
-            $aggs = [
+            // $aggs = [
+            //         "subject"=> [
+            //             "terms"=> [
+            //                 "field" => "subject.untokenized",
+            //                 "size" => 10
+            //             ]
+            //         ],
+            //         "occupation"=> [
+            //             "terms"=> [
+            //                 "field" => "occupation.untokenized",
+            //                 "size" => 10
+            //             ]
+            //         ],
+            //         "function"=> [
+            //             "terms"=> [
+            //                 "field" => "function.untokenized",
+            //                 "size" => 10
+            //             ]
+            //         ]
+            //     ];
+
+                $aggs = [
                     "subject"=> [
                         "terms"=> [
-                            "field" => "subject.untokenized",
+                            "field" => "subject",
                             "size" => 10
                         ]
                     ],
                     "occupation"=> [
                         "terms"=> [
-                            "field" => "occupation.untokenized",
+                            "field" => "occupation",
                             "size" => 10
                         ]
                     ],
                     "function"=> [
                         "terms"=> [
-                            "field" => "function.untokenized",
+                            "field" => "function",
                             "size" => 10
                         ]
                     ]
@@ -643,7 +667,7 @@ class ElasticSearchUtil {
 
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                 'body' => $body,
                 'from' => $start,
                 'size' => $count
@@ -678,7 +702,7 @@ class ElasticSearchUtil {
             }
 
             $response = array();
-            $response["total"] = $results["hits"]["total"];
+            $response["total"] = $results["hits"]["total"]["value"];
             $response["results"] = $return;
             $response["aggregations"] = $aggregations;
 
@@ -798,51 +822,30 @@ class ElasticSearchUtil {
 
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
-                // 'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
-                'body' => [
-                    /* This query uses a keyword search
-                       'query' => [
-                        'query_string' => [
-                            'fields' => [
-                                "title",
-                                "url"
-                            ],
-                            'query' => '*' . $query . '*'
-                        ]
-                    ],
-                    'from' => $start,
-                    'size' => $count*/
-
-                    /* This query uses a full-phrase matching search */
+                'body'  => [
                     'query' => [
-                        'match_phrase' => [
-                            '_all' => [
-                                'query' => $query,
-                                'slop' => 20
-                            ]                        ]
-                    ],
-                    'from' => $start,
-                    'size' => $count
-                    /* This query uses a full-phrase matching search
-                    'query' => [
-                        'match_phrase_prefix' => [
-                            'nameEntry' => [
-                                'query' => $query,
-                                'slop' => 20
+                        'bool' => [
+                            'must' => [
+                                        'multi_match' => [
+                                            'type' => 'phrase',
+                                            'query' => $query,
+                                            'fields' => ['title', 'abstract', 'url'],
+                                        ]
                             ]
                         ]
                     ],
-                    'from' => $start,
-                    'size' => $count*/
-                ]
+                ],
+                'from' => $start,
+                'size' => $count
             ];
 
             if (isset($filters)){
                 // build an ES filter and append to $params
+                $queryFilter = [];
                 foreach ($filters as $field => $value) {
-                    $queryFilter['bool']['filter'][]['term'][$field] = $value;
+                    $queryFilter['term'][$field] = $value;
                 }
-                $params['body']['filter'] = $queryFilter;
+                $params['body']['query']['bool']['filter'][] = $queryFilter;
             }
 
             $this->logger->addDebug("Defined parameters for search", $params);
@@ -857,7 +860,7 @@ class ElasticSearchUtil {
             }
 
             $response = array();
-            $response["total"] = $results["hits"]["total"];
+            $response["total"] = $results["hits"]["total"]["value"];
             $response["results"] = $return;
 
             if ($response["total"] == 0 || $count == 0) {
