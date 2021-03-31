@@ -1,10 +1,11 @@
+
 {
 
     "require": {
         "php": "~7.0",
         "twig/twig": "^2.0",
         "monolog/monolog": "^1.18",
-        "elasticsearch/elasticsearch": "~2.0@beta",
+        "elasticsearch/elasticsearch": "*",
         "phpmailer/phpmailer": "^6.0",
         "snac/ark-manager": "*",
         "snac/eac-validator": "*",

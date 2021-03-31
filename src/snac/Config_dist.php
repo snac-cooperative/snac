@@ -261,25 +261,31 @@ class Config {
      */
     public static $ELASTIC_SEARCH_BASE_INDEX = "";
 
-    /**
-     * @var string Main type for the search functionality of snac
-     */
-    public static $ELASTIC_SEARCH_BASE_TYPE = "";
+    // /**
+    //  * @var string Main type for the search functionality of snac  (DEPRECATED)
+    //  */
+    // public static $ELASTIC_SEARCH_BASE_TYPE = "";
+
 
     /**
-     * @var string Search base for ALL of the snac name entries (and alternates)
+     * @var string All index for the all name (and alternate) search functionality of snac
      */
-    public static $ELASTIC_SEARCH_ALL_TYPE = "";
+    public static $ELASTIC_SEARCH_ALL_INDEX = "";
+
+    // /**
+    //  * @var string Search base for ALL of the snac name entries (and alternates)  (DEPRECATED)
+    //  */
+    // public static $ELASTIC_SEARCH_ALL_TYPE = "";
 
     /**
      * @var string Resource index for the resource search functionality of snac
      */
     public static $ELASTIC_SEARCH_RESOURCE_INDEX = "";
 
-    /**
-     * @var string Resource type for the resource search functionality of snac
-     */
-    public static $ELASTIC_SEARCH_RESOURCE_TYPE = "";
+    // /**
+    //  * @var string Resource type for the resource search functionality of snac   (DEPRECATED)
+    //  */
+    // public static $ELASTIC_SEARCH_RESOURCE_TYPE = "";
 
     /**
      * @var integer Maximum number of pages to show on search result pages
@@ -343,7 +349,7 @@ class Config {
 
 
     /**
-     * @var string Temporary directory to parse EAD 
+     * @var string Temporary directory to parse EAD
      */
     public static $EAD_PARSETMP_DIR = "/tmp";
 

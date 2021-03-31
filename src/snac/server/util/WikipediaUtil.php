@@ -81,9 +81,10 @@ class WikipediaUtil {
         curl_setopt($ch, CURLOPT_URL, "https://query.wikidata.org/sparql?format=json&query=" . urlencode($query));
         curl_setopt($ch, CURLOPT_HTTPHEADER,
                 array (
-                        'Api-User-Agent: SNAC-Web-Client/1.0 (http://socialarchive.iath.virginia.edu/)'
+                        'User-Agent: SNAC-Web-Client-Bot/1.0 (https://snaccooperative.org/)'
                 ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_ENCODING, 'Accept-Encoding: gzip,deflate');
         $response = curl_exec($ch);
         curl_close($ch);
 
@@ -115,7 +116,7 @@ class WikipediaUtil {
         curl_setopt($ch, CURLOPT_URL, 'https://commons.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&origin=*&titles=File:'. $imgFileName);
         curl_setopt($ch, CURLOPT_HTTPHEADER,
                 array (
-                        'Api-User-Agent: SNAC-Web-Client/1.0 (http://socialarchive.iath.virginia.edu/)'
+                    'User-Agent: SNAC-Web-Client-Bot/1.0 (https://snaccooperative.org/)'
                 ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);

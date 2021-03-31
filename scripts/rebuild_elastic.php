@@ -66,109 +66,89 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         $params = [
             "index" => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
             "body" => [
-                "mappings" => [
-                     \snac\Config::$ELASTIC_SEARCH_BASE_TYPE => [
-                        "properties"=> [
-                            "arkID"=> [
-                                "type"=> "string"
-                            ],
-                            "biogHist"=> [
-                                "type"=> "string"
-                            ],
-                            "degree"=> [
-                                "type"=> "long"
-                            ],
-                            "entityType"=> [
-                                "type"=> "string",
-                                "fields"=> [
-                                    "untokenized"=> [
-                                        "type"=> "string",
-                                        "index"=> "not_analyzed"
-                                    ]
-                                ]
-                            ],
-                            "function"=> [
-                                "type"=> "string",
-                                "fields"=> [
-                                    "untokenized"=> [
-                                        "type"=> "string",
-                                        "index"=> "not_analyzed"
-                                    ]
-                                ]
-                            ],
-                            "hasImage"=> [
-                                "type"=> "boolean"
-                            ],
-                            "id"=> [
-                                "type"=> "long"
-                            ],
-                            "imageMeta"=> [
-                                "properties"=> [
-                                    "author"=> [
-                                        "properties"=> [
-                                            "name"=> [
-                                                "type"=> "string"
-                                            ],
-                                            "url"=> [
-                                                "type"=> "string"
-                                            ]
-                                        ]
-                                    ],
-                                    "info"=> [
-                                        "type"=> "string"
-                                    ],
-                                    "infoURL"=> [
-                                        "type"=> "string"
-                                    ],
-                                    "license"=> [
-                                        "properties"=> [
-                                            "name"=> [
-                                                "type"=> "string"
-                                            ],
-                                            "url"=> [
-                                                "type"=> "string"
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ],
-                            "imageURL"=> [
-                                "type"=> "string"
-                            ],
-                            "nameEntry"=> [
-                                "type"=> "string",
-                                "fields"=> [
-                                    "untokenized"=> [
-                                        "type"=> "string",
-                                        "index"=> "not_analyzed"
-                                    ]
-                                ]
-                            ],
-                            "occupation"=> [
-                                "type"=> "string",
-                                "fields"=> [
-                                    "untokenized"=> [
-                                        "type"=> "string",
-                                        "index"=> "not_analyzed"
-                                    ]
-                                ]
-                            ],
-                            "resources"=> [
-                                "type"=> "long"
-                            ],
-                            "subject"=> [
-                                "type"=> "string",
-                                "fields"=> [
-                                    "untokenized"=> [
-                                        "type"=> "string",
-                                        "index"=> "not_analyzed"
-                                    ]
-                                ]
-                            ],
-                            "timestamp"=> [
-                                "format"=> "strict_date_optional_time||epoch_millis",
-                                "type"=> "date"
+                "settings" => [
+                    "analysis" => [
+                        "analyzer" => [
+                            "standard_asciifolding" => [
+                                "tokenizer" => "standard",
+                                "preserve_original" => "true",
+                                "filter" => ["lowercase", "asciifolding"]
                             ]
+                        ]
+                    ]
+                ],
+                "mappings" => [
+                    "properties"=> [
+                        "arkID"=> [
+                            "type"=> "keyword"
+                        ],
+                        "biogHist"=> [
+                            "type"=> "text"
+                        ],
+                        "degree"=> [
+                            "type"=> "long"
+                        ],
+                        "entityType"=> [
+                            "type"=> "keyword",
+                        ],
+                        "function"=> [
+                            "type"=> "keyword",
+                        ],
+                        "hasImage"=> [
+                            "type"=> "boolean"
+                        ],
+                        "id"=> [
+                            "type"=> "long"
+                        ],
+                        "imageMeta"=> [
+                            "properties"=> [
+                                "author"=> [
+                                    "properties"=> [
+                                        "name"=> [
+                                            "type"=> "keyword"
+                                        ],
+                                        "url"=> [
+                                            "type"=> "keyword"
+                                        ]
+                                    ]
+                                ],
+                                "info"=> [
+                                    "type"=> "keyword"
+                                ],
+                                "infoURL"=> [
+                                    "type"=> "keyword"
+                                ],
+                                "license"=> [
+                                    "properties"=> [
+                                        "name"=> [
+                                            "type"=> "keyword"
+                                        ],
+                                        "url"=> [
+                                            "type"=> "keyword"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "imageURL"=> [
+                            "type"=> "keyword"
+                        ],
+                        "nameEntry"=> [
+                            "type"=> "text",
+                            "analyzer" => "standard_asciifolding",
+                        ],
+                        "occupation"=> [
+                            "type"=> "keyword",
+                        ],
+                        "resources"=> [
+                            "type"=> "long"
+                        ],
+                        "subject"=> [
+                            "type"=> "keyword",
+                        ],
+                        "timestamp"=> [
+                            "format"=> "strict_date_optional_time||epoch_millis",
+                            "type"=> "date"
                         ]
                     ]
                 ]
@@ -393,7 +373,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
         if (!$primaryStart) {
             $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                    // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     'id' => $icid,
                     'body' => [
                             'nameEntry' => $nameText,
@@ -423,7 +403,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
             $primaryBody['body'][] = [
                 'index' => [
                     '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    '_type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                    // '_type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     '_id' => $icid
                 ]
             ];
@@ -455,8 +435,9 @@ function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree, $
         // do one first to get the index going
         if (!$secondaryStart) {
             $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
+                    // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
+                    // 'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $nameid,
                     'body' => [
                             'nameEntry' => $nameText,
@@ -480,8 +461,9 @@ function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree, $
             // elasticsearch api = array with "index" => array(information), followed by array of data, then repeated
             $secondaryBody['body'][] = [
                 'index' => [
-                    '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    '_type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
+                    // '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    '_index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
+                    // '_type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     '_id' => $nameid
                 ]
             ];

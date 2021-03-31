@@ -46,7 +46,7 @@ $sampledir = $argv[1];
 if (isset($argv[2]))
     $sampledir = $argv[2];
 
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 if (is_dir($realdir) && is_dir($sampledir)) {
     printf("Opening dir: $sampledir\n");
     $dh = opendir($sampledir);
@@ -89,13 +89,13 @@ if (is_dir($realdir) && is_dir($sampledir)) {
             $dbu->writeConstellationStatus($user, $written->getID(), "published");
 
             indexESearch($written);
-            
+
             // If this is published, then it should point to itself in the lookup table.
             $selfDirect = array($written);
             $dbu->updateConstellationLookup($written, $selfDirect);
         }
     }
-    echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+    echo "Time: " . date("Y-m-d H:i:s") . "\n";
 
     // Washington
     echo "Parsing: George Washington : ";
@@ -108,7 +108,7 @@ if (is_dir($realdir) && is_dir($sampledir)) {
     // If this is published, then it should point to itself in the lookup table.
     $selfDirect = array($written);
     $dbu->updateConstellationLookup($written, $selfDirect);
-    echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+    echo "Time: " . date("Y-m-d H:i:s") . "\n";
 
     // Jefferson
     echo "Parsing: Thomas Jefferson : ";
@@ -121,7 +121,7 @@ if (is_dir($realdir) && is_dir($sampledir)) {
     // If this is published, then it should point to itself in the lookup table.
     $selfDirect = array($written);
     $dbu->updateConstellationLookup($written, $selfDirect);
-    echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+    echo "Time: " . date("Y-m-d H:i:s") . "\n";
 
     // Oppenheimer
     echo "Parsing: Robert Oppenheimer\n";
@@ -133,7 +133,7 @@ if (is_dir($realdir) && is_dir($sampledir)) {
     // If this is published, then it should point to itself in the lookup table.
     $selfDirect = array($written);
     $dbu->updateConstellationLookup($written, $selfDirect);
-    echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+    echo "Time: " . date("Y-m-d H:i:s") . "\n";
 
     // Joseph Henry (large record)
     echo "Parsing: Joseph Henry\n";
@@ -145,7 +145,7 @@ if (is_dir($realdir) && is_dir($sampledir)) {
     // If this is published, then it should point to itself in the lookup table.
     $selfDirect = array($written);
     $dbu->updateConstellationLookup($written, $selfDirect);
-    echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+    echo "Time: " . date("Y-m-d H:i:s") . "\n";
 
     //Now, write samples to edit
     echo "Parsing: Sparse other sample files .";
@@ -200,7 +200,7 @@ if (is_dir($realdir) && is_dir($sampledir)) {
     $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
     echo "Parsing: Parsons, Edward Alexander, 1878-1962 (needed for cpfRelation sameAs test_record.xml)\n";
-    $constellation = $e->parseFile($realdir . '/99166-w6qc06d0.xml'); 
+    $constellation = $e->parseFile($realdir . '/99166-w6qc06d0.xml');
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
@@ -213,7 +213,7 @@ if (is_dir($realdir) && is_dir($sampledir)) {
     echo "\nCompleted input of sample data.\n\n";
 
 }
-echo "Time: " . date("Y-m-d H:i:s") . "\n"; 
+echo "Time: " . date("Y-m-d H:i:s") . "\n";
 
 // If no file was parsed, then print the output that something went wrong
 if ($parsedFile == false) {
@@ -232,7 +232,7 @@ function indexESearch($written) {
     if ($eSearch != null) {
         $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                 'id' => $written->getID(),
                 'body' => [
                         'nameEntry' => $written->getPreferredNameEntry()->getOriginal(),
