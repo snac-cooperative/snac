@@ -10,6 +10,8 @@
  *            the Regents of the University of California
  */
 
+ include "../vendor/autoload.php";
+
 
 //  Cache image data before rebuild
 // curl -X PUT "http://snac-dev.iath.virginia.edu:9200/development/_search" -H 'Content-Type: application/json' -d '
@@ -31,7 +33,7 @@ $imageInfos = $imageJson['hits']['hits'];
 
 
 // $url = 'http://localhost:9200/snac/_update/';
-$url = \snac\Config::$ELASTIC_SEARCH_URI . '/' . \snac\Config::$ELASTIC_SEARCH_BASE_INDEX . '/_update';
+$url = \snac\Config::$ELASTIC_SEARCH_URI . '/' . \snac\Config::$ELASTIC_SEARCH_BASE_INDEX . '/_update/';
 
 foreach ($imageInfos as $imageInfo) {
 
