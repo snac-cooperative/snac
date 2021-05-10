@@ -4957,8 +4957,8 @@ class SQL
         }
         $icids = implode(", " , $icids);
 
-        $query = "SELECT r1.id as snac_resource_id, r1.version, r1.href, v.value as resource_type,
-                      r1.title, r1.display_entry, r1.abstract, r1.extent, r1.date, $1 as repository_id, r1.updated_at
+        $query = "SELECT r1.id as \"RD-Source-ID\", r1.version, r1.href as \"RD-URL\", v.value as \"RD-Type\",
+                      r1.title, r1.abstract, r1.extent, r1.date, $1 as repository_id, r1.updated_at
                   FROM resource_cache r1
                   LEFT JOIN vocabulary v on r1.type = v.id
                   INNER JOIN (SELECT id, max(version) AS version FROM resource_cache
