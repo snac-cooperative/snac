@@ -38,7 +38,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
      * @var string response
      */
     private $response = "";
-    
+
     /**
      * @var \Monolog\Logger $logger the logger for this server
      */
@@ -73,7 +73,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
         // Decide what to do based on the OpenRefine parameters:
         //  - query = only one search being done at this point
         //  - queries = multiple searches in an array being requested
-        //  - else give information about the endpoint 
+        //  - else give information about the endpoint
         if (isset($this->input["query"])) {
             $query = $this->input["query"];
             $max = 10;
@@ -83,7 +83,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
             // Read the query as a name entry in a new constellation
             $testC = new \snac\data\Constellation();
             $testN = new \snac\data\NameEntry();
-            $testN->setOriginal($query["query"]); 
+            $testN->setOriginal($query["query"]);
             $testC->addNameEntry($testN);
 
             // Ask the server to reconcile the constellation
@@ -99,16 +99,16 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
             if (isset($response["reconciliation"])) {
                 $results = array();
                 foreach ($response["reconciliation"] as $i => $result) {
-                    
+
                     // only grab the first 5 results
                     if ($i > $max) break;
-                    
+
                     // build the CSV line to print
                     $output = array(
                         "name" => $result["identity"]["nameEntries"][0]["original"],
                         "id" => (string) $result["identity"]["id"],
-                        "type" => [ 
-                            $result["identity"]["entityType"]["term"] 
+                        "type" => [
+                            $result["identity"]["entityType"]["term"]
                         ],
                         "score" => round($result["strength"], 2),
                         "match" => ($result["strength"] > 11 ? true : false)
@@ -133,25 +133,25 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                     $max = $query["limit"];
                 $testC = new \snac\data\Constellation();
                 $testN = new \snac\data\NameEntry();
-                $testN->setOriginal($query["query"]); 
+                $testN->setOriginal($query["query"]);
                 $testC->addNameEntry($testN);
 
                 $ask = [
                     "command" => "reconcile",
                     "constellation" => $testC->toArray()
                 ];
-                
+
                 $response = $this->connect->query($ask);
-                
+
                 if (isset($response["reconciliation"])) {
                     $results[$qid] = [
                         "result" => []
                     ];
                     foreach ($response["reconciliation"] as $i => $result) {
-                        
+
                         // only grab the first 5 results
                         if ($i > $max) break;
-                        
+
                         // build the results line
                         $output = array(
                             "name" => $result["identity"]["nameEntries"][0]["original"],
@@ -169,7 +169,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
             $this->response = json_encode($results, JSON_PRETTY_PRINT);
             if (isset($this->input["callback"]))
                 $this->response = $this->input["callback"] . "(".$this->response.");";
-        
+
         } else {
             // Default response: give information about this OpenRefine endpoint
             $response = [
@@ -183,20 +183,20 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                     "url" => \snac\Config::$WEBUI_URL . "/view/{{id}}"
                 ],
                 "identifierSpace" => \snac\Config::$WEBUI_URL,
-                "name" => "SNAC Reconciliation for OpenRefine",
+                "name" => \snac\Config::$OPENREFINE_ENDPOINT_NAME,
                 "schemaSpace" => \snac\Config::$OPENREFINE_URL,
                 "preview" => [
                     "width" => 400,
                     "height" => 500,
                     "url" => \snac\Config::$WEBUI_URL . "/snippet/{{id}}"
-                ] 
+                ]
             ];
 
-            $this->response = json_encode($response, JSON_PRETTY_PRINT); 
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
             if (isset($this->input["callback"]))
                 $this->response = $this->input["callback"] . "(".$this->response.");";
         }
-        
+
         return;
     }
 
@@ -229,4 +229,3 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
         return $this->response;
     }
 }
-

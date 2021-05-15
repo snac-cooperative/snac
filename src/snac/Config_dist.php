@@ -121,6 +121,12 @@ class Config {
 
     /**
      *
+     * @var string Name of the openrefine reconciliation service
+     */
+    public static $OPENREFINE_ENDPOINT_NAME = "Development SNAC Reconciliation for OpenRefine";
+
+    /**
+     *
      * @var string URL of the back-end server
      */
     public static $INTERNAL_SERVERURL = "http://localhost:82";
