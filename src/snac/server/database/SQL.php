@@ -3839,11 +3839,9 @@ class SQL
         $query = "UPDATE related_resource
                   SET resource_id = $1,
                       resource_version = $2
-                  WHERE resource_id = $3
-                    AND resource_version = $4";
+                  WHERE resource_id = $3";
 
-        $result = $this->sdb->query($query, array( $targetID, $targetVersion, $victimID, $victimVersion));
-
+        $result = $this->sdb->query($query, array( $targetID, $targetVersion, $victimID));
 
         return true;
     }
