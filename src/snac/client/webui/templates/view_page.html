@@ -819,7 +819,7 @@ $(document).ready(function() {
                     {{ data.places ? enabledtab : disabledtab}} href="#places">Places</a></li>
                     {{ data.subjects ? enabledtab : disabledtab}} href="#subjects">Subjects</a></li>
                     {{ data.occupations ? enabledtab : disabledtab}} href="#occupations">Occupations</a></li>
-                    {{ data.functions ? enabledtab : disabledtab}} href="#functions">Functions</a></li>
+                    {{ data.activities ? enabledtab : disabledtab}} href="#activities">Activities</a></li>
                     {% if 'holdingRepository' in data.flags %}
                         {{ enabledtab}} href="#holding-repository">Holdings</a></li>
                     {% endif %}
@@ -1142,18 +1142,18 @@ $(document).ready(function() {
                             </div>
                         </div>
                     </div>
-                    <div class="body-tab-pane tab-pane" id="functions">
+                    <div class="body-tab-pane tab-pane" id="activities">
                         <div class="row">
                             <div class="col-md-12">
                                 <table class="listtable" style="width:100%">
                                     <thead>
                                         <tr>
-                                            <th>Function</th>
+                                            <th>Activity</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for function in data.functions %}
-                                            <tr><td>{{function.term.term}}</td></tr>
+                                        {% for activity in data.activities %}
+                                            <tr><td>{{activity.term.term}}</td></tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>

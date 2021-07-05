@@ -404,8 +404,8 @@ class WebUIExecutor {
         if (isset($input["occupation"])) {
             $input["facets"]["occupation"] = $input["occupation"];
         }
-        if (isset($input["function"])) {
-            $input["facets"]["function"] = $input["function"];
+        if (isset($input["activity"])) {
+            $input["facets"]["activity"] = $input["activity"];
         }
 
         $results = $this->performNameSearch($input);
@@ -457,8 +457,8 @@ class WebUIExecutor {
         if (isset($input["occupation"])) {
             $input["facets"]["occupation"] = $input["occupation"];
         }
-        if (isset($input["function"])) {
-            $input["facets"]["function"] = $input["function"];
+        if (isset($input["activity"])) {
+            $input["facets"]["activity"] = $input["activity"];
         }
 
         $results = $this->performNameSearch($input);

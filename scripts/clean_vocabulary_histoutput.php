@@ -25,7 +25,7 @@ $vocab = array();
 echo "Querying vocabulary cache from the database.\n";
 
 $vocQuery = $db->query("select id, type, value from
-            vocabulary where type in ('subject', 'function', 'occupation');", array());
+            vocabulary where type in ('subject', 'activity', 'occupation');", array());
 while($v = $db->fetchrow($vocQuery))
 {
     if (!isset($vocab[$v["type"]]))
@@ -33,20 +33,20 @@ while($v = $db->fetchrow($vocQuery))
     $vocab[$v["type"]][$v["id"]] = $v["value"];
 }
 
-echo "Current counts:\n  Subject: ".count($vocab["subject"])."\n  Functn:  ".count($vocab["function"])."\n  Occptn:  ".count($vocab["occupation"])."\n";
-echo "  Total:   ". (count($vocab["subject"]) + count($vocab["function"]) + count($vocab["occupation"])) ."\n\n";
+echo "Current counts:\n  Subject: ".count($vocab["subject"])."\n  Functn:  ".count($vocab["activity"])."\n  Occptn:  ".count($vocab["occupation"])."\n";
+echo "  Total:   ". (count($vocab["subject"]) + count($vocab["activity"]) + count($vocab["occupation"])) ."\n\n";
 
 $clean = array(
     "subject" => [],
-    "function" => [],
+    "activity" => [],
     "occupation" => []);
 
 foreach ($vocab["subject"] as $k => $v) {
     fixup($v, $k, $clean["subject"]);
 }
 
-foreach ($vocab["function"] as $k => $v) {
-    fixup($v, $k, $clean["function"]);
+foreach ($vocab["activity"] as $k => $v) {
+    fixup($v, $k, $clean["activity"]);
 }
 
 foreach ($vocab["occupation"] as $k => $v) {
@@ -54,13 +54,13 @@ foreach ($vocab["occupation"] as $k => $v) {
 }
 
 
-echo "Cleaned counts:\n  Subject: ".count($clean["subject"])."\n  Functn:  ".count($clean["function"])."\n  Occptn:  ".count($clean["occupation"])."\n";
-echo "  Total:   ".(count($clean["subject"]) + count($clean["function"]) + count($clean["occupation"]))."\n\n";
+echo "Cleaned counts:\n  Subject: ".count($clean["subject"])."\n  Functn:  ".count($clean["activity"])."\n  Occptn:  ".count($clean["occupation"])."\n";
+echo "  Total:   ".(count($clean["subject"]) + count($clean["activity"]) + count($clean["occupation"]))."\n\n";
 
 usort($clean["subject"], function($a, $b) {
     return (count($a["originals"]) < count($b["originals"])) ? 1 : -1;
 });
-usort($clean["function"], function($a, $b) {
+usort($clean["activity"], function($a, $b) {
     return (count($a["originals"]) < count($b["originals"])) ? 1 : -1;
 });
 
@@ -69,14 +69,14 @@ usort($clean["occupation"], function($a, $b) {
 });
 
 vote($clean["subject"]);
-vote($clean["function"]);
+vote($clean["activity"]);
 vote($clean["occupation"]);
 
 
-$sample = array("subject" => array(), "function" => array(), "occupation" => array());
+$sample = array("subject" => array(), "activity" => array(), "occupation" => array());
 for( $i = 0; $i < 10; $i++) {
     array_push($sample["subject"], $clean["subject"][$i]);
-    array_push($sample["function"], $clean["function"][$i]);
+    array_push($sample["activity"], $clean["activity"][$i]);
     array_push($sample["occupation"], $clean["occupation"][$i]);
 }
 
@@ -85,7 +85,7 @@ echo "\n\n";
 
 print_histogram(compute_histogram($clean["subject"]), "Subjects");
 echo "\n\n";
-print_histogram(compute_histogram($clean["function"]), "Functions");
+print_histogram(compute_histogram($clean["activity"]), "Activities");
 echo "\n\n";
 print_histogram(compute_histogram($clean["occupation"]), "Occupations");
 

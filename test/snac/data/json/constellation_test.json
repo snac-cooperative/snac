@@ -635,9 +635,9 @@
             "dates": []
         }
     ],
-    "functions": [
+    "activities": [
         {
-            "dataType": "SNACFunction",
+            "dataType": "Activity",
             "term": {
                 "id": "2665",
                 "term": "culture",

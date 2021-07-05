@@ -359,11 +359,11 @@
             {{ ctxt.text|raw }}
             {% endfor %}
 
-            {% for function in data.functions %}
-            {% if function.vocabularySource %}
-            <function ><term vocabularySource="{{ function.vocabularySource}}">{{ function.term.term }}</term></function>
+            {% for activity in data.activities %}
+            {% if activity.vocabularySource %}
+            <function ><term vocabularySource="{{ activity.vocabularySource}}">{{ activity.term.term }}</term></function>
             {% else %}
-            <function><term>{{ function.term.term }}</term></function>
+            <function><term>{{ activity.term.term }}</term></function>
             {% endif %}
             {% endfor %}
 

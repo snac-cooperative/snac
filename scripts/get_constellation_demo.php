@@ -16,8 +16,8 @@
    * Run a demo with function data:
    * scripts/get_constellation_demo.php 486 13129 | less
    *
-   * That was determined by select * from function, and using the version and ic_id from a record with a
-   * non-null function_id and function_type.
+   * That was determined by select * from activity, and using the version and ic_id from a record with a
+   * non-null activity_id and activity_type.
    *
    * Run a demo with multiple otherId values:
    * scripts/get_constellation_demo.php 2 15 | less
@@ -131,7 +131,7 @@ function foo_main ()
  * resourceRelations[]->role (referencedIn)
  * relations->targetEntityType
  * relations->type
- * functions[]->?
+ * activities[]->?
  * places->type (AssociatedPlace, is this always the same?)
  * subjects[]
  * nationality

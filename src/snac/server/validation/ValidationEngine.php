@@ -97,8 +97,8 @@ class ValidationEngine {
                 $validator->validateDate($date);
             }
 
-            foreach ($constellation->getFunctions() as $fn) {
-                $validator->validateFunction($fn);
+            foreach ($constellation->getActivities() as $activity) {
+                $validator->validateActivity($activity);
             }
 
             foreach ($constellation->getGenders() as $gender) {

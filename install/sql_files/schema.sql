@@ -24,7 +24,7 @@
 drop view if exists biog_hist_view;
 drop view if exists convention_declaration_view;
 drop view if exists date_range_view;
-drop view if exists function_view;
+drop view if exists activity_view;
 drop view if exists gender_view;
 drop view if exists general_context_view;
 drop view if exists language_view;
@@ -57,7 +57,7 @@ drop table if exists appuser_group_link;
 drop table if exists biog_hist;
 drop table if exists convention_declaration;
 drop table if exists date_range;
-drop table if exists function;
+drop table if exists activity;
 drop table if exists gender;
 drop table if exists general_context;
 drop table if exists geo_place;
@@ -645,7 +645,7 @@ create unique index source_idx2 on source (id,version,ic_id);
 -- create unique index pre_snac_maintenance_history_idx1 on pre_snac_maintenance_history(id,ic_id,version);
 
 -- Are all these controlled vocabulary-type of things really the same, and should be in a unified
--- tagging/markup table? (occupation, function, nationality, subject
+-- tagging/markup table? (occupation, function (activity), nationality, subject
 
 -- For dates: select * from occupation,date_range where date_range.fk_id=id;
 
@@ -664,19 +664,19 @@ create table occupation (
 
 create unique index occupation_idx1 on occupation(id,ic_id,version);
 
-create table function (
+create table activity (
     id                int default nextval('id_seq'),
     version           int not null,
     ic_id           int not null,
     is_deleted        boolean default false,
-    function_id       int,  -- function/term, fk to vocabulary.id
-    function_type     text, -- function/@localType, null?, "DerivedFromRole"?, text for now, should be a fk to vocabulary.id
+    activity_id       int,  -- activity/term, fk to vocabulary.id
+    activity_type     text, -- activity/@localType, null?, "DerivedFromRole"?, text for now, should be a fk to vocabulary.id
     vocabulary_source text, -- is this anf href to a controlled vocab?
     note              text,
     primary key(id, version)
     );
 
-create unique index function_idx1 on function(id,ic_id,version);
+create unique index activity_idx1 on activity(id,ic_id,version);
 
 create table nationality (
     id             int default nextval('id_seq'),
@@ -1109,7 +1109,7 @@ create index name_contributor_idx3 on name_contributor (name_id, version);
 create index name_contributor_idx4 on name_contributor (ic_id, version);
 create index language_idx2 on language (ic_id, version);
 create index occupation_idx2 on occupation (ic_id, version);
-create index function_idx2 on function (ic_id, version);
+create index activity_idx2 on activity (ic_id, version);
 create index biog_hist_idx3 on biog_hist (ic_id, version);
 create index address_line_idx2 on address_line (place_id, version);
 create index address_line_idx3 on address_line (ic_id, version);
@@ -1235,12 +1235,12 @@ select g.*
         group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
     where not g.is_deleted;
 
-create or replace view function_view as
+create or replace view activity_view as
 select g.*
-    from function g
+    from activity g
         right join
         (select g.id, g.ic_id, max(g.version) as version
-        from function g
+        from activity g
             left join
             (select id, max(version) as version
                 from version_history

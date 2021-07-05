@@ -37,7 +37,7 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Corporate Description <span class="caret"></span></a>
             <ul class="dropdown-menu">
-                <li><a href="#functions" id="functionstab" role="tab" data-toggle="tab">Functions</a></li>
+                <li><a href="#activities" id="activitiestab" role="tab" data-toggle="tab">Activities</a></li>
                 <li><a href="#legalStatuses" id="legalStatusestab" class="grayedout" role="tab" data-toggle="tab">Legal Statuses</a></li>
                 <li><a href="#mandates" id="mandatestab" class="grayedout" role="tab" data-toggle="tab">Mandates</a></li>
             </ul>
@@ -1079,23 +1079,23 @@
 
 {% endmacro %}
 
-{% macro displayFunction(X, inEdit, showSubElements, function, i) %}
+{% macro displayActivity(X, inEdit, showSubElements, activity, i) %}
     {% import 'widgets.html' as widgets %}
-        <div class="panel panel-default" id="function_panel_{{i}}">
+        <div class="panel panel-default" id="activity_panel_{{i}}">
             <div class="panel-body">
-                <div class="col-sm-10" id="function_datapart_{{i}}">
-                    <input type="hidden" id="function_id_{{i}}" name="function_id_{{i}}" value="{{function.id}}"/>
-                    <input id="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
-                    <input id="function_operation_{{i}}" name="function_operation_{{i}}" type="hidden" value="{{ function.operation }}"/>
+                <div class="col-sm-10" id="activity_datapart_{{i}}">
+                    <input type="hidden" id="activity_id_{{i}}" name="activity_id_{{i}}" value="{{activity.id}}"/>
+                    <input id="activity_version_{{i}}" name="activity_version_{{i}}" type="hidden" value="{{ activity.version }}"/>
+                    <input id="activity_operation_{{i}}" name="activity_operation_{{i}}" type="hidden" value="{{ activity.operation }}"/>
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-8" id="select_function_term_{{i}}">
-                            <input type="hidden" id="function_term_id_{{i}}" name="function_term_id_{{i}}" value="{{function.term.id}}"/>
-                            <input type="hidden" id="function_term_term_{{i}}" name="function_term_term_{{i}}" value="{{function.term.term}}"/>
-                            <input type="hidden" id="function_term_vocabtype_{{i}}" name="function_term_vocabtype_{{i}}" value="function"/>
-                            <p class="form-control-static">{{ function.term.term }}</p>
+                        <div class="col-xs-8" id="select_activity_term_{{i}}">
+                            <input type="hidden" id="activity_term_id_{{i}}" name="activity_term_id_{{i}}" value="{{activity.term.id}}"/>
+                            <input type="hidden" id="activity_term_term_{{i}}" name="activity_term_term_{{i}}" value="{{activity.term.term}}"/>
+                            <input type="hidden" id="activity_term_vocabtype_{{i}}" name="activity_term_vocabtype_{{i}}" value="activity"/>
+                            <p class="form-control-static">{{ activity.term.term }}</p>
                         </div>
                     </div>
                     <!--
@@ -1104,13 +1104,13 @@
                             {{ X.uri.display }}
                         </label>
                         <div class="col-xs-10">
-                            {{ widgets.displayURI(X, inEdit, showSubElements, function.term.uri) }}
+                            {{ widgets.displayURI(X, inEdit, showSubElements, activity.term.uri) }}
                         </div>
                     </div>
                     -->
                 </div>
-                {{ widgets.scmModal(X, inEdit, showSubElements, "function", i, function.term.term, "Function", function) }}
-                {{ widgets.optionsList(X, inEdit, showSubElements, "function", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "activity", i, activity.term.term, "Activity", activity) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "activity", i) }}
             </div>
         </div>
 

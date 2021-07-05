@@ -91,7 +91,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
                         "entityType"=> [
                             "type"=> "keyword",
                         ],
-                        "function"=> [
+                        "activity"=> [
                             "type"=> "keyword",
                         ],
                         "hasImage"=> [
@@ -164,7 +164,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     echo "Querying vocabulary cache from the database.\n";
 
     $vocQuery = $db->query("select distinct id, value from
-                vocabulary where type in ('subject', 'function', 'occupation');", array());
+                vocabulary where type in ('subject', 'activity', 'occupation');", array());
     while($v = $db->fetchrow($vocQuery))
     {
         $vocab[$v["id"]] = $v["value"];
@@ -232,16 +232,16 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     echo ".";
 
     $vocabQuery = $db->query("select a.ic_id, a.term_id from
-                (select v.id, v.ic_id, v.function_id as term_id from
-                    function v,
-                    (select distinct id, max(version) as version from function group by id) a
+                (select v.id, v.ic_id, v.activity_id as term_id from
+                    activity v,
+                    (select distinct id, max(version) as version from activity group by id) a
                     where a.id = v.id and a.version = v.version and not v.is_deleted) a where a.term_id is not null;", array());
 
     while($v = $db->fetchrow($vocabQuery))
     {
-        if (!isset($counts[$v["ic_id"]]["function"]))
-            $counts[$v["ic_id"]]["function"] = array();
-        array_push($counts[$v["ic_id"]]["function"], $vocab[$v["term_id"]]);
+        if (!isset($counts[$v["ic_id"]]["activity"]))
+            $counts[$v["ic_id"]]["activity"] = array();
+        array_push($counts[$v["ic_id"]]["activity"], $vocab[$v["term_id"]]);
     }
 
     echo ".\n";
@@ -384,7 +384,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
                             'resources' => $resources,
                             'subject' => isset($counts[$icid]["subject"]) ? $counts[$icid]["subject"] : [],
                             'occupation' => isset($counts[$icid]["occupation"]) ? $counts[$icid]["occupation"] : [],
-                            'function' => isset($counts[$icid]["function"]) ? $counts[$icid]["function"] : [],
+                            'activity' => isset($counts[$icid]["activity"]) ? $counts[$icid]["activity"] : [],
                             'biogHist' => isset($counts[$icid]["biogHist"]) ? $counts[$icid]["biogHist"] : [],
                             'hasImage' => $hasImage,
                             'imageURL' => $imgURL,
@@ -416,7 +416,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
                 'resources' => $resources,
                 'subject' => isset($counts[$icid]["subject"]) ? $counts[$icid]["subject"] : [],
                 'occupation' => isset($counts[$icid]["occupation"]) ? $counts[$icid]["occupation"] : [],
-                'function' => isset($counts[$icid]["function"]) ? $counts[$icid]["function"] : [],
+                'activity' => isset($counts[$icid]["activity"]) ? $counts[$icid]["activity"] : [],
                 'biogHist' => isset($counts[$icid]["biogHist"]) ? $counts[$icid]["biogHist"] : [],
                 'hasImage' => $hasImage,
                 'imageURL' => $imgURL,

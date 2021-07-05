@@ -24,7 +24,7 @@ $db = new \snac\server\database\DatabaseConnector();
 $vocab = array();
 
 $vocQuery = $db->query("select id, type, value from
-            vocabulary where type in ('subject', 'function', 'occupation');", array());
+            vocabulary where type in ('subject', 'activity', 'occupation');", array());
 while($v = $db->fetchrow($vocQuery))
 {
     if (!isset($vocab[$v["type"]]))
@@ -35,15 +35,15 @@ while($v = $db->fetchrow($vocQuery))
 
 $clean = array(
     "subject" => [],
-    "function" => [],
+    "activity" => [],
     "occupation" => []);
 
 foreach ($vocab["subject"] as $k => $v) {
     fixup($v, $k, $clean["subject"]);
 }
 
-foreach ($vocab["function"] as $k => $v) {
-    fixup($v, $k, $clean["function"]);
+foreach ($vocab["activity"] as $k => $v) {
+    fixup($v, $k, $clean["activity"]);
 }
 
 foreach ($vocab["occupation"] as $k => $v) {
@@ -55,7 +55,7 @@ foreach ($vocab["occupation"] as $k => $v) {
 usort($clean["subject"], function($a, $b) {
     return (count($a["originals"]) < count($b["originals"])) ? 1 : -1;
 });
-usort($clean["function"], function($a, $b) {
+usort($clean["activity"], function($a, $b) {
     return (count($a["originals"]) < count($b["originals"])) ? 1 : -1;
 });
 
@@ -64,22 +64,22 @@ usort($clean["occupation"], function($a, $b) {
 });
 
 vote($clean["subject"]);
-vote($clean["function"]);
+vote($clean["activity"]);
 vote($clean["occupation"]);
 
-echo "<html><body><h1>Vocabulary Cleanup</h1>\n\nQuickLinks: <a href='#subjects'>Subjects</a> -  <a href='#occupations'>Occupations</a> -  <a href='#functions'>Functions</a>\n\n";
+echo "<html><body><h1>Vocabulary Cleanup</h1>\n\nQuickLinks: <a href='#subjects'>Subjects</a> -  <a href='#occupations'>Occupations</a> -  <a href='#activities'>Activities</a>\n\n";
 
-echo "<br><br>Current counts:<br>\n  Subject: ".count($vocab["subject"])."<br>\n  Functn:  ".count($vocab["function"])."<br>\n  Occptn:  ".count($vocab["occupation"])."<br>\n";
-echo "  Total:   ". (count($vocab["subject"]) + count($vocab["function"]) + count($vocab["occupation"])) ."<br>\n<br>\n";
-echo "Cleaned counts:<br>\n  Subject: ".count($clean["subject"])."<br>\n  Functn:  ".count($clean["function"])."<br>\n  Occptn:  ".count($clean["occupation"])."<br>\n";
-echo "  Total:   ".(count($clean["subject"]) + count($clean["function"]) + count($clean["occupation"]))."<br>\n<br>\n";
+echo "<br><br>Current counts:<br>\n  Subject: ".count($vocab["subject"])."<br>\n  Functn:  ".count($vocab["activity"])."<br>\n  Occptn:  ".count($vocab["occupation"])."<br>\n";
+echo "  Total:   ". (count($vocab["subject"]) + count($vocab["activity"]) + count($vocab["occupation"])) ."<br>\n<br>\n";
+echo "Cleaned counts:<br>\n  Subject: ".count($clean["subject"])."<br>\n  Functn:  ".count($clean["activity"])."<br>\n  Occptn:  ".count($clean["occupation"])."<br>\n";
+echo "  Total:   ".(count($clean["subject"]) + count($clean["activity"]) + count($clean["occupation"]))."<br>\n<br>\n";
 
 echo "<a name='subjects'>\n";
 print_htmllist($clean["subject"], "Subjects");
 echo "<a name='occupations'>\n";
 print_htmllist($clean["occupation"], "Occupations");
-echo "<a name='functions'>\n";
-print_htmllist($clean["function"], "Functions");
+echo "<a name='activities'>\n";
+print_htmllist($clean["activity"], "Activities");
 echo "</body></html>";
 
 

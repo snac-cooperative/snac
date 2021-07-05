@@ -1076,7 +1076,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
          *
          * Also, this is the per-table record id aka table.id (not the constellation ic_id).
          */
-        if (($fObj = $cObj->getFunctions()))
+        if (($fObj = $cObj->getActivities()))
         {
             $this->assertTrue($fObj->getVersion() > 0);
             $this->assertTrue($fObj->getID() > 0);

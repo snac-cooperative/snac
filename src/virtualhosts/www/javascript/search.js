@@ -56,7 +56,7 @@ function setAjaxOptionsIntoPage(data) {
     }
     updateFacets(data.facets.subject, "subject");
     updateFacets(data.facets.occupation, "occupation");
-    updateFacets(data.facets.function, "function");
+    updateFacets(data.facets.activity, "activity");
 
 }
 
@@ -110,7 +110,7 @@ function setAjaxResultsIntoPage(data) {
         // Update the aggregations
         updateAggregations(data.aggregations.subject, data.facets.subject, "subject");
         updateAggregations(data.aggregations.occupation, data.facets.occupation, "occupation");
-        updateAggregations(data.aggregations.function, data.facets.function,"function");
+        updateAggregations(data.aggregations.activity, data.facets.activity,"activity");
 }
 
 function goSearchAjax(start) {

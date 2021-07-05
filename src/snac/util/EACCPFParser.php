@@ -140,7 +140,7 @@ class EACCPFParser {
      * Create a Term object. Assume the vocab has already been initialized.
      *
      *  record_type, script_code, entity_type, event_type, name_type, occupation, language_code, gender,
-     *  nationality, maintenance_status, agent_type, document_role, document_type, function_type, function,
+     *  nationality, maintenance_status, agent_type, document_role, document_type, activity_type, activity,
      *  subject, date_type, relation_type, place_match, place_type, place_role, source_type
      *
      *  Contributor uses name_type. Find the type 'name_type' for contributor by querying the vocabulary
@@ -1014,23 +1014,23 @@ class EACCPFParser {
                                         $desc2->getName()
                                     ), $this->getAttributes($desc2));
                                 break;
-                            case "function":
-                                $function = new \snac\data\SNACFunction();
-                                foreach ($this->getChildren($desc2) as $fun) {
-                                    $fatts = $this->getAttributes($fun);
-                                    switch ($fun->getName()) {
+                            case "activity":
+                                $activity = new \snac\data\Activity();
+                                foreach ($this->getChildren($desc2) as $act) {
+                                    $activity_atts = $this->getAttributes($act);
+                                    switch ($act->getName()) {
                                     case "term":
-                                        $function->setTerm($this->getTerm((string) $fun, "function"));
-                                        if (isset($fatts["vocabularySource"])) {
-                                            $function->setVocabularySource($fatts["vocabularySource"]);
-                                            unset($fatts["vocabularySource"]);
+                                        $activity->setTerm($this->getTerm((string) $act, "activity"));
+                                        if (isset($activity_atts["vocabularySource"])) {
+                                            $activity->setVocabularySource($activity_atts["vocabularySource"]);
+                                            unset($activity_atts["vocabularySource"]);
                                         }
                                         break;
                                     case "descriptiveNote":
-                                        $function->setNote((string) $fun);
+                                        $activity->setNote((string) $act);
                                         break;
                                     case "dateRange":
-                                        $date = $this->parseDate($fun,
+                                        $date = $this->parseDate($act,
                                                                  array (
                                                                      $node->getName(),
                                                                      $desc->getName(),
@@ -1041,7 +1041,7 @@ class EACCPFParser {
                                          *
                                          * change setDateRange() to addDate()
                                          */
-                                        $function->addDate($date);
+                                        $activity->addDate($date);
                                         break;
                                     default:
                                         $this->markUnknownTag(
@@ -1051,30 +1051,30 @@ class EACCPFParser {
                                                 $desc2->getName()
                                             ),
                                             array (
-                                                $fun
+                                                $act
                                             ));
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $desc2->getName(),
-                                                $fun->getName()
-                                            ), $fatts);
+                                                $act->getName()
+                                            ), $activity_atts);
                                     }
                                 }
-                                $fatts = $this->getAttributes($desc2);
-                                if (isset($fatts["localType"])) {
-                                    $function->setType(new \snac\data\Term($fatts["localType"]));
-                                    unset($fatts["localType"]);
+                                $activity_atts = $this->getAttributes($desc2);
+                                if (isset($activity_atts["localType"])) {
+                                    $activity->setType(new \snac\data\Term($activity_atts["localType"]));
+                                    unset($activity_atts["localType"]);
                                 }
-                                $function->setOperation($this->operation);
-                                $identity->addFunction($function);
+                                $activity->setOperation($this->operation);
+                                $identity->addActivity($activity);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
                                         $desc->getName(),
                                         $desc2->getName()
-                                    ), $fatts);
+                                    ), $activity_atts);
                                 break;
                             case "biogHist":
                                 $bh = new \snac\data\BiogHist();

@@ -283,7 +283,7 @@ $(document).ready(function() {
         {% set crelCount = (data.constellation1.relations|length) + (data.constellation2.relations|length) + (intersection.relations|length) %}
         {% set sameasCount = (data.constellation1.sameAsRelations|length) + (data.constellation2.sameAsRelations|length) + (intersection.sameAsRelations|length) %}
         {% set entityidCount = (data.constellation1.entityIDs|length) + (data.constellation2.entityIDs|length) + (intersection.entityIDs|length) %}
-        {% set funCount = (data.constellation1.functions|length) + (data.constellation2.functions|length) + (intersection.functions|length) %}
+        {% set activityCount = (data.constellation1.activities|length) + (data.constellation2.activities|length) + (intersection.activities|length) %}
         {% set lsCount = (data.constellation1.legalStatuses|length) + (data.constellation2.legalStatuses|length) + (intersection.legalStatuses|length) %}
         {% set mandateCount = (data.constellation1.mandates|length) + (data.constellation2.mandates|length) + (intersection.mandates|length) %}
         {% set sourceCount = (data.constellation1.sources|length) + (data.constellation2.sources|length) + (intersection.sources|length) %}
@@ -292,7 +292,7 @@ $(document).ready(function() {
         {% set historyCount = biogHistCount + dateCount + placeCount + gcCount + sogCount %}
         {% set demoCount = genderCount + natCount + langCount + occCount + subjectCount %}
         {% set relCount = rrelCount + crelCount + sameasCount + entityidCount %}
-        {% set corpCount = funCount + lsCount + mandateCount %}
+        {% set corpCount = activityCount + lsCount + mandateCount %}
         {% set controlCount = sourceCount + cdCount %}
 
         <div id="compareInterface">
@@ -499,13 +499,13 @@ $(document).ready(function() {
                         </button>
                         </div>
                         <div id="collapseCorporateDescriptions" class="collapse list-group-sub">
-                        <a class="list-group-item" href="#functions" id="functionstab" role="tab" data-toggle="tab">
-                            {% if (funCount) > 0 %}
+                        <a class="list-group-item" href="#activities" id="activitiestab" role="tab" data-toggle="tab">
+                            {% if (activityCount) > 0 %}
                             <span class="badge">
-                                {{funCount}}
+                                {{activityCount}}
                             </span>
                             {% endif %}
-                            <span class='component-title'>Functions</span></a>
+                            <span class='component-title'>Activities</span></a>
                         <a class="list-group-item" href="#legalStatuses" id="legalStatusestab" role="tab" data-toggle="tab">
                             {% if (lsCount) > 0 %}
                             <span class="badge">
@@ -1708,8 +1708,8 @@ $(document).ready(function() {
                         </div>
                         <!-- END nationalities Pane -->
 
-                        <!-- BEGIN functions Pane -->
-                        <div class="tab-pane" id="functions">
+                        <!-- BEGIN Activities Pane -->
+                        <div class="tab-pane" id="activities">
 
                             <div class="col-xs-4 panel panel-body diff-content-panel content-a">
                                 <div class="row">
@@ -1719,22 +1719,22 @@ $(document).ready(function() {
                                     </div>
                                 </div>
                                 <div class="data-components">
-                                    {% for function in data.constellation1.functions %}
+                                    {% for activity in data.constellation1.activities %}
                                         <div class="data-component data-component-a" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
-                                                {{ components.displayFunction(X, false, false, function, i) }}
+                                                {{ components.displayActivity(X, false, false, activity, i) }}
                                             </div>
                                             <script>
                                             pieceCache[{{i}}] = {
-                                                title: 'Function',
-                                                identifier: "#function_datapart_{{i}}"
+                                                title: 'Activity',
+                                                identifier: "#activity_datapart_{{i}}"
                                             };
                                             </script>
                                         </div>
                                         {% set i = i + 1 %}
                                     {% endfor %}
                                 </div>
-                                {% if data.merging and data.constellation1.functions|length > 0 %}
+                                {% if data.merging and data.constellation1.activities|length > 0 %}
                                     <div class="row text-center move-all-button-div">
                                         <button class="btn btn-success move-all-button" title="Move all elements">move all <i class="fa fa-chevron-circle-right" aria-hidden="true"></i></button>
                                     </div>
@@ -1751,15 +1751,15 @@ $(document).ready(function() {
                                     </div>
                                 </div>
                                 <div class="data-components">
-                                    {% for function in data.intersection.functions %}
+                                    {% for activity in data.intersection.activities %}
                                         <div class="data-component  data-component-both" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
-                                                {{ components.displayFunction(X, false, false, function, i) }}
+                                                {{ components.displayActivity(X, false, false, activity, i) }}
                                             </div>
                                             <script>
                                             pieceCache[{{i}}] = {
-                                                title: 'Function',
-                                                identifier: "#function_datapart_{{i}}"
+                                                title: 'Activity',
+                                                identifier: "#activity_datapart_{{i}}"
                                             };
                                             </script>
                                         </div>
@@ -1775,29 +1775,29 @@ $(document).ready(function() {
                                     <div class="col-sm-11 preview preview-right"></div>
                                 </div>
                                 <div class="data-components">
-                                    {% for function in data.constellation2.functions %}
+                                    {% for activity in data.constellation2.activities %}
                                         <div class="data-component data-component-b" id="icon_{{i}}">
                                             <div style="display:none;" id="data_{{i}}">
-                                                {{ components.displayFunction(X, false, false, function, i) }}
+                                                {{ components.displayActivity(X, false, false, activity, i) }}
                                             </div>
                                             <script>
                                             pieceCache[{{i}}] = {
-                                                title: 'Function',
-                                                identifier: "#function_datapart_{{i}}"
+                                                title: 'Activity',
+                                                identifier: "#activity_datapart_{{i}}"
                                             };
                                             </script>
                                         </div>
                                         {% set i = i + 1 %}
                                     {% endfor %}
                                 </div>
-                                {% if data.merging and data.constellation2.functions|length > 0 %}
+                                {% if data.merging and data.constellation2.activities|length > 0 %}
                                     <div class="row text-center move-all-button-div">
                                         <button class="btn btn-success move-all-button" title="Move all elements"><i class="fa fa-chevron-circle-left" aria-hidden="true"></i> move all</button>
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
-                        <!-- END functions Pane -->
+                        <!-- END Activities Pane -->
 
                         <!-- BEGIN occupations Pane -->
                         <div class="tab-pane" id="occupations">

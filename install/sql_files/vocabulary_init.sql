@@ -13,7 +13,7 @@ CREATE SEQUENCE "vocabulary_id_seq";
 --
 -- Supported types: occupation, function, topical subject, nationality, language, language code, gender,
 -- script, name component labels, date-predicates (from, to, born, died), maintenance status, maintenance
--- event type, maintenance agent type, place match type, function term, function type (e.g. DerivedFromRole),
+-- event type, maintenance agent type, place match type, activity term, activity type (e.g. DerivedFromRole),
 -- and more in the future.
 
 -- These vocabulary records are used to create Term objects, which in turn supply ID values for related tables that

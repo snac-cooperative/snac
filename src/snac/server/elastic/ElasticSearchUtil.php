@@ -78,9 +78,9 @@ class ElasticSearchUtil {
                 array_push($occupations, $occupation->getTerm()->getTerm());
             }
 
-            $functions = [];
-            foreach ($constellation->getFunctions() as $function) {
-                array_push($functions, $function->getTerm()->getTerm());
+            $activities = [];
+            foreach ($constellation->getActivities() as $activity) {
+                array_push($activities, $activity->getTerm()->getTerm());
             }
 
             $biogHists = [];
@@ -103,7 +103,7 @@ class ElasticSearchUtil {
                     'resources' => (int) count($constellation->getResourceRelations()),
                     'subject' => $subjects,
                     'occupation' => $occupations,
-                    'function' => $functions,
+                    'activity' => $activities,
                     'biogHist' => $biogHists,
                     'hasImage' => $hasImage,
                     'imageURL' => $imgURL,
@@ -656,9 +656,9 @@ class ElasticSearchUtil {
                             "size" => 10
                         ]
                     ],
-                    "function"=> [
+                    "activity"=> [
                         "terms"=> [
-                            "field" => "function",
+                            "field" => "activity",
                             "size" => 10
                         ]
                     ]

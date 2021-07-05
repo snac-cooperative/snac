@@ -182,13 +182,13 @@ class HasOperationValidator extends \snac\server\validation\validators\Validator
     }
 
     /**
-     * Validate a Function
+     * Validate an Activity
      *
-     * @param \snac\data\SNACFunction $fn SNACFunction to validate
+     * @param \snac\data\Activity $fn Activity to validate
      * @param mixed[] $context optional Any context information needed for validation
      * @return boolean true if valid, false otherwise
      */
-    public function validateFunction($fn, $context=null) {
+    public function validateActivity($fn, $context=null) {
         return $this->validateAbstractData($fn, $context);
     }
 
