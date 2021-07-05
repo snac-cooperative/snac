@@ -30,7 +30,7 @@ class Activity extends AbstractData {
      *
      * From EAC-CPF tag(s):
      *
-     * * function/term
+     * * activity/term
      *
      * @var \snac\data\Term Activity controlled vocabulary term
      */
@@ -41,7 +41,7 @@ class Activity extends AbstractData {
      *
      * From EAC-CPF tag(s):
      *
-     * * function/@localType
+     * * activity/@localType
      *
      * @var \snac\data\Term Type of the activity
      */
@@ -53,7 +53,7 @@ class Activity extends AbstractData {
      *
      * From EAC-CPF tag(s):
      *
-     * * function/descriptiveNote
+     * * activity/descriptiveNote
      *
      * @var string Descriptive note for the activity
      */
@@ -64,7 +64,7 @@ class Activity extends AbstractData {
      *
      * From EAC-CPF tag(s):
      *
-     * * function/term/@vocabularySource
+     * * activity/term/@vocabularySource
      *
      * @var string Vocabulary source for the activity
      */
@@ -73,7 +73,7 @@ class Activity extends AbstractData {
     /**
      * Constructor
      *
-     * Functions may only have one date object.
+     * Activities may only have one date object.
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
@@ -90,7 +90,7 @@ class Activity extends AbstractData {
      *
      * * activity/term
      *
-     * @return \snac\data\Term Function controlled vocabulary term
+     * @return \snac\data\Term Activity controlled vocabulary term
      *
      */
     public function getTerm()

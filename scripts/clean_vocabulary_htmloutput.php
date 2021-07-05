@@ -69,9 +69,9 @@ vote($clean["occupation"]);
 
 echo "<html><body><h1>Vocabulary Cleanup</h1>\n\nQuickLinks: <a href='#subjects'>Subjects</a> -  <a href='#occupations'>Occupations</a> -  <a href='#activities'>Activities</a>\n\n";
 
-echo "<br><br>Current counts:<br>\n  Subject: ".count($vocab["subject"])."<br>\n  Functn:  ".count($vocab["activity"])."<br>\n  Occptn:  ".count($vocab["occupation"])."<br>\n";
+echo "<br><br>Current counts:<br>\n  Subject: ".count($vocab["subject"])."<br>\n  Activity:  ".count($vocab["activity"])."<br>\n  Occptn:  ".count($vocab["occupation"])."<br>\n";
 echo "  Total:   ". (count($vocab["subject"]) + count($vocab["activity"]) + count($vocab["occupation"])) ."<br>\n<br>\n";
-echo "Cleaned counts:<br>\n  Subject: ".count($clean["subject"])."<br>\n  Functn:  ".count($clean["activity"])."<br>\n  Occptn:  ".count($clean["occupation"])."<br>\n";
+echo "Cleaned counts:<br>\n  Subject: ".count($clean["subject"])."<br>\n  Activity:  ".count($clean["activity"])."<br>\n  Occptn:  ".count($clean["occupation"])."<br>\n";
 echo "  Total:   ".(count($clean["subject"]) + count($clean["activity"]) + count($clean["occupation"]))."<br>\n<br>\n";
 
 echo "<a name='subjects'>\n";
@@ -105,4 +105,3 @@ function print_htmllist($data, $title="", $as_string = false) {
     else
         echo $str;
 }
-

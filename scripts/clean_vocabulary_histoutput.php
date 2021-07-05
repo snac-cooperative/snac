@@ -33,7 +33,7 @@ while($v = $db->fetchrow($vocQuery))
     $vocab[$v["type"]][$v["id"]] = $v["value"];
 }
 
-echo "Current counts:\n  Subject: ".count($vocab["subject"])."\n  Functn:  ".count($vocab["activity"])."\n  Occptn:  ".count($vocab["occupation"])."\n";
+echo "Current counts:\n  Subject: ".count($vocab["subject"])."\n  Activity:  ".count($vocab["activity"])."\n  Occptn:  ".count($vocab["occupation"])."\n";
 echo "  Total:   ". (count($vocab["subject"]) + count($vocab["activity"]) + count($vocab["occupation"])) ."\n\n";
 
 $clean = array(
@@ -54,7 +54,7 @@ foreach ($vocab["occupation"] as $k => $v) {
 }
 
 
-echo "Cleaned counts:\n  Subject: ".count($clean["subject"])."\n  Functn:  ".count($clean["activity"])."\n  Occptn:  ".count($clean["occupation"])."\n";
+echo "Cleaned counts:\n  Subject: ".count($clean["subject"])."\n  Activity:  ".count($clean["activity"])."\n  Occptn:  ".count($clean["occupation"])."\n";
 echo "  Total:   ".(count($clean["subject"]) + count($clean["activity"]) + count($clean["occupation"]))."\n\n";
 
 usort($clean["subject"], function($a, $b) {
@@ -88,7 +88,3 @@ echo "\n\n";
 print_histogram(compute_histogram($clean["activity"]), "Activities");
 echo "\n\n";
 print_histogram(compute_histogram($clean["occupation"]), "Occupations");
-
-
-
-
