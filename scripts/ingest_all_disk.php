@@ -148,7 +148,7 @@ function indexESearch($written) {
     if ($eSearch != null) {
         $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                 'id' => $written->getID(),
                 'body' => [
                         'nameEntry' => $written->getPreferredNameEntry()->getOriginal(),

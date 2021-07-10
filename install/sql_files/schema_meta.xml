@@ -39,7 +39,7 @@
                 <foreignKey table="otherid" column="ic_id"/>
                 <foreignKey table="legal_status" column="ic_id"/>
                 <foreignKey table="occupation" column="ic_id"/>
-                <foreignKey table="function" column="ic_id"/>
+                <foreignKey table="activity" column="ic_id"/>
                 <foreignKey table="subject" column="ic_id"/>
                 <foreignKey table="related_identity" column="ic_id"/>
                 <foreignKey table="related_resource" column="ic_id"/>
@@ -64,7 +64,7 @@
                 <foreignKey table="otherid" column="version"/>
                 <foreignKey table="legal_status" column="version"/>
                 <foreignKey table="occupation" column="version"/>
-                <foreignKey table="function" column="version"/>
+                <foreignKey table="activity" column="version"/>
                 <foreignKey table="subject" column="version"/>
                 <foreignKey table="related_identity" column="version"/>
                 <foreignKey table="related_resource" column="version"/>
@@ -190,13 +190,13 @@
                 <foreignKey table="related_identity" column="id"/>
             </column>
             <!--
-                Class ResourceRelation 
+                Class ResourceRelation
             -->
             <column name="fk_id">
                 <foreignKey table="related_resource" column="id"/>
             </column>
             <column name="fk_id">
-                <foreignKey table="function" column="id"/>
+                <foreignKey table="activity" column="id"/>
             </column>
         </table>
         <table name="source">
@@ -213,7 +213,7 @@
                 <foreignKey table="scm" column="citation_id"/>
             </column>
         </table>
-        <!-- 
+        <!--
           <table name="source_link">
               <column name="version">
                   <foreignKey table="version_history" column="version"/>
@@ -283,14 +283,14 @@
                 fk_id relates to tables that can have place info
             -->
         </table>
-        <table name="function">
+        <table name="activity">
             <column name="version">
                 <foreignKey table="version_history" column="version"/>
             </column>
             <column name="ic_id">
                 <foreignKey table="version_history" column="id"/>
             </column>
-              <column name="function_id">
+              <column name="activity_id">
                 <foreignKey table="vocabulary" column="id"/>
             </column>
         </table>
@@ -431,7 +431,7 @@
                 <foreignKey table="otherid" column="id"/>
                 <foreignKey table="legal_status" column="id"/>
                 <foreignKey table="occupation" column="id"/>
-                <foreignKey table="function" column="id"/>
+                <foreignKey table="activity" column="id"/>
                 <foreignKey table="subject" column="id"/>
                 <foreignKey table="related_identity" column="id"/>
                 <foreignKey table="related_resource" column="id"/>

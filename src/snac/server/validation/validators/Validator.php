@@ -172,13 +172,13 @@ abstract class Validator {
     public abstract function validateDate($date, $context=null);
 
     /**
-     * Validate a Function
+     * Validate an Activity
      *
-     * @param \snac\data\SNACFunction $fn SNACFunction to validate
+     * @param \snac\data\Activity $fn Activity to validate
      * @param mixed[] $context optional Any context information needed for validation
      * @return boolean true if valid, false otherwise
      */
-    public abstract function validateFunction($fn, $context=null);
+    public abstract function validateActivity($fn, $context=null);
 
     /**
      * Validate a gender

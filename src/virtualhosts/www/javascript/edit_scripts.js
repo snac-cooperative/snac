@@ -2531,40 +2531,40 @@ $(document).ready(function() {
         });
     }
 
-	var functionid = 1;
-    var functionOpen = false;
-	if ($('#functionstab').exists()){
-		$('#functionstab').click(function(){
+	var activityId = 1;
+    var activityOpen = false;
+	if ($('#activitiestab').exists()){
+		$('#activitiestab').click(function(){
             // Don't open a second time
-            if (functionOpen)
+            if (activityOpen)
                 return;
 
-            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=functions", null, function (data) {
-                functionOpen = true;
-                $('#functions').html(data);
+            $.get(snacUrl+"/edit_part/"+$('#constellationid').val()+"/"+$('#version').val()+"?part=activities", null, function (data) {
+                activityOpen = true;
+                $('#activities').html(data);
 
-                turnOnEditDeleteButtons("functions");
+                turnOnEditDeleteButtons("activities");
 
-                if ($('#next_function_i').exists()) {
-                    functionid = parseInt($('#next_function_i').text());
+                if ($('#next_activity_i').exists()) {
+                    activityId = parseInt($('#next_activity_i').text());
                 }
-                console.log("Next function ID: " + functionid);
-                if ($('#btn_add_function').exists()){
-                    $('#btn_add_function').click(function(){
+                console.log("Next activity ID: " + activityId);
+                if ($('#btn_add_activity').exists()){
+                    $('#btn_add_activity').click(function(){
                         setEditedFlag(true);
                         //somethingHasBeenEdited = true;
-                        var text = $('#function_template').clone();
-                        var html = text.html().replace(/ZZ/g, functionid);
-                        $('#add_function_div').after(html);
-                        turnOnButtons("function", functionid);
-                        turnOnTooltips("function", functionid);
-                        makeEditable("function", functionid);
-                        functionid = functionid + 1;
+                        var text = $('#activity_template').clone();
+                        var html = text.html().replace(/ZZ/g, activityId);
+                        $('#add_activity_div').after(html);
+                        turnOnButtons("activity", activityId);
+                        turnOnTooltips("activity", activityId);
+                        makeEditable("activity", activityId);
+                        activityId = activityId + 1;
                         return false;
                     });
                 }
 
-                turnOnTooltipsForTab("functions");
+                turnOnTooltipsForTab("activities");
             });
         });
     }

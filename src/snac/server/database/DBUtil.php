@@ -308,7 +308,7 @@ class DBUtil
         $this->canDelete = array('snac\data\BiogHist' => 'biog_hist',
                                  'snac\data\ConventionDeclaration' => 'convention_declaration',
                                  'snac\data\SNACDate' => 'date_range',
-                                 'snac\data\SNACFunction' => 'function',
+                                 'snac\data\Activity' => 'activity',
                                  'snac\data\Gender' => 'gender',
                                  'snac\data\GeneralContext' => 'general_context',
                                  'snac\data\Language' => 'language',
@@ -1098,8 +1098,8 @@ class DBUtil
             $this->populateMeta($vhInfo, $cObj, $tableName);
             $this->logger->addDebug("  Dates");
             $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
-            $this->logger->addDebug("  Function");
-            $this->populateFunction($vhInfo, $cObj);
+            $this->logger->addDebug("  Activity");
+            $this->populateActivity($vhInfo, $cObj);
             $this->logger->addDebug("  Gender");
             $this->populateGender($vhInfo, $cObj);
             $this->logger->addDebug("  General Context");
@@ -2675,15 +2675,15 @@ class DBUtil
     }
 
     /**
-     * Save Function
+     * Save Activity
      *
-     *  | php function        | sql               | cpf                             |
+     *  | php activity        | sql               | cpf                             |
      *  |---------------------+-------------------+---------------------------------|
-     *  | getType             | function_type     | function/@localType             |
-     *  | getTerm             | function_id       | function/term                   |
-     *  | getVocabularySource | vocabulary_source | function/term/@vocabularySource |
-     *  | getNote             | note              | function/descriptiveNote        |
-     *  | getDateList         | table date_range  | function/dateRange              |
+     *  | getType             | activity_type     | activity/@localType             |
+     *  | getTerm             | activity_id       | activity/term                   |
+     *  | getVocabularySource | vocabulary_source | activity/term/@vocabularySource |
+     *  | getNote             | note              | activity/descriptiveNote        |
+     *  | getDateList         | table date_range  | activity/dateRange              |
      *
      *
      * I considered adding keys for the second arg, but is not clear that using them for sanity checking
@@ -2693,9 +2693,9 @@ class DBUtil
      * the database. Any sanity check should happen up here.
      *
      *
-     * Functions have a type (Term object) derived from function/@localType. The function/term is a Term object.
+     * Activities have a type (Term object) derived from function/@localType. The function/term is a Term object.
      *
-     * prototype: insertFunction($vhInfo, $id, $type, $vocabularySource, $note, $term)
+     * prototype: insertActivity($vhInfo, $id, $type, $vocabularySource, $note, $term)
      *
      * Example files: /data/extract/anf/FRAN_NP_050744.xml
      *
@@ -2704,31 +2704,31 @@ class DBUtil
      *
      * @param $cObj \snac\data\Constellation object
      */
-    private function saveFunction($vhInfo, $cObj)
+    private function saveActivity($vhInfo, $cObj)
     {
-        foreach ($cObj->getFunctions() as $fdata)
+        foreach ($cObj->getActivities() as $activityData)
         {
-            $funID = $fdata->getID();
-            if ($this->prepOperation($vhInfo, $fdata))
+            $activityID = $activityData->getID();
+            if ($this->prepOperation($vhInfo, $activityData))
             {
-                $funID = $this->sql->insertFunction($vhInfo,
-                                                    $fdata->getID(), // record id
-                                                    $this->termID($fdata->getType()), // function type, aka localType, Term object
-                                                    $fdata->getVocabularySource(),
-                                                    $fdata->getNote(),
-                                                    $this->termID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
-                $fdata->setID($funID);
-                $fdata->setVersion($vhInfo['version']);
+                $activityID = $this->sql->insertActivity($vhInfo,
+                                                    $activityData->getID(), // record id
+                                                    $this->termID($activityData->getType()), // activity type, aka localType, Term object
+                                                    $activityData->getVocabularySource(),
+                                                    $activityData->getNote(),
+                                                    $this->termID($activityData->getTerm())); // function term id aka vocabulary.id, Term object
+                $activityData->setID($activityID);
+                $activityData->setVersion($vhInfo['version']);
             }
-            $this->saveMeta($vhInfo, $fdata, 'function', $funID);
+            $this->saveMeta($vhInfo, $activityData, 'activity', $activityID);
             /*
              * getDateList() always returns a list of SNACDate objects. If no dates then list is empty, but it
              * is still a list that we can foreach on without testing for null and count>0. All of which
              * should go without saying.
              */
-            foreach ($fdata->getDateList() as $date)
+            foreach ($activityData->getDateList() as $date)
             {
-                $this->saveDate($vhInfo, $date, 'function', $funID);
+                $this->saveDate($vhInfo, $date, 'activity', $activityID);
             }
         }
     }
@@ -3531,7 +3531,7 @@ class DBUtil
 
 
     /**
-     * Populate the SNACFunction object(s)
+     * Populate the Activity object(s)
      *
      * Select, create object, then add to an existing Constellation object.
      *
@@ -3539,25 +3539,25 @@ class DBUtil
      * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateFunction($vhInfo, $cObj)
+    private function populateActivity($vhInfo, $cObj)
     {
-        $tableName = 'function';
-        $funcRows = $this->sql->selectFunction($vhInfo);
-        foreach ($funcRows as $oneFunc)
+        $tableName = 'activity';
+        $activityRows = $this->sql->selectActivity($vhInfo);
+        foreach ($activityRows as $oneActivity)
         {
-            $fObj = new \snac\data\SNACFunction();
-            $fObj->setType($oneFunc['function_type']);
-            $fObj->setTerm($this->populateTerm($oneFunc['function_id']));
-            $fObj->setVocabularySource($oneFunc['vocabulary_source']);
-            $fObj->setNote($oneFunc['note']);
-            $fObj->setDBInfo($oneFunc['version'], $oneFunc['id']);
-            $this->populateMeta($vhInfo, $fObj, $tableName);
+            $aObj = new \snac\data\Activity();
+            $aObj->setType($oneActivity['activity_type']);
+            $aObj->setTerm($this->populateTerm($oneActivity['activity_id']));
+            $aObj->setVocabularySource($oneActivity['vocabulary_source']);
+            $aObj->setNote($oneActivity['note']);
+            $aObj->setDBInfo($oneActivity['version'], $oneActivity['id']);
+            $this->populateMeta($vhInfo, $aObj, $tableName);
 
             /*
              * Must call $fOjb->setDBInfo() before calling populateDate()
              */
-            $this->populateDate($vhInfo, $fObj, $tableName);
-            $cObj->addFunction($fObj);
+            $this->populateDate($vhInfo, $aObj, $tableName);
+            $cObj->addActivity($aObj);
         }
     }
 
@@ -4240,7 +4240,7 @@ class DBUtil
         $this->saveConstellationDate($vhInfo, $cObj);
         $this->saveSource($vhInfo, $cObj); // Source objects are only per constellation. Other uses of source are by foreign key.
         $this->saveConventionDeclaration($vhInfo, $cObj);
-        $this->saveFunction($vhInfo, $cObj);
+        $this->saveActivity($vhInfo, $cObj);
         $this->saveGender($vhInfo, $cObj);
         $this->saveGeneralContext($vhInfo, $cObj);
         $this->saveLegalStatus($vhInfo, $cObj);

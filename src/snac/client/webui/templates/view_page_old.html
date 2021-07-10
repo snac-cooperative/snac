@@ -19,7 +19,7 @@
 <link href="{{control.snacURL}}/css/hrt/hrt.css"
             media="all"
             rel="stylesheet"
-            type="text/css"></link>
+            type="text/css">
 <style>
    .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
    .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
@@ -481,17 +481,17 @@
                   {% endif %}
 
                   {% if data.entityType.term == 'corporateBody' %}
-                      <h4>Functions:</h4>
-                      {% if data.functions|length > 0 or data.new.functions|length > 0 or data.old.functions|length > 0 %}
+                      <h4>Activities:</h4>
+                      {% if data.activities|length > 0 or data.new.activities|length > 0 or data.old.activities|length > 0 %}
                         <ul>
-                        <!-- {% for function in data.new.functions %} -->
-                            <li class="updated">{{function.term.term}}</li>
+                        <!-- {% for activity in data.new.activities %} -->
+                            <li class="updated">{{activity.term.term}}</li>
                         <!-- {% endfor %} -->
-                        <!-- {% for function in data.functions %} -->
-                            <li>{{function.term.term}}</li>
+                        <!-- {% for activity in data.activities %} -->
+                            <li>{{activity.term.term}}</li>
                         <!-- {% endfor %} -->
-                        <!-- {% for function in data.old.functions %} -->
-                            <li class="older">{{function.term.term}}</li>
+                        <!-- {% for activity in data.old.activities %} -->
+                            <li class="older">{{activity.term.term}}</li>
                         <!-- {% endfor %} -->
                         </ul>
                       {% else %}

@@ -15,7 +15,7 @@
             },
             "type" : {
                 "type": "String",
-                "description" : "Type of the vocabulary to search, ex: subject, function, occupation, geo_place, ..."
+                "description" : "Type of the vocabulary to search, ex: subject, activity, occupation, geo_place, ..."
             },
             "entity_type" : {
                 "type": "Integer|Null",
@@ -2251,7 +2251,7 @@
                                 "count": 8
                             }
                         ],
-                        "function": []
+                        "activity": []
                     },
                     "pagination": 15,
                     "page": 0,
@@ -3174,7 +3174,7 @@
                                             "Poets",
                                             "Poets."
                                         ],
-                                        "function": [],
+                                        "activity": [],
                                         "biogHist": [],
                                         "hasImage": false,
                                         "imageURL": null,
@@ -3199,7 +3199,7 @@
                                             "Poets",
                                             "Poets."
                                         ],
-                                        "function": [],
+                                        "activity": [],
                                         "biogHist": [],
                                         "hasImage": false,
                                         "imageURL": null,
