@@ -4955,15 +4955,15 @@ class SQL
         }
         $icids = implode(", " , $icids);
 
-        $query = "SELECT r1.id as \"RD-Source-ID\", r1.version, r1.href as \"RD-URL\", v.value as \"RD-Type\",
-                      r1.title, r1.abstract, r1.extent, r1.date, $1 as repository_id, r1.updated_at
+        $query = "SELECT r1.id AS \"RD-Source-ID\", r1.version, r1.href AS \"RD-URL\", v.value AS \"RD-Type\",
+                      r1.title, r1.abstract, r1.extent, r1.date, $1 AS repository_id, r1.updated_at
                   FROM resource_cache r1
-                  LEFT JOIN vocabulary v on r1.type = v.id
+                  LEFT JOIN vocabulary v ON r1.type = v.id
                   INNER JOIN (SELECT id, max(version) AS version FROM resource_cache
-                  WHERE repo_ic_id IN ({$icids}) AND NOT is_deleted GROUP BY id) AS r2
+                  WHERE repo_ic_id IN ($1) AND NOT is_deleted GROUP BY id) AS r2
                   ON r1.id = r2.id AND r1.version = r2.version";
 
-        $result = $this->sdb->query($query, array($icid));
+        $result = $this->sdb->query($query, array($icids));
         return $this->sdb->fetchAll($result);
     }
 
