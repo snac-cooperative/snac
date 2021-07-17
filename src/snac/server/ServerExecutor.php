@@ -598,27 +598,32 @@ class ServerExecutor {
         if (isset($input["term_id"])) {
             return $this->readVocabulary($input);
         } else {
-            if (!array_key_exists("type", $input) || !array_key_exists("entity_type", $input) || !array_key_exists("query_string", $input)) {
+            if (!array_key_exists("type", $input) || !array_key_exists("query_string", $input)) {
                 throw new \snac\exceptions\SNACInputException("Missing required field.", 400);
             }
-            switch ($input["type"]) {
+
+            // Create data structure for information to search
+            $search = [
+                "type" => $input["type"],
+                "query_string" => $input["query_string"],
+                "entity_type" => isset($input["entity_type"]) ? $input["entity_type"] : null,
+                "count" => isset($input["count"]) ? $input["count"] : 100
+            ];
+            if (isset($input["count"]))
+                $search["count"] = $input["count"];
+
+            switch ($search["type"]) {
                 case "holding":
                     $response["results"] = array();
-                    $count = 100;
-                    if (isset($input["count"]))
-                        $count = $input["count"];
-                    $response["results"] = $this->neo4J->searchHoldingInstitutions($input["query_string"], $count);
+                    $response["results"] = $this->neo4J->searchHoldingInstitutions($search["query_string"], $search["count"]);
                     break;
                 default:
                     $response["results"] = array();
-                    $count = 100;
-                    if (isset($input["count"]))
-                        $count = $input["count"];
                     $results = $this->cStore->searchVocabulary(
-                        $input["type"],
-                        $input["query_string"],
-                        $input["entity_type"],
-                        $count);
+                        $search["type"],
+                        $search["query_string"],
+                        $search["entity_type"],
+                        $search["count"]);
                     foreach ($results as $result)
                         array_push($response["results"], $result->toArray(false));
                     break;
