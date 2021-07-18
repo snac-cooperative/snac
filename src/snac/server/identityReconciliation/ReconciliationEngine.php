@@ -69,7 +69,7 @@ class ReconciliationEngine {
         $this->tests = array();
         $this->results = array();
         $this->postProcessingTests = array();
-        $this->weight = new weights\StaticWeight();
+        $this->weight = new weights\SameAsStaticWeight();
         return;
     }
 
@@ -151,7 +151,7 @@ class ReconciliationEngine {
         unset($this->results);
         $this->rawResults = array();
         $this->results = array();
-        $this->weight = new weights\StaticWeight();
+        $this->weight = new weights\SameAsStaticWeight();
         // Run the tests and collect the results
         foreach ($this->tests as $test) {
             $this->rawResults[$test->getName()] = $test->run($identity, null);

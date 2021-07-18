@@ -3901,6 +3901,7 @@ class ServerExecutor {
         $engine = new \snac\server\identityReconciliation\ReconciliationEngine();
 
         // Add stages to run
+        $engine->addStage("SameAs");
         $engine->addStage("ElasticOriginalNameEntry");
         $engine->addStage("ElasticNameOnly");
         $engine->addStage("ElasticSeventyFive");
