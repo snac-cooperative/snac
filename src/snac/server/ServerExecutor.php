@@ -609,8 +609,6 @@ class ServerExecutor {
                 "entity_type" => isset($input["entity_type"]) ? $input["entity_type"] : null,
                 "count" => isset($input["count"]) ? $input["count"] : 100
             ];
-            if (isset($input["count"]))
-                $search["count"] = $input["count"];
 
             switch ($search["type"]) {
                 case "holding":
