@@ -23,7 +23,7 @@ use \snac\client\util\ServerConnect as ServerConnect;
  *
  * @author Robbie Hott
  */
-class OpenRefine implements \snac\interfaces\ServerInterface {
+class OpenRefine {
 
     /**
      * Input parameters from the querier
@@ -31,6 +31,10 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
      * @var array Associative array of the input query
      */
     private $input = null;
+
+    private $json = null;
+
+    private $mapper = null;
 
     /**
      * Response text
@@ -51,10 +55,13 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
      *
      * @param array $input Input to the server
      */
-    public function __construct($input) {
+    public function __construct($input, $json) {
         global $log;
 
         $this->input = $input;
+        $this->json = $json;
+
+        $this->mapper = new ORConstellationMapper();
 
         // create a log channel
         $this->logger = new \Monolog\Logger('OpenRefine');
@@ -67,8 +74,48 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
      * Starts the server
      */
     public function run() {
+        $this->logger->addDebug("Handling query", $this->input);
+        $this->logger->addDebug("Handling query JSON", array($this->json));
 
         $this->connect = new ServerConnect();
+
+        if (isset($this->input["command"])) {
+            $command = $this->input["command"];
+
+            switch($command) {
+                case "suggest":
+                    if (isset($this->input["subcommand"])) {
+                        $subcommand = $this->input["subcommand"];
+
+                        if ($subcommand == "property") {
+                            $return = [];
+                            if (isset($this->input["prefix"])) {
+
+                                $prefix = $this->input["prefix"];
+                                $return["result"] = $this->mapper->filterPropertiesPrefix($prefix);
+
+                            } else { 
+                                // Error response
+                                $return = ["status" => "error", 
+                                    "message" => "invalid query",
+                                    "details" => "'prefix'"
+                                ];
+                            }
+
+
+                            // Set the response appropriately for OpenRefine
+                            $this->response = json_encode($return, JSON_PRETTY_PRINT);
+                            if (isset($this->input["callback"]))
+                                $this->response = $this->input["callback"] . "(".$this->response.");";
+                        }
+                    }
+                    break;
+            }
+            return;
+
+        }
+
+        $this->logger->addDebug("Made it past the initial section", []);
 
         // Decide what to do based on the OpenRefine parameters:
         //  - query = only one search being done at this point
@@ -81,10 +128,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                 $max = $query["limit"];
 
             // Read the query as a name entry in a new constellation
-            $testC = new \snac\data\Constellation();
-            $testN = new \snac\data\NameEntry();
-            $testN->setOriginal($query["query"]);
-            $testC->addNameEntry($testN);
+            $testC = $this->mapper->mapConstellation($query);
 
             // Ask the server to reconcile the constellation
             $ask = [
@@ -131,10 +175,8 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                 $max = 5;
                 if (isset($query["limit"]))
                     $max = $query["limit"];
-                $testC = new \snac\data\Constellation();
-                $testN = new \snac\data\NameEntry();
-                $testN->setOriginal($query["query"]);
-                $testC->addNameEntry($testN);
+                
+                $testC = $this->mapper->mapConstellation($query);
 
                 $ask = [
                     "command" => "reconcile",
@@ -175,7 +217,7 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
             $response = [
                 "defaultTypes" => [
                     [
-                        "id" => "constellation",
+                        "id" => "cpf",
                         "name" => "Identity Constellation"
                     ]
                 ],
@@ -189,6 +231,12 @@ class OpenRefine implements \snac\interfaces\ServerInterface {
                     "width" => 400,
                     "height" => 500,
                     "url" => \snac\Config::$WEBUI_URL . "/snippet/{{id}}"
+                ],
+                "suggest" => [
+                    "property" => [
+                        "service_url" => \snac\Config::$OPENREFINE_URL,
+                        "service_path" => "/suggest/property"   
+                    ]
                 ]
             ];
 
