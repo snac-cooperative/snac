@@ -152,7 +152,7 @@ class OpenRefine {
                         "name" => $result["identity"]["nameEntries"][0]["original"],
                         "id" => (string) $result["identity"]["id"],
                         "type" => [
-                            $result["identity"]["entityType"]["term"]
+                            $this->mapper->lookupType("constellation")
                         ],
                         "score" => round($result["strength"], 2),
                         "match" => ($result["strength"] > 11 ? true : false)
@@ -198,7 +198,9 @@ class OpenRefine {
                         $output = array(
                             "name" => $result["identity"]["nameEntries"][0]["original"],
                             "id" => (string) $result["identity"]["id"],
-                            "type" => [$result["identity"]["entityType"]["term"]],
+                            "type" => [
+                                $this->mapper->lookupType("constellation")
+                            ],
                             "score" => round($result["strength"], 2),
                             "match" => ($result["strength"] > 11 ? true : false)
                         );
@@ -215,12 +217,7 @@ class OpenRefine {
         } else {
             // Default response: give information about this OpenRefine endpoint
             $response = [
-                "defaultTypes" => [
-                    [
-                        "id" => "cpf",
-                        "name" => "Identity Constellation"
-                    ]
-                ],
+                "defaultTypes" => $this->mapper->getTypes(),
                 "view" => [
                     "url" => \snac\Config::$WEBUI_URL . "/view/{{id}}"
                 ],
