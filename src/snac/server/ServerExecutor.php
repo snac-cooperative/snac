@@ -3900,8 +3900,9 @@ class ServerExecutor {
 
         // Add stages to run
         $engine->addStage("SameAs");
-        $engine->addStage("ElasticOriginalNameEntry");
-        $engine->addStage("ElasticNameOnly");
+        //$engine->addStage("ElasticOriginalNameEntry");
+        //$engine->addStage("ElasticNameOnly");
+        $engine->addStage("ElasticComplete");
         $engine->addStage("ElasticSeventyFive");
         $engine->addStage("MultiStage", "ElasticNameOnly", "SNACDegree");
 

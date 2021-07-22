@@ -681,7 +681,9 @@ class ElasticSearchUtil {
 
             $return = array ();
             foreach ($results["hits"]["hits"] as $i => $val) {
-                array_push($return, $val["_source"]);
+                $result = $val["_source"];
+                $result["_score"] = $val["_score"];
+                array_push($return, $result);
             }
 
             $aggregations = array();
