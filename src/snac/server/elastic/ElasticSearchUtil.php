@@ -92,7 +92,6 @@ class ElasticSearchUtil {
 
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                 'id' => $constellation->getID(),
                 'body' => [
                     'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
@@ -117,7 +116,6 @@ class ElasticSearchUtil {
                 $params = [
                     // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
-                    // 'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $entry->getID(),
                     'body' => [
                         'nameEntry' => $entry->getOriginal(),
@@ -148,7 +146,6 @@ class ElasticSearchUtil {
         if ($this->connector != null) {
             $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     'id' => $constellation->getID()
             ];
             try {
@@ -160,7 +157,6 @@ class ElasticSearchUtil {
                 $params = [
                     // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
-                    // 'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $entry->getID()
                 ];
                 try {
@@ -259,7 +255,6 @@ class ElasticSearchUtil {
 
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                 'body' => [
                     /* This query uses a keyword search
                        'query' => [
@@ -622,27 +617,6 @@ class ElasticSearchUtil {
             $body["from"] = $start;
             $body["size"] = $count;
 
-            // $aggs = [
-            //         "subject"=> [
-            //             "terms"=> [
-            //                 "field" => "subject.untokenized",
-            //                 "size" => 10
-            //             ]
-            //         ],
-            //         "occupation"=> [
-            //             "terms"=> [
-            //                 "field" => "occupation.untokenized",
-            //                 "size" => 10
-            //             ]
-            //         ],
-            //         "function"=> [
-            //             "terms"=> [
-            //                 "field" => "function.untokenized",
-            //                 "size" => 10
-            //             ]
-            //         ]
-            //     ];
-
                 $aggs = [
                     "subject"=> [
                         "terms"=> [
@@ -667,7 +641,6 @@ class ElasticSearchUtil {
 
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                 'body' => $body,
                 'from' => $start,
                 'size' => $count
@@ -736,7 +709,6 @@ class ElasticSearchUtil {
         if ($this->connector != null) {
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
-                // 'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
                 'id' => $resource->getID(),
                 'body' => [
                     'id' => (int) $resource->getID(),
@@ -766,7 +738,6 @@ class ElasticSearchUtil {
         if ($this->connector != null) {
             $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
-                    // 'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
                     'id' => $resource->getID()
             ];
 
@@ -789,7 +760,6 @@ class ElasticSearchUtil {
         if ($this->connector != null) {
             $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
-                    // 'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
                     'id' => $id,
                     'body' => [
                         'doc' => [
@@ -894,7 +864,6 @@ class ElasticSearchUtil {
 
         $params = [
             'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-            // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
             'body' => $query
         ];
         $this->logger->addDebug("Defined parameters for search", $params);

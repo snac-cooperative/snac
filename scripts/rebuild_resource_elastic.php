@@ -56,7 +56,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
 
     createResourceIndex($eSearch);
-    
+
     echo "Updating the Elastic Search indices. This may take a while...\n";
     while($resource = $db->fetchrow($allResources)) {
         indexMain((int) $resource["id"], $resource["title"], $resource["abstract"], $resource["href"], $resource["document_type"], (int) $resource["type"]);
@@ -75,7 +75,6 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
 function createResourceIndex($ESClientBuilder) {
     $params = [
         'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
-        // 'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,  // 'type' is now deprecated
 
         'body' => [
             'settings' => [

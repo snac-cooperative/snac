@@ -2999,43 +2999,43 @@ class DBUtil
      */
      public function writeResource($user, $resource) {
 
-         if ($user == null || $user->getUserID() == null)
-             return false;
+        if ($user == null || $user->getUserID() == null)
+            return false;
 
-         $op = $resource->getOperation();
-         if ($op == \snac\data\AbstractData::$OPERATION_INSERT) {
-             $rid = null;
-         } else {
-             $rid = $resource->getID();
-         }
+        $op = $resource->getOperation();
+        if ($op == \snac\data\AbstractData::$OPERATION_INSERT) {
+            $rid = null;
+        } else {
+            $rid = $resource->getID();
+        }
 
-         $isDeleted = ($op == \snac\data\AbstractData::$OPERATION_DELETE) ? true : false;
+        $isDeleted = ($op == \snac\data\AbstractData::$OPERATION_DELETE) ? true : false;
 
-         $version = null;
-         $repoID = null;
+        $version = null;
+        $repoID = null;
 
-         if ($resource->getRepository() != null)
-             $repoID = $resource->getRepository()->getID();
-         list($rid, $version) = $this->sql->insertResource($rid,
-                                                   $version,
-                                                   $resource->getTitle(),
-                                                   $resource->getAbstract(),
-                                                   $resource->getExtent(),
-                                                   $repoID,
-                                                   $this->termID($resource->getDocumentType()), // xlink:role
-                                                   $this->termID($resource->getEntryType()), // relationEntry@localType
-                                                   $resource->getLink(), // xlink:href
-                                                   $resource->getSource(), // objectXMLWrap
-                                                   $resource->getDate(),
-                                                   $resource->getDisplayEntry(),
-                                                   $user->getUserID(),
-                                                   $isDeleted);
-         $resource->setID($rid);
-         $resource->setVersion($version);
-         $this->saveOriginationNames($resource);
-         $this->saveResourceLanguages($resource);
-         // Return the full current resource or false if not written
-         return $this->readResource($rid) ?? false;
+        if ($resource->getRepository() != null)
+            $repoID = $resource->getRepository()->getID();
+        list($rid, $version) = $this->sql->insertResource($rid,
+                                                    $version,
+                                                    $resource->getTitle(),
+                                                    $resource->getAbstract(),
+                                                    $resource->getExtent(),
+                                                    $repoID,
+                                                    $this->termID($resource->getDocumentType()), // xlink:role
+                                                    $this->termID($resource->getEntryType()), // relationEntry@localType
+                                                    $resource->getLink(), // xlink:href
+                                                    $resource->getSource(), // objectXMLWrap
+                                                    $resource->getDate(),
+                                                    $resource->getDisplayEntry(),
+                                                    $user->getUserID(),
+                                                    $isDeleted);
+        $resource->setID($rid);
+        $resource->setVersion($version);
+        $this->saveOriginationNames($resource);
+        $this->saveResourceLanguages($resource);
+        // Return the full current resource or false if not written
+        return $this->readResource($rid) ?? false;
      }
 
     /**
