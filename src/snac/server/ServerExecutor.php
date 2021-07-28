@@ -1572,6 +1572,9 @@ class ServerExecutor {
             }
 
             try {
+                // ensure resourceID is a string for neo4j compatability.
+                $resource->setID((string) $resource->getID());
+
                 $result = $this->cStore->writeResource($this->user, $resource);
                 if (isset($result) && $result != false) {
                     $this->elasticSearch->writeToResourceIndices($resource);
