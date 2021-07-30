@@ -97,7 +97,7 @@ function createResourceIndex($ESClientBuilder) {
                         'analyzer' => 'standard_asciifolding',
                     ],
                     'abstract' => ['type' => 'text'],
-                    'url' => ['type' => 'keyword'],
+                    'url' => ['type' => 'text'],
                     'resource_type' => ['type' => 'keyword'],
                     'type_id' => ['type' => 'keyword'],
                     'timestamp' => ['type' => 'date'],
