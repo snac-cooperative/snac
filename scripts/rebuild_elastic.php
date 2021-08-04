@@ -373,7 +373,6 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
         if (!$primaryStart) {
             $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    // 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     'id' => $icid,
                     'body' => [
                             'nameEntry' => $nameText,
@@ -403,7 +402,6 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
             $primaryBody['body'][] = [
                 'index' => [
                     '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    // '_type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     '_id' => $icid
                 ]
             ];
@@ -437,7 +435,6 @@ function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree, $
             $params = [
                     // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     'index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
-                    // 'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $nameid,
                     'body' => [
                             'nameEntry' => $nameText,
@@ -463,7 +460,6 @@ function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree, $
                 'index' => [
                     // '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     '_index' => \snac\Config::$ELASTIC_SEARCH_ALL_INDEX,
-                    // '_type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     '_id' => $nameid
                 ]
             ];

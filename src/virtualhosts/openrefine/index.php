@@ -37,8 +37,16 @@ try {
     // Be correct with foreach pass by reference
     unset($part);
     
+    // Get the request body for processing
+    $jsonInput = null;
+    $inputbody = file_get_contents("php://input");
+    if ($inputbody != null) {
+        // Parse the JSON input
+        $jsonInput = json_decode($inputbody, true);
+    } 
+    
     // Instantiate and run the server
-    $server = new OpenRefine($input);
+    $server = new OpenRefine($input, $jsonInput);
     $server->run();
     
     // Return the content type and output of the server
