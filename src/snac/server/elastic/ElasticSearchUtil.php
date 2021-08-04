@@ -380,7 +380,7 @@ class ElasticSearchUtil {
         if ($entityType !== null) {
             $searchBody["query"]["function_score"]["query"]["bool"]["filter"] = [
                     "term" => [
-                        'entityType' => strtolower($entityType) // strange elastic search behavior
+                        'entityType' => $entityType
                     ]
             ];
         }
@@ -451,7 +451,7 @@ class ElasticSearchUtil {
         if ($entityType !== null) {
             array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                 'term' => [
-                    'entityType' => strtolower($entityType) // strange elastic search behavior
+                    'entityType' => $entityType
                 ]
             ]);
         }
@@ -466,7 +466,7 @@ class ElasticSearchUtil {
                 if (isset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]))
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]);
                 $searchBody["sort"] = [
-                    [ "nameEntry.untokenized" => "asc" ],
+                    [ "nameEntry" => "asc" ],
                     "_score"
                 ];
             }
@@ -474,7 +474,7 @@ class ElasticSearchUtil {
                 foreach ($values as $value) {
                     array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                         'match' => [
-                            $type.".untokenized" => [
+                            $type => [
                                 'query' => $value
                             ]
                         ]
@@ -560,7 +560,7 @@ class ElasticSearchUtil {
         if ($entityType !== null) {
             array_push($searchBody["query"]["function_score"]["query"]["bool"]["filter"], [
                 'term' => [
-                    'entityType' => strtolower($entityType) // strange elastic search behavior
+                    'entityType' => $entityType
                 ]
             ]);
         }
@@ -574,7 +574,7 @@ class ElasticSearchUtil {
                 if (isset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]))
                     unset($searchBody["query"]["function_score"]["query"]["bool"]["minimum_should_match"]);
                 $searchBody["sort"] = [
-                    [ "nameEntry.untokenized" => "asc" ],
+                    [ "nameEntry" => "asc" ],
                     "_score"
                 ];
             }
