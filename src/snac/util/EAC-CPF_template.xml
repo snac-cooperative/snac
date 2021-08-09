@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eac-cpf xmlns="urn:isbn:1-931666-33-4"
-         xmlns:xlink="https://www.w3.org/1999/xlink"
-         xmlns:snac="http://socialarchive.iath.virginia.edu/">
+    xmlns:xlink="https://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:isbn:1-931666-33-4
+    https://eac.staatsbibliothek-berlin.de/schema/cpf.xsd">
     {#
     Author: Tom Laudeman, Robbie Hott
     The Institute for Advanced Technology in the Humanities at the University of Virginia
@@ -12,7 +14,8 @@
     of California
     #}
     <control>
-        <recordId >{{ data.ark }}</recordId>
+        <recordId>{{ data.id }}</recordId>
+        <otherRecordId localType="ARK">{{ data.ark }}</otherRecordId>
         {#
         Some vocabulary that has a uri is saved in the db and PHP objects with both the term and full uri that
         includes the term.  We prefer the uri, and we use the term as a fall back.
@@ -70,8 +73,14 @@
         </maintenanceHistory>
         <sources>
             {% for src in data.sources %}
-            <source xlink:href="{{ src.uri }}" xlink:type="simple">
-                {{ src.text|raw }}
+            <source xlink:href="{{ src.uri }}">
+                {% if src.citation %}
+                <sourceEntry>{{src.citation}}</sourceEntry>
+                {% endif %}
+                <descriptiveNote>
+                    {# this will NOT work correctly for historic sources #}
+                    {{ src.text|raw }}
+                </descriptiveNote>
             </source>
             {% endfor %}
         </sources>
@@ -99,28 +108,39 @@
             A literal "less than" is illegal here in XML.
 
             #}
+
+
             {% for nameEntry in data.nameEntries %}
-            {{'&lt;nameEntry'|decode_entities|raw}}
-            {% if nameEntry.lang %}
-            xml:lang="{{ nameEntry.lang }}">
-            {% endif %}
-            {% if nameEntry.preferenceScore %}
-            snac:preferenceScore="{{ nameEntry.preferenceScore }}"
-            {% endif %}
-            >
-            <part>{{ nameEntry.original }}</part>
-            {% for contrib in nameEntry.contributors %}
-            {% if contrib.type.term == 'authorizedForm' %}
-            <authorizedForm>{{ contrib.name }}</authorizedForm>
+            <nameEntry {% if nameEntry.lang %}xml:lang="{{ nameEntry.lang }}"{% endif %}>
+            {% if nameEntry.components %}
+            {% for component in nameEntry.components %}
+            <part localType="{{component.type.term}}">{{ component.text }}</part>
+            {% endfor %}
             {% else %}
-            <alternativeForm>{{ contrib.name }}</alternativeForm>
+            <part>{{ nameEntry.original }}</part>
+            {% endif %}    
+                
+            {% if nameEntry.contributors %}
+            {% for contrib in nameEntry.contributors %}
+            {% if nameEntry.preferenceScore == 99 %}
+            <authorizedForm>{{ contrib.rule.term }}</authorizedForm>
+            {% else %}
+            <alternativeForm>{{ contrib.rule.term }}</alternativeForm>
             {% endif %}
             {% endfor %}
-            {#
-            The closing nameEntry is also a literal Twig string.
-            #}
-            {{'&lt;/nameEntry>'|decode_entities|raw}}
+            {% else %}
+            {% if nameEntry.preferenceScore == 99 %}
+            <authorizedForm>presumed</authorizedForm>
+            {% else %}
+            <alternativeForm>presumed</alternativeForm>
+            {% endif %}
+            {% endif %}
+            
+            </nameEntry>
             {% endfor %}
+
+
+
             {{ data.descriptiveNote }}
         </identity>
         <description>
@@ -240,30 +260,24 @@
             {% if place.geoplace %}
             <place localType="{{place.type.uri}}">
                 {% if place.confirmed %}
-                <placeEntry certaintyScore="{{ place.score }}"
-                                           vocabularySource="{{place.geoplace.uri}}"
+                <placeEntry  vocabularySource="{{place.geoplace.uri}}"
                                            latitude="{{place.geoplace.latitude}}"
                                            longitude="{{place.geoplace.longitude}}"
-                                           administrationCode="{{place.geoplace.administrationCode}}"
                                            countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
                 </placeEntry>
                 {% else %}
                 <snac:placeEntry>
                     <placeEntry>{{ place.original }}</placeEntry>
                     {% if place.score > 0.06 %}
-                    <snac:placeEntryLikelySame certaintyScore="{{ place.score }}"
-                                               vocabularySource="{{place.geoplace.uri}}"
+                    <snac:placeEntryLikelySame vocabularySource="{{place.geoplace.uri}}"
                                                latitude="{{place.geoplace.latitude}}"
                                                longitude="{{place.geoplace.longitude}}"
-                                               administrationCode="{{place.geoplace.administrationCode}}"
                                                countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
                     </snac:placeEntryLikelySame>
                     {% else %}
-                    <snac:placeEntryBestMaybeSame certaintyScore="{{ place.score }}"
-                                                  vocabularySource="{{place.geoplace.uri}}"
+                    <snac:placeEntryBestMaybeSame vocabularySource="{{place.geoplace.uri}}"
                                                   latitude="{{place.geoplace.latitude}}"
                                                   longitude="{{place.geoplace.longitude}}"
-                                                  administrationCode="{{place.geoplace.administrationCode}}"
                                                   countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
                     </snac:placeEntryBestMaybeSame>
                     {% endif %}
@@ -348,7 +362,7 @@
             {% endfor %}
             {% for nation in data.nationalities %}
             <localDescription localType="http://viaf.org/viaf/terms#nationalityOfEntity">
-                <placeEntry countryCode="US"/>
+                <placeEntry countryCode="{{nation.term.term}}"/>
             </localDescription>
             {% endfor %}
             {% for occupation in data.occupations %}
