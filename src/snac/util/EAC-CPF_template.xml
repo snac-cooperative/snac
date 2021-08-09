@@ -57,7 +57,7 @@
                 eventType must contain one of: "cancelled" or "created" or "deleted" or "derived" or "revised" or "updated"
                 #}
                 <eventType>{{ event.eventType.term }}</eventType>
-                <eventDateTime standardDateTime="{{ event.standardDateTime }}">{{ event.eventDateTime }}</eventDateTime>
+                <eventDateTime{% if event.standardDateTime %} standardDateTime="{{ event.standardDateTime }}" {% endif%}>{{ event.eventDateTime }}</eventDateTime>
                 <agentType>{{ event.agentType.term }}</agentType>
                 <agent>{{ event.agent }}</agent>
                 <eventDescription>{{ event.eventDescription }}</eventDescription>
@@ -266,22 +266,7 @@
                                            countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
                 </placeEntry>
                 {% else %}
-                <snac:placeEntry>
-                    <placeEntry>{{ place.original }}</placeEntry>
-                    {% if place.score > 0.06 %}
-                    <snac:placeEntryLikelySame vocabularySource="{{place.geoplace.uri}}"
-                                               latitude="{{place.geoplace.latitude}}"
-                                               longitude="{{place.geoplace.longitude}}"
-                                               countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
-                    </snac:placeEntryLikelySame>
-                    {% else %}
-                    <snac:placeEntryBestMaybeSame vocabularySource="{{place.geoplace.uri}}"
-                                                  latitude="{{place.geoplace.latitude}}"
-                                                  longitude="{{place.geoplace.longitude}}"
-                                                  countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
-                    </snac:placeEntryBestMaybeSame>
-                    {% endif %}
-                </snac:placeEntry>
+                <placeEntry>{{ place.original }}</placeEntry>
                 {% endif %}
                 {% if place.dates %}
                 {% if place.dates[1] %}
@@ -445,7 +430,7 @@
                               xlink:arcrole="{{ xlink_arcrole }}"
                               xlink:href="{{ resRel.resource.link  }}">
                 <relationEntry>{{ resRel.content }}</relationEntry>
-                {{ resRel.source|raw }}
+                {# This is historical:  resRel.source|raw #}
                 <objectXMLWrap>
                     <did xmlns="urn:isbn:1-931666-22-9">
                         {% if resRel.resource.originationNames %}
@@ -479,7 +464,7 @@
                         {% endif %}
                     </did>
                 </objectXMLWrap>
-                {{ resRel.note|raw }}
+                {# This is historical: resRel.note|raw #}
             </resourceRelation>
         {% endfor %}
         </relations>
