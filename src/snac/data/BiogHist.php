@@ -104,7 +104,7 @@ class BiogHist extends AbstractData {
         $orig = $this->text;
 
         // check for <p> tags, and if none, then add them to each line
-        if (strpos($orig, "<p>") === false) {
+        if (strpos($orig, "<p") === false) {
             $new = "";
             foreach (preg_split("/((\r?\n)|(\r\n?))/", $orig) as $par) {
                 if (!empty(trim($par))) {
@@ -115,7 +115,7 @@ class BiogHist extends AbstractData {
         }
 
         // Remove some HTML tags that are not allowed
-        $orig = str_replace(["<i>","</i>","<u>","</u>", "<em>", "</em>"], "", $orig);
+        $orig = str_replace(["<i>","</i>","<u>","</u>", "<em>", "</em>", " xmlns=\"urn:isbn:1-931666-33-4\""], "", $orig);
 
         // check for <biogHist> tag and add if needed
         if (strpos($orig, "<biogHist>") === false) {
