@@ -114,6 +114,9 @@ class BiogHist extends AbstractData {
             $orig = $new;
         }
 
+        // Remove some HTML tags that are not allowed
+        $orig = str_replace(["<i>","</i>","<u>","</u>", "<em>", "</em>"], "", $orig);
+
         // check for <biogHist> tag and add if needed
         if (strpos($orig, "<biogHist>") === false) {
             $orig = "<biogHist>\n$orig\n</biogHist>";

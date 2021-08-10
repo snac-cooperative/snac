@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eac-cpf xmlns="urn:isbn:1-931666-33-4"
-    xmlns:xlink="https://www.w3.org/1999/xlink"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="urn:isbn:1-931666-33-4
     https://eac.staatsbibliothek-berlin.de/schema/cpf.xsd">
@@ -77,10 +77,15 @@
                 {% if src.citation %}
                 <sourceEntry>{{src.citation}}</sourceEntry>
                 {% endif %}
+                {% if src.text %}
+                {% if "objectXML" in src.text %}
+                {{ src.text|raw }}
+                {% else %}
                 <descriptiveNote>
-                    {# this will NOT work correctly for historic sources #}
                     {{ src.text|raw }}
                 </descriptiveNote>
+                {% endif %}
+                {% endif %}
             </source>
             {% endfor %}
         </sources>
@@ -347,7 +352,7 @@
             {% endfor %}
             {% for nation in data.nationalities %}
             <localDescription localType="http://viaf.org/viaf/terms#nationalityOfEntity">
-                <placeEntry countryCode="{{nation.term.term}}"/>
+                <term>{{nation.term.term}}</term>
             </localDescription>
             {% endfor %}
             {% for occupation in data.occupations %}

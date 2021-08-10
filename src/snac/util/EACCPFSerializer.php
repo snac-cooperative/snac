@@ -1,4 +1,4 @@
-<?PHP
+<?php
 /**
  * Serialize a PHP Constellation object to EAC-CPF XML
  *

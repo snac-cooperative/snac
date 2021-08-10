@@ -263,7 +263,7 @@ class Source extends AbstractData {
         $orig = $this->text;
 
         // check for <p> tags, and if none, then add them to each line
-        if (strpos($orig, "<p>") === false) {
+        if (strpos($orig, "<p>") === false && strpos($orig, "<objectXML") === false) {
             $new = "";
             foreach (preg_split("/((\r?\n)|(\r\n?))/", $orig) as $par) {
                 if (!empty(trim($par))) {
@@ -271,6 +271,8 @@ class Source extends AbstractData {
                 }
             } 
             $orig = $new;
+        } else if (strpos($orig, "<objectXML") !== false) {
+            $orig = str_replace("xmlns=\"\"", "xmlns=\"http://socialarchive.iath.virginia.edu/control/term#snacAdHocRandD\"", $orig);
         }
 
         $this->text = $orig;
