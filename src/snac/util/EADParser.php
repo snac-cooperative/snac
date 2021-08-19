@@ -37,6 +37,16 @@ class EADParser {
     private $eadVersion = null;
 
     /**
+     * $var string $COLUMN_SEPARATOR The separator used by XSLT to denote split columns
+     */
+    private $COLUMN_SEPARATOR = "^";
+
+    /**
+     * $var string $ROW_SEPARATOR The separator used by XSLT to denote split rows
+     */
+    private $ROW_SEPARATOR = "#";
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -65,15 +75,18 @@ class EADParser {
         $toReturn = false;
 
         try {
+            // Validate the XML
             $errors = $this->validateDirectory($eaddir, false); // only check for well-formedness
-
             if (!empty($errors) || $this->eadVersion === false) {
                 return $errors;
             }
+
+            // Set up the SAXON environment 
             $xmlfile = \snac\Config::$EAD_PARSER_DIR."/ead_parse_driver.xml";
             $xslfile = \snac\Config::$EAD_PARSER_DIR."/{$this->eadVersion}ToOR.xsl";
             $tmpoutfile = $tmpdir."/tmpoutput.xml";
 
+            // Run SAXON
             $descriptorspec = array(
                 0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
                 1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
@@ -97,10 +110,12 @@ class EADParser {
                 $this->logger->addDebug("Error occurred while running SAXON: $procOutput");
                 throw new \Exception("Error in SAXON\n$procOutput");
             }
-
-
             $this->logger->addDebug("Done Running SAXON");
 
+            // Post-process the SAXON output
+            $this->postProcess($outputdir);
+
+            // Put the files into an exported ZIP file
             $this->logger->addDebug("Creating output ZIP file");
             $zip = new \ZipArchive();
             if ($zip->open($outfile, \ZipArchive::CREATE) !== true) {
@@ -368,5 +383,106 @@ class EADParser {
         }
         $this->eadVersion = $version;
         return $version;
+    }
+
+
+    /**
+     * Post-Process Created TSV files
+     *
+     * Reads in and modifies the TSV files created by the XSLT processing.  Currently modifies
+     * the CPF-Table to make it OR-ready for multiple rows per record.
+     *
+     * @param $dir string The directory where files are stored
+     */
+    private function postProcess($dir) {
+        // Files in the directory
+        //$dir."/Join-Table.tsv"
+        //$dir."/CPF-Table.tsv"
+        //$dir."/RD-Table.tsv"
+
+        $cpftable = [];
+        $colsToSplit = [];
+
+        // Read in the CPF table and add new rows as needed (we need to see all rows before new columns)
+        if (($handle = fopen($dir."/CPF-Table.tsv", "r")) !== false) {
+            while (($line = fgetcsv($handle, 10000000, "\t")) !== false) {
+                $additionalRows = [];
+                $currentLine = [];
+                $numCols = count($line);
+                foreach ($line as $j => $v) {
+                    $parts = explode($this->ROW_SEPARATOR, $v);
+                    // check if we need to split this column
+                    foreach ($parts as $part) {
+                        if (strpos($part, $this->COLUMN_SEPARATOR) !== false)
+                            $colsToSplit[$j] = true;
+                    }
+                    if (count($parts) == 1) {
+                        $currentLine[$j] = $v;
+                    } else {
+                        $currentLine[$j] = array_shift($parts);
+                        for ($k = 0; $k < count($additionalRows) && !empty($parts); $k++) {
+                            $additionalRows[$k][$j] = array_shift($parts);
+                        }
+                        if (!empty($parts)) {
+                            foreach ($parts as $part) {
+                                $newLine = [];
+                                for ($l = 0; $l < $numCols; $l++)
+                                    $newLine[$l] = "";
+                                $newLine[$j] = $part;
+                                array_push($additionalRows, $newLine);
+                            }
+                        }
+                    }
+
+                }
+                array_push($cpftable, $currentLine);
+                if (!empty($additionalRows)) {
+                    foreach ($additionalRows as $newRow)
+                        array_push($cpftable, $newRow);
+                }
+            }
+            fclose($handle);
+        }
+
+        if (!empty($cpftable)) {
+            $numOrigCols = count($cpftable[0]);
+            $headers = $cpftable[0];
+
+            $newtable = [];
+            $newheaders = [];
+            for ($i = 0; $i < $numOrigCols; $i++) {
+                array_push($newheaders, $headers[$i]);
+                if (isset($colsToSplit[$i]))
+                    array_push($newheaders, $headers[$i] . " Type");
+            }
+            array_push($newtable, $newheaders);
+
+            foreach($cpftable as $i => $row) {
+                if ($i == 0) continue;
+
+                $newRow = [];
+                for ($j = 0; $j < count($row); $j++) {
+                    if (isset($colsToSplit[$j])) {
+                        // only split by two
+                        $parts = explode($this->COLUMN_SEPARATOR, $row[$j]);
+                        foreach ($parts as $part)
+                            array_push($newRow, $part);
+                        if (count($parts) < 2)
+                            array_push($newRow, '');
+                    } else {
+                        array_push($newRow, $row[$j]);
+                    }
+                }
+                array_push($newtable, $newRow);
+            } 
+
+            // Write the updated CPF Table 
+            if (($handle = fopen($dir."/CPF-Table.tsv", "w")) !== false) {
+                foreach ($newtable as $row) {
+                    fputcsv($handle, $row, "\t");
+                }
+                fclose($handle);
+            }
+        }
     }
 }
