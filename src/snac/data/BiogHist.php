@@ -96,6 +96,36 @@ class BiogHist extends AbstractData {
     }
 
     /**
+     * XML-Format this BiogHist
+     *
+     * Updates this BiogHist to add XML elements, including the <biogHist> tag and any <p> tags necessary.
+     */
+    public function formatXML() {
+        $orig = $this->text;
+
+        // check for <p> tags, and if none, then add them to each line
+        if (strpos($orig, "<p") === false) {
+            $new = "";
+            foreach (preg_split("/((\r?\n)|(\r\n?))/", $orig) as $par) {
+                if (!empty(trim($par))) {
+                    $new .= "<p>".htmlentities(trim($par), ENT_COMPAT|ENT_XML1)."</p>\n";  
+                }
+            } 
+            $orig = $new;
+        }
+
+        // Remove some HTML tags that are not allowed
+        $orig = str_replace(["<i>","</i>","<u>","</u>", "<em>", "</em>", " xmlns=\"urn:isbn:1-931666-33-4\""], "", $orig);
+
+        // check for <biogHist> tag and add if needed
+        if (strpos($orig, "<biogHist>") === false) {
+            $orig = "<biogHist>\n$orig\n</biogHist>";
+        }
+
+        $this->text = $orig;
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components

@@ -75,6 +75,12 @@ class EACCPFSerializer {
      * @return string The EAC-CPF XML for this constellation
      */
     public function serialize($constellation) {
+        foreach ($constellation->getBiogHistList() as &$currentBiogHist) {
+            $currentBiogHist->formatXML();
+        }
+        foreach ($constellation->getSources() as &$currentSource) {
+            $currentSource->formatXML();
+        }
         return $this->serializeCore($constellation->toArray());
     }
 
