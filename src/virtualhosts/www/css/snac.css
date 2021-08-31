@@ -356,7 +356,7 @@ div.snac {
 .snac-system-notice {
     text-align: center!important;
     background-color: #ebccd1;
-    margin-top: -16px;
+    margin-top: 16px;
     color: #a94442;
 }
 
