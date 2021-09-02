@@ -1572,8 +1572,9 @@ class ServerExecutor {
             }
 
             try {
-                // ensure resourceID is a string for neo4j compatability.
+                // ensure resource id and version are strings for neo4j compatability.
                 $resource->setID((string) $resource->getID());
+                $resource->setVersion((string) $resource->getVersion());
 
                 $result = $this->cStore->writeResource($this->user, $resource);
                 if (isset($result) && $result != false) {

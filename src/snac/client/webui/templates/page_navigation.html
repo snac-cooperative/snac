@@ -39,7 +39,7 @@
             <ul class="nav navbar-nav">
                 <li><a href="{{control.snacURL}}/search"><i class="fa fa-search" aria-hidden="true"></i> Search</a></li>
                 <li><a href="{{control.snacURL}}/browse"><i class="fa fa-address-book" aria-hidden="true"></i> Browse</a></li>
-                <li><a href="{{control.snacURL}}/vocab_administrator/resources"><i class="fa fa-book" aria-hidden="true"></i> Resource Descriptions</a></li>
+                <li><a href="{{control.snacURL}}/vocab_administrator/resources"><i class="fa fa-book" aria-hidden="true" aria-label="Resource Descriptions"></i> <span class="navbar-hideable"> Resources</span></a></li>
                 <!-- {% if user.userName %} -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
@@ -66,11 +66,14 @@
                         {% endif %}
                     </ul>
                 </li>
-                <li class="navbar-hideable"><a href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i> Messages
+                <li>
+                    <a href="{{control.snacURL}}/messages"><i class="fa fa-comments-o" aria-hidden="true"></i>
+                        <span class="navbar-hideable">Messages</span>
                         {% if user.unreadMessageCount > 0 %}
                             <span class='badge'>{{ user.unreadMessageCount }}</span>
                         {% endif %}
-                    </a></li>
+                    </a>
+                </li>
                 <!-- {% endif %} -->
             </ul>
             <div class="navbar-right">
@@ -78,7 +81,7 @@
                     <li><a href="https://portal.snaccooperative.org/about"><i class="fa fa-info-circle" aria-hidden="true"></i> About</a></li>
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                        <i class="fa fa-question-circle"></i> Help <span class="caret"></span>
+                        <i class="fa fa-question-circle"></i> <span class="navbar-hideable"> Help</span> <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
                         <li><a href="{{control.snacURL}}/api_help"><i class="fa fa-fw fa-list" aria-hidden="true"></i> Rest API Commands</a></li>
@@ -94,7 +97,16 @@
             <!-- {% if user.userName %} -->
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                        <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.fullName }} <span class="caret"></span>
+                        <span class="visible-lg">
+                            <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px; border-radius: 8px;">
+                            {{ user.fullName }}
+                            <span class="caret"></span>
+                        </span>
+                        <span class="hidden-lg">
+                            <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px; border-radius: 8px;">
+                            {{ user.firstName }}
+                            <span class="caret"></span>
+                        </span>
                     </a>
                     <ul class="dropdown-menu">
                         <li><a href="{{control.snacURL}}/profile"><i class="fa fa-fw fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>

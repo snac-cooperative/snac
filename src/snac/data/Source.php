@@ -255,6 +255,30 @@ class Source extends AbstractData {
     }
 
     /**
+     * XML-Format this Source Text 
+     *
+     * Updates this Source text to add XML elements, including any <p> tags necessary.
+     */
+    public function formatXML() {
+        $orig = $this->text;
+
+        // check for <p> tags, and if none, then add them to each line
+        if (strpos($orig, "<p>") === false && strpos($orig, "<objectXML") === false) {
+            $new = "";
+            foreach (preg_split("/((\r?\n)|(\r\n?))/", $orig) as $par) {
+                if (!empty(trim($par))) {
+                    $new .= "<p>".htmlentities(trim($par), ENT_COMPAT|ENT_XML1)."</p>\n";  
+                }
+            } 
+            $orig = $new;
+        } else if (strpos($orig, "<objectXML") !== false) {
+            $orig = str_replace("xmlns=\"\"", "xmlns=\"http://socialarchive.iath.virginia.edu/control/term#snacAdHocRandD\"", $orig);
+        }
+
+        $this->text = $orig;
+    }
+
+    /**
      * Set the citation of this Source
      *
      * @param string $text The bibiographic citation of this source 

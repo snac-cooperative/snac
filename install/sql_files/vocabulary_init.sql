@@ -11,7 +11,7 @@ CREATE SEQUENCE "vocabulary_id_seq";
 -- Controlled Vocabulary. These are terms to be used in related tables where controlled vocabulary values are
 -- required. The related table has only the vocabulary.id value.
 --
--- Supported types: occupation, function, topical subject, nationality, language, language code, gender,
+-- Supported types: occupation, activity, topical subject, nationality, language, language code, gender,
 -- script, name component labels, date-predicates (from, to, born, died), maintenance status, maintenance
 -- event type, maintenance agent type, place match type, activity term, activity type (e.g. DerivedFromRole),
 -- and more in the future.
