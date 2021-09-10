@@ -2818,11 +2818,20 @@ class DBUtil
             $relID = $fdata->getID();
             if ($this->prepOperation($vhInfo, $fdata))
             {
+                // Check for null relation values, fetch if needed
+                [$targetArk, $targetEntityType, $content] = [$fdata->getTargetArkID(), $fdata->getTargetEntityType(), $fdata->getContent()];
+                if (!isset($targetArk, $targetEntityType, $content) ) {
+                    $targetConstellation = $this->readPublishedConstellationByID($fdata->getTargetConstellation(), DBUtil::$READ_NRD|DBUtil::$READ_PREFERRED_NAME);
+                    $fdata->setTargetArkID($targetConstellation->getArk());
+                    $fdata->setTargetEntityType($targetConstellation->getEntityType());
+                    $fdata->setContent($targetConstellation->getPreferredNameEntry()->getOriginal());
+                }
+
                 $relID = $this->sql->insertRelation($vhInfo,
                                                     $fdata->getTargetConstellation(),
                                                     $fdata->getTargetArkID(),
                                                     $this->termID($fdata->getTargetEntityType()),
-                                                    $this->termID($fdata->getType()),
+                                                    $this->termID($fdata->getType()),            // arcrole
                                                     $this->termID($fdata->getcpfRelationType()), // $cpfRelTypeID,
                                                     $fdata->getContent(),
                                                     $fdata->getNote(),
