@@ -664,6 +664,25 @@ create table occupation (
 
 create unique index occupation_idx1 on occupation(id,ic_id,version);
 
+
+
+-- In July 2021, 'Function' was renamed to 'Activity' in the database
+-- SQL to run to transform 'Function' to 'Activity' in psql database:
+--
+-- UPDATE vocabulary SET TYPE = 'activity' WHERE TYPE = 'function';
+-- UPDATE vocabulary SET TYPE = 'activity_type' WHERE TYPE = 'function_type';
+-- CREATE TABLE activity AS TABLE function;
+-- ALTER TABLE activity RENAME COLUMN function_id TO activity_id;
+-- ALTER TABLE activity RENAME COLUMN function_type TO activity_type;
+-- ALTER TABLE activity ADD PRIMARY KEY (id, version);
+-- ALTER TABLE activity ALTER column is_deleted SET default 'f';
+-- ALTER TABLE activity ALTER column id SET DEFAULT nextval('id_seq'::regclass);
+-- ALTER TABLE activity ALTER column ic_id SET NOT NULL;
+-- CREATE UNIQUE INDEX activity_idx1 ON activity(id,ic_id,version);
+-- CREATE INDEX activity_idx2 ON activity (ic_id, version);
+-- DROP TABLE function;
+
+
 create table activity (
     id                int default nextval('id_seq'),
     version           int not null,
