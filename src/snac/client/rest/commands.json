@@ -571,7 +571,7 @@
                 "title": "Insert a simple Constellation",
                 "description": "Inserting a Constellation with only one nameEntry",
                 "query": {
-                    "command": "insert_constellation",
+                    "command": "insert_and_publish_constellation",
                     "apikey" : "...",
                     "constellation": {
                         "dataType": "Constellation",
