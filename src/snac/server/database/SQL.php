@@ -3846,6 +3846,34 @@ class SQL
         return true;
     }
 
+    /**
+     * Delete Duplicate Resource Relations
+     *
+     * For a given resource, search through all its resource relations
+     * and delete any exact duplicates
+     *
+     * @param int $resourceID The resource ID of the duplicate ResourceRelations
+     *
+     * @return true
+     *
+     */
+    public function deleteDuplicateResourceRelations($resourceID) {
+        $query = "UPDATE related_resource set is_deleted = 't' WHERE resource_id = $1
+                    AND id NOT IN (
+                        SELECT *
+                        FROM (
+                            SELECT MAX(id)
+                            FROM related_resource
+                            WHERE resource_id = $1
+                            GROUP BY ic_id, version, arcrole, role, resource_version
+                        ) rrs
+                    )";
+
+        $result = $this->sdb->query($query, array( $resourceID ));
+
+        return true;
+    }
+
 
     /**
      * Insert a Controlled Vocabulary Term

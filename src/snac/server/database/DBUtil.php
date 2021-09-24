@@ -2906,10 +2906,10 @@ class DBUtil
         }
     }
 
-
     /**
      * Replace Resource Relation Resource
-     * Does not maintain version history
+     * Replaces all Resource Relations of $victim resource with $target resource for Resource merge
+     * Warning: Does not maintain version history.
      *
      * @param \snac\data\Resource $victim
      * @param \snac\data\Resource $target
@@ -2921,6 +2921,16 @@ class DBUtil
         $targetVersion = $target->getVersion();
 
         $this->sql->replaceResourceRelationResource($victimID, $victimVersion, $targetID, $targetVersion);
+    }
+
+    /**
+     * Delete Duplicate Resource Relations
+     *
+     * @param \snac\data\Resource $resource The resource of the duplicate Resource Relations
+     */
+    public function deleteDuplicateResourceRelations($resource) {
+        $resourceID = $resource->getID();
+        $this->sql->deleteDuplicateResourceRelations($resourceID);
     }
 
     /**
