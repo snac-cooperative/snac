@@ -3846,6 +3846,34 @@ class SQL
         return true;
     }
 
+    /**
+     * Delete Duplicate Resource Relations
+     *
+     * For a given resource, search through all its resource relations
+     * and delete any exact duplicates
+     *
+     * @param int $resourceID The resource ID of the duplicate ResourceRelations
+     *
+     * @return true
+     *
+     */
+    public function deleteDuplicateResourceRelations($resourceID) {
+        $query = "UPDATE related_resource set is_deleted = 't' WHERE resource_id = $1
+                    AND id NOT IN (
+                        SELECT *
+                        FROM (
+                            SELECT MAX(id)
+                            FROM related_resource
+                            WHERE resource_id = $1
+                            GROUP BY ic_id, version, arcrole, role, resource_version
+                        ) rrs
+                    )";
+
+        $result = $this->sdb->query($query, array( $resourceID ));
+
+        return true;
+    }
+
 
     /**
      * Insert a Controlled Vocabulary Term
@@ -4940,23 +4968,32 @@ class SQL
     /**
      * Select Holdings
      *
-     * Selects all resource holdings of a holding repository, checking for merged repo_ic_ids.
+     * Selects all resource holdings of a holding repository.
+     * Query searches for resources with the desired repo_ic_ids, first checking for merged repo_ic_ids,
+     * then finding max version of those resource and finally pulling full resources and filtering them.
      *
      * @param integer $icid The id of the holding repository
      * @return string[] Returns associative array of resources data
      */
     public function selectHoldings($icid) {
-        $query = "SELECT r1.id AS \"RD-Source-ID\", r1.version, r1.href AS \"RD-URL\", v.value AS \"RD-Type\",
+        $query = "WITH holding_repo_ids AS ( SELECT ic_id FROM constellation_lookup WHERE current_ic_id = $1 )
+                  SELECT r1.id AS \"RD-Source-ID\", r1.version, r1.href AS \"RD-URL\", v.value AS \"RD-Type\",
                       r1.title, r1.abstract, r1.extent, r1.date, $1 AS repository_id, r1.updated_at
                   FROM resource_cache r1
-                  LEFT JOIN vocabulary v ON r1.type = v.id
-                  INNER JOIN (SELECT id, max(version) AS version FROM resource_cache
-                  WHERE repo_ic_id IN
-                    (SELECT ic_id
-                        FROM constellation_lookup
-                        WHERE current_ic_id = $1)
-                    AND NOT is_deleted GROUP BY id) AS r2
-                  ON r1.id = r2.id AND r1.version = r2.version";
+                      LEFT JOIN vocabulary v ON r1.type = v.id
+                      INNER JOIN
+                          (SELECT id, max(version) AS version
+                              FROM resource_cache
+                              WHERE id IN
+                              ( SELECT id FROM resource_cache
+                                  WHERE repo_ic_id IN (select ic_id from holding_repo_ids)
+                              )
+                              GROUP BY id
+                          ) AS r2
+                      ON r1.id = r2.id
+                      AND r1.version = r2.version
+                  WHERE r1.repo_ic_id in (select ic_id from holding_repo_ids)
+                      AND NOT r1.is_deleted;";
 
         $result = $this->sdb->query($query, array($icid));
         return $this->sdb->fetchAll($result);

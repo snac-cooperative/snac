@@ -2818,11 +2818,20 @@ class DBUtil
             $relID = $fdata->getID();
             if ($this->prepOperation($vhInfo, $fdata))
             {
+                // Check for null relation values, fetch if needed
+                [$targetArk, $targetEntityType, $content] = [$fdata->getTargetArkID(), $fdata->getTargetEntityType(), $fdata->getContent()];
+                if (!isset($targetArk, $targetEntityType, $content) ) {
+                    $targetConstellation = $this->readPublishedConstellationByID($fdata->getTargetConstellation(), DBUtil::$READ_NRD|DBUtil::$READ_PREFERRED_NAME);
+                    $fdata->setTargetArkID($targetConstellation->getArk());
+                    $fdata->setTargetEntityType($targetConstellation->getEntityType());
+                    $fdata->setContent($targetConstellation->getPreferredNameEntry()->getOriginal());
+                }
+
                 $relID = $this->sql->insertRelation($vhInfo,
                                                     $fdata->getTargetConstellation(),
                                                     $fdata->getTargetArkID(),
                                                     $this->termID($fdata->getTargetEntityType()),
-                                                    $this->termID($fdata->getType()),
+                                                    $this->termID($fdata->getType()),            // arcrole
                                                     $this->termID($fdata->getcpfRelationType()), // $cpfRelTypeID,
                                                     $fdata->getContent(),
                                                     $fdata->getNote(),
@@ -2897,10 +2906,10 @@ class DBUtil
         }
     }
 
-
     /**
      * Replace Resource Relation Resource
-     * Does not maintain version history
+     * Replaces all Resource Relations of $victim resource with $target resource for Resource merge
+     * Warning: Does not maintain version history.
      *
      * @param \snac\data\Resource $victim
      * @param \snac\data\Resource $target
@@ -2912,6 +2921,16 @@ class DBUtil
         $targetVersion = $target->getVersion();
 
         $this->sql->replaceResourceRelationResource($victimID, $victimVersion, $targetID, $targetVersion);
+    }
+
+    /**
+     * Delete Duplicate Resource Relations
+     *
+     * @param \snac\data\Resource $resource The resource of the duplicate Resource Relations
+     */
+    public function deleteDuplicateResourceRelations($resource) {
+        $resourceID = $resource->getID();
+        $this->sql->deleteDuplicateResourceRelations($resourceID);
     }
 
     /**

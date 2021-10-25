@@ -1619,6 +1619,9 @@ class ServerExecutor {
         // Replace victim's id and version with target's in related_resource.
         $this->cStore->replaceResourceRelationResource($victim, $target);
 
+        // Delete any resourceRelations that are now exact duplicates
+        $this->cStore->deleteDuplicateResourceRelations($target);
+
         $this->deleteResource($victim);
     }
 

@@ -220,6 +220,17 @@
 
                 </div>
                 <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Information
+                        </div>
+                        <div class="list-group">
+                            <p class="list-group-item"><strong>SNAC Resource ID:</strong>
+                                <a href="{{control.snacURL}}/vocab_administrator/resources/{{data.resource.id}}">{{data.resource.id}}</a>
+                            </p>
+                        </div>
+                    </div>
+
                     {% if data.resource.repository.places[0].geoplace.latitude %}
                     <!-- {# resources.displayResourceActions() #} -->
                     <div class="geoplace-map" id="holdingsMap"></div>

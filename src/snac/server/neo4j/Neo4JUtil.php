@@ -710,7 +710,7 @@ class Neo4JUtil {
             if ($resource->getRepository() != null && $resource->getRepository()->getID() != null) {
                 $this->connector->run("MATCH (a:Identity {id: {id1} }) MATCH (b:Resource {id: {id2} }) CREATE (b)-[r:HIRELATION]->(a);",
                     [
-                        'id1' => (string) $resource->getRepository()->getID(),   
+                        'id1' => (string) $resource->getRepository()->getID(),
                         'id2' => $resource->getID()
                     ]);
             }
