@@ -4992,8 +4992,7 @@ class SQL
                           ) AS r2
                       ON r1.id = r2.id
                       AND r1.version = r2.version
-                  WHERE
-                      r1.repo_ic_id in (select ic_id from holding_repo_ids)
+                  WHERE r1.repo_ic_id in (select ic_id from holding_repo_ids)
                       AND NOT r1.is_deleted;";
 
         $result = $this->sdb->query($query, array($icid));
