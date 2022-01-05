@@ -44,9 +44,9 @@ function openGeoPlaceViewer(id) {
             // Add a slight delay to the map viewing so that the modal window has time to load
             setTimeout(function() {
                 // Create the Map and add it
-                geoMapView = L.map('geoPlaceMap').setView([data.term.latitude, data.term.longitude], 6);
+                geoMapView = L.map('geoPlaceMap').setView([data.term.latitude, data.term.longitude], 7);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
+                    maxZoom: 15,
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(geoMapView);
                 var marker = L.marker([data.term.latitude, data.term.longitude]).addTo(geoMapView);
@@ -97,9 +97,9 @@ function displayHoldingsMap() {
     }
     // Add a slight delay to the map viewing so that the modal window has time to load
     setTimeout(function() {
-        holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
+        holdingsMapView = L.map('holdingsMap').setView([0,0],7);//setView([35.092344, -39.023438], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
+                maxZoom: 15,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(holdingsMapView);
         var bounds = new L.LatLngBounds();
@@ -264,7 +264,7 @@ function handleOutboundLinkClicks(event) {
             eventLabel: event.target.href
         });
     }
-    
+
     var logInfo = "url=" + event.target.href;
     var icid = $('#constellationid').val();
     var repoICID = $(event.target).data('repoIcId');
