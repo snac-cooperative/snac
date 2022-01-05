@@ -99,12 +99,12 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                         <span class="visible-lg">
                             <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px; border-radius: 8px;">
-                            {{ user.fullName }}
+                            <span class="navbar-hideable"> {{ user.fullName }} </span>
                             <span class="caret"></span>
                         </span>
                         <span class="hidden-lg">
                             <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px; border-radius: 8px;">
-                            {{ user.firstName }}
+                            <span class="navbar-hideable"> {{ user.firstName }} </span>
                             <span class="caret"></span>
                         </span>
                     </a>
