@@ -113,7 +113,7 @@ function displayHoldingsMap() {
                 bounds.extend(marker.getLatLng());
             }
         });
-        holdingsMapView.fitBounds(bounds);
+        holdingsMapView.fitBounds(bounds, { maxZoom: 7 });
     }, 400);
 }
 

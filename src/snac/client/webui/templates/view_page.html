@@ -467,7 +467,7 @@ function displayHoldingsMapInteractive() {
                 }
             }
         });
-        holdingsMapView.fitBounds(bounds);
+        holdingsMapView.fitBounds(bounds, {maxZoom : 7});
     }, 400);
 }
 
@@ -521,7 +521,7 @@ function displayPlacesMapInteractive() {
                 }
             }
         });
-        placesMapView.fitBounds(bounds);
+        placesMapView.fitBounds(bounds, { maxZoom: 7 });
     }, 400);
 }
 
