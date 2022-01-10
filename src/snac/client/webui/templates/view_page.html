@@ -420,9 +420,9 @@ function displayHoldingsMapInteractive() {
 
     // Add a slight delay to the map viewing so that the modal window has time to load
     setTimeout(function() {
-        holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
+        holdingsMapView = L.map('holdingsMap').setView([0,0],7);//setView([35.092344, -39.023438], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 7,
+                maxZoom: 15,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(holdingsMapView);
         var bounds = new L.LatLngBounds();
@@ -467,7 +467,7 @@ function displayHoldingsMapInteractive() {
                 }
             }
         });
-        holdingsMapView.fitBounds(bounds);
+        holdingsMapView.fitBounds(bounds, {maxZoom : 7});
     }, 400);
 }
 
@@ -485,9 +485,9 @@ function displayPlacesMapInteractive() {
 
     // Add a slight delay to the map viewing so that the modal window has time to load
     setTimeout(function() {
-        placesMapView = L.map('placesMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
+        placesMapView = L.map('placesMap').setView([0,0],7);//setView([35.092344, -39.023438], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 7,
+                maxZoom: 15,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(placesMapView);
         var bounds = new L.LatLngBounds();
@@ -521,7 +521,7 @@ function displayPlacesMapInteractive() {
                 }
             }
         });
-        placesMapView.fitBounds(bounds);
+        placesMapView.fitBounds(bounds, { maxZoom: 7 });
     }, 400);
 }
 

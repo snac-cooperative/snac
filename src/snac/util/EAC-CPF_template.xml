@@ -124,17 +124,23 @@
             {% else %}
             <part>{{ nameEntry.original }}</part>
             {% endif %}    
-                
+
+            {% set printed = false %}    
             {% if nameEntry.contributors %}
             {% for contrib in nameEntry.contributors %}
+            {% if contrib.rule.term %}
             {% if nameEntry.preferenceScore == 99 %}
             <authorizedForm>{{ contrib.rule.term }}</authorizedForm>
             {% else %}
             <alternativeForm>{{ contrib.rule.term }}</alternativeForm>
             {% endif %}
+            {% set printed = true %}
+            {% endif %}
             {% endfor %}
-            {% else %}
-            {% if nameEntry.preferenceScore == 99 %}
+            {% endif %}
+
+            {% if not printed %}
+            {% if nameEntry.preferenceScore == 99 or loop.index == 1 %}
             <authorizedForm>presumed</authorizedForm>
             {% else %}
             <alternativeForm>presumed</alternativeForm>
