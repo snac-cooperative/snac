@@ -1576,6 +1576,9 @@ class ServerExecutor {
                 $resource->setID((string) $resource->getID());
                 $resource->setVersion((string) $resource->getVersion());
 
+                // Overwrite displayEntry on title updates
+                $resource->setDisplayEntry($resource->getTitle());
+
                 $result = $this->cStore->writeResource($this->user, $resource);
                 if (isset($result) && $result != false) {
                     $this->elasticSearch->writeToResourceIndices($resource);
