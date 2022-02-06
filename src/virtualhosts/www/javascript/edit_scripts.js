@@ -271,6 +271,8 @@ function textToSelect(shortName, idStr) {
                     }
                     $("#"+shortName+"_uri_"+idStr).prop("readonly", true);
                 });
+            } else if (shortName == 'function' || shortName == 'subject' || shortName =='occupation') {
+                concept_vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
             } else
                 vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
 

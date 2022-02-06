@@ -57,6 +57,49 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
             }
 }
 
+/**
+ * Replace a select that is linked to a ConceptVocabulary search
+ *
+ * Replaces the select with a select2 object capable of making AJAX queries
+ *
+ * @param  JQuery selectItem The JQuery item to replace
+ * @param  string idMatch    ID string for the object on the page
+ * @param  string type       The type of the vocabulary term
+ * @param  int    minLength  The minimum required length of the autocomplete search
+ */
+function concept_vocab_select_replace(selectItem, idMatch, type, minLength) {
+    if (minLength === undefined) {
+        minLength = 2;
+    }
+
+    if(selectItem.attr('id').endsWith(idMatch)
+        && !selectItem.attr('id').endsWith("ZZ")) {
+            selectItem.select2({
+                ajax: {
+                    url: laravelURL+'/concepts/search',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            term: params.term,
+                            category: type,
+                            page: params.page
+                        };
+                    },
+                    processResults: function (data, page) {
+                        return { results: data.map(function(concept) { return { id: concept.concept_id, text: concept.text}})  };
+                    },
+                    cache: true
+                },
+                width: '100%',
+                minimumInputLength: minLength,
+                allowClear: true,
+                theme: 'bootstrap',
+                placeholder: 'Select'
+            });
+        }
+}
+
 var geoPlaceSearchResults = null;
 
 function geovocab_select_replace(selectItem, idMatch) {
@@ -345,17 +388,18 @@ $(document).ready(function() {
             // Replace the subject selects
             vocab_select_replace($(this), "language_script_", "script_code", 1);
 
-            // Replace the subject selects
-            vocab_select_replace($(this), "subject_", "subject", 4);
-
-            // Replace the activity selects
-            vocab_select_replace($(this), "activity_", "activity", 4);
-
-            // Replace the occupation selects
-            vocab_select_replace($(this), "occupation_", "occupation", 4);
-
             // Replace the entityType select
             vocab_select_replace($(this), "entityType", "entity_type", 0);
+
+            // Replace the subject selects
+            concept_vocab_select_replace($(this), "subject_", "subject", 4);
+
+            // Replace the activity selects
+            concept_vocab_select_replace($(this), "activity_", "activity", 4);
+
+            // Replace the occupation selects
+            concept_vocab_select_replace($(this), "occupation_", "occupation", 4);
+
         }
     });
 
