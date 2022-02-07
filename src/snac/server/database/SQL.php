@@ -3337,17 +3337,24 @@ class SQL
     /**
      * Insert subjects, activities, and occupations into identity_concept table
      *
+     * If $id is null, get a new record id.
+     *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
      * @param integer $termID Vocabulary foreign key for the term.
      *
-     * @return no return value.
+     * @return integer $id
      *
      */
     public function insertIdentityConcept($vhInfo, $id, $conceptID, $type)
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+
         $qq = 'insert_identity_concept';
         $this->sdb->prepare($qq,
                             'insert into identity_concept
