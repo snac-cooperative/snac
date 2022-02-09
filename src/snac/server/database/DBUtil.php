@@ -308,7 +308,6 @@ class DBUtil
         $this->canDelete = array('snac\data\BiogHist' => 'biog_hist',
                                  'snac\data\ConventionDeclaration' => 'convention_declaration',
                                  'snac\data\SNACDate' => 'date_range',
-                                 'snac\data\Activity' => 'activity',
                                  'snac\data\Gender' => 'gender',
                                  'snac\data\GeneralContext' => 'general_context',
                                  'snac\data\Language' => 'language',
@@ -317,7 +316,6 @@ class DBUtil
                                  'snac\data\NameEntry' => 'name',
                                  'snac\data\Contributor' => 'name_contributor',
                                  'snac\data\Nationality' => 'nationality',
-                                 'snac\data\Occupation' => 'occupation',
                                  'snac\data\SameAs' => 'otherid',
                                  'snac\data\Place' => 'place_link',
                                  'snac\data\ConstellationRelation' => 'related_identity',
@@ -326,7 +324,9 @@ class DBUtil
                                  'snac\data\SNACControlMetadata' => 'scm',
                                  'snac\data\StructureOrGenealogy' => 'structure_genealogy',
                                  'snac\data\Source' => 'source',
-                                 'snac\data\Subject' => 'subject');
+                                 'snac\data\Subject' => 'identity_concepts',
+                                 'snac\data\Activity' => 'identity_concepts',
+                                 'snac\data\Occupation' => 'identity_concepts');
 
         // Term Cache
         $this->termCache = array();
