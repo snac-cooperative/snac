@@ -1988,8 +1988,7 @@ class WebUIExecutor {
                 $userGroups = $serverResponse["user_edit"]["groups"];
 
                 // Ask the server for all the Roles
-                $ask = array("command"=>"admin_roles"
-                );
+                $ask = array("command"=>"admin_roles");
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
                     return $this->drawErrorPage($serverResponse, $display);
@@ -2025,8 +2024,7 @@ class WebUIExecutor {
                 return $this->saveProfile($input, $user);
                 break;
             case "users":
-                $ask = array("command"=>"list_users"
-                );
+                $ask = array("command"=>"list_users");
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
                     return $this->drawErrorPage($serverResponse, $display);

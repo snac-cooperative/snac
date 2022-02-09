@@ -20,20 +20,27 @@
             </div>
         </div>
 
-        <div class="form-group" style="display:none">
-            <label class="control-label col-xs-2" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
-                data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
-            <div class="col-xs-10">
-                <textarea name="resources[0][displayEntry]" class="form-control"
-                    placeholder="Proper name. Title. Date.">{{resource.displayEntry}}</textarea>
-            </div>
-        </div>
 
         <div class="form-group required">
             <label class="control-label col-xs-2" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
                 data-placement="top"> {{X.resourceTitle.display}} </label>
             <div class="col-xs-10">
                 <textarea id="resource-title" name="resources[0][title]" class="form-control" required>{{resource.title}}</textarea>
+            </div>
+        </div>
+
+        {% if resource.displayEntry is not empty and (resource.title != resource.displayEntry) %}
+            {% set displayEntryStyle = '' %}
+        {% else %}
+            {% set displayEntryStyle = 'display:none;'%}
+        {% endif %}
+
+        <div class="form-group" style="{{ displayEntryStyle }}">
+            <label class="control-label col-xs-2" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
+                data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
+            <div class="col-xs-10">
+                <textarea name="resources[0][displayEntry]" class="form-control" readonly
+                    placeholder="Proper name. Title. Date."> {{resource.displayEntry}} </textarea>
             </div>
         </div>
 
