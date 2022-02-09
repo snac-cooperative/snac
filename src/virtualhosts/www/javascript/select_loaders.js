@@ -67,7 +67,7 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
  * @param  string type       The type of the vocabulary term
  * @param  int    minLength  The minimum required length of the autocomplete search
  */
-function concept_vocab_select_replace(selectItem, idMatch, type, minLength) {
+function conceptVocabSelectReplace(selectItem, idMatch, type, minLength) {
     if (minLength === undefined) {
         minLength = 2;
     }
@@ -392,13 +392,13 @@ $(document).ready(function() {
             vocab_select_replace($(this), "entityType", "entity_type", 0);
 
             // Replace the subject selects
-            concept_vocab_select_replace($(this), "subject_", "subject", 4);
+            conceptVocabSelectReplace($(this), "subject_", "subject", 4);
 
             // Replace the activity selects
-            concept_vocab_select_replace($(this), "activity_", "activity", 4);
+            conceptVocabSelectReplace($(this), "activity_", "activity", 4);
 
             // Replace the occupation selects
-            concept_vocab_select_replace($(this), "occupation_", "occupation", 4);
+            conceptVocabSelectReplace($(this), "occupation_", "occupation", 4);
 
         }
     });

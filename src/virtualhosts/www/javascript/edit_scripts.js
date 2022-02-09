@@ -273,7 +273,7 @@ function textToSelect(shortName, idStr) {
                 });
                 // If dealing with subject, function, or occupation term, query Concept Vocab system
             } else if (shortName == 'activity' || shortName == 'subject' || shortName =='occupation') {
-                concept_vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
+                conceptVocabSelectReplace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
             } else
                 vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
 
