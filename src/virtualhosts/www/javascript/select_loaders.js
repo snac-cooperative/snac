@@ -76,7 +76,7 @@ function concept_vocab_select_replace(selectItem, idMatch, type, minLength) {
         && !selectItem.attr('id').endsWith("ZZ")) {
             selectItem.select2({
                 ajax: {
-                    url: laravelURL+'/concepts/search',
+                    url: laravelUrl+'/concepts/search',
                     dataType: 'json',
                     delay: 250,
                     data: function (params) {
