@@ -3357,16 +3357,17 @@ class SQL
 
         $qq = 'insert_identity_concept';
         $this->sdb->prepare($qq,
-                            'insert into identity_concept
-                            (version, ic_id, type, concept_id)
+                            'insert into identity_concepts
+                            (version, ic_id, id, concept_id, type)
                             values
-                            ($1, $2, $3, $4)');
+                            ($1, $2, $3, $4, $5)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['ic_id'],
-                                            $type,
-                                            $conceptID));
+                                            $id,
+                                            $conceptID,
+                                            $type));
         $this->sdb->deallocate($qq);
         return $id;
     }
@@ -3464,6 +3465,7 @@ class SQL
      */
     public function insertGender($vhInfo, $id, $termID)
     {
+
         if (! $id)
         {
             $id = $this->selectID();
