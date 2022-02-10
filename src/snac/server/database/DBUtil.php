@@ -308,7 +308,6 @@ class DBUtil
         $this->canDelete = array('snac\data\BiogHist' => 'biog_hist',
                                  'snac\data\ConventionDeclaration' => 'convention_declaration',
                                  'snac\data\SNACDate' => 'date_range',
-                                 'snac\data\Activity' => 'activity',
                                  'snac\data\Gender' => 'gender',
                                  'snac\data\GeneralContext' => 'general_context',
                                  'snac\data\Language' => 'language',
@@ -317,7 +316,6 @@ class DBUtil
                                  'snac\data\NameEntry' => 'name',
                                  'snac\data\Contributor' => 'name_contributor',
                                  'snac\data\Nationality' => 'nationality',
-                                 'snac\data\Occupation' => 'occupation',
                                  'snac\data\SameAs' => 'otherid',
                                  'snac\data\Place' => 'place_link',
                                  'snac\data\ConstellationRelation' => 'related_identity',
@@ -326,7 +324,9 @@ class DBUtil
                                  'snac\data\SNACControlMetadata' => 'scm',
                                  'snac\data\StructureOrGenealogy' => 'structure_genealogy',
                                  'snac\data\Source' => 'source',
-                                 'snac\data\Subject' => 'subject');
+                                 'snac\data\Subject' => 'identity_concepts',
+                                 'snac\data\Activity' => 'identity_concepts',
+                                 'snac\data\Occupation' => 'identity_concepts');
 
         // Term Cache
         $this->termCache = array();
@@ -1098,8 +1098,6 @@ class DBUtil
             $this->populateMeta($vhInfo, $cObj, $tableName);
             $this->logger->addDebug("  Dates");
             $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
-            $this->logger->addDebug("  Activity");
-            $this->populateActivity($vhInfo, $cObj);
             $this->logger->addDebug("  Gender");
             $this->populateGender($vhInfo, $cObj);
             $this->logger->addDebug("  General Context");
@@ -1112,16 +1110,22 @@ class DBUtil
             $this->populateMandate($vhInfo, $cObj);
             $this->logger->addDebug("  Nationality");
             $this->populateNationality($vhInfo, $cObj);
-            $this->logger->addDebug("  Occupation");
-            $this->populateOccupation($vhInfo, $cObj);
             $this->logger->addDebug("  OtherRecordID");
             $this->populateOtherRecordID($vhInfo, $cObj);
             $this->logger->addDebug("  EntityID");
             $this->populateEntityID($vhInfo, $cObj);
             $this->logger->addDebug("  SoG");
             $this->populateStructureOrGenealogy($vhInfo, $cObj);
-            $this->logger->addDebug("  Subject");
-            $this->populateSubject($vhInfo, $cObj);
+            // populateConcepts
+            $this->logger->addDebug("  Concepts");
+            $this->populateConceptTerms($vhInfo, $cObj);
+            // Deprecated 2/2022
+            // $this->logger->addDebug("  Subject");
+            // $this->populateSubject($vhInfo, $cObj);
+            // $this->logger->addDebug("  Occupation");
+            // $this->populateOccupation($vhInfo, $cObj);
+            // $this->logger->addDebug("  Activity");
+            // $this->populateActivity($vhInfo, $cObj);
         }
 
 
@@ -1443,7 +1447,7 @@ class DBUtil
 
     /**
      * Populate the Subject object(s)
-     *
+     * @deprecated
      * Select subjects from db, create objects, add them to an existing Constellation.
      *
      * Extends AbstracteTermData
@@ -2658,11 +2662,11 @@ class DBUtil
             $occID = $fdata->getID();
             if ($this->prepOperation($vhInfo, $fdata))
             {
-                $occID = $this->sql->insertOccupation($vhInfo,
-                                                      $fdata->getID(),
-                                                      $this->termID($fdata->getTerm()),
-                                                      $fdata->getVocabularySource(),
-                                                      $fdata->getNote());
+                $occID = $this->sql->insertIdentityConcept($vhInfo,
+                                                           $fdata->getID(),
+                                                           $this->termID($fdata->getTerm()),
+                                                           'occupation');
+
                 $fdata->setID($occID);
                 $fdata->setVersion($vhInfo['version']);
             }
@@ -2681,8 +2685,6 @@ class DBUtil
      *  |---------------------+-------------------+---------------------------------|
      *  | getType             | activity_type     | activity/@localType             |
      *  | getTerm             | activity_id       | activity/term                   |
-     *  | getVocabularySource | vocabulary_source | activity/term/@vocabularySource |
-     *  | getNote             | note              | activity/descriptiveNote        |
      *  | getDateList         | table date_range  | activity/dateRange              |
      *
      *
@@ -2693,9 +2695,7 @@ class DBUtil
      * the database. Any sanity check should happen up here.
      *
      *
-     * Activities have a type (Term object) derived from function/@localType. The function/term is a Term object.
-     *
-     * prototype: insertActivity($vhInfo, $id, $type, $vocabularySource, $note, $term)
+     * Activities have a type (Term object) derived from activity/@localType. The activity/term is a Term object.
      *
      * Example files: /data/extract/anf/FRAN_NP_050744.xml
      *
@@ -2706,30 +2706,31 @@ class DBUtil
      */
     private function saveActivity($vhInfo, $cObj)
     {
-        foreach ($cObj->getActivities() as $activityData)
+        foreach ($cObj->getActivities() as $activity)
         {
-            $activityID = $activityData->getID();
-            if ($this->prepOperation($vhInfo, $activityData))
+            $activityID = $activity->getID();
+            if ($this->prepOperation($vhInfo, $activity))
             {
-                $activityID = $this->sql->insertActivity($vhInfo,
-                                                    $activityData->getID(), // record id
-                                                    $this->termID($activityData->getType()), // activity type, aka localType, Term object
-                                                    $activityData->getVocabularySource(),
-                                                    $activityData->getNote(),
-                                                    $this->termID($activityData->getTerm())); // function term id aka vocabulary.id, Term object
-                $activityData->setID($activityID);
-                $activityData->setVersion($vhInfo['version']);
+                $activityID = $this->sql->insertIdentityConcept($vhInfo,
+                                                    $activity->getID(),                  // record id
+                                                    $this->termID($activity->getTerm()), // concept id
+                                                    'activity');
+
+                $activity->setID($activityID);
+                $activity->setVersion($vhInfo['version']);
             }
-            $this->saveMeta($vhInfo, $activityData, 'activity', $activityID);
-            /*
-             * getDateList() always returns a list of SNACDate objects. If no dates then list is empty, but it
-             * is still a list that we can foreach on without testing for null and count>0. All of which
-             * should go without saying.
-             */
-            foreach ($activityData->getDateList() as $date)
-            {
-                $this->saveDate($vhInfo, $date, 'activity', $activityID);
-            }
+            $this->saveMeta($vhInfo, $activity, 'activity', $activityID);
+
+            // Deprecated 2/2022
+            // /*
+            //  * getDateList() always returns a list of SNACDate objects. If no dates then list is empty, but it
+            //  * is still a list that we can foreach on without testing for null and count>0. All of which
+            //  * should go without saying.
+            //  */
+            // foreach ($activity->getDateList() as $date)
+            // {
+            //     $this->saveDate($vhInfo, $date, 'activity', $activityID);
+            // }
         }
     }
 
@@ -2737,7 +2738,7 @@ class DBUtil
     /**
      * Save subject
      *
-     * Save subject term
+     * Save subject term to identity_concepts
      *
      * getID() is the subject object record id.
      *
@@ -2755,9 +2756,10 @@ class DBUtil
             $rid = $term->getID();
             if ($this->prepOperation($vhInfo, $term))
             {
-                $rid = $this->sql->insertSubject($vhInfo,
-                                                 $term->getID(),
-                                                 $this->termID($term->getTerm()));
+                $rid = $this->sql->insertIdentityConcept($vhInfo,
+                                                 $term->getID(),                   // term (subject) id
+                                                 $this->termID($term->getTerm()),  // concept id
+                                                'subject');
                 $term->setID($rid);
                 $term->setVersion($vhInfo['version']);
             }
@@ -3240,7 +3242,7 @@ class DBUtil
 
     /**
      * Get Occupation from the db
-     *
+     * @deprecated
      * Populate occupation object(s), add to Constellation object passed by
      * reference.
      *
@@ -3271,6 +3273,77 @@ class DBUtil
             $this->populateMeta($vhInfo, $occObj, $tableName);
             $this->populateDate($vhInfo, $occObj, $tableName);
             $cObj->addOccupation($occObj);
+        }
+    }
+
+    /**
+     * Get IdentityConcept terms from the db (subjects, activities, occupations)
+     *
+     * Populate occupation object(s), add to Constellation object passed by
+     * reference.
+     *
+     * Replaces populateOccupation(), populateFunction(), populateSubject
+     *
+     * | php                 | sql                  |
+     * |---------------------+----------------------|
+     * | setDBInfo           | id                   |
+     * | setDBInfo           | version              |
+     * | setDBInfo           | ic_id                |
+     * | setTerm             | concept_id           |
+     * | setType             | type (e.g. 'subject')|
+     *
+     * @param integer[] $vhInfo associative list with keys 'version' and 'ic_id'.
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
+     *
+     */
+    private function populateConceptTerms($vhInfo, $cObj)
+    {
+        $conceptRows = $this->sql->selectIdentityConceptTerms($vhInfo);
+
+        foreach ($conceptRows as $concept) {
+            $conceptObject = null;
+            switch($concept['type']) {
+                case 'subject':
+                    $conceptObject = new \snac\data\Subject();
+                    break;
+                case 'occupation':
+                    $conceptObject = new \snac\data\Occupation();
+                    break;
+                case 'activity':
+                    $conceptObject = new \snac\data\Activity();
+                    break;
+                default:
+                    $conceptObject = new \snac\data\Subject();
+            }
+
+            if ($concept['term_id'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($concept['term_id']);
+                $tmpTerm->setTerm($concept['term_value']);
+                $tmpTerm->setType($concept['type']);
+                // Deprecated 2/2022
+                // $tmpTerm->setURI($concept['term_uri']);
+                // if (isset($concept['term_description'])) {
+                //     $tmpTerm->setDescription($concept['term_description']);
+                // };
+                $conceptObject->setTerm($tmpTerm);
+            }
+
+                $conceptObject->setDBInfo($concept['version'], $concept['id']);
+                $this->populateMeta($vhInfo, $conceptObject, $concept['type']);
+
+            // Consider replacing with more generic addIdentityConcepts() function in Constellation.php
+            switch ($concept['type']) {
+                case 'subject':
+                    $cObj->addSubject($conceptObject);
+                    break;
+                case 'occupation':
+                    $cObj->addOccupation($conceptObject);
+                    break;
+                case 'activity':
+                    $cObj->addActivity($conceptObject);
+                    break;
+            }
         }
     }
 
@@ -3551,7 +3624,7 @@ class DBUtil
 
     /**
      * Populate the Activity object(s)
-     *
+     * @deprecated
      * Select, create object, then add to an existing Constellation object.
      *
      * @param integer[] $vhInfo associative list with keys 'version' and 'ic_id'.
@@ -4259,7 +4332,6 @@ class DBUtil
         $this->saveConstellationDate($vhInfo, $cObj);
         $this->saveSource($vhInfo, $cObj); // Source objects are only per constellation. Other uses of source are by foreign key.
         $this->saveConventionDeclaration($vhInfo, $cObj);
-        $this->saveActivity($vhInfo, $cObj);
         $this->saveGender($vhInfo, $cObj);
         $this->saveGeneralContext($vhInfo, $cObj);
         $this->saveLegalStatus($vhInfo, $cObj);
@@ -4268,12 +4340,13 @@ class DBUtil
         $this->saveName($vhInfo, $cObj);
         $this->saveNationality($vhInfo, $cObj);
         $this->saveNrd($vhInfo, $cObj);
-        $this->saveOccupation($vhInfo, $cObj);
         $this->saveOtherRecordID($vhInfo, $cObj);
         $this->saveEntityID($vhInfo, $cObj);
         $this->savePlace($vhInfo, $cObj, 'version_history', $vhInfo['ic_id']);
         $this->saveStructureOrGenealogy($vhInfo, $cObj);
         $this->saveSubject($vhInfo, $cObj);
+        $this->saveActivity($vhInfo, $cObj);
+        $this->saveOccupation($vhInfo, $cObj);
         $this->saveRelation($vhInfo, $cObj); // aka cpfRelation, constellationRelation, related_identity
         $this->saveResourceRelation($vhInfo, $cObj);
     }

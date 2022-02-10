@@ -1969,6 +1969,7 @@ class SQL
 
 
     /**
+     * @deprecated
      * Insert a constellation occupation. If the $id arg is null, get a new id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
@@ -3097,7 +3098,7 @@ class SQL
 
     /**
      * Insert a activity record
-     *
+     * @deprecated
      * The SQL returns the inserted id which is used when inserting a date into table date_range. Activity
      * uses the same vocabulary terms as occupation.
      *
@@ -3334,6 +3335,47 @@ class SQL
     }
 
     /**
+     * Insert subjects, activities, and occupations into identity_concept table
+     *
+     * If $id is null, get a new record id.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @param integer $id Record id
+     *
+     * @param integer $termID Vocabulary foreign key for the term.
+     *
+     * @return integer $id
+     *
+     */
+    public function insertIdentityConcept($vhInfo, $id, $conceptID, $type)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+
+        $qq = 'insert_identity_concept';
+        $this->sdb->prepare($qq,
+                            'insert into identity_concepts
+                            (version, ic_id, id, concept_id, type)
+                            values
+                            ($1, $2, $3, $4, $5)');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id'],
+                                            $id,
+                                            $conceptID,
+                                            $type));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+    /**
+     *
+     * @deprecated
+     * (Deprecated)
      * Insert into table subject.
      * Data is currently only a string from the Constellation. If $id is null, get
      * a new record id. Always return $id.
@@ -3423,6 +3465,7 @@ class SQL
      */
     public function insertGender($vhInfo, $id, $termID)
     {
+
         if (! $id)
         {
             $id = $this->selectID();
@@ -4434,9 +4477,9 @@ class SQL
     }
 
 
-
     /**
-     * Select subjects.
+     * Select subjects
+     * @deprecated
      *
      * DBUtils has code to turn the return values into subjects in a Constellation object.
      *
@@ -4478,9 +4521,9 @@ class SQL
     }
 
     /**
-     * Select subjects with Terms
+     * Select IdentityConcept Terms
      *
-     * DBUtils has code to turn the return values into subjects in a Constellation object.
+     * Selects IdentityConcept terms for subjects, activitities, and occupations from the Concept vocabulary system
      *
      * Solve the multi-version problem by joining to a subquery.
      *
@@ -4489,22 +4532,17 @@ class SQL
      * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * term_id.
      *
-     * There may be multiple rows returned, which is perhaps sort of obvious because the return value is a
-     * list of list.
-     *
      */
-    public function selectSubjectWithTerms($vhInfo)
+    public function selectIdentityConceptTerms($vhInfo)
     {
-        $qq = 'ssubj';
+        $qq = 'select_concept_terms';
         $this->sdb->prepare($qq,
-                            'select
-                            aa.id, aa.version, aa.ic_id, aa.term_id, v.value as term_value, v.type as term_type, v.uri as term_uri, v.description as term_description
-                            from subject aa
-                            left outer join vocabulary v on aa.term_id = v.id
-                            inner join
-                                (select id, max(version) as version from subject where version<=$1 and ic_id=$2 group by id) as bb
-                                on aa.id=bb.id and aa.version=bb.version
-                            where not aa.is_deleted');
+            "select aa.id, aa.version, aa.ic_id, aa.concept_id as term_id, v.text as term_value, type
+            from identity_concepts aa
+            left outer join terms v on aa.concept_id = v.concept_id
+            inner join (select id, max(version) as version from identity_concepts where version<=$1 and ic_id=$2 group by id) as bb on aa.id=bb.id and aa.version=bb.version where v.preferred and not aa.is_deleted;");
+
+
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */

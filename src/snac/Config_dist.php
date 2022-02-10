@@ -69,6 +69,11 @@ class Config {
     public static $USE_LARAVEL_AUTHENTICATION = true;
 
     /**
+     * @var string SNAC Laravel base url
+     */
+    public static $LARAVEL_URL = 'http://localhost:8000';
+
+    /**
      * @var boolean Whether the system in OFFLINE (Maintenance) mode
      */
     public static $SITE_OFFLINE = false;
