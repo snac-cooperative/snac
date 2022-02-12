@@ -1747,6 +1747,41 @@ class DBUtil
     }
 
     /**
+     * Populate Concept Term
+     *
+     * Temporary function to handle SNAC access of individual Concept System Terms.
+     * Will be replaced with a call to SNAC-Laravel
+     *
+     * @param string $value optional The value of a vocabulary term
+     *
+     * @param string $type optional The type of a vocabulary term
+     *
+     * @return \snac\data\Term The populated term object
+     *
+     */
+    public function populateConceptTerm($value=null, $type=null)
+    {
+
+        if (isset($value) && isset($type)) {
+            $row = $this->sql->selectConceptTermByValue($value,$type);
+        }
+
+        if (!isset($row) || empty($row))
+            return null;
+
+        if ($row['term_id'] == null)
+            return null;
+
+        $newObj = new \snac\data\Term();
+
+        $newObj->setID($row['concept_id']);
+        $newObj->setTerm($row['text']);
+        $newObj->setType($row['type']);
+
+        return $newObj;
+    }
+
+    /**
      * Build the Term Cache
      *
      * This function builds an entire copy of the term cache in memory.  It is too big to fit in memory, and therefore should

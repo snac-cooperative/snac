@@ -4535,12 +4535,12 @@ class SQL
      */
     public function selectIdentityConceptTerms($vhInfo)
     {
-        $qq = 'select_concept_terms';
+        $qq = 'select_identity_concept_terms';
         $this->sdb->prepare($qq,
-            "select aa.id, aa.version, aa.ic_id, aa.concept_id as term_id, v.text as term_value, type
+            'select aa.id, aa.version, aa.ic_id, aa.concept_id as term_id, v.text as term_value, type
             from identity_concepts aa
             left outer join terms v on aa.concept_id = v.concept_id
-            inner join (select id, max(version) as version from identity_concepts where version<=$1 and ic_id=$2 group by id) as bb on aa.id=bb.id and aa.version=bb.version where v.preferred and not aa.is_deleted;");
+            inner join (select id, max(version) as version from identity_concepts where version<=$1 and ic_id=$2 group by id) as bb on aa.id=bb.id and aa.version=bb.version where v.preferred and not aa.is_deleted;');
 
 
         /*
@@ -4556,6 +4556,54 @@ class SQL
         }
         $this->sdb->deallocate($qq);
         return $all;
+    }
+
+
+    /**
+     * Select Concept Term By Value
+     *
+     * Selects a Concept term by value for subjects, activitities, and occupations from the Concept system's terms table.
+     * Returns the first term found.
+     * 
+     * Temporary way to access Concept Terms within SNAC. Will be replaced by call to SNAC Laravel
+     *
+     * @param string[] $value Text value of term to search
+     *
+     * @return string[][] Return list of matching concepts with terms.
+     *
+     */
+    public function selectConceptTermByValue($value, $type)
+    {
+        if ($type) {
+            $qq = 'select_concept_term_by_type';
+            $query = "SELECT c.id as concept_id, t.id as term_id, text, value as type, preferred
+                FROM concepts c
+                LEFT JOIN terms t ON c.id = t.concept_id
+                LEFT JOIN concept_categories cc on c.id = cc.concept_id
+                LEFT JOIN vocabulary v on cc.category_id = v.id
+                WHERE text ILIKE $1 AND v.value ILIKE $2 AND NOT deprecated;";
+            $params = [$value, $type];
+        } else {
+            $qq = 'select_concept_term';
+            $query = "SELECT c.id as concept_id, t.id as term_id, text, value as type, preferred
+                FROM concepts c
+                LEFT JOIN terms t ON c.id = t.concept_id
+                LEFT JOIN concept_categories cc on c.id = cc.concept_id
+                LEFT JOIN vocabulary v on cc.category_id = v.id
+                WHERE text ILIKE $1 AND NOT deprecated;";
+            $params = [$value];
+        }
+
+        $this->sdb->prepare($qq, $query);
+
+        /*
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq, $params);
+
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
     }
 
     /**

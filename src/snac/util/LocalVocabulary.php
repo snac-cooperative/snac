@@ -17,7 +17,7 @@ namespace snac\util;
  * seaching for a Term object from a string of the term or ID.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class LocalVocabulary implements \snac\util\Vocabulary {
 
@@ -25,7 +25,7 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * @var string[][] The vocabulary array, preloaded in the constructor
      */
     private $vocab = null;
-    
+
     /**
      * @var \snac\server\database\DBUtil database utility handle
      */
@@ -88,7 +88,19 @@ class LocalVocabulary implements \snac\util\Vocabulary {
     }
 
     /**
-     * Get a Term by integer id 
+     * Get a Concept Term by string value/term
+     *
+     * @param string $value The value of the term to search for
+     * @param string $type The type of controlled vocab
+     * @return \snac\data\Term The Term object for the value
+     */
+    public function getConceptTermByValue($value, $type) {
+        $this->setupConstellationStore();
+        return $this->db->populateConceptTerm($value, $type);
+    }
+
+    /**
+     * Get a Term by integer id
      *
      * @param string $id The persistent ID (int) for the term
      * @param string $type The type of controlled vocab
@@ -98,7 +110,7 @@ class LocalVocabulary implements \snac\util\Vocabulary {
         $this->setupConstellationStore();
         return $this->db->populateTerm($id);
     }
-    
+
 
     /**
      * Get a GeoTerm by URI

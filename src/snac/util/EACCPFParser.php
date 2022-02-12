@@ -179,8 +179,16 @@ class EACCPFParser {
             }
         }
 
-
         $term = null;
+        
+        // Concept Vocab
+        if ($vocab == "occupation" || $vocab == "subject" ||  $vocab == "activity") {
+            $term = $this->vocabulary->getConceptTermByValue($fixed, $vocab);
+            if ($term === null)
+                $this->logger->warn("Could not find term for $vocab: $fixed");
+            return $term;
+        }
+
         if ($this->vocabulary != null) {
             $term = $this->vocabulary->getTermByValue($fixed, $vocab);
         } else {
@@ -964,27 +972,28 @@ class EACCPFParser {
                                     switch ($occ->getName()) {
                                     case "term":
                                         $occupation->setTerm($this->getTerm((string) $occ, "occupation"));
-                                        if (isset($oatts["vocabularySource"])) {
-                                            $occupation->setVocabularySource($oatts["vocabularySource"]);
-                                            unset($oatts["vocabularySource"]);
-                                        }
-                                        break;
-                                    case "descriptiveNote":
-                                        $occupation->setNote((string) $occ);
-                                        break;
-                                    case "dateRange":
-                                        $date = $this->parseDate($occ,
-                                                                 array (
-                                                                     $node->getName(),
-                                                                     $desc->getName(),
-                                                                     $desc2->getName()
-                                                                 ));
-                                        /*
-                                         * Occupation extends AbstractData which has a date list.
-                                         *
-                                         * change setDateRange() to addDate()
-                                         */
-                                        $occupation->addDate($date);
+                                    // deprecated 2/2022 for move to Concept vocab system.
+                                    //     if (isset($oatts["vocabularySource"])) {
+                                    //         $occupation->setVocabularySource($oatts["vocabularySource"]);
+                                    //         unset($oatts["vocabularySource"]);
+                                    //     }
+                                    //     break;
+                                    // case "descriptiveNote":
+                                    //     $occupation->setNote((string) $occ);
+                                    //     break;
+                                    // case "dateRange":
+                                    //     $date = $this->parseDate($occ,
+                                    //                              array (
+                                    //                                  $node->getName(),
+                                    //                                  $desc->getName(),
+                                    //                                  $desc2->getName()
+                                    //                              ));
+                                    //     /*
+                                    //      * Occupation extends AbstractData which has a date list.
+                                    //      *
+                                    //      * change setDateRange() to addDate()
+                                    //      */
+                                    //     $occupation->addDate($date);
                                         break;
                                     default:
                                         $this->markUnknownTag(
