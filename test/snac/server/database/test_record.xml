@@ -53,7 +53,7 @@
                 <objectXMLWrap>
                     <container xmlns="">
                         <filename>/data/source/findingAids/lc/ms009141.xml</filename>
-                        <ead_entity altrender=":::PWEBRECON=^Jefferson%2C+Thomas%2C+1743-1826+Correspondence.^" en_type="persname" encodinganalog="600" role="subject" source="lcnaf">Jefferson, Thomas, 1743-1826--Correspondence.</ead_entity>
+                        <ead_entity altrender=":::PWEBRECON=^Jefferson%2C+Thomas%2C+1743-1826+Correspondence.^" en_type="persname" encodinganalog="600" role="subject" source="lcnaf">Jefferson, Thomas, 1743-1826</ead_entity>
                     </container>
                 </objectXMLWrap>
             </source>
@@ -196,10 +196,10 @@
                 <placeEntry countryCode="US"/>
             </localDescription>
             <occupation>
-                <term>Inventors.</term>
+                <term>Inventors</term>
             </occupation>
             <occupation>
-                <term>Philosophers.</term>
+                <term>Philosophers</term>
             </occupation>
             <generalContext>
                 <p>Sample GC</p>
