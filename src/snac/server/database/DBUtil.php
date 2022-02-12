@@ -958,13 +958,14 @@ class DBUtil
         } elseif ($term->getTerm() && $term->getType()) {
             $termData = $this->sql->selectTermByValueAndType($term->getTerm(), $term->getType());
 
-            if (!$termData && $term->getType() && $term->getTerm()) {
-                $this->sql->insertVocabularyTerm($term->getType(),
-                    $term->getTerm(),
-                    null,
-                    "Auto-inserted term");
-                $termData = $this->sql->selectTermByValueAndType($term->getTerm(), $term->getType()); //
-            }
+            //   deprecated 2/2022 No longer allowing auto-inserts of terms anymore with ConceptVocab
+            // if (!$termData && $term->getType() && $term->getTerm()) {
+            //     $this->sql->insertVocabularyTerm($term->getType(),
+            //         $term->getTerm(),
+            //         null,
+            //         "Auto-inserted term");
+            //     $termData = $this->sql->selectTermByValueAndType($term->getTerm(), $term->getType()); //
+            // }
             $id = $termData['id'];
         } elseif ($term->getURI()) {
             $termData = $this->sql->selectTermByUri($term->getURI());
