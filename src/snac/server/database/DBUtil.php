@@ -1118,7 +1118,7 @@ class DBUtil
             $this->populateStructureOrGenealogy($vhInfo, $cObj);
             // populateConcepts
             $this->logger->addDebug("  Concepts");
-            $this->populateConceptTerms($vhInfo, $cObj);
+            $this->populateIdentityConceptTerms($vhInfo, $cObj);
             // Deprecated 2/2022
             // $this->logger->addDebug("  Subject");
             // $this->populateSubject($vhInfo, $cObj);
@@ -3296,7 +3296,7 @@ class DBUtil
      * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateConceptTerms($vhInfo, $cObj)
+    private function populateIdentityConceptTerms($vhInfo, $cObj)
     {
         $conceptRows = $this->sql->selectIdentityConceptTerms($vhInfo);
 
