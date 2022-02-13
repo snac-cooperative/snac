@@ -175,6 +175,7 @@ class Display {
         $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
         $this->data["control"]["snacURL"] = \snac\Config::$WEBUI_URL;
         $this->data["control"]["restURL"] = \snac\Config::$REST_URL;
+        $this->data["control"]["laravelURL"] = \snac\Config::$LARAVEL_URL;
         $this->data["control"]["redirectAfterLogin"] = \snac\Config::$REDIRECT_AFTER_LOGIN_URL;
         $this->data["control"]["redirectAfterLogout"] = \snac\Config::$REDIRECT_AFTER_LOGOUT_URL;
         $this->data["control"]["laravelLoginURL"] = \snac\Config::$LARAVEL_LOGIN_URL;
