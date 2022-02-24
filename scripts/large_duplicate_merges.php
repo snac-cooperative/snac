@@ -47,7 +47,7 @@ while (($data = fgetcsv($handle, 1000, ',')) !== false) {
     if (count($icids) >= 2) {
         $mergelist[$lowername] = $icids;
     } else {
-        echo $lowername;
+        echo "No duplicates found for: " . $lowername . "\n";
     }
 }
 
@@ -91,7 +91,7 @@ foreach ($mergelist as $name => $duplicateIcids) {
     // Skip json_decode for speed
     // $response = json_decode($response, true);
 }
-
+echo "Failed merges: \n";
 print_r($failed);
 
 // php large_duplicate_merges.php 2>&1 | tee large_duplicate_merges.log
