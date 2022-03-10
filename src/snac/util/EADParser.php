@@ -39,12 +39,12 @@ class EADParser {
     /**
      * $var string $COLUMN_SEPARATOR The separator used by XSLT to denote split columns
      */
-    private $COLUMN_SEPARATOR = "^";
+    private $COLUMN_SEPARATOR = "^%%^";
 
     /**
      * $var string $ROW_SEPARATOR The separator used by XSLT to denote split rows
      */
-    private $ROW_SEPARATOR = "#";
+    private $ROW_SEPARATOR = "#%%#";
 
     /**
      * Constructor
@@ -81,7 +81,7 @@ class EADParser {
                 return $errors;
             }
 
-            // Set up the SAXON environment 
+            // Set up the SAXON environment
             $xmlfile = \snac\Config::$EAD_PARSER_DIR."/ead_parse_driver.xml";
             $xslfile = \snac\Config::$EAD_PARSER_DIR."/{$this->eadVersion}ToOR.xsl";
             $tmpoutfile = $tmpdir."/tmpoutput.xml";
@@ -385,26 +385,30 @@ class EADParser {
         return $version;
     }
 
-
     /**
-     * Post-Process Created TSV files
+     * Split Multicell Rows and Columns in Created TSV files
      *
-     * Reads in and modifies the TSV files created by the XSLT processing.  Currently modifies
-     * the CPF-Table to make it OR-ready for multiple rows per record.
+     * Reads in and modifies the TSV files created by the XSLT processing.
+     * Currently modifies the CPF-Table and RD-Table to make them OR-ready for multiple
+     * rows per record,
+     *
+     * RD-Table only needs to split on 'Language' and 'LangCode' columns, but
+     * currently checks all columns.
      *
      * @param $dir string The directory where files are stored
+     * @param $dir string The file name of the table to be split
      */
-    private function postProcess($dir) {
+    private function splitMultiCellRowsAndColumns($dir, $tableName) {
         // Files in the directory
         //$dir."/Join-Table.tsv"
         //$dir."/CPF-Table.tsv"
         //$dir."/RD-Table.tsv"
 
-        $cpftable = [];
+        $table = [];
         $colsToSplit = [];
 
         // Read in the CPF table and add new rows as needed (we need to see all rows before new columns)
-        if (($handle = fopen($dir."/CPF-Table.tsv", "r")) !== false) {
+        if (($handle = fopen($dir . "/" .$tableName, "r")) !== false) {
             while (($line = fgetcsv($handle, 10000000, "\t")) !== false) {
                 $additionalRows = [];
                 $currentLine = [];
@@ -433,20 +437,19 @@ class EADParser {
                             }
                         }
                     }
-
                 }
-                array_push($cpftable, $currentLine);
+                array_push($table, $currentLine);
                 if (!empty($additionalRows)) {
                     foreach ($additionalRows as $newRow)
-                        array_push($cpftable, $newRow);
+                        array_push($table, $newRow);
                 }
             }
             fclose($handle);
         }
 
-        if (!empty($cpftable)) {
-            $numOrigCols = count($cpftable[0]);
-            $headers = $cpftable[0];
+        if (!empty($table)) {
+            $numOrigCols = count($table[0]);
+            $headers = $table[0];
 
             $newtable = [];
             $newheaders = [];
@@ -457,7 +460,7 @@ class EADParser {
             }
             array_push($newtable, $newheaders);
 
-            foreach($cpftable as $i => $row) {
+            foreach ($table as $i => $row) {
                 if ($i == 0) continue;
 
                 $newRow = [];
@@ -474,10 +477,10 @@ class EADParser {
                     }
                 }
                 array_push($newtable, $newRow);
-            } 
+            }
 
-            // Write the updated CPF Table 
-            if (($handle = fopen($dir."/CPF-Table.tsv", "w")) !== false) {
+            // Write the updated CPF Table
+            if (($handle = fopen($dir . "/" . $tableName, "w")) !== false) {
                 foreach ($newtable as $row) {
                     fputcsv($handle, $row, "\t");
                 }
@@ -485,4 +488,26 @@ class EADParser {
             }
         }
     }
+
+    /**
+     * Post-Process Created TSV files
+     *
+     * Reads in and modifies the TSV files created by the XSLT processing to make
+     * them OR-ready for multiple rows per record.
+     *
+     * @param $dir string The directory where files are stored
+     * @param $tableName string The name of the tsv table to be split
+     */
+    private function postProcess($dir) {
+        // Files in the directory
+        //$dir."/Join-Table.tsv"
+        //$dir."/CPF-Table.tsv"
+        //$dir."/RD-Table.tsv"
+
+        $this->splitMultiCellRowsAndColumns($dir, "CPF-Table.tsv");
+        $this->splitMultiCellRowsAndColumns($dir, "RD-Table.tsv");
+    }
+
+
+
 }
