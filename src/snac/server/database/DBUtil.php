@@ -956,7 +956,14 @@ class DBUtil
         if (is_numeric($term->getID())) {
             $id = $term->getID();
         } elseif ($term->getTerm() && $term->getType()) {
-            $termData = $this->sql->selectTermByValueAndType($term->getTerm(), $term->getType());
+            // if ConceptTerm, get from ConceptTerms.
+            if ( $term->getType() == "subject" ||
+                $term->getType() == "activity" ||
+                $term->getType() == "occupation" ) {
+                $termData = $this->sql->selectConceptTermByValue($term->getTerm(), $term->getType());
+            } else {
+                $termData = $this->sql->selectTermByValueAndType($term->getTerm(), $term->getType());
+            }
 
             //   deprecated 2/2022 No longer allowing auto-inserts of terms anymore with ConceptVocab
             // if (!$termData && $term->getType() && $term->getTerm()) {
@@ -966,16 +973,20 @@ class DBUtil
             //         "Auto-inserted term");
             //     $termData = $this->sql->selectTermByValueAndType($term->getTerm(), $term->getType()); //
             // }
-            $id = $termData['id'];
+            $id = $termData["id"] ?? $termData["concept_id"] ?? null;
         } elseif ($term->getURI()) {
             $termData = $this->sql->selectTermByUri($term->getURI());
-            $id = $termData['id'];
+            $id = $termData["id"] ?? null;
         }
 
         if (isset($id)) {
             return $id;
         } else {
-            throw new \snac\exceptions\SNACDatabaseException("Term not found", 400);
+            $message = "Term not found";
+            if ($term && null !== ($term->getTerm()))
+                $message .=  ": " . $term->getTerm();
+
+            throw new \snac\exceptions\SNACDatabaseException($message, 400);
         }
     }
 
