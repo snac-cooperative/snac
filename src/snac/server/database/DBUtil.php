@@ -2691,128 +2691,136 @@ class DBUtil
     }
 
     /**
-     * Save Occupation
+     * Save subjectsActivitiesOccupations
      *
-     * Insert an occupation. If this is a new occupation, or a new constellation we will get a new
-     * occupation id which we save in $occID and use for the related dates.
-     *
-     * fdata is foreach data. Just a notation that the generic variable is for local use in this loop.
+     * Save subject, activity, or occupation term to identity_concepts
      *
      * @param integer[] $vhInfo list with keys version, ic_id.
      *
      * @param $cObj \snac\data\Constellation object
      */
-    private function saveOccupation($vhInfo, $cObj)
+    private function saveSubjectsActivitiesOccupations($vhInfo, $cObj)
     {
-        foreach ($cObj->getOccupations() as $fdata)
-        {
-            $occID = $fdata->getID();
-            if ($this->prepOperation($vhInfo, $fdata))
-            {
-                $occID = $this->sql->insertIdentityConcept($vhInfo,
-                                                           $fdata->getID(),
-                                                           $this->termID($fdata->getTerm()),
-                                                           'occupation');
-
-                $fdata->setID($occID);
-                $fdata->setVersion($vhInfo['version']);
-            }
-            $this->saveMeta($vhInfo, $fdata, 'occupation', $occID);
-            foreach ($fdata->getDateList() as $date)
-            {
-                $this->saveDate($vhInfo, $date, 'occupation', $occID);
-            }
+        foreach ($cObj->getSubjects() as $subject) {
+            $this->saveIdentityConcept($vhInfo, $subject, "subject");
         }
-    }
-
-    /**
-     * Save Activity
-     *
-     *  | php activity        | sql               | cpf                             |
-     *  |---------------------+-------------------+---------------------------------|
-     *  | getType             | activity_type     | activity/@localType             |
-     *  | getTerm             | activity_id       | activity/term                   |
-     *  | getDateList         | table date_range  | activity/dateRange              |
-     *
-     *
-     * I considered adding keys for the second arg, but is not clear that using them for sanity checking
-     * would gain anything. The low level code would become more fragile, and would break "separation of
-     * concerns". The sanity check would require that the low level code have knowledge about the
-     * structure of things that aren't really low level. Remember: SQL code only knows how to put data in
-     * the database. Any sanity check should happen up here.
-     *
-     *
-     * Activities have a type (Term object) derived from activity/@localType. The activity/term is a Term object.
-     *
-     * Example files: /data/extract/anf/FRAN_NP_050744.xml
-     *
-     *
-     * @param integer[] $vhInfo list with keys version, ic_id.
-     *
-     * @param $cObj \snac\data\Constellation object
-     */
-    private function saveActivity($vhInfo, $cObj)
-    {
-        foreach ($cObj->getActivities() as $activity)
-        {
-            $activityID = $activity->getID();
-            if ($this->prepOperation($vhInfo, $activity))
-            {
-                $activityID = $this->sql->insertIdentityConcept($vhInfo,
-                                                    $activity->getID(),                  // record id
-                                                    $this->termID($activity->getTerm()), // concept id
-                                                    'activity');
-
-                $activity->setID($activityID);
-                $activity->setVersion($vhInfo['version']);
-            }
-            $this->saveMeta($vhInfo, $activity, 'activity', $activityID);
-
-            // Deprecated 2/2022
-            // /*
-            //  * getDateList() always returns a list of SNACDate objects. If no dates then list is empty, but it
-            //  * is still a list that we can foreach on without testing for null and count>0. All of which
-            //  * should go without saying.
-            //  */
-            // foreach ($activity->getDateList() as $date)
-            // {
-            //     $this->saveDate($vhInfo, $date, 'activity', $activityID);
-            // }
+        foreach ($cObj->getActivities() as $activity) {
+            $this->saveIdentityConcept($vhInfo, $activity, "activity");
         }
+        foreach ($cObj->getOccupations() as $occupation) {
+            $this->saveIdentityConcept($vhInfo, $occupation, "occupation");
+        }
+
     }
 
 
     /**
-     * Save subject
+     * Save IdentityConcept
      *
-     * Save subject term to identity_concepts
-     *
-     * getID() is the subject object record id.
-     *
-     * $this->termID($term->getTerm()) more robust form of $term->getTerm()->getID() is the vocabulary id
-     * of the Term object inside subject.
+     * Save subject, occupation, or activity to the IdentityConcepts table
      *
      * @param integer[] $vhInfo list with keys version, ic_id.
-     *
-     * @param $cObj \snac\data\Constellation object
+     * @param \snac\data\Subject|\snac\data\Occupation|\snac\data\Activity $identityConcept
+     * @param string $category The type of Concept to be created ("subject", "occupation", "activity", etc).
      */
-    private function saveSubject($vhInfo, $cObj)
-    {
-        foreach ($cObj->getSubjects() as $term)
-        {
-            $rid = $term->getID();
-            if ($this->prepOperation($vhInfo, $term))
-            {
-                $rid = $this->sql->insertIdentityConcept($vhInfo,
-                                                 $term->getID(),                   // term (subject) id
-                                                 $this->termID($term->getTerm()),  // concept id
-                                                'subject');
-                $term->setID($rid);
-                $term->setVersion($vhInfo['version']);
+    private function saveIdentityConcept($vhInfo, $identityConcept, $category) {
+        $identityConceptID = $identityConcept->getID();
+        if ($this->prepOperation($vhInfo, $identityConcept)) {
+            try {
+                $conceptID = $this->termID($identityConcept->getTerm());
+            } catch (\snac\exceptions\SNACDatabaseException $e) {
+                $conceptID = $this->saveConcept($identityConcept->getTerm()->getTerm(), $category);
             }
-            $this->saveMeta($vhInfo, $term, 'subject', $rid);
-        }
 
+            $identityConceptID = $this->sql->insertIdentityConcept(
+                $vhInfo,
+                $identityConcept->getID(),       // identity_concepts record id
+                $conceptID,
+                $category
+            );
+
+            $identityConcept->setID($identityConceptID);
+            $identityConcept->setVersion($vhInfo['version']);
+        }
+        $this->saveMeta($vhInfo, $identityConcept, $category, $identityConceptID);
+    }
+
+
+    /**
+     * Save Concept
+     *
+     * Sends a call to SNAC-Laravel to create a new concept and preferred term for a given text term.
+     *
+     * @param string $preferredTerm Text of the concept's preferred term.
+     * @param string $category The type of Concept to be created ("subject", "occupation", "activity", etc).
+     * @return integer Concept ID of created concept
+     */
+
+    private function saveConcept($preferredTerm, $category) {
+        $query = [
+            "preferred_term" => $preferredTerm,
+            "category" => $category
+        ];
+        $response = $this->postLaravel("/api/concepts", $query);
+        return $response["id"];
+    }
+
+    /**
+     * POST Laravel
+     *
+     * Send a POST request to SNAC-laravel
+     *
+     * @param string $path URL path (ex. /concepts)
+     * @param array $query Array of commands
+     * @return array $response
+     */
+
+    private function postLaravel($path, $query) {
+        // find $this->user
+        $payload = json_encode($query);
+
+        $ch = curl_init();
+        $options = [
+            CURLOPT_URL => \snac\Config::$LARAVEL_URL . $path,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => ["X-Requested-With: XMLHttpRequest", "Content-Type:application/json"],
+            CURLOPT_RETURNTRANSFER => true
+        ];
+
+        curl_setopt_array($ch, $options);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        return $response;
+    }
+
+    /**
+     * Get Laravel
+     *
+     * Sends a GET request to SNAC-Laravel
+     *
+     * @param string $path URL path (ex. /concepts)
+     * @param array $query Array of commands
+     * @return array $response
+     */
+
+    private function getLaravel($path, $query) {
+        $params = http_build_query($query);
+
+        $ch = curl_init();
+        $options = [
+            CURLOPT_URL => \snac\Config::$LARAVEL_URL . $path . "?" . $params,
+            CURLOPT_HTTPHEADER => ["X-Requested-With: XMLHttpRequest", "Content-Type:application/json"],
+            CURLOPT_RETURNTRANSFER => true
+        ];
+        curl_setopt_array($ch, $options);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        return $response;
     }
 
 
@@ -4391,9 +4399,7 @@ class DBUtil
         $this->saveEntityID($vhInfo, $cObj);
         $this->savePlace($vhInfo, $cObj, 'version_history', $vhInfo['ic_id']);
         $this->saveStructureOrGenealogy($vhInfo, $cObj);
-        $this->saveSubject($vhInfo, $cObj);
-        $this->saveActivity($vhInfo, $cObj);
-        $this->saveOccupation($vhInfo, $cObj);
+        $this->saveSubjectsActivitiesOccupations($vhInfo, $cObj);
         $this->saveRelation($vhInfo, $cObj); // aka cpfRelation, constellationRelation, related_identity
         $this->saveResourceRelation($vhInfo, $cObj);
     }
