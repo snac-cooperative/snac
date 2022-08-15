@@ -79,40 +79,27 @@ class OpenRefine {
 
         $this->connect = new ServerConnect();
 
-        if (isset($this->input["command"])) {
-            $command = $this->input["command"];
+        // suggest/property
+        $command = $this->input["command"] ?? null;
+        if (isset($command) && ($command == "suggest")) {
+            $subcommand = $this->input["subcommand"] ?? null;
+            $error = [
+                "status" => "error",
+                "message" => "invalid query",
+                "details" => "prefix"
+            ];
+            $result = [];
 
-            switch($command) {
-                case "suggest":
-                    if (isset($this->input["subcommand"])) {
-                        $subcommand = $this->input["subcommand"];
+            if (!isset($this->input["prefix"]))
+                return json_encode($error);
 
-                        if ($subcommand == "property") {
-                            $return = [];
-                            if (isset($this->input["prefix"])) {
+            if ($subcommand == "property")
+                $result["result"] = $this->mapper->filterPropertiesPrefix($this->input["prefix"]);
 
-                                $prefix = $this->input["prefix"];
-                                $return["result"] = $this->mapper->filterPropertiesPrefix($prefix);
-
-                            } else { 
-                                // Error response
-                                $return = ["status" => "error", 
-                                    "message" => "invalid query",
-                                    "details" => "'prefix'"
-                                ];
-                            }
-
-
-                            // Set the response appropriately for OpenRefine
-                            $this->response = json_encode($return, JSON_PRETTY_PRINT);
-                            if (isset($this->input["callback"]))
-                                $this->response = $this->input["callback"] . "(".$this->response.");";
-                        }
-                    }
-                    break;
-            }
-            return;
-
+            $this->response = json_encode($result, JSON_PRETTY_PRINT);
+            if (isset($this->input["callback"]))
+                $this->response = $this->input["callback"] . "(" . $this->response . ");";
+            return $this->response;
         }
 
         $this->logger->addDebug("Made it past the initial section", []);
@@ -121,7 +108,23 @@ class OpenRefine {
         //  - query = only one search being done at this point
         //  - queries = multiple searches in an array being requested
         //  - else give information about the endpoint
-        if (isset($this->input["query"])) {
+        if (isset($this->input["queries"]["q0"]["type"]) && $this->input["queries"]["q0"]["type"] != "CPF") {
+            $this->logger->addDebug("Reconciling Concept", []);
+            // Concept reconciliation
+            $results = [];
+            foreach ($this->input["queries"] as $qid => $query) {
+                $reconciled = $this->reconcileConceptTerm($query['query'], $query['type']);
+                foreach ($reconciled as $i => $result) {
+                    $result["id"] = strval($result["id"]);
+                    $result["type"] = [$result["type"]];
+                    $results[$qid]["result"] = [$result];
+                }
+            }
+            $this->logger->addInfo("Concept reconciliation results", $results);
+            // Set the response appropriately for OpenRefine
+            $this->response = json_encode($results, JSON_PRETTY_PRINT);
+        } elseif (isset($this->input["query"])) {
+            // CPF Reconciliation
             $query = $this->input["query"];
             $max = 10;
             if (isset($query["limit"]))
@@ -151,9 +154,7 @@ class OpenRefine {
                     $output = array(
                         "name" => $result["identity"]["nameEntries"][0]["original"],
                         "id" => (string) $result["identity"]["id"],
-                        "type" => [
-                            $this->mapper->lookupType("constellation")
-                        ],
+                        "type" => ["CPF"],
                         "score" => round($result["strength"], 2),
                         "match" => ($result["strength"] > 11 ? true : false)
                     );
@@ -162,11 +163,15 @@ class OpenRefine {
             }
 
             // Set the response appropriately for OpenRefine
-            $this->response = json_encode(["result" => $results], JSON_PRETTY_PRINT);
-            if (isset($this->input["callback"]))
-                $this->response = $this->input["callback"] . "(".$this->response.");";
 
-        } else if (isset($this->input["queries"])) {
+            $this->response = json_encode(["result" => $results], JSON_PRETTY_PRINT);
+        } elseif (
+            isset($this->input["queries"])
+            && isset($this->input["queries"]["q0"]["type"])
+            && $this->input["queries"]["q0"]["type"] == "CPF"
+        ) {
+            // CPF Reconciliation
+            $this->logger->addDebug("CPF Reconciliation");
             $queries = $this->input["queries"];
             $results = array();
 
@@ -175,7 +180,6 @@ class OpenRefine {
                 $max = 5;
                 if (isset($query["limit"]))
                     $max = $query["limit"];
-                
                 $testC = $this->mapper->mapConstellation($query);
 
                 $ask = [
@@ -198,9 +202,7 @@ class OpenRefine {
                         $output = array(
                             "name" => $result["identity"]["nameEntries"][0]["original"],
                             "id" => (string) $result["identity"]["id"],
-                            "type" => [
-                                $this->mapper->lookupType("constellation")
-                            ],
+                            "type" => ["CPF"],
                             "score" => round($result["strength"], 2),
                             "match" => ($result["strength"] > 11 ? true : false)
                         );
@@ -210,14 +212,29 @@ class OpenRefine {
             }
 
             // Set the response appropriately for OpenRefine
+            $this->logger->addDebug("Reconciliation results: ", $results);
             $this->response = json_encode($results, JSON_PRETTY_PRINT);
-            if (isset($this->input["callback"]))
-                $this->response = $this->input["callback"] . "(".$this->response.");";
-
         } else {
             // Default response: give information about this OpenRefine endpoint
             $response = [
-                "defaultTypes" => $this->mapper->getTypes(),
+                "defaultTypes" => [
+                    [
+                        "id" => "CPF",
+                        "name" => "Identity Constellation"
+                    ],
+                    [
+                        "id" => "subject",
+                        "name" => "Subject Concept Term"
+                    ],
+                    [
+                        "id" => "occupation",
+                        "name" => "Occupation Concept Term"
+                    ],
+                    [
+                        "id" => "activity",
+                        "name" => "Activity Concept Term"
+                    ]
+                ],
                 "view" => [
                     "url" => \snac\Config::$WEBUI_URL . "/view/{{id}}"
                 ],
@@ -232,17 +249,17 @@ class OpenRefine {
                 "suggest" => [
                     "property" => [
                         "service_url" => \snac\Config::$OPENREFINE_URL,
-                        "service_path" => "/suggest/property"   
+                        "service_path" => "/suggest/property"
                     ]
                 ]
             ];
 
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            if (isset($this->input["callback"]))
-                $this->response = $this->input["callback"] . "(".$this->response.");";
         }
 
-        return;
+        if (isset($this->input["callback"]))
+            $this->response = $this->input["callback"] . "(" . $this->response . ");";
+        return $this->response;
     }
 
     /**
@@ -254,7 +271,7 @@ class OpenRefine {
      * @return array headers for output
      */
     public function getResponseHeaders() {
-        return array (
+        return array(
             "Content-Type: application/json"
         );
     }
@@ -272,5 +289,35 @@ class OpenRefine {
      */
     public function getResponse() {
         return $this->response;
+    }
+
+
+    /**
+     * Reconcile Concept Term
+     *
+     * Sends a GET request to SNAC-Laravel to reconcile Concept Term
+     * (e.g. Subject, Activity, Occupation)
+     *
+     * @param string $term
+     * @param string $category
+     * @return array $response
+     */
+
+    private function reconcileConceptTerm($term, $category)
+    {
+        $query = ["term" => $term, "category" => $category];
+        $params = http_build_query($query);
+        $ch = curl_init();
+        $options = [
+            CURLOPT_URL => \snac\Config::$LARAVEL_URL . "/api/concepts/reconcile" . "?" . $params,
+            CURLOPT_HTTPHEADER => ["X-Requested-With: XMLHttpRequest", "Content-Type:application/json"],
+            CURLOPT_RETURNTRANSFER => true
+        ];
+        curl_setopt_array($ch, $options);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response, true);
+        return $response;
     }
 }
