@@ -38,9 +38,9 @@ class ORConstellationMapper {
             "id" => "entityType"
         ],
         [
-            "name" => "sameAs",
+            "name" => "External Related CPF URL",
             "description" => "Alternative ID for the entity",
-            "id" => "sameAs"
+            "id" => "External Related CPF URL"
         ]
     ];
 
@@ -69,8 +69,8 @@ class ORConstellationMapper {
         // create a log channel
         $this->logger = new \Monolog\Logger('ORConstellationMapper');
         $this->logger->pushHandler($log);
-        
-        
+
+
         $this->connect = new ServerConnect();
     }
 
@@ -78,7 +78,7 @@ class ORConstellationMapper {
      * Get List of Properties
      *
      * Returns the list of properties allowed by our OpenRefine endpoint.
-     * 
+     *
      * @return array Properties in OpenRefine format
      */
     public function getProperties() {
@@ -129,7 +129,7 @@ class ORConstellationMapper {
 
         if (isset($query["properties"])) {
             foreach ($query["properties"] as $p) {
-                if ($p["pid"] == "sameAs") {
+                if ($p["pid"] == "External Related CPF URL") {
                     $sameas = new \snac\data\SameAs();
                     $sameas->setURI($p["v"]);
                     $sameasType = $this->vocabStringLookup("record_type", "sameAs");
@@ -138,7 +138,7 @@ class ORConstellationMapper {
                 } else if ($p["pid"] == "entityType") {
                     $entityType = $this->vocabStringLookup("entity_type", $p["v"]);
                     $testC->setEntityType($entityType);
-                }             
+                }
             }
         }
 
@@ -153,11 +153,11 @@ class ORConstellationMapper {
      * @param string $type The type of the term
      * @param string $term The term value to find
      * @return \snac\data\Term The first result when searching for this term
-     */  
+     */
     public function vocabStringLookup($type, $term) {
         if (isset($this->vocabCache[$type."|".$term]))
             return $this->vocabCache[$type."|".$term];
-        
+
         $ask = [
             "command" => "vocabulary",
             "query_string" => $term,
