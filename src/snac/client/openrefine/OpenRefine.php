@@ -272,7 +272,8 @@ class OpenRefine {
      */
     public function getResponseHeaders() {
         return array(
-            "Content-Type: application/json"
+            "Content-Type: application/json",
+            "Access-Control-Allow-Origin: *"
         );
     }
 
