@@ -45,16 +45,6 @@ class ORConstellationMapper {
     ];
 
     /**
-     * @var array $types The types reconcilable by this OR endpoing
-     */
-    private $types = [
-        "constellation" => [
-            "id" => "CPF",
-            "name" => "Identity Constellation"
-        ]
-    ];
-
-    /**
      * @var array $vocabCache Cache of vocabulary terms searched
      * during this session
      */
@@ -174,26 +164,5 @@ class ORConstellationMapper {
         return null;
     }
 
-    /**
-     * Get the list of Reconciliation Types
-     *
-     * Returns the list of reconcilable types in SNAC
-     * @return array An array of types in OR format
-     */
-    public function getTypes() {
-        return array_values($this->types);
-    }
-
-    /**
-     * Look up type id by internal identifier
-     *
-     * Given the internal definition (i.e. constellation), return the OR-facing term (i.e. CPF)
-     *
-     * @param string $type The internal definition
-     * @return string The OR-facing term
-     */
-    public function lookupType($type) {
-        return $this->types[$type]["id"];
-    }
 
 }
