@@ -81,20 +81,12 @@ class OpenRefine {
 
         // suggest/property
         $command = $this->input["command"] ?? null;
-        if (isset($command) && ($command == "suggest")) {
-            $subcommand = $this->input["subcommand"] ?? null;
-            $error = [
-                "status" => "error",
-                "message" => "invalid query",
-                "details" => "prefix"
-            ];
-            $result = [];
+        if (isset($command)
+            && ($command == "suggest")
+            && (isset($this->input["subcommand"]))
+            && ($this->input["subcommand"] == "property") ) {
 
-            if (!isset($this->input["prefix"]))
-                return json_encode($error);
-
-            if ($subcommand == "property")
-                $result["result"] = $this->mapper->filterPropertiesPrefix($this->input["prefix"]);
+            $result = $this->suggestProperty($this->input["prefix"]);
 
             $this->response = json_encode($result, JSON_PRETTY_PRINT);
             if (isset($this->input["callback"]))
@@ -120,15 +112,14 @@ class OpenRefine {
                     $results[$qid]["result"] = [$result];
                 }
             }
-            $this->logger->addInfo("Concept reconciliation results", $results);
+            $this->logger->addDebug("Concept reconciliation results", $results);
             // Set the response appropriately for OpenRefine
             $this->response = json_encode($results, JSON_PRETTY_PRINT);
         } elseif (isset($this->input["query"])) {
+            // TODO: Determine if input["query"] path is used
             // CPF Reconciliation
             $query = $this->input["query"];
-            $max = 10;
-            if (isset($query["limit"]))
-                $max = $query["limit"];
+            $max = $query["limit"] ?? 10;
 
             // Read the query as a name entry in a new constellation
             $testC = $this->mapper->mapConstellation($query);
@@ -147,7 +138,6 @@ class OpenRefine {
                 $results = array();
                 foreach ($response["reconciliation"] as $i => $result) {
 
-                    // only grab the first 5 results
                     if ($i > $max) break;
 
                     // build the CSV line to print
@@ -163,13 +153,11 @@ class OpenRefine {
             }
 
             // Set the response appropriately for OpenRefine
-
             $this->response = json_encode(["result" => $results], JSON_PRETTY_PRINT);
-        } elseif (
-            isset($this->input["queries"])
-            && isset($this->input["queries"]["q0"]["type"])
-            && $this->input["queries"]["q0"]["type"] == "CPF"
-        ) {
+        } elseif (isset($this->input["queries"])
+                  && isset($this->input["queries"]["q0"]["type"])
+                  && $this->input["queries"]["q0"]["type"] == "CPF")
+        {
             // CPF Reconciliation
             $this->logger->addDebug("CPF Reconciliation");
             $queries = $this->input["queries"];
@@ -177,9 +165,7 @@ class OpenRefine {
 
             // We basically repeat the individual query logic above for each individual inner-query
             foreach ($queries as $qid => $query) {
-                $max = 5;
-                if (isset($query["limit"]))
-                    $max = $query["limit"];
+                $max = $query["limit"] ?? 5;
                 $testC = $this->mapper->mapConstellation($query);
 
                 $ask = [
@@ -195,7 +181,6 @@ class OpenRefine {
                     ];
                     foreach ($response["reconciliation"] as $i => $result) {
 
-                        // only grab the first 5 results
                         if ($i > $max) break;
 
                         // build the results line
@@ -260,6 +245,30 @@ class OpenRefine {
         if (isset($this->input["callback"]))
             $this->response = $this->input["callback"] . "(" . $this->response . ");";
         return $this->response;
+    }
+
+    /**
+     * Suggest Property
+     *
+     * Suggest OpenRefine properties
+     *
+     * @param $subcommand
+     * @param $prefix
+     * @return array $result Result array with name, description, and id of property
+     */
+    public function suggestProperty($prefix = null){
+        $error = [
+            "status" => "error",
+            "message" => "invalid query",
+            "details" => "prefix"
+        ];
+        $result = [];
+
+        if (!isset($prefix))
+        return $error;
+
+        $result["result"] = $this->mapper->filterPropertiesPrefix($this->input["prefix"]);
+        return $result;
     }
 
     /**
