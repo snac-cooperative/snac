@@ -13,6 +13,7 @@
 namespace snac\client\openrefine;
 
 use \snac\client\util\ServerConnect as ServerConnect;
+use \snac\client\util\LaravelUtil as LaravelUtil;
 
 /**
  * OpenRefine Class
@@ -78,6 +79,7 @@ class OpenRefine {
         $this->logger->addDebug("Handling query JSON", array($this->json));
 
         $this->connect = new ServerConnect();
+        $this->lvUtil = new LaravelUtil();
 
         // suggest/property
         $command = $this->input["command"] ?? null;
@@ -301,7 +303,6 @@ class OpenRefine {
         return $this->response;
     }
 
-
     /**
      * Reconcile Concept Term
      *
@@ -312,22 +313,11 @@ class OpenRefine {
      * @param string $category
      * @return array $response
      */
-
-    private function reconcileConceptTerm($term, $category)
+    public function reconcileConceptTerm($term, $category)
     {
         $query = ["term" => $term, "category" => $category];
-        $params = http_build_query($query);
-        $ch = curl_init();
-        $options = [
-            CURLOPT_URL => \snac\Config::$LARAVEL_URL . "/api/concepts/reconcile" . "?" . $params,
-            CURLOPT_HTTPHEADER => ["X-Requested-With: XMLHttpRequest", "Content-Type:application/json"],
-            CURLOPT_RETURNTRANSFER => true
-        ];
-        curl_setopt_array($ch, $options);
 
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        return $response;
+        return  $this->lvUtil->getLaravel("/api/concepts/reconcile?", $query);
     }
+
 }
