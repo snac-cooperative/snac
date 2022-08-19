@@ -284,7 +284,9 @@ class OpenRefine {
     public function getResponseHeaders() {
         return array(
             "Content-Type: application/json",
-            "Access-Control-Allow-Origin: *"
+            "Access-Control-Allow-Origin: *",
+            "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers: Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token"
         );
     }
 
