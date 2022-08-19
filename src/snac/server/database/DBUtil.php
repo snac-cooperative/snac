@@ -18,7 +18,7 @@ use \snac\server\validation\validators\IDValidator;
 use \snac\server\validation\validators\HasOperationValidator;
 use \snac\server\validation\validators\ResourceValidator;
 use \snac\data\Resource;
-
+use snac\client\util\LaravelUtil;
 
 /**
  * High level database class.
@@ -330,7 +330,7 @@ class DBUtil
 
         // Term Cache
         $this->termCache = array();
-
+        $this->lvUtil = new LaravelUtil();
         $this->enableLogging();
     }
 
@@ -1761,7 +1761,7 @@ class DBUtil
      * Populate Concept Term
      *
      * Temporary function to handle SNAC access of individual Concept System Terms.
-     * Will be replaced with a call to SNAC-Laravel
+     * TODO: replace with a call to SNAC-Laravel
      *
      * @param string $value optional The value of a vocabulary term
      *
@@ -2761,66 +2761,8 @@ class DBUtil
             "preferred_term" => $preferredTerm,
             "category" => $category
         ];
-        $response = $this->postLaravel("/api/concepts", $query);
+        $response = $this->lvUtil->postLaravel("/api/concepts", $query);
         return $response["id"];
-    }
-
-    /**
-     * POST Laravel
-     *
-     * Send a POST request to SNAC-laravel
-     *
-     * @param string $path URL path (ex. /concepts)
-     * @param array $query Array of commands
-     * @return array $response
-     */
-
-    private function postLaravel($path, $query) {
-        // find $this->user
-        $payload = json_encode($query);
-
-        $ch = curl_init();
-        $options = [
-            CURLOPT_URL => \snac\Config::$LARAVEL_URL . $path,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_HTTPHEADER => ["X-Requested-With: XMLHttpRequest", "Content-Type:application/json"],
-            CURLOPT_RETURNTRANSFER => true
-        ];
-
-        curl_setopt_array($ch, $options);
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        return $response;
-    }
-
-    /**
-     * Get Laravel
-     *
-     * Sends a GET request to SNAC-Laravel
-     *
-     * @param string $path URL path (ex. /concepts)
-     * @param array $query Array of commands
-     * @return array $response
-     */
-
-    private function getLaravel($path, $query) {
-        $params = http_build_query($query);
-
-        $ch = curl_init();
-        $options = [
-            CURLOPT_URL => \snac\Config::$LARAVEL_URL . $path . "?" . $params,
-            CURLOPT_HTTPHEADER => ["X-Requested-With: XMLHttpRequest", "Content-Type:application/json"],
-            CURLOPT_RETURNTRANSFER => true
-        ];
-        curl_setopt_array($ch, $options);
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response, true);
-        return $response;
     }
 
 
