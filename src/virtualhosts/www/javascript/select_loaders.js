@@ -197,6 +197,11 @@ function scm_source_select_replace(selectItem, idMatch) {
                             data.results.forEach(function(res) {
                                 results.push({id: res.id, text: res.citation});
                             });
+                            results.sort(function (a, b) {
+                                if (a.text > b.text) { return 1; }
+                                if (a.text < b.text) { return -1; }
+                                return 0;
+                            })
                             return { results: results };
                         },
                         cache: true
