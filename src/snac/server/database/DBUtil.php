@@ -2933,6 +2933,19 @@ class DBUtil
     }
 
     /**
+     * Delete Duplicate Resource Relations
+     *
+     * @param \snac\data\Resource $resource The resource of the duplicate Resource Relations
+     */
+    public function deleteResourceRelationsForResource($resource) {
+        $resourceID = $resource->getID();
+        if (!isset($resourceID))
+            return false;
+
+        return $this->sql->deleteResourceRelations($resourceID);
+    }
+
+    /**
      * Delete Resource
      *
      * Set resource as deleted and save in psql

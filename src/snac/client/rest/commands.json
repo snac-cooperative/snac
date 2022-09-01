@@ -3103,6 +3103,43 @@
             }
         ]
     },
+    "delete_resource": {
+        "category": "resource",
+        "permissions": [
+            "ViewAdminDashboard"
+        ],
+        "title": "Delete Resource",
+        "description": "Deletes a given resource and all its relationships",
+        "parameters": {
+            "resourceid": {
+                "type": "String",
+                "description": "ID of the resource to delete"
+            }
+        },
+        "returns": {
+            "result": {
+                "type": "String",
+                "description": "\"success\" or \"failure\" depending on whether the query succeeded."
+            },
+            "timing": {
+                "type": "Float",
+                "description": "Number of milliseconds spent to produce the result"
+            }
+        },
+        "examples": [
+            {
+                "query": {
+                    "command": "delete_resource",
+                    "resourceid": "76763300",
+                    "apikey": "..."
+                },
+                "response": {
+                    "result": "success"
+                    },
+                    "timing": 706.34
+            }
+        ]
+    },
     "elastic" : {
         "category": "discover",
         "title" : "Elastic Search Query",

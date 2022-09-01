@@ -3917,6 +3917,23 @@ class SQL
         return true;
     }
 
+    /**
+     * Delete Resource Relations
+     *
+     * For a given resource, search through all its resource relations
+     * and set deleted
+     *
+     * @param int $resourceID The resource ID of the duplicate ResourceRelations
+     * @return true
+     */
+    public function deleteResourceRelations($resourceID) {
+
+        $query = "UPDATE related_resource set is_deleted = 't' WHERE resource_id = $1";
+        $result = $this->sdb->query($query, array( $resourceID ));
+
+        return true;
+    }
+
 
     /**
      * Insert a Controlled Vocabulary Term
@@ -4564,7 +4581,7 @@ class SQL
      *
      * Selects a Concept term by value for subjects, activitities, and occupations from the Concept system's terms table.
      * Returns the first term found.
-     * 
+     *
      * Temporary way to access Concept Terms within SNAC. Will be replaced by call to SNAC Laravel
      *
      * @param string[] $value Text value of term to search
