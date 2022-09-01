@@ -68,6 +68,30 @@ function cancelResource() {
     return false;
 }
 
+function deleteResource(event) {
+    event.preventDefault();
+    if (!confirm('Are you sure you want to delete this resource? Any relationships between this resource and other entities will be permanently deleted.\nThis cannot be undone.')) {
+        return;
+    }
+
+    $('#notification-message').html("<p>Deleting...</p>");
+    $('#notification-message').slideDown();
+
+        $.post(snacUrl + "/delete_resource", "resourceid=" + $("#resource-id").val())
+          .done(function () {
+            $("#notification-message").slideUp();
+            $("#success-message").slideDown();
+            setTimeout(function () {
+              window.location =
+                snacUrl + "/vocab_administrator/resources/";
+            }, 1000);
+          })
+          .fail(function () {
+            $("#error-message").slideDown();
+          });
+    return false;
+}
+
 /**
  * New Resource Language
  * Copies the resource template DIV on the page and attaches it correctly to the DOM.

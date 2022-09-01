@@ -53,6 +53,7 @@
         $("#magic-resource-language-btn").on("click", magicNewResourceLanguage);
         $('#vocab_dashboard_cancel').on("click", cancelResource);
         $('#resource-form').on('submit', saveResource);
+        $('#delete-resource-btn').on("click", deleteResource);
         markEditedResourceFields($('#resource-form'));
         $('#search-results-box').on("click", "a.list-group-item", selectHoldingRepository);
         $("input").on('keypress', function(event){
@@ -87,7 +88,7 @@
                     {{ resources.expandedResourceRepositorySearch() }}
                 </div>
                 <div class="col-md-3">
-                    {{ resources.displayResourceActions() }}
+                    {{ resources.displayResourceActions(permissions) }}
                 </div>
             </div>
         </form>
