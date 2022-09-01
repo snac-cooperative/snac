@@ -1642,6 +1642,26 @@ class ServerExecutor {
     }
 
     /**
+     * Cascade Delete Resource
+     *
+     * Call Delete Resource and deleteResourceRelations
+     *
+     * Warning: Does not maintain version history.
+     *
+     * @param int $resourceid
+     * @return array $response
+     */
+    public function cascadeDeleteResource($resourceid) {
+        $resource = $this->cStore->readResource($resourceid);
+        $success = $this->cStore->deleteResourceRelationsForResource($resource);
+        $this->deleteResource($resource);
+
+        if ($success)
+            $response["result"] = "success";
+        return $response;
+    }
+
+    /**
      * Make Assertion about Constellations
      *
      * Processes and adds assertions about the given constellelation IDs (in input).  Requires a type of assertion,

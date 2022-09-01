@@ -501,6 +501,12 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->mergeResources($this->input["victimID"], $this->input["targetID"]);
                 break;
 
+            case "delete_resource":
+                if (!$executor->hasPermission("View Admin Dashboard"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to delete Resources.", 403);
+                $this->response = $executor->cascadeDeleteResource($this->input["resourceid"]);
+                break;
+
             // Reporting
             case "stats":
                 $tmp = ["type"=>"public"];

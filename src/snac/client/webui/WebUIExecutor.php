@@ -2802,6 +2802,41 @@ class WebUIExecutor {
     }
 
     /**
+     * Delete Resource
+     *
+     * Sends command to the server to mark a resource as deleted
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function deleteResource(&$input) {
+
+        $this->logger->addDebug("deleting resource!", $input);
+
+        $request = ["command" => "delete_resource",
+                    "resourceid" => $input["resourceid"]];
+
+        $serverResponse = $this->connect->query($request);
+
+        $response = [];
+        $response["server_debug"] = $serverResponse;
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+            if (isset($serverResponse["result"]))
+                $response["result"] = $serverResponse["result"];
+            if (isset($serverResponse["error"])) {
+                $response["error"] = $serverResponse["error"];
+            }
+            // Get the server's response constellation
+            if (isset($serverResponse["resource"])) {
+                $response["resource"] = $resource->toArray();
+            }
+        }
+        return $response;
+    }
+
+    /**
      * Save Constellation
      *
      * Maps the constellation given on input to a Constellation object, passes that to the server with an

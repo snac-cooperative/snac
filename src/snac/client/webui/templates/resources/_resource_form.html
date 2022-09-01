@@ -143,7 +143,7 @@
     </div>
 {% endmacro %}
 
-{% macro displayResourceActions() %}
+{% macro displayResourceActions(permissions) %}
     <div class="" id="resource-actions">
         <!-- Right Column -->
 
@@ -172,6 +172,14 @@
                         Cancel
                     </a>
                 </div>
+                {% if permissions.ViewAdminDashboard %}
+                <div class="list-group">
+                    <button href="#" class="list-group-item list-group-item-danger" id="delete-resource-btn">
+                        <i class="fa fa-fw fa-trash"></i>
+                        Delete Resource
+                    </button>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

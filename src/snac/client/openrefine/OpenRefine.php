@@ -319,7 +319,7 @@ class OpenRefine {
     {
         $query = ["term" => $term, "category" => $category];
 
-        return  $this->lvUtil->getLaravel("/api/concepts/reconcile?", $query);
+        return  $this->lvUtil->getLaravel("/api/concepts/reconcile", $query);
     }
 
 }

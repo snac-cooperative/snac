@@ -65,6 +65,7 @@
 </script>
 
 </head>
+
 <body role="document">
     {% import "resources/_resource_form.html" as resources %}
     {% from 'page_navigation.html' import topNavigation,footer %}
@@ -95,8 +96,8 @@
 
                         {% if data.resource.documentType.term %}
                         <div class="form-group">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover"
-                                data-placement="top"> {{X.resourceDocumentType.display}} </label>
+                            <label class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.resourceDocumentType.display}} </label>
                             <div class="col-xs-8">
                                 <p class='form-control-static'> {{data.resource.documentType.term}} </p>
                             </div>
@@ -105,8 +106,8 @@
 
                         {% if data.resource.displayEntry %}
                         <div class="form-group" style="display:none">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}" data-toggle="popover"
-                                data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
+                            <label class="control-label col-xs-4" data-content="{{X.resourceDisplayEntry.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.resourceDisplayEntry.display}} </label>
                             <div class="col-xs-8">
                                 <p class="form-control-static"> {{data.resource.displayEntry}} </p>
                             </div>
@@ -115,8 +116,8 @@
 
                         {% if data.resource.title %}
                         <div class="form-group">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover"
-                                data-placement="top"> {{X.resourceTitle.display}} </label>
+                            <label class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.resourceTitle.display}} </label>
                             <div class="col-xs-8">
                                 <p class="form-control-static"> {{data.resource.title}} </p>
                             </div>
@@ -125,8 +126,8 @@
 
                         {% if data.resource.date %}
                         <div class="form-group">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}" data-toggle="popover"
-                                data-placement="top"> {{X.resourceDate.display}} </label>
+                            <label class="control-label col-xs-4" data-content="{{X.resourceDate.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.resourceDate.display}} </label>
                             <div class="col-xs-8">
                                 <p class="form-control-static"> {{data.resource.date}} </p>
                             </div>
@@ -135,8 +136,8 @@
 
                         {% if data.resource.link %}
                         <div class="form-group">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover"
-                                data-placement="top"> {{X.resourceURI.display}} </label>
+                            <label class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.resourceURI.display}} </label>
                             <div class="col-xs-8">
                                 <p class="form-control-static">
                                     <a href="{{data.resource.link}}" class="outbound-repo-link"
@@ -150,8 +151,8 @@
 
                         {% if data.resource.abstract %}
                         <div class="form-group">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover"
-                                data-placement="top"> {{X.resourceAbstract.display}} </label>
+                            <label class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.resourceAbstract.display}} </label>
                             <div class="col-xs-8">
                                 <p class="form-control-static"> {{data.resource.abstract}} </p>
                             </div>
@@ -160,8 +161,8 @@
 
                         {% if data.resource.extent %}
                         <div class="form-group">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover"
-                                data-placement="top"> {{X.resourceExtent.display}} </label>
+                            <label class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.resourceExtent.display}} </label>
                             <div class="col-xs-8">
                                 <p class="form-control-static"> {{data.resource.extent}} </p>
                             </div>
@@ -171,20 +172,20 @@
                         <!--  LANGUAGES -->
                         {% if data.resource.languages %}
                         <div class="form-group" id="resource-languages">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceLanguages.tooltip}}" data-toggle="popover"
-                                data-placement="top">
+                            <label class="control-label col-xs-4" data-content="{{X.resourceLanguages.tooltip}}"
+                                data-toggle="popover" data-placement="top">
                                 {{X.resourceLanguages.display}} </label>
                             <!-- <div class="col-xs-8 well well-sm"> -->
 
-                                <!-- Existing Languages   -->
-                                <div class="col-xs-8">
-                                    {% for lang in data.resource.languages %}
-                                            <p class="form-control-static"> {{lang.language.term}}, {{lang.script.term}}</p>
-                                    {% endfor %}
-                                </div>
+                            <!-- Existing Languages   -->
+                            <div class="col-xs-8">
+                                {% for lang in data.resource.languages %}
+                                <p class="form-control-static"> {{lang.language.term}}, {{lang.script.term}}</p>
+                                {% endfor %}
+                            </div>
 
 
-                                <!-- <div class="add-resource-language"></div>
+                            <!-- <div class="add-resource-language"></div>
                                 <div class="form-group">
                                     <div class="col-xs-12 text-center">
                                         <button type="button" class="btn btn-success" id="new-resource-language-btn">
@@ -202,10 +203,14 @@
 
                         {% if data.resource.repository %}
                         <div class="form-group">
-                            <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover"
-                                data-placement="top"> {{X.resourceRepository.display}} </label>
+                            <label class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.resourceRepository.display}} </label>
                             <div class="col-xs-8">
-                                <p class='form-control-static'> <a href="{{control.snacURL}}/view/{{data.resource.repository.id}}"> {{data.resource.repository.nameEntries[0].original }} </a> </p>
+                                <p class='form-control-static'>
+                                    <a href="{{control.snacURL}}/view/{{data.resource.repository.id}}">
+                                        {{data.resource.repository.nameEntries[0].original }}
+                                    </a>
+                                </p>
 
                                 <!-- <p><a href="#0" onclick="$('#search_form').slideToggle()">Can't Find the Holding Repository?</a></p> -->
                             </div>
@@ -229,47 +234,52 @@
                     {% if data.resource.repository.places[0].geoplace.latitude %}
                     <!-- {# resources.displayResourceActions() #} -->
                     <div class="geoplace-map" id="holdingsMap"></div>
-                    <p class="text-center"  style="margin-bottom: 30px;"> <a href="{{control.snacURL}}/view/{{data.resource.repository.id}}"> {{data.resource.repository.nameEntries[0].original }} </a> </p>
+                    <p class="text-center" style="margin-bottom: 30px;">
+                        <a href="{{control.snacURL}}/view/{{data.resource.repository.id}}">
+                            {{data.resource.repository.nameEntries[0].original }}
+                        </a>
+                    </p>
                     {% endif %}
 
                     {% if permissions.EditResources%}
                     <div class="list-group">
-                        <a class="list-group-item list-group-item-info" href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}"}><i class="fa fa-edit" aria-hidden="true"></i> Edit Resource</a>
+                        <a class="list-group-item list-group-item-info"
+                            href="{{control.snacURL}}/vocab_administrator/edit_resource/{{data.resource.id}}">
+                            <i class="fa fa-edit" aria-hidden="true"></i> Edit Resource
+                        </a>
                     </div>
                     {% endif %}
                 </div>
             </div>
         </form>
 
-
-
-
-
-        {% if  data.related_constellations %}
-            <div class="row">
-                <div class="col-md-12 search-results">
-                    <h3>Related Entities</h3>
-                    <p class="search-info">There are {{data.related_constellations|length}} Entities related to this resource.
+        {% if data.related_constellations %}
+        <div class="row">
+            <div class="col-md-12 search-results">
+                <h3>Related Entities</h3>
+                <p class="search-info">There are {{data.related_constellations|length}} Entities related to this
+                    resource.
+                </p>
+                {% for constellation in data.related_constellations %}
+                <div id="result{{loop.index}}">
+                    <h4> <a href="{{control.snacURL}}/view/{{constellation.id}}">{{constellation.nameEntries.0.original}}</a> </h4>
+                    <p class="identity-info">
+                        <span>{{constellation.ark}}</span>
+                        <span>({{constellation.entityType.term}})</span>
                     </p>
-                    {% for constellation in data.related_constellations %}
-                        <div id="result{{loop.index}}">
-                        <h4><a href="{{control.snacURL}}/view/{{constellation.id}}">{{constellation.nameEntries.0.original}}</a></h4>
-                        <p class="identity-info">
-                            <span>{{constellation.ark}}</span>
-                            <span>({{constellation.entityType.term}})</span>
-                        </p>
-                        {% if constellation.biogHists.0.text %}
-                            <p>{{constellation.biogHists.0.text | striptags | slice(0, 500)}}...</p>
-                        {% else %}
-                            <!-- <p class="missing">No biographical history available for this identity.</p> -->
-                        {% endif %}
-                        <p class="final" style="margin-top: 5px;"></p>
-                        </div>
-                    {% endfor %}
+                    {% if constellation.biogHists.0.text %}
+                    <p>{{constellation.biogHists.0.text | striptags | slice(0, 500)}}...</p>
+                    {% else %}
+                    <!-- <p class="missing">No biographical history available for this identity.</p> -->
+                    {% endif %}
+                    <p class="final" style="margin-top: 5px;"></p>
                 </div>
+                {% endfor %}
             </div>
+        </div>
         {% endif %}
     </div>
-{{ footer(X, user, permissions, control) }}
+    {{ footer(X, user, permissions, control) }}
 </body>
+
 </html>
