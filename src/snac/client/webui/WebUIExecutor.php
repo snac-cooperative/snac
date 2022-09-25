@@ -1932,6 +1932,23 @@ class WebUIExecutor {
                 $display->setTemplate("report_list_page");
                 break;
 
+            case "nara":
+                $ask = array(
+                    "command" => "report",
+                    "type" => "nara",
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != "success")
+                    return $this->drawErrorPage($serverResponse, $display);
+                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                    $display->setData($serverResponse);
+                    $display->setTemplate("report_nara_stats_page");
+                } else {
+                    $this->displayPermissionDeniedPage("Admin Dashboard", $display);
+                }
+                break;
+
+
             case "dashboard":
                 $display->setTemplate("dashboard/reporting");
                 break;

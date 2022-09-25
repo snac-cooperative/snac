@@ -5195,6 +5195,19 @@ class DBUtil
         return $visits;
     }
 
+    /**
+     * Read NARA Report
+     *
+     * Read stats for NARA entities from the last month
+     *
+     * @return array $results
+     */
+    public function readNaraReport() {
+        $results =  $this->sql->selectNaraStats();
+        if (isset($results['naraEditCount']))
+            return $results;
+    }
+
 
 
 }
