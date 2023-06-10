@@ -3976,6 +3976,9 @@ class ServerExecutor {
             case "outbound":               // Outbound data is generated on the fly, instead of being pulled from a precompiled report
                 return $this->readAnalytics($input);
                 break;
+            case "nara":               // NARA data is generated on the fly, instead of being pulled from a precompiled report
+                return $this->readNaraReport($input);
+                break;
             case "general":
             default:
                 break;
@@ -4284,9 +4287,9 @@ class ServerExecutor {
     }
 
     /**
-     * Record Analytics by Domain
+     * Read Analytics by Domain
      *
-     * Record outgoing link traffic hit
+     * Read outgoing link traffic
      *
      * @param string[] $input Input array from the Server object
      */
@@ -4309,5 +4312,22 @@ class ServerExecutor {
             $trafficData["counts"] = json_encode($visits[1]);
             $trafficData["total"] = json_encode($visits[2]["Total"]);
         return $trafficData;
+    }
+
+    /**
+     * Get NARA edit counts
+     *
+     * Get NARA edits
+     *
+     * @param string[] $input Input array from the Server object
+     */
+    public function readNaraReport() {
+        $naraStats = $this->cStore->readNaraReport();
+
+        if (!isset($naraStats)) {
+            return ["result" => "failure"];
+        }
+        $naraStats["result"] = "success";
+        return $naraStats;
     }
 }

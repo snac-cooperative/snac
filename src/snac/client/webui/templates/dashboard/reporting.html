@@ -160,6 +160,21 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             </div>
             {% endif %}
         </div>
+        <div class="col-md-4">
+            <!-- Right column -->
+            {% if permissions.ViewAdminDashboard %}
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">NARA Reports</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="list-group">
+                        <a href="{{control.snacURL}}/reports/nara" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> NARA Edit Stats</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
 
     <div class="row">

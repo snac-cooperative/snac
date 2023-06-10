@@ -6889,6 +6889,61 @@ class SQL
         return $results;
     }
 
+    /**
+     * Select NARA Stats
+     *
+     * Read stats for NARA entities from the last month
+     *
+     * @return array $results Array of dates and hit counts
+     */
+    public function selectNaraStats() {
+        // ID 83561837 - Including Jerry's non-NARA account in the stats
+        $sql = "SELECT to_char((current_date - interval '1' month), 'Month, yyyy') as current_month,
+                    count(*) FROM version_history
+                    WHERE timestamp BETWEEN date_trunc('month', current_date - interval '1' month) AND date_trunc('month', current_date)
+                    AND user_id IN (SELECT id FROM appuser WHERE work_email ilike '%nara.gov' or id = 83561837);";
+        $result = $this->sdb->query($sql, array());
+        $naraEditCount = $this->sdb->fetchRow($result);
+
+        $sql = "SELECT count(*) FROM version_history
+                    WHERE timestamp BETWEEN date_trunc('month', current_date - interval '1' month) AND date_trunc('month', current_date)
+                    AND status IN ('published') AND user_id IN (SELECT id FROM appuser WHERE work_email ilike '%nara.gov' or id = 83561837);";
+
+        $result = $this->sdb->query($sql, array());
+        $naraPublishesCount = $this->sdb->fetchRow($result);
+
+        $sql = "SELECT count(*) FROM outbound_link
+                    WHERE url ilike '%catalog.archives.gov%'
+                        AND timestamp BETWEEN date_trunc('month', current_date - interval '1' month) AND date_trunc('month', current_date);";
+        $result = $this->sdb->query($sql, array());
+        $naraReferralsCount = $this->sdb->fetchRow($result);
+
+        $sql = "SELECT count(distinct id) FROM resource_cache
+                    WHERE href ilike '%catalog.archives.gov%'
+                    AND updated_at BETWEEN date_trunc('month', current_date - interval '1' month) AND date_trunc('month', current_date);";
+        $result = $this->sdb->query($sql, array());
+        $naraEditedResourcesCount = $this->sdb->fetchRow($result);
+
+        $sql = "SELECT count(distinct id) FROM resource_cache
+                    WHERE href ilike '%catalog.archives.gov%';";
+        $result = $this->sdb->query($sql, array());
+        $naraTotalResourceCount = $this->sdb->fetchRow($result);
+
+        $sql = "SELECT count(distinct id) FROM resource_cache
+                    WHERE href ilike '%catalog.archives.gov%' and is_deleted;";
+        $result = $this->sdb->query($sql, array());
+        $naraDeletedResourceCount = $this->sdb->fetchRow($result);
+
+        $results = [];
+        $results['month'] = $naraEditCount['current_month'];
+        $results['naraEditCount'] = $naraEditCount['count'];
+        $results['naraPublishesCount'] = $naraPublishesCount['count'];
+        $results['naraReferralsCount'] = $naraReferralsCount['count'];
+        $results['naraResourcesCount'] = (int) $naraTotalResourceCount['count'] - (int) $naraDeletedResourceCount['count'];
+        $results['naraEditedResourcesCount'] = $naraEditedResourcesCount['count'];
+        return $results;
+    }
+
 
 
 }
