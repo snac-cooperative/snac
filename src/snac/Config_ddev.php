@@ -227,7 +227,7 @@ class Config {
     /**
      * @var string Location of the template directory
      */
-    public static $TEMPLATE_LANGUAGE_DIR = "/var/www/html/src/snac/client/webui/template/languages";
+    public static $TEMPLATE_LANGUAGE_DIR = "/var/www/html/src/snac/client/webui/languages";
 
     /**
      * @var string Location of the template directory
