@@ -6,12 +6,21 @@ services:
       com.ddev.site-name: ${DDEV_SITENAME}
       com.ddev.approot: ${DDEV_APPROOT}
     environment:
+      cluster.name: docker-cluster
       discovery.type: single-node
+      bootstrap.memory_lock: true
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      # discovery.type: single-node
       VIRTUAL_HOST: $DDEV_HOSTNAME
       HTTP_EXPOSE: 9200:9200
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+      - ".:/mnt/ddev_config"
     expose:
       - "9200"
       - "9300"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail -s elasticsearch:9200"]
 
 volumes:
   elasticsearch:
