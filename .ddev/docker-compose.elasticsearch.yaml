@@ -1,0 +1,17 @@
+services:
+  elasticsearch:
+    image: elasticsearch:7.13.3
+    container_name: "ddev-${DDEV_SITENAME}-elasticsearch"
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
+    environment:
+      discovery.type: single-node
+      VIRTUAL_HOST: $DDEV_HOSTNAME
+      HTTP_EXPOSE: 9200:9200
+    expose:
+      - "9200"
+      - "9300"
+
+volumes:
+  elasticsearch:
