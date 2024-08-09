@@ -9,6 +9,7 @@ Follow the [getting started guide](https://ddev.com/get-started/) to install DDE
 ### Running the server
 
 Once DDEV is installed, run the following command in the root of this project.
+*Please note this application requires a lot of memory, we recommend at least 16GB allocated to Docker before running the server.*
 
 ```sh
 ddev start
@@ -54,5 +55,4 @@ ddev ssh
 cd scripts
 php rebuild_elastic.php nowiki
 php rebuild_resource_elastic.php
-php rebuild_browse_index.php
 ```
