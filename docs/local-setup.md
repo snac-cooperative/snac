@@ -22,6 +22,10 @@ Once the server is running, run the following command to install the dependecies
 ddev composer install
 ```
 
+### Copy ddev configuration
+
+Once the server is running, copy `src/snac/Config_ddev.php` to `src/snac/Config.php`
+
 ### Stopping the server
 
 Run the following command to stop your project.
