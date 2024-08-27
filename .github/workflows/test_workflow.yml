@@ -30,21 +30,21 @@ jobs:
           php-version: 7.3
           extensions: mbstring, bcmath, csv
       - name: Setup code
-        - run: |
-            composer -n -q install
-            cp ~/Config.php src/snac/Config.php
-            cp ~/users.csv install/setup_files/users.csv
-            rm -rf ~/public_html/snac_server
-            ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
-            ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
-            ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
-            ln -s `pwd`/src/snac/util ~/cpf_templates
-            mkdir -p coverage/
+        run: |
+          composer -n -q install
+          cp ~/Config.php src/snac/Config.php
+          cp ~/users.csv install/setup_files/users.csv
+          rm -rf ~/public_html/snac_server
+          ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
+          ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
+          ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
+          ln -s `pwd`/src/snac/util ~/cpf_templates
+          mkdir -p coverage/
       - name: Setup database
-        - run: |
-            cd install && php install.php automate
-            cd ..
-            cd scripts && php refresh.php automate /home/gitlab-runner/testing.sql
+        run: |
+          cd install && php install.php automate
+          cd ..
+          cd scripts && php refresh.php automate /home/gitlab-runner/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DB_PORT: 5432
