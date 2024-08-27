@@ -1,0 +1,87 @@
+name: Deploy Workflow
+
+on:
+  push:
+    branches:
+      - development
+      - master
+      - jnm/github-actions
+
+jobs:
+  app-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.3
+          extensions: mbstring, bcmath, csv
+      - name: Setup code
+        - run: |
+            composer -n -q install
+            cp ~/Config.php src/snac/Config.php
+            cp ~/users.csv install/setup_files/users.csv
+            rm -rf ~/public_html/snac_server
+            ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
+            ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
+            ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
+            ln -s `pwd`/src/snac/util ~/cpf_templates
+            mkdir -p coverage/
+      - name: Setup database
+        - run: |
+            cd install && php install.php automate
+            cd ..
+            cd scripts && php refresh.php automate /home/gitlab-runner/testing.sql
+      - name: Execute tests (Unit and Feature tests) via PHPUnit
+        env:
+          DB_PORT: 5432
+        run: vendor/bin/phpunit --coverage-text --colors=never
+  deploy-production:
+    name: Deploy Project to PRODUCTION Server
+    runs-on: ubuntu-latest
+    needs: [app-tests]
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.3
+          extensions: mbstring, bcmath, csv
+      - name: Composer install
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+      - name: Setup Deployer
+        uses: atymic/deployer-php-action@master
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy to PRODUCTION Server
+        run: dep deploy production -vvv
+  deploy-development:
+    name: Deploy Project to DEVELOPMENT Server
+    runs-on: self-hosted
+    needs: [app-tests]
+    if: github.ref == 'refs/heads/development'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Composer install
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+      - name: Deploy to Dev
+        uses: deployphp/action@v1
+        with:
+          dep: deploy stage=development
+          private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          skip-ssh-setup: true
+          verbosity: -vvv
