@@ -31,7 +31,7 @@ jobs:
           extensions: mbstring, bcmath, csv
       - name: Setup code
         run: |
-          composer -n -q install
+          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
           cp ~/Config.php src/snac/Config.php
           cp ~/users.csv install/setup_files/users.csv
           rm -rf ~/public_html/snac_server
