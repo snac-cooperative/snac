@@ -24,6 +24,8 @@ jobs:
           - 5432:5432
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: snac-cooperative/snac
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -32,7 +34,7 @@ jobs:
       - name: Setup code
         run: |
           composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
-          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
           cp ~/Config.php src/snac/Config.php
           cp ~/users.csv install/setup_files/users.csv
           rm -rf ~/public_html/snac_server
@@ -58,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Composer install
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
       - name: Deploy to Prod
         uses: deployphp/action@v1
         with:
@@ -74,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Composer install
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
       - name: Deploy to Dev
         uses: deployphp/action@v1
         with:
