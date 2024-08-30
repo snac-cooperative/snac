@@ -46,11 +46,11 @@
         },
         {
             "type": "vcs",
-            "url": "git@github.com:snac-cooperative/ark-manager.git"
+            "url": "https://github.com/snac-cooperative/ark-manager.git"
         },
         {
             "type": "vcs",
-            "url": "git@github.com:snac-cooperative/eac-validator.git"
+            "url": "https://github.com/snac-cooperative/eac-validator.git"
         }
 
     ],
