@@ -51,24 +51,20 @@ jobs:
         run: vendor/bin/phpunit --coverage-text --colors=never
   deploy-production:
     name: Deploy Project to PRODUCTION Server
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [app-tests]
     if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 7.3
-          extensions: mbstring, bcmath, csv
       - name: Composer install
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
-      - name: Setup Deployer
-        uses: atymic/deployer-php-action@master
+      - name: Deploy to Prod
+        uses: deployphp/action@v1
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
-      - name: Deploy to PRODUCTION Server
-        run: dep deploy production -vvv
+          dep: deploy stage=production
+          private-key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
+          skip-ssh-setup: true
+          verbosity: -vvv
   deploy-development:
     name: Deploy Project to DEVELOPMENT Server
     runs-on: self-hosted
