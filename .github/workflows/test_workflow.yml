@@ -36,6 +36,8 @@ jobs:
           composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
           echo ${{ secrets.CONFIG_FILE }} | base64 --decode > src/snac/Config.php
           echo ${{ secrets.USER_LIST}} >> install/setup_files/users.csv
+          cat src/snac/Config.php
+          cat install/setup_files/users.csv
           mkdir -p coverage/
       - name: Setup database
         run: |
