@@ -36,8 +36,8 @@ jobs:
           composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
           composer update
           composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
-          echo ${{ secrets.CONFIG_FILE }} >> Config.php
-          echo ${{ secrets.USER_LIST}} >> users.csv
+          echo "${{ secrets.CONFIG_FILE }}" >> Config.php
+          echo "${{ secrets.USER_LIST}}" >> users.csv
           mkdir -p coverage/
       - name: Setup database
         run: |
