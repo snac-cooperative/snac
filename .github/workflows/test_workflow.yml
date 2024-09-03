@@ -32,20 +32,17 @@ jobs:
       - name: Setup code
         run: |
           composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
+          composer update
           composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
-          cp ~/Config.php src/snac/Config.php
-          cp ~/users.csv install/setup_files/users.csv
-          rm -rf ~/public_html/snac_server
-          ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
-          ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
-          ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
-          ln -s `pwd`/src/snac/util ~/cpf_templates
+          echo ${{ secrets.CONFIG_FILE }} >> Config.php
+          echo ${{ secrets.USER_LIST}} >> users.csv
           mkdir -p coverage/
       - name: Setup database
         run: |
           cd install && php install.php automate
           cd ..
-          cd scripts && php refresh.php automate /home/gitlab-runner/testing.sql
+          tar xzvf test/testing.sql.tar.gz
+          cd scripts && php refresh.php automate ../test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DB_PORT: 5432
