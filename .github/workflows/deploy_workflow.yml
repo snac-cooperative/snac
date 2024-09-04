@@ -39,10 +39,6 @@ jobs:
           echo "${{ secrets.CONFIG_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/src/snac/Config.php
           echo "${{ secrets.USER_LIST }}" >> $GITHUB_WORKSPACE/install/setup_files/users.csv
           mkdir -p coverage/
-      - name: Debug
-        run: |
-          ls -alh $GITHUB_WORKSPACE/src/snac
-          ls -alh $GITHUB_WORKSPACE/install/setup_files
       - name: Setup database
         run: |
           cd install && php install.php automate
