@@ -30,7 +30,6 @@ $automate = false;
 $ingest_all = false;
 $datamerge = "/data/merge/";
 $datamergesample = "/data/merge-sample/";
-$establish_db = false;
 
 if ($argc == 2 && $argv[1] == "automate")
     $automate = true;
@@ -38,8 +37,6 @@ if ($argc >= 3 && $argv[1] == "automate")
     $automate = true;
 if ($argc >= 3 && $argv[1] == "automate")
     $automate = true;
-if ($argv[2] == "establish_db")
-    $establish_db = true;
 if ($argc >= 3 && $argv[2] == "full")
     $ingest_all = true;
 else if ($argc >= 3)
@@ -65,9 +62,7 @@ $response = "no";
 if (!$automate)
     $response = trim(fgets(STDIN));
 
-if ($establish_db == true)
-    $response = "yes";
-
+$response = "yes";
 if ($response == "yes") {
     echo "  Trying to create the database.  This script requires SUDO\n".
         "  privileges to switch to the postgres user to create the \n".
