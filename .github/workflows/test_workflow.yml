@@ -39,7 +39,7 @@ jobs:
           mkdir -p coverage/
       - name: Setup database
         run: |
-          cd install && php install.php automate
+          cd install && php install.php automate establish_db
           cd ..
           tar xzvf test/testing.sql.tar.gz
           cd scripts && php refresh.php automate ../test/testing.sql
