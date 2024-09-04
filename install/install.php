@@ -38,7 +38,7 @@ if ($argc >= 3 && $argv[1] == "automate")
     $automate = true;
 if ($argc >= 3 && $argv[1] == "automate")
     $automate = true;
-if ($argc >= 3 && $argv[2] == "establish_db")
+if ($argv[2] == "establish_db")
     $establish_db = true;
 if ($argc >= 3 && $argv[2] == "full")
     $ingest_all = true;
@@ -64,10 +64,9 @@ echo "Would you like to try creating the PostgreSQL database?\n  ('yes' or 'no')
 $response = "no";
 if (!$automate)
     $response = trim(fgets(STDIN));
-else if ($establish_db == true)
+
+if ($establish_db == true)
     $response = "yes";
-else
-    echo "no\n";
 
 if ($response == "yes") {
     echo "  Trying to create the database.  This script requires SUDO\n".
