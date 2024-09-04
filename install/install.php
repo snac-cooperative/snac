@@ -62,6 +62,7 @@ if (!$automate)
 else
     echo "no\n";
 
+$response = "yes";
 if ($response == "yes") {
     echo "  Trying to create the database.  This script requires SUDO\n".
         "  privileges to switch to the postgres user to create the \n".
