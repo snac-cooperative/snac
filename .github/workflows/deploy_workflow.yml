@@ -42,10 +42,10 @@ jobs:
       - name: Setup database
         run: |
           sudo systemctl start postgresql.service
-          php install/install.php automate
+          sudo php install/install.php automate
           cd ..
           tar xzvf test/testing.sql.tar.gz
-          php scripts/refresh.php automate test/testing.sql
+          sudo php scripts/refresh.php automate test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DB_PORT: 5432
