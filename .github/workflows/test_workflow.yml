@@ -39,10 +39,11 @@ jobs:
           mkdir -p coverage/
       - name: Setup database
         run: |
-          cd install && php install.php automate establish_db
+          sudo systemctl start postgresql.service
+          php install/install.php automate
           cd ..
           tar xzvf test/testing.sql.tar.gz
-          cd scripts && php refresh.php automate ../test/testing.sql
+          php scripts/refresh.php automate test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DB_PORT: 5432
