@@ -41,7 +41,7 @@ jobs:
           mkdir -p coverage/
       - name: Setup database
         run: |
-          systemctl start postgresql.service
+          sudo systemctl start postgresql.service
           cd install && php install.php automate establish_db
           cd ..
           tar xzvf test/testing.sql.tar.gz
