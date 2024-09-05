@@ -43,7 +43,6 @@ jobs:
         run: |
           sudo systemctl start postgresql.service
           sudo php install/install.php automate
-          cd ..
           tar xzvf test/testing.sql.tar.gz
           sudo php scripts/refresh.php automate test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
