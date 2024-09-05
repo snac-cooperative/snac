@@ -39,12 +39,14 @@ jobs:
           echo "${{ secrets.CONFIG_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/src/snac/Config.php
           echo "${{ secrets.USER_LIST }}" >> $GITHUB_WORKSPACE/install/setup_files/users.csv
           mkdir -p coverage/
-      - name: Setup database
-        run: |
-          sudo systemctl start postgresql.service
-          sudo php install/install.php automate
-          tar xzvf test/testing.sql.tar.gz
-          sudo php scripts/refresh.php automate test/testing.sql
+      - name: Turn on database
+        run: sudo systemctl start postgresql.service
+      - name: Set up database
+        run: sudo php install/install.php automate
+      - name: Unzip SQL seed data
+        run: tar xzvf test/testing.sql.tar.gz
+      - name: Refresh database
+        run: sudo php scripts/refresh.php automate test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DB_PORT: 5432
