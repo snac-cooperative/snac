@@ -80,7 +80,7 @@ $password
 EOF
 psql <<EOF
 create database $database;
-grant create,connect on database $database to $user;
+grant create,connect on database $database to $user identified by $password;
 EOF'
     \"\n", $retval);
 
