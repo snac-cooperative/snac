@@ -62,7 +62,6 @@ if (!$automate)
 else
     echo "no\n";
 
-$response = "yes";
 if ($response == "yes") {
     echo "  Trying to create the database.  This script requires SUDO\n".
         "  privileges to switch to the postgres user to create the \n".
@@ -72,8 +71,8 @@ if ($response == "yes") {
     // Run a system shell command, that sudos bash, then su's to postgres user,
     // then creates the user and database from the Config class.
     system("
-sudo bash -c -E \"
-su postgres -c -E '
+sudo bash -c \"
+su postgres -c '
 createuser -D -l -R -P $user <<EOF
 $password
 $password

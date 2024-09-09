@@ -41,7 +41,16 @@ jobs:
           mkdir -p coverage/
       - name: Set up database
         run: |
-          sudo -E php install/install.php automate
+          su postgres -c '
+          createuser -D -l -R -P github_user <<EOF
+          github_user
+          github_user
+          EOF
+          psql <<EOF
+          create database github_ci;
+          grant create,connect on database github_ci to github_user;
+          EOF'
+          sudo php install/install.php automate
           tar xzvf test/testing.sql.tar.gz
           sudo php scripts/refresh.php automate test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
