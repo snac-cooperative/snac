@@ -72,7 +72,8 @@ if ($response == "yes") {
     // Run a system shell command, that sudos bash, then su's to postgres user,
     // then creates the user and database from the Config class.
     system("
-su postgres -c -p '
+sudo bash -c -E \"
+su postgres -c -E '
 createuser -D -l -R -P $user <<EOF
 $password
 $password
