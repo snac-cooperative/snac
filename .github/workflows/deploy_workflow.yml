@@ -39,18 +39,6 @@ jobs:
           echo "${{ secrets.CONFIG_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/src/snac/Config.php
           echo "${{ secrets.USER_LIST }}" >> $GITHUB_WORKSPACE/install/setup_files/users.csv
           mkdir -p coverage/
-      - name: Create database user
-        run: |
-          createuser -D -l -R -P github_user <<EOF
-          github_user
-          github_user
-          EOF
-      - name: Create database and grant permissions
-        run: |
-          psql <<EOF
-          create database github_ci;
-          grant create,connect on database github_ci to github_user;
-          EOF
       - name: Seed database
         run: |
           sudo php install/install.php automate
