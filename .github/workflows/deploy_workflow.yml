@@ -13,6 +13,7 @@ jobs:
     services:
       postgres:
         image: postgres
+        shm_size: 512mb
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
@@ -20,7 +21,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          --max_parallel_workers_per_gather 0
         ports:
           - 5432:5432
     steps:
