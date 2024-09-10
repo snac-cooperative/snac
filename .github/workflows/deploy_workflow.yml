@@ -43,7 +43,7 @@ jobs:
         run: |
           tar xzvf test/testing.sql.tar.gz
           sudo php install/install.php automate
-          sudo php scripts/refresh.php automate test/testing.sql
+          sudo php scripts/refresh.php automate $GITHUB_WORKSPACE/test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DB_PORT: 5432
