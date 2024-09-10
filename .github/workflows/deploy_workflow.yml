@@ -13,7 +13,6 @@ jobs:
     services:
       postgres:
         image: postgres
-        shm_size: 512mb
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
