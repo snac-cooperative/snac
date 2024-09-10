@@ -41,8 +41,8 @@ jobs:
           mkdir -p coverage/
       - name: Seed database
         run: |
-          sudo php install/install.php automate
           tar xzvf test/testing.sql.tar.gz
+          sudo php install/install.php automate
           sudo php scripts/refresh.php automate test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
