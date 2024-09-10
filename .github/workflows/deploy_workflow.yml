@@ -41,7 +41,7 @@ jobs:
           mkdir -p coverage/
       - name: Seed database
         run: |
-          tar xzvf $GITHUB_WORKSPACE/test/testing.sql.tar.gz
+          tar xzvf $GITHUB_WORKSPACE/test/testing.sql.tar.gz && ls -alh $GITHUB_WORKSPACE/test
           sudo php install/install.php automate
           sudo php scripts/refresh.php automate $GITHUB_WORKSPACE/test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
