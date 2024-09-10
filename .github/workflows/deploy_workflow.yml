@@ -39,6 +39,10 @@ jobs:
           echo "${{ secrets.CONFIG_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/src/snac/Config.php
           echo "${{ secrets.USER_LIST }}" >> $GITHUB_WORKSPACE/install/setup_files/users.csv
           mkdir -p coverage/
+      - name: Set max_parallel_workers_per_gather to 0
+        env:
+          PGPASSWORD: "postgres"
+        run: psql -h localhost -U postgres -d postgres -c "SET max_parallel_workers_per_gather = 0;"
       - name: Seed database
         run: |
           tar xzvf $GITHUB_WORKSPACE/test/testing.sql.tar.gz -C $GITHUB_WORKSPACE/test
