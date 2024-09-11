@@ -50,6 +50,9 @@ jobs:
           sudo php install/install.php automate
           sudo php scripts/refresh.php automate $GITHUB_WORKSPACE/test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: 7.6.0
         env:
           DB_PORT: 5432
         run: vendor/bin/phpunit --coverage-text --colors=never
