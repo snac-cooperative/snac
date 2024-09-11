@@ -23,6 +23,17 @@ jobs:
           --shm-size 512m
         ports:
           - 5432:5432
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+        env:
+          discovery.type: single-node
+        options: >-
+          --health-cmd "curl http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 9200:9200
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,9 +61,6 @@ jobs:
           sudo php install/install.php automate
           sudo php scripts/refresh.php automate $GITHUB_WORKSPACE/test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
-        uses: elastic/elastic-github-actions/elasticsearch@master
-        with:
-          stack-version: 7.6.0
         env:
           DB_PORT: 5432
         run: vendor/bin/phpunit --coverage-text --colors=never
