@@ -72,7 +72,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Composer install
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
+        run: |
+          composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
+          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
       - name: Deploy to Prod
         uses: deployphp/action@v1
         with:
@@ -88,7 +90,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Composer install
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
+        run: |
+          composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
+          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
       - name: Deploy to Dev
         uses: deployphp/action@v1
         with:
