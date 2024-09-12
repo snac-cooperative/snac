@@ -9,14 +9,6 @@ set('application', 'SNAC');
 set('ssh_multiplexing', true);
 set('repository', 'git@github.com:snac-cooperative/snac.git');
 
-set('bin/php', function () {
-    return '/usr/bin/php';
-});
-
-set('bin/composer', function () {
-    return '/usr/bin/php /usr/bin/composer';
-});
-
 set('rsync_src', function () {
     return __DIR__;
 });
