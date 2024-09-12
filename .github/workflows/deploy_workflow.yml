@@ -84,7 +84,7 @@ jobs:
     name: Deploy Project to DEVELOPMENT Server
     runs-on: self-hosted
     needs: [app-tests]
-    if: github.ref == 'refs/heads/development'
+    if: github.ref == 'refs/heads/jnm/github-actions'
     steps:
       - uses: actions/checkout@v4
       - name: Composer install
