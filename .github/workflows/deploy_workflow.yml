@@ -91,9 +91,6 @@ jobs:
     if: github.ref == 'refs/heads/jnm/github-actions'
     steps:
       - uses: actions/checkout@v4
-      - name: Composer install
-        run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
       - name: Deploy to Dev
         env: 
           GITHUB_TOKEN: ${{ secrets.COMPOSER_ACCESS_TOKEN }}
