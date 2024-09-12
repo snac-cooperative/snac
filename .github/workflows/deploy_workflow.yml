@@ -93,6 +93,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Composer install
         run: |
+          apt install git -y
           composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
       - name: Deploy to Dev
         env: 
