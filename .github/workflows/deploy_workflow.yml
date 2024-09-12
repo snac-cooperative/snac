@@ -96,9 +96,8 @@ jobs:
           composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
           composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
       - name: Deploy to Dev
-        env: 
-          COMPOSER_AUTH: ${{ secrets.COMPOSER_ACCESS_TOKEN }}
         uses: deployphp/action@v1
+        run: composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
         with:
           dep: deploy stage=development
           private-key: ${{ secrets.SSH_PRIVATE_KEY_DEV }}
