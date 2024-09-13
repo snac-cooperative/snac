@@ -2,10 +2,9 @@ name: Test WorkFlow
 
 on:
   push:
-    branches-ignore:
+    branches:
       - development
       - master
-      - jnm/github-actions
 
 jobs:
   app-tests:
@@ -20,15 +19,29 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --shm-size 512m
         ports:
           - 5432:5432
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.24
+        env:
+          discovery.type: single-node
+        options: >-
+          --health-cmd "curl http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 9200:9200
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: snac-cooperative/snac
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 7.3
-          extensions: mbstring, bcmath, csv
+          extensions: mbstring, bcmath, csv, xml
       - name: Setup code
         run: |
           composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
@@ -37,11 +50,15 @@ jobs:
           echo "${{ secrets.CONFIG_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/src/snac/Config.php
           echo "${{ secrets.USER_LIST }}" >> $GITHUB_WORKSPACE/install/setup_files/users.csv
           mkdir -p coverage/
-      - name: Setup database
+      - name: Set max_parallel_workers_per_gather to 0
+        env:
+          PGPASSWORD: "postgres"
+        run: psql -h localhost -U postgres -d postgres -c "SET max_parallel_workers_per_gather = 0;"
+      - name: Seed database
         run: |
+          tar xzvf $GITHUB_WORKSPACE/test/testing.sql.tar.gz -C $GITHUB_WORKSPACE/test
           sudo php install/install.php automate
-          tar xzvf test/testing.sql.tar.gz
-          sudo php scripts/refresh.php automate test/testing.sql
+          sudo php scripts/refresh.php automate $GITHUB_WORKSPACE/test/testing.sql
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DB_PORT: 5432

@@ -32,13 +32,14 @@ host('snaccooperative.org')
   ->set('hostname', 'snaccooperative.org')
   ->set('labels', ['env' => 'production', 'stage' => 'production'])
   ->set('remote_user', 'snacworker')
+  ->set('branch', 'master')
   ->set('deploy_path', '/lv2/snac');
 
 host('snac-dev.iath.virginia.edu')
   ->set('hostname', 'snac-dev.iath.virginia.edu')
   ->set('labels', ['env' => 'development', 'stage' => 'development'])
   ->set('remote_user', 'snacworker')
-  ->set('branch', 'jnm/github-actions')
+  ->set('branch', 'development')
   ->set('deploy_path', '/lv2/snac');
 
 after('deploy:failed', 'deploy:unlock');
