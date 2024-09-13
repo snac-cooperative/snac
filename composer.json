@@ -6,7 +6,6 @@
         "monolog/monolog": "^1.18",
         "elasticsearch/elasticsearch": "7.11",
         "phpmailer/phpmailer": "^6.0",
-        "snac/ark-manager": "*",
         "snac/eac-validator": "*",
         "snac/snac-public-web": "*",
         "snac/snac-ead-parser": "*",
@@ -15,7 +14,8 @@
         "soundasleep/html2text": "~0.5",
         "league/oauth2-client": "^2.4",
         "league/oauth2-google": "^3.0",
-        "twig/string-extra": "^3.0"
+        "twig/string-extra": "^3.0",
+        "snac/ark-manager": "^1.0"
     },
     "require-dev": {
 
