@@ -36,6 +36,7 @@ RewriteEngine on
 RewriteBase /
 
 # Redirect to HTTPS
+RewriteCond %{ENV:HTTPS} !=on
 RewriteCond %{HTTPS} !on
 RewriteCond %{HTTP_HOST} !=localhost
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]

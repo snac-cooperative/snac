@@ -57,6 +57,7 @@
             "process-timeout": 600,
             "preferred-install": "dist",
             "github-protocols": ["https"],
+            "secure-http": false,
         "allow-plugins": {
             "php-http/discovery": true
         }
