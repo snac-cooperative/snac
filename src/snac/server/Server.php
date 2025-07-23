@@ -480,6 +480,12 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->getSharedResources($this->input);
                 break;
 
+            // Concept Management
+            case "read_concept":
+                $this->response = $executor->readConcept($this->input);
+                break;
+
+
             // Resource Management
             case "insert_resource":
                 if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))

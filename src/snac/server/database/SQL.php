@@ -1230,7 +1230,7 @@ class SQL
      *
      * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
      */
-    public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset, $secondary)
+    public function selectEditList($appUserID, $status = 'locked editing', $limit = 0, $offset = 0, $secondary = 0)
     {
         $limitStr = '';
         $offsetStr = '';
@@ -1373,7 +1373,7 @@ class SQL
      *
      * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
      */
-    public function selectListByStatus($status = 'published', $limit, $offset)
+    public function selectListByStatus($status = 'published', $limit = 0, $offset = 0)
     {
         $limitStr = '';
         $offsetStr = '';
@@ -4622,6 +4622,60 @@ class SQL
         $this->sdb->deallocate($qq);
         return $row;
     }
+
+    private function quickQuery($qq, $query, $params) {
+        $this->sdb->prepare($qq, $query);
+        $result = $this->sdb->execute($qq, $params);
+
+        $rows = $this->sdb->fetchAll($result);
+        $this->sdb->deallocate($qq);
+        return $rows;
+    }
+
+    public function selectConcept($id) {
+        $qq = 'select_concept';
+        $query = "select * from concepts where id = $1;";
+        $params = [$id];
+        
+        return $this->quickQuery($qq, $query, $params);
+    }
+
+    public function selectConceptTermsForID($id) {
+        $qq = 'select_concept_terms';
+        $query = "select * from terms where concept_id = $1;";
+        $params = [$id];
+        
+        return $this->quickQuery($qq, $query, $params);
+
+    }
+
+    public function selectConceptCategoriesForID($id) {
+        $qq = 'select_concept_categories';
+        $query = "select * from concept_categories where concept_id = $1;";
+        $params = [$id];
+        
+        return $this->quickQuery($qq, $query, $params);
+
+    }
+
+    public function selectConceptSourcesForID($id) {
+        $qq = 'select_concept_sources';
+        $query = "select * from concept_sources where concept_id = $1;";
+        $params = [$id];
+        
+        return $this->quickQuery($qq, $query, $params);
+
+    }
+
+    public function selectConceptRelationshipsForID($id) {
+        $qq = 'select_concept_relations';
+        $query = "select * from concept_relationships where concept_id = $1;";
+        $params = [$id];
+        
+        return $this->quickQuery($qq, $query, $params);
+
+    }
+
 
     /**
      * Insert legalStatus.

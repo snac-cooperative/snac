@@ -728,6 +728,38 @@ class ServerExecutor {
     }
 
     /**
+     * Read Concept
+     *
+     * Given a concept id in the input, returns the concept object in the
+     * response to the user.  If there is an error, it will add that.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function readConcept(&$input) {
+        $response = [];
+        $concept = null;
+
+        try {
+            if (!isset($input["conceptid"])) {
+                throw new \snac\exceptions\SNACInputException("No concept to read", 400);
+            }
+            $id = $input["conceptid"];
+            $concept = $this->cStore->readConcept($id);
+
+            if (isset($concept))
+                $response["concept"] = $concept->toArray();
+
+            $this->logger->addDebug("Serialized resource for output to client", $response);
+        } catch (Exception $e) {
+            $response["error"] = $e;
+        }
+        return $response;
+    }
+
+
+    /**
      * Read Resource
      *
      * Given a resource id in the input, returns the resource object in the
@@ -755,7 +787,7 @@ class ServerExecutor {
                 $response["resource"] = $resource->toArray();
             $response["related_constellations"] = [];
 
-            if (isset($input["relationships"])) {
+            if (\snac\Config::$USE_NEO4J && isset($input["relationships"])) {
                 $icids = $this->neo4J->getResourcesRelatedConstellationIDs($input["resourceid"]);
                 foreach ($icids as $icid) {
                     $constellation = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);

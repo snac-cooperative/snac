@@ -330,7 +330,7 @@ class DBUtil
 
         // Term Cache
         $this->termCache = array();
-        $this->lvUtil = new LaravelUtil();
+        //$this->lvUtil = new LaravelUtil();
         $this->enableLogging();
     }
 
@@ -2761,7 +2761,7 @@ class DBUtil
             "preferred_term" => $preferredTerm,
             "category" => $category
         ];
-        $response = $this->lvUtil->postLaravel("/api/concepts", $query);
+        $response = ["id" => 1]; //$this->lvUtil->postLaravel("/api/concepts", $query);
         return $response["id"];
     }
 
@@ -3588,6 +3588,91 @@ class DBUtil
             return $rObj;
         }
         return null;
+    }
+
+    /**
+     * Populate Concept 
+     *
+     * The private method that reads the Concept from the database with the given id.
+     *
+     * @param int $id ID of the concept to read
+     * @return \snac\data\Concept|null The concept found, or null if it doesn't exist
+     */
+    private function populateConcept($id, $shorten=false) {
+        $rRows = $this->sql->selectConcept($id);
+        if (count($rRows) == 1) {
+            $oneRes = $rRows[0];
+            $rObj = new \snac\data\Concept();
+
+            $rObj->setDeprecated($this->db->pgToBool($oneRes["deprecated"]));
+           
+            $rObj->setID($oneRes["id"]); 
+            if($oneRes["deprecated_to"])
+                $rObj->setDeprecatedTo($this->populateConcept($oneRes["deprecated_to"]));
+
+            $tRows = $this->sql->selectConceptTermsForID($id);
+            if ($tRows !== false) {
+                foreach ($tRows as $term) {
+                    $ct = new \snac\data\ConceptTerm();
+                    $ct->setID($term["id"]);
+                    $ct->setText($term["text"]);
+                    $ct->setLanguage($this->populateTerm($term["language_id"]));
+                    
+                    if ($this->db->pgToBool($term["preferred"]) === true)
+                        $rObj->setPreferredTerm($ct);
+                    else
+                        $rObj->addTerm($ct);
+                } 
+            }
+                
+            $cRows = $this->sql->selectConceptCategoriesForID($id);
+            if ($cRows !== false) {
+                foreach ($cRows as $cat) {
+                    $ct = $this->populateTerm($cat["category_id"]);
+                    $rObj->addCategory($ct);
+                } 
+            }
+
+            if (!$shorten) {
+                $sRows = $this->sql->selectConceptSourcesForID($id);
+                if ($sRows !== false) {
+                    foreach ($sRows as $source) {
+                        $cs = new \snac\data\ConceptSource();
+                        $cs->setID($source["id"]);
+                        $cs->setFoundData($source["found_data"]);
+                        $cs->setCitation($source["citation"]);
+                        $cs->setURI($source["url"]);
+                        $cs->setNote($source["note"]);
+                        $rObj->addSource($cs);
+                    } 
+                }
+
+                $crRows = $this->sql->selectConceptRelationshipsForID($id);
+                if ($crRows !== false) {
+                    foreach ($crRows as $conceptRel) {
+                        $cr = new \snac\data\ConceptRelationship();
+                        $cr->setID($conceptRel["id"]);
+                        $cr->setType($conceptRel["relationship_type"]);
+                        $cr->setRelatedConcept($this->populateConcept($conceptRel["related_concept_id"], true));
+                        $rObj->addRelationship($cr);
+                    } 
+                }
+            }
+            return $rObj;
+        }
+        return null;
+    }
+
+    /**
+     * Read Concept 
+     *
+     * Reads the concept of the database, based on the given ID.
+     *
+     * @param int $id The concept ID to read
+     * @return \snac\data\Concept|null The concept for the given ID or null if none found
+     */
+    public function readConcept($id) {
+        return $this->populateConcept($id);
     }
 
     /**
