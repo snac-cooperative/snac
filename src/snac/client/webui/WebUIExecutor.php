@@ -369,6 +369,36 @@ class WebUIExecutor {
         return $serverResponse;
 
     }
+    
+    public function performConceptBrowseSearch(&$input) {
+        $term = "";
+        $position = "middle";
+        $category = "";
+        $id = 0;
+
+        if (isset($input["category"]))
+            $category = $input["category"];
+        if (isset($input["position"]))
+            $position = $input["position"];
+        if (isset($input["term"]))
+            $term = $input["term"];
+        if (isset($input["id"]))
+            $id = $input["id"];
+
+        $query = array(
+            "command" => "browse_concepts",
+            "term" => $term,
+            "position" => $position,
+            "category" => $category,
+            "concept_id" => $id
+        );
+
+        // Query the server for the elastic search results
+        $serverResponse = $this->connect->query($query);
+
+        return $serverResponse;
+
+    }
 
 
     /**
@@ -2162,6 +2192,7 @@ class WebUIExecutor {
         return false;
     }
 
+
     /**
      * Handle Vocabulary Administrative tasks
      *
@@ -2178,6 +2209,43 @@ class WebUIExecutor {
         }
 
         switch ($input["subcommand"]) {
+            case "concept_browse":
+                if (isset($this->permissions["ViewVocabDashboard"]) && $this->permissions["ViewVocabDashboard"]) {
+                    $display->setData([
+                        "categories" => $this->connect->listTerms("concept_category")
+                        ]);
+                    $display->setTemplate("concept_browse");
+                } else {
+                    $this->displayPermissionDeniedPage("Concept Browse", $display);
+                }
+                break;
+            case "concept_browse_data":
+                return $this->performConceptBrowseSearch($input);
+            case "concept":
+                $conceptID = $input["constellationid"] ?? null; // id passed is actually a conceptID,
+
+                if (!isset($conceptID)) {
+                    $this->displayPermissionDeniedPage("Concept View", $display);
+                    break;
+                }
+
+                $request = [
+                    "command" => "read_concept",
+                    "conceptid" => $conceptID
+                ];
+
+                $response = $this->connect->query($request);
+                
+                if (isset($response, $response["concept"])) {
+                    $display->setData(array("title"=> "View Concept",
+                                            "concept" => $response["concept"]));
+                    $display->setTemplate("concept_view");
+                } else {
+                    $error = ["error" => ["type" => "Not Found", "message" => "The concept you were looking for does not exist."]];
+                    $this->drawErrorPage($error, $display);
+                }
+                break;
+
             case "search":
                 if (isset($this->permissions["ViewVocabDashboard"]) && $this->permissions["ViewVocabDashboard"]) {
                     $display->setTemplate("vocab_search");

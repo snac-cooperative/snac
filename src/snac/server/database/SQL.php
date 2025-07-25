@@ -4675,6 +4675,15 @@ class SQL
         return $this->quickQuery($qq, $query, $params);
 
     }
+    
+    public function selectConceptReciprocalRelationshipsForID($id) {
+        $qq = 'select_concept_relations';
+        $query = "select * from concept_relationships where related_concept_id = $1;";
+        $params = [$id];
+        
+        return $this->quickQuery($qq, $query, $params);
+
+    }
 
 
     /**
@@ -5993,6 +6002,54 @@ class SQL
         }
         return $all;
 
+    }
+
+    /**
+     * Browse Concepts 
+     *
+     * This function contains the SQL code required to browse through the concept list 
+     * in (mostly) alphabetical order.
+     *
+     * @param string $query The string to search for
+     * @param string $position The position of the search term in the results: before, middle, after
+     * @param Term $category The category of the terms (or null for all) 
+     * @param int    $conceptid The ID to break ties on sorting (or 0 if ignored)
+     * @return string[] List of concept results
+     */
+    public function browseConceptIndex($query, $position, $category, $id)
+    {
+        $categoryJoin = "";
+        $categoryWhere = "";
+        $categoryID = 0;
+        $categoryJoin = ", concept_categories cc ";
+        if ($category != null && $category != "") {
+            $categoryWhere = " and cc.concept_id = c.id and cc.category_id = $2 ";
+            $categoryID = $category->getID();
+        }
+
+        $result = null;
+        $queryStr = "";
+        if ($position == "after") {
+            $queryStr = "select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text >= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text asc limit 20;";
+        } else if ($position == "before") {
+            // query without the ICID, since it is meaningless
+            $queryStr = "select * from (select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text <= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text desc limit 20) order by text asc;";
+            //$queryStr = "select c.id,t.text from concepts c, terms t $categoryJoin where t.concept_id = c.id and not c.deprecated and t.preferred and t.text <= $1 $categoryWhere order by t.text asc limit 20;";
+        } else {
+            $queryStr = "select * from (select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text >= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text asc limit 10) a union all (select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text <= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text asc limit 10) order by text asc limit 20";
+        }
+
+        if ($category != null && $category != "")
+            $result = $this->sdb->query($queryStr, array($query, $categoryID));
+        else
+            $result = $this->sdb->query($queryStr, array($query));
+
+        $all = array();
+        while($row = $this->sdb->fetchRow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
     }
 
     /**

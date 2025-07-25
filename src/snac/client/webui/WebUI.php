@@ -569,6 +569,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->handleAdministrator($this->input, $display, $user);
                 break;
 
+            // Concept administrator command (the sub method handles commands)
+            case "concept_administrator":
+                $response = $executor->handleConceptAdministrator($this->input, $display, $user);
+                break;
+
             // Vocab administrator command (the sub method handles commands)
             case "vocab_administrator":
                 $response = $executor->handleVocabAdministrator($this->input, $display, $user);

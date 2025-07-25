@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{data.resource.displayEntry}} - {{ data.title }} - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<link href="https://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<script type='text/javascript' src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+<!-- Select Upgrades -->
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/edit_scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+</head>
+
+<body role="document">
+    {% from 'page_navigation.html' import topNavigation,footer %}
+    {{ topNavigation(X, user, permissions, control) }}
+
+
+    <div class="container snac" role="main">
+        <h1>{{data.concept.preferred_term.text | slice(0, 300) }}</h1>
+        <!-- <h1>{{data.resource.title | slice(0, 300) }}</h1> -->
+        <ol class="breadcrumb">
+            <li><a href="{{control.snacURL}}/vocab_administrator/concept_browse">Concepts</a></li>
+            <li> {{data.title}} </li>
+        </ol>
+        <!-- <div class="well well-lg">
+            <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit and save the data.resource.</p>
+        </div> -->
+        <form id="resource-form">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-horizontal">
+                        <!-- HIDDEN VALUES-->
+                        <!-- <input name="resources[0][operation]" type="hidden" value="{# resource ? "update" : "insert" #}"> -->
+                        <!-- <input name="resources[0][documentType_vocabtype]" type="hidden" value="document_type"> -->
+                        <!-- <input name="resources[0][id]" type="hidden" value="{#data.resource.id#}" /> -->
+                        <!-- <input name="resources[0][version]" type="hidden" value="{#data.resource.version#}"> -->
+                        <!-- <input name="resources[0][extent]" type="hidden" value=""> -->
+
+                        {% if data.concept.preferred_term %}
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" data-content="{{X.conceptPreferred.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.conceptPreferred.display}} </label>
+                            <div class="col-xs-8">
+                                <p class='form-control-static'> {{data.concept.preferred_term.text}} </p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if data.concept.terms %}
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" data-content="{{X.conceptAlternateTerms.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.conceptAlternateTerms.display}} </label>
+                            <div class="col-xs-8">
+                                {% for term in data.concept.terms %}
+                                <p class="form-control-static"> {{term.text}}</p>
+                                {% if term.language %}
+                                    <p class="help-block">{{term.language.description}}</p>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if data.concept.relationships %}
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" data-content="{{X.conceptRelations.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.conceptRelations.display}} </label>
+                            <div class="col-xs-8">
+                                {% for relation in data.concept.relationships %}
+                                <p class="form-control-static"> <b>{{relation.type}}</b>: {{relation.related_concept.preferred_term.text}}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if data.concept.sources %}
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" data-content="{{X.conceptSources.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.conceptSources.display}} </label>
+                            <div class="col-xs-8">
+                                {% for src in data.concept.sources %}
+                                <p class="form-control-static">{{src.citation}}<br>{{src.uri}}<br>{{src.found_data}}<br>{{src.note}}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+
+                        {% if data.concept.categories %}
+                        <div class="form-group">
+                            <label class="control-label col-xs-4" data-content="{{X.conceptCategories.tooltip}}"
+                                data-toggle="popover" data-placement="top"> {{X.conceptCategories.display}} </label>
+                            <div class="col-xs-8">
+                                {% for category in data.concept.categories %}
+                                <p class="form-control-static"> {{category.term}}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Information
+                        </div>
+                        <div class="list-group">
+                            <p class="list-group-item"><strong>SNAC Resource ID:</strong>
+                                <a href="{{control.snacURL}}/vocab_administrator/concept/{{data.concept.id}}">{{data.concept.id}}</a>
+                            </p>
+                        </div>
+                    </div>
+
+
+                    {% if permissions.EditResources%}
+                    <div class="list-group">
+                        <a class="list-group-item list-group-item-info"
+                            href="{{control.snacURL}}/vocab_administrator/concept_edit/{{data.concept.id}}">
+                            <i class="fa fa-edit" aria-hidden="true"></i> Edit Concept
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        {% if data.related_constellations %}
+        <div class="row">
+            <div class="col-md-12 search-results">
+                <h3>Related Entities</h3>
+                <p class="search-info">There are {{data.related_constellations|length}} Entities related to this
+                    resource.
+                </p>
+                {% for constellation in data.related_constellations %}
+                <div id="result{{loop.index}}">
+                    <h4> <a href="{{control.snacURL}}/view/{{constellation.id}}">{{constellation.nameEntries.0.original}}</a> </h4>
+                    <p class="identity-info">
+                        <span>{{constellation.ark}}</span>
+                        <span>({{constellation.entityType.term}})</span>
+                    </p>
+                    {% if constellation.biogHists.0.text %}
+                    <p>{{constellation.biogHists.0.text | striptags | slice(0, 500)}}...</p>
+                    {% else %}
+                    <!-- <p class="missing">No biographical history available for this identity.</p> -->
+                    {% endif %}
+                    <p class="final" style="margin-top: 5px;"></p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {{ footer(X, user, permissions, control) }}
+</body>
+
+</html>

@@ -277,6 +277,29 @@
         "display" : "Type",
         "tooltip" : "How this Identity Constellation is related to the Target"
     },
+    
+    "_comment" : "%%% Concept elements",
+
+    "conceptPreferred" : {
+        "display" : "Preferred Term",
+        "tooltip" : "The preferred term of this concept."
+    },
+    "conceptAlternateTerms" : {
+        "display" : "Alternate Terms",
+        "tooltip" : "Alternative terms for this concept"
+    },
+    "conceptRelations" : {
+        "display" : "Related Concepts",
+        "tooltip" : "Relationships to other concepts"
+    },
+    "conceptCategories" : {
+        "display" : "Categories",
+        "tooltip" : "Categories associated with this concept"
+    },
+    "conceptSources" : {
+        "display" : "Sources",
+        "tooltip" : "Source data"
+    },
 
     "_comment" : "%%% Resource Relation elements",
 

@@ -3777,6 +3777,33 @@ class ServerExecutor {
         }
         return $response;
     }
+    
+    public function browseConcepts(&$input) {
+        $response = array();
+
+        $term = "";
+        $position = "after";
+        if (isset($input["term"]) && $input["term"] != "") {
+            $term = $input["term"];
+            // only update the position if the term is not null
+            if (isset($input["position"]) && ($input["position"] == "middle" || $input["position"] == "before"))
+                $position = $input["position"];
+        }
+        $category = null;
+        if (isset($input["category"]) && !empty($input["category"])) {
+            $category = $this->cStore->populateTerm($input["category"]);
+        }
+        $id = 0;
+        if (isset($input["categoryid"]))
+            $id = $input["categoryid"];
+
+        $results = $this->cStore->browseConceptIndex($term, $position, $category, $id);
+
+        $response["results"] = $results;
+        $response["result"] = "success";
+
+        return $response;
+    }
 
     /**
      * Browse Constellations

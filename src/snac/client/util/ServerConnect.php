@@ -177,6 +177,26 @@ class ServerConnect {
 
         return null;
     }
+    
+    public function listTerms($type) {
+
+        $request = array ();
+        $request["command"] = "vocabulary";
+        $request["type"] = $type;
+        $request["query_string"] = "";
+
+        $response = $this->query($request);
+
+        if (isset($response["results"])) {
+            $terms = [];
+            foreach ($response["results"] as $res) {
+                array_push($terms, new \snac\data\Term($res));
+            }
+            return $terms;
+        }
+
+        return null;
+    }
 
     /**
      * Lookup Resource Object

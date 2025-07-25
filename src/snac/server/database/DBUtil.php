@@ -3657,6 +3657,19 @@ class DBUtil
                         $rObj->addRelationship($cr);
                     } 
                 }
+
+                $crRows = $this->sql->selectConceptReciprocalRelationshipsForID($id);
+                if ($crRows !== false) {
+                    foreach ($crRows as $conceptRel) {
+                        if ($conceptRel["relationship_type"] == "broader") {
+                            $cr = new \snac\data\ConceptRelationship();
+                            $cr->setID($conceptRel["id"]);
+                            $cr->setType("narrower");
+                            $cr->setRelatedConcept($this->populateConcept($conceptRel["concept_id"], true));
+                            $rObj->addRelationship($cr);
+                        } 
+                    } 
+                }
             }
             return $rObj;
         }
@@ -4822,6 +4835,11 @@ class DBUtil
 
         return $return;
 
+    }
+    
+    public function browseConceptIndex($query, $position, $category=null, $id=0) {
+
+        return $this->sql->browseConceptIndex($query, $position, $category, $id);
     }
 
     /**

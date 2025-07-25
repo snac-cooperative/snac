@@ -484,6 +484,10 @@ class Server implements \snac\interfaces\ServerInterface {
             case "read_concept":
                 $this->response = $executor->readConcept($this->input);
                 break;
+            case "browse_concepts":
+                $this->response = $executor->browseConcepts($this->input);
+                break;
+
 
 
             // Resource Management
