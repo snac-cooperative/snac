@@ -104,7 +104,7 @@ drop table if exists resource_origination_name;
 drop table if exists constellation_lookup;
 drop table if exists messages;
 drop table if exists not_same;
-drop table if exists outbound_link
+drop table if exists outbound_link;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -126,7 +126,7 @@ drop table if exists api_keys;
 -- Sequence for data table record id values It is very, very important that both table.id and
 -- version_history.ic_id use this sequence. These two are used as foreign keys between table date_range and
 -- other tables. Failure for nrd.ic_id and table.id to be unique will (would) break data_range foreign
--- keys. (And might break other foreign keys and sql queries as well.)
+-- keys. (And might break other foreign keys and sql queries as well.
 CREATE SEQUENCE "id_seq";
 
 -- Feb 11 2016 This was removed and came back apparently via a bad git merge. See vocabulary_init.sql
