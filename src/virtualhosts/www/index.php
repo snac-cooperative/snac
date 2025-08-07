@@ -20,7 +20,7 @@ include ("../../../vendor/autoload.php");
  * If debug is on, turn on error reporting
  */
 if (\snac\Config::$DEBUG_MODE) {
-    error_reporting(E_ALL);
+    error_reporting(E_ALL & ~E_DEPRECATED);
     ini_set('display_errors', 1);
 }
 
