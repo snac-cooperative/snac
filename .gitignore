@@ -4,6 +4,7 @@ composer.phar
 composer.lock
 vendor/
 log/
+logs/
 .idea/
 #test/
 src/virtualhosts/log
