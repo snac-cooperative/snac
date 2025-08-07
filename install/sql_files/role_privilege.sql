@@ -49,11 +49,11 @@ select (select id from role where label='Editor, Independent'), id from privileg
 
 insert into privilege_role_link (rid, pid)
 select (select id from role where label='Reviewer'), id from privilege where
-    label in ('Create', 'Edit', 'Publish', 'Change Locks', 'Unlock Currently Editing', "Edit Resources", "Edit Vocabulary");
+    label in ('Create', 'Edit', 'Publish', 'Change Locks', 'Unlock Currently Editing', 'Edit Resources', 'Edit Vocabulary');
 
 insert into privilege_role_link (rid, pid)
 select (select id from role where label='Administrator'), id from privilege where
-    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users', 'View Admin Dashboard', 'View Reports', 'Generate Reports', 'Merge', "Edit Resources", "Edit Vocabulary");
+    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users', 'View Admin Dashboard', 'View Reports', 'Generate Reports', 'Merge', 'Edit Resources', 'Edit Vocabulary');
 
 insert into privilege_role_link
     (pid, rid)
