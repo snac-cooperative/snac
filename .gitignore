@@ -8,3 +8,4 @@ log/
 #test/
 src/virtualhosts/log
 src/virtualhosts/output
+*.swp

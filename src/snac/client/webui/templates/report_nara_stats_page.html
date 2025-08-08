@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Outbound Links Report - Social Networks and Archival Context</title>
+    <title>NARA Edits Report - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -66,6 +66,8 @@
     width: auto;
 }
 </style>
+
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}

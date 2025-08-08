@@ -4998,7 +4998,21 @@ class SQL
         {
             // the following merge will preserve the resource_version from the resource_cache table and drop the one from related_resource
             // since the resource_cache results are merged first.
-            array_push($all, array_merge($resources[$row["resource_id"]], $row));
+
+            // jlj5aj: [2025-08-07]  snac-dev training crash investigation
+            // There is a common pattern the crashes Jerry experiences while creating and editing
+            // new CPF, and it seems to come down to the array_merge() call failing due to a null
+            // array, caused by a missing resource in the resource_cache.  I don't know if it's
+            // expected that one should always exist, but it seems likely... in which case the
+            // following 'fix' is just a bandaid to cover up a difference underlying issue:
+            // why is there no entry in the resource_cache table?
+            // I am trying to come up with a sequence of steps to reproduce the issue.
+            // It's unclear whether this occurs only on snac-dev, or also affects production.
+
+            //array_push($all, array_merge($resources[$row["resource_id"]], $row));
+            if (array_key_exists($row["resource_id"], $resources)) {
+                array_push($all, array_merge($resources[$row["resource_id"]], $row));
+            }
         }
         $this->sdb->deallocate($qq);
 

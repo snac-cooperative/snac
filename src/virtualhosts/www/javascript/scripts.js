@@ -255,16 +255,7 @@ function trackOutboundRepoLinks() {
         });
 }
 
-// Send Outbound link clicks to Google Analytics for logging
 function handleOutboundLinkClicks(event) {
-    if (typeof ga === "function") {  // check for Google Analytics
-        ga('send', 'event', {
-            eventCategory: 'Outbound Link',
-            eventAction: 'click',
-            eventLabel: event.target.href
-        });
-    }
-
     var logInfo = "url=" + event.target.href;
     var icid = $('#constellationid').val();
     var repoICID = $(event.target).data('repoIcId');
