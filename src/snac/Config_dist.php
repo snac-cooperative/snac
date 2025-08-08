@@ -299,7 +299,7 @@ class Config {
 
 
     /**
-     * @var string Google Analytics Tracking ID (of the form UA-xxxxxxxx-x)
+     * @var string Google Analytics Tracking ID (of the form G-xxxxxxxxxx)
      */
     public static $GOOGLE_ANALYTICS_TRACKING_ID = null;
 

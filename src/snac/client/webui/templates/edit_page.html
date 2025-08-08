@@ -75,7 +75,10 @@
 <style>
 
 </style>
+
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
+
 <body role="document">
 {% import 'widgets.html' as widgets %}
 {% import 'edit_components.html' as components %}

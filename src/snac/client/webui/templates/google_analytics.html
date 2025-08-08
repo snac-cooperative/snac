@@ -1,0 +1,14 @@
+{% macro googleAnalytics(X, user, permissions, control) %}
+    {# If there is a google analytics tracking ID, then insert the Google Analytics script #}
+    {% if control.googleAnalyticsID %}
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{control.googleAnalyticsID}}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', '{{control.googleAnalyticsID}}');
+        </script>
+    {% endif %}
+{% endmacro %}

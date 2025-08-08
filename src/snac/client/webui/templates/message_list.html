@@ -45,7 +45,9 @@
 $.fn.modal.Constructor.prototype.enforceFocus = function() {};
 </script>
 
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
+
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}
