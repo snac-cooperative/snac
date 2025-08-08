@@ -104,7 +104,7 @@ drop table if exists resource_origination_name;
 drop table if exists constellation_lookup;
 drop table if exists messages;
 drop table if exists not_same;
-drop table if exists outbound_link
+drop table if exists outbound_link;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;

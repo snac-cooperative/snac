@@ -1,0 +1,103 @@
+name: Deploy Workflow
+
+on:
+  push:
+    branches:
+      - development
+      - master
+
+jobs:
+  app-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --shm-size 512m
+        ports:
+          - 5432:5432
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.24
+        env:
+          discovery.type: single-node
+        options: >-
+          --health-cmd "curl http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 9200:9200
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: snac-cooperative/snac
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.3
+          extensions: mbstring, bcmath, csv, xml
+      - name: Setup code
+        run: |
+          composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
+          composer update
+          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
+          echo "${{ secrets.CONFIG_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/src/snac/Config.php
+          echo "${{ secrets.USER_LIST }}" >> $GITHUB_WORKSPACE/install/setup_files/users.csv
+          mkdir -p coverage/
+      - name: Set max_parallel_workers_per_gather to 0
+        env:
+          PGPASSWORD: "postgres"
+        run: psql -h localhost -U postgres -d postgres -c "SET max_parallel_workers_per_gather = 0;"
+      - name: Seed database
+        run: |
+          tar xzvf $GITHUB_WORKSPACE/test/testing.sql.tar.gz -C $GITHUB_WORKSPACE/test
+          sudo php install/install.php automate
+          sudo php scripts/refresh.php automate $GITHUB_WORKSPACE/test/testing.sql
+      - name: Execute tests (Unit and Feature tests) via PHPUnit
+        env:
+          DB_PORT: 5432
+        run: vendor/bin/phpunit --coverage-text --colors=never
+  deploy-production:
+    name: Deploy Project to PRODUCTION Server
+    runs-on: self-hosted
+    needs: [app-tests]
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Composer install
+        run: |
+          composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
+          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
+      - name: Deploy to Prod
+        env: 
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_ACCESS_TOKEN }}
+        uses: deployphp/action@v1
+        with:
+          dep: deploy stage=production
+          private-key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
+          skip-ssh-setup: true
+          verbosity: -vvv
+  deploy-development:
+    name: Deploy Project to DEVELOPMENT Server
+    runs-on: self-hosted
+    needs: [app-tests]
+    if: github.ref == 'refs/heads/jnm/github-actions'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Composer install
+        run: |
+          composer config github-oauth.github.com ${{ secrets.COMPOSER_ACCESS_TOKEN }}
+          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist --ignore-platform-reqs
+      - name: Deploy to Dev
+        uses: deployphp/action@v1
+        with:
+          dep: deploy stage=development
+          private-key: ${{ secrets.SSH_PRIVATE_KEY_DEV }}
+          skip-ssh-setup: true
+          verbosity: -vvv
