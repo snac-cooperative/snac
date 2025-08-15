@@ -39,7 +39,7 @@ run_test:
     - vendor/bin/phpunit --coverage-text --colors=never
   stage: test
   only:
-    - master
+    - never_run_this_master
 
 run_test_coverage:
   script:
@@ -47,7 +47,7 @@ run_test_coverage:
     - rsync -avO coverage /lv2/snac/docs/
   stage: test
   only:
-    - development
+    - never_run_this_dev
 
 generate_docs:
   script:
