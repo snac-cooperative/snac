@@ -45,11 +45,11 @@
         },
         {
             "type": "vcs",
-            "url": "http://gitlab.iath.virginia.edu/snac/ark-manager.git"
+            "url": "git@gitlab.iath.virginia.edu:snac/ark-manager.git"
         },
         {
             "type": "vcs",
-            "url": "http://gitlab.iath.virginia.edu/snac/eac-validator.git"
+            "url": "git@gitlab.iath.virginia.edu:snac/eac-validator.git"
         }
 
     ],
