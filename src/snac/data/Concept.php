@@ -33,7 +33,7 @@ class Concept extends AbstractConceptData {
 
     private $terms = [];
 
-    private $preferredTerm = null;
+    private $preferredTerms = [];
 
 
     public function __construct($data = null) {
@@ -95,11 +95,16 @@ class Concept extends AbstractConceptData {
     }
 
     public function getPreferredTerm() {
-        return $this->preferredTerm;
+        return $this->preferredTerms[0];
     }
 
-    public function setPreferredTerm($term) {
-        $this->preferredTerm = $term;
+    public function getPreferredTerms() {
+        return $this->preferredTerms;
+    }
+
+    public function addPreferredTerm($term) {
+        if ($this->preferredTerms == null) $this->preferredTerms = [];
+        array_push($this->preferredTerms, $term);
     }
 
     /**
@@ -113,7 +118,6 @@ class Concept extends AbstractConceptData {
                 "dataType" => "Concept",
                 "deprecated" => $this->deprecated,
                 "deprecated_to" => $this->deprecatedTo,
-                "preferred_term" => $this->preferredTerm->toArray($shorten),
                 "sources" => [],
                 "relationships" => [],
                 "categories" => [],
@@ -127,6 +131,8 @@ class Concept extends AbstractConceptData {
             $return["categories"][$i] = $v->toArray($shorten);
         foreach ($this->terms as $i => $v)
             $return["terms"][$i] = $v->toArray($shorten);
+        foreach ($this->preferredTerms as $i => $v)
+            $return["preferred_terms"][$i] = $v->toArray($shorten);
 
         $return = array_merge($return, parent::toArray($shorten));
         if ($shorten) {
@@ -189,12 +195,13 @@ class Concept extends AbstractConceptData {
             foreach ($data["terms"] as $i => $entry)
                 if ($entry != null)
                     $this->terms[$i] = new ConceptTerm($entry);
-
-        unset($this->preferredTerm);
-        if (isset($data["preferred_term"]))
-            $this->preferredTerm = new ConceptTerm($data["preferred_term"]);
-        else
-            $this->preferredTerm = null;
+        
+        unset($this->preferredTerms);
+        $this->preferredTerms = array();
+        if (isset($data["preferred_terms"]))
+            foreach ($data["preferred_terms"] as $i => $entry)
+                if ($entry != null)
+                    $this->preferredTerms[$i] = new ConceptTerm($entry);
 
         return true;
     }

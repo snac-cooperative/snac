@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+{% if data.concept %}
+    <title>{{data.concept.preferred_terms.0.text | slice(0, 300)}} - {{ data.title }} - Social Networks and Archival Context</title>
+{% else %}
+    <title>New Concept - {{ data.title }} - Social Networks and Archival Context</title>
+{% endif %}
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<link href="https://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<script type='text/javascript' src="https://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Form Validation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/additional-methods.min.js"></script>
+
+<!-- Tiny MCE text editor
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.6.2/tinymce.min.js" integrity="sha384-fPYbu2VaXTDuM6wPh2f7vikhCeSvDZiBDuXQX8/CVQG5SNOyI1isjcTdIb/gmtdE" crossorigin="anonymous"></script>
+<script>
+//tinymce.init(X, {selector:'#biogHist', plugins:'code', min_height: 300});
+</script>
+-->
+
+<!-- CodeMirror XML editor -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
+
+<!-- Select Upgrades -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="{{control.snacURL}}/css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
+<!-- SNAC Javascript -->
+<script src="{{control.snacURL}}/javascript/dashboard_search.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/concept_edit_scripts.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/concept_save_actions.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
+<script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+<script>
+    $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+</script>
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+<meta name="viewport" content="initial-scale = 1.0" />
+
+<style>
+
+</style>
+</head>
+<body role="document">
+{% import 'concepts/_widgets.html' as widgets %}
+{% import 'concepts/_edit_components.html' as components %}
+
+
+{% from 'page_navigation.html' import topNavigation,footer %}
+{{ topNavigation(X, user, permissions, control) }}
+
+<nav class="navbar navbar-default navbar-fixed-top snac-toolbar">
+    <div class="container">
+        <div class="navbar snac-toolbar-inner">
+            <ul class="nav navbar-nav">
+                <!--<li class="highlight toolbar-save"><a href="#" id="save_and_continue"><span class="glyphicon glyphicon-floppy-disk"></span> Save</a></li>-->
+                <li class="highlight toolbar-dashboard"><a href="#" id="save_and_dashboard"><span class="glyphicon glyphicon-floppy-saved"></span> Save &amp; Dashboard</a></li>
+                <li class="highlight toolbar-cancel"><a href="#" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+        <p>Saving Concept...</p>
+    </div><!-- end alert -->
+    <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+        <p>Successfully saved!</p>
+    </div><!-- end alert -->
+    <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
+        <p>An error occured while saving</p>
+    </div><!-- end alert -->
+</nav>
+
+</div>
+
+<div class="container snac" role="main">
+
+    <form class="form-horizontal" id="concept_form">
+        {% if data.concept %}
+            <h1><span id="page_heading">{{data.concept.preferred_terms.0.text}}</span> <i class="fa fa-pencil" aria-hidden="true"></i></h1>
+        {% else %}
+            <h1><span id="page_heading">New Concept</span> <i class="fa fa-pencil" aria-hidden="true"></i></h1>
+        {% endif %}
+        
+        <ol class="breadcrumb">
+            <li><a href="{{control.snacURL}}/vocab_administrator/concept_browse">Concepts</a></li>
+            <li> {{data.title}} </li>
+        </ol>
+        
+        <div class="well well-lg">
+            <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit and save the Concept.</p>
+        </div> 
+
+        <!-- Concept Data -->
+        <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>
+        <input type="hidden" id="conceptid" name="conceptid" value="{{data.concept.id}}"/>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <!-- Nav tabs -->
+                {{ components.displayEditTabs(X, false) }}
+
+                <div class="tab-content">
+
+                    <div class="tab-pane active" id="terms">
+                        <h2>Terms</h2>
+
+                        {% set i = 0 %}
+                        <div class="panel panel-default">
+                        	<div class="panel-heading">Preferred Terms <span style="color: #b40404">*</span></div>
+                            <div class="panel-body" id="preferredTerms_pane">
+                                <div class="form-group" id="add_term_div">
+                                    <div class="col-xs-12 text-center">
+                                        <button class="btn btn-success" id="btn_add_term"><span class="glyphicon glyphicon-plus"></span> Add New Term</button>
+                                    </div>
+                                </div>
+
+                                {% for term in data.concept.preferred_terms %}
+                                    {{ components.displayConceptTerm(X, true, true, term, i, "preferred") }}
+                                {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="panel panel-default">
+                        	<div class="panel-heading">Alternate Terms <span style="color: #b40404">*</span></div>
+                            <div class="panel-body" id="alternateTerms_pane">
+                                <div class="form-group" id="add_altterm_div">
+                                    <div class="col-xs-12 text-center">
+                                        <button class="btn btn-success" id="btn_add_altterm"><span class="glyphicon glyphicon-plus"></span> Add New Term</button>
+                                    </div>
+                                </div>
+
+                                {% for term in data.concept.terms %}
+                                    {{ components.displayConceptTerm(X, true, true, term, i, "alternate") }}
+                                {% set i = i + 1 %}
+                                {% endfor %}
+                                <span id='next_term_i' style='display:none;'>{{i}}</span>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="tab-pane" id="relations">
+                        <h2>Relations</h2>
+
+                        {% set i = 0 %}
+                        <div class="form-group" id="add_relation_div">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="btn_add_relation"><span class="glyphicon glyphicon-plus"></span> Add New Relation</button>
+                            </div>
+                        </div>
+
+                        {% for relation in data.concept.relations %}
+                            {{ components.displayRelation(X, true, true, relation, i) }}
+                        {% set i = i + 1 %}
+                        {% endfor %}
+                        <span id='next_relation_i' style='display:none;'>{{i}}</span>
+                    </div>
+
+                    <div class="tab-pane" id="categories">
+                        <h2>Categories</h2>
+
+                        {% set i = 0 %}
+                        <div class="form-group" id="add_category_div">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="btn_add_category"><span class="glyphicon glyphicon-plus"></span> Assign New Category</button>
+                            </div>
+                        </div>
+
+                        {% for category in data.concept.categories %}
+                            {{ components.displayCategory(X, true, true, category, i) }}
+                        {% set i = i + 1 %}
+                        {% endfor %}
+                        <span id='next_category_i' style='display:none;'>{{i}}</span>
+                    </div>
+
+                    <div class="tab-pane" id="sources">
+                        <h2>Sources</h2>
+
+                        {% set i = 0 %}
+                        <div class="form-group" id="add_source_div">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="btn_add_source"><span class="glyphicon glyphicon-plus"></span> Add New Source</button>
+                            </div>
+                        </div>
+
+                        {% for source in data.concept.sources %}
+                            {{ components.displaySource(X, true, true, source, i) }}
+                        {% set i = i + 1 %}
+                        {% endfor %}
+                        <span id='next_source_i' style='display:none;'>{{i}}</span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="hidden_field_options" style="display:none">
+        <div id="term_template" style="display:none">
+        {{ components.displayConceptTerm(X, true, true, null, 'ZZ', 'YY') }}
+        </div>
+        <div id="relation_template" style="display:none">
+        {{ components.displayRelation(X, true, true, null, 'ZZ') }}
+        </div>
+        <div id="category_template" style="display:none">
+        {{ components.displayCategory(X, true, true, null, 'ZZ') }}
+        </div>
+        <div id="source_template" style="display:none">
+        {{ components.displaySource(X, true, true, null, 'ZZ') }}
+        </div>
+    </div>
+
+
+</html>

@@ -3619,7 +3619,7 @@ class DBUtil
                     $ct->setLanguage($this->populateTerm($term["language_id"]));
                     
                     if ($this->db->pgToBool($term["preferred"]) === true)
-                        $rObj->setPreferredTerm($ct);
+                        $rObj->addPreferredTerm($ct);
                     else
                         $rObj->addTerm($ct);
                 } 
@@ -3675,6 +3675,78 @@ class DBUtil
         }
         return null;
     }
+
+    /**
+     * Save Concept 
+     *
+     * Save a concept
+     *
+     * @param \snac\data\User $user The user writing the resource
+     * @param  \snac\data\Concept $concept Concept object to save
+     * @return \snac\data\Concept|boolean           The concept object saved with ID or false if not written
+     */
+     public function writeConcept($user, $concept) {
+
+        if ($user == null || $user->getUserID() == null)
+            return false;
+
+        $op = $concept->getOperation();
+        if ($op == \snac\data\AbstractData::$OPERATION_INSERT) {
+            $cid = null;
+        } else {
+            $cid = $concept->getID();
+        }
+
+        $isDeleted = ($op == \snac\data\AbstractData::$OPERATION_DELETE) ? true : false;
+
+        $cid = $this->sql->writeConcept($cid,
+                                        $concept->getDeprecated(),
+                                        $concept->getDeprecatedTo(),
+                                        $isDeleted);
+        if ($cid === false)
+            return false;
+
+        $concept->setID($cid);
+        foreach ($concept->getRelationships() as $relation) {
+            $this->sql->writeConceptRelation($cid,
+                                            $relation->getRelatedConcept()->getID(),
+                                            $relation->getType(),
+                                            $relation->getOperation());
+        }
+        foreach ($concept->getCategories() as $category) {
+            $this->sql->writeConceptCategory($cid,
+                                            $category->getID(),
+                                            $category->getOperation());
+        }
+        foreach ($concept->getTerms() as $term) {
+            $this->sql->writeConceptTerm($cid, $term->getText(),
+                                                $term->getLanguage()->getID(),
+                                                false,
+                                                $term->getOperation());
+        }
+        foreach ($concept->getPreferredTerms() as $term) {
+            $this->sql->writeConceptTerm($cid, $term->getText(),
+                                                $term->getLanguage()->getID(),
+                                                true,
+                                                $term->getOperation());
+
+        }
+        foreach ($concept->getSources() as $source) {
+            $this->sql->writeConceptSource($cid,
+                                        $source->getID(),
+                                        $source->getFoundData(),
+                                        $source->getCitation(),
+                                        $source->getURI(),
+                                        $source->getNote());
+
+        }
+
+        // Return the full current concept or false if not written
+        return $this->readConcept($cid) ?? false;
+     }
+
+
+
 
     /**
      * Read Concept 

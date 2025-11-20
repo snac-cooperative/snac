@@ -28,6 +28,22 @@ namespace snac\data;
 abstract class AbstractConceptData implements \Serializable {
 
     /**
+     * Constants associated with all data
+     * @var string $OPERATION_INSERT the insert operation
+     */
+    public static $OPERATION_INSERT = "insert";
+    /**
+     * Constants associated with all data
+     * @var string $OPERATION_UPDATE the update operation
+     */
+    public static $OPERATION_UPDATE = "update";
+    /**
+     * Constants associated with all data
+     * @var string $OPERATION_DELETE the delete operation
+     */
+    public static $OPERATION_DELETE = "delete";
+
+    /**
      *
      * The record id for this class. This has two different meanings, depending on the
      * class. For Constellation.php this is the ic_id of the constellation aka version_history.ic_id. For
@@ -36,6 +52,11 @@ abstract class AbstractConceptData implements \Serializable {
      * @var int $id
      */
     protected $id = null;
+
+    /**
+     * @var string Operation for this object.  Must be set to one of the constant values or null.
+     */
+    protected $operation;
 
     /**
      * @var \Monolog\Logger $logger Logger for this class
@@ -209,6 +230,31 @@ abstract class AbstractConceptData implements \Serializable {
     }
 
     /**
+     * Set the operation for this data
+     *
+     * @param string $operation The constant for the operation
+     * @return boolean true on success, false on failure
+     */
+    public function setOperation($operation) {
+        if ($operation == AbstractData::$OPERATION_UPDATE ||
+            $operation == AbstractData::$OPERATION_DELETE ||
+            $operation == AbstractData::$OPERATION_INSERT) {
+                $this->operation = $operation;
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the operation for this data object
+     *
+     * @return string the operation, or null if no operation
+     */
+    public function getOperation() {
+        return $this->operation;
+    }
+
+    /**
      * To String
      *
      * Converts this object to a human-readable summary string.  This is enough to identify
@@ -228,7 +274,8 @@ abstract class AbstractConceptData implements \Serializable {
      */
     public function toArray($shorten = true) {
         $return = array(
-                'id' => $this->getID()
+                'id' => $this->getID(),
+                'operation' => $this->getOperation()
                 );
 
         return $return;
@@ -246,6 +293,12 @@ abstract class AbstractConceptData implements \Serializable {
             $this->id = $data["id"];
         else
             $this->id = null;
+
+        unset($this->operation);
+        if (isset($data["operation"]))
+            $this->operation = $data["operation"];
+        else
+            $this->operation = null;
 
     }
 

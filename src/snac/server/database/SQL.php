@@ -4685,6 +4685,45 @@ class SQL
 
     }
 
+    public function writeConcept($cid, $deprecated, $deprecatedTo, $isDeleted) {
+        // Right now, we don't delete concepts
+        if ($cid == null) {
+            // doing insert
+            $qq = "insert_concept";
+            $query = "insert into concepts (created_at, updated_at) values (now(), now()) returning *;";
+            $params = [];
+            $res = $this->quickQuery($qq, $query, $params);
+            if ($res !== null && $res !== false && isset($res[0]))
+                return $res[0]["id"];
+        } else {
+            $concept = $this->selectConcept($cid);
+            if ($concept !== null && $concept !== false && isset($concept[0])) {
+                $qq = "update_concept";
+                $query = "update concepts set update_at = now() where id = $1;";
+                $params = [$cid];
+                return $concept[0]["id"];
+            } 
+        }
+        return false;
+            
+    }
+
+    public function writeConceptRelation($cid, $relatedID, $type, $operation) {
+
+    }
+
+    public function writeConceptCategory($cid, $categoryID, $operation) {
+
+    }
+
+    public function writeConceptTerm($cid, $text, $languageID, $preferred, $operation) {
+
+    }
+
+    public function writeConceptSource($cid, $sourceid, $foundData, $citation, $uri, $note) {
+
+    }
+
 
     /**
      * Insert legalStatus.
@@ -6036,7 +6075,7 @@ class SQL
             $queryStr = "select * from (select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text <= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text desc limit 20) order by text asc;";
             //$queryStr = "select c.id,t.text from concepts c, terms t $categoryJoin where t.concept_id = c.id and not c.deprecated and t.preferred and t.text <= $1 $categoryWhere order by t.text asc limit 20;";
         } else {
-            $queryStr = "select * from (select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text >= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text asc limit 10) a union all (select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text <= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text asc limit 10) order by text asc limit 20";
+            $queryStr = "select * from (select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text >= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text asc limit 10) a union all (select c.id,t.text,cct.value as category from concepts c, terms t, concept_categories cc, vocabulary cct where t.concept_id = c.id and not c.deprecated and t.preferred and t.text <= $1 and cc.concept_id = c.id and cct.id = cc.category_id $categoryWhere order by t.text desc limit 10) order by text asc limit 20";
         }
 
         if ($category != null && $category != "")

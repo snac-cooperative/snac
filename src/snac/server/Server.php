@@ -481,6 +481,11 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             // Concept Management
+            case "save_concept":
+                if (!$executor->hasPermission("View Admin Dashboard"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to modify concepts.", 403);
+                $this->response = $executor->saveConcept($this->input);
+                break;
             case "read_concept":
                 $this->response = $executor->readConcept($this->input);
                 break;

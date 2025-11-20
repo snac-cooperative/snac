@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{data.resource.displayEntry}} - {{ data.title }} - Social Networks and Archival Context</title>
+    <title>{{data.concept.preferred_terms.0.text | slice(0, 300)}} - {{ data.title }} - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -46,7 +46,7 @@
 
 
     <div class="container snac" role="main">
-        <h1>{{data.concept.preferred_term.text | slice(0, 300) }}</h1>
+        <h1>{{data.concept.preferred_terms.0.text | slice(0, 300) }}</h1>
         <!-- <h1>{{data.resource.title | slice(0, 300) }}</h1> -->
         <ol class="breadcrumb">
             <li><a href="{{control.snacURL}}/vocab_administrator/concept_browse">Concepts</a></li>
@@ -66,12 +66,17 @@
                         <!-- <input name="resources[0][version]" type="hidden" value="{#data.resource.version#}"> -->
                         <!-- <input name="resources[0][extent]" type="hidden" value=""> -->
 
-                        {% if data.concept.preferred_term %}
+                        {% if data.concept.preferred_terms %}
                         <div class="form-group">
                             <label class="control-label col-xs-4" data-content="{{X.conceptPreferred.tooltip}}"
                                 data-toggle="popover" data-placement="top"> {{X.conceptPreferred.display}} </label>
                             <div class="col-xs-8">
-                                <p class='form-control-static'> {{data.concept.preferred_term.text}} </p>
+                                {% for term in data.concept.preferred_terms %}
+                                <p class="form-control-static"> {{term.text}}</p>
+                                {% if term.language %}
+                                    <p class="help-block">{{term.language.description}}</p>
+                                {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
                         {% endif %}
@@ -137,14 +142,14 @@
                             Information
                         </div>
                         <div class="list-group">
-                            <p class="list-group-item"><strong>SNAC Resource ID:</strong>
+                            <p class="list-group-item"><strong>SNAC Concept ID:</strong>
                                 <a href="{{control.snacURL}}/vocab_administrator/concept/{{data.concept.id}}">{{data.concept.id}}</a>
                             </p>
                         </div>
                     </div>
 
 
-                    {% if permissions.EditResources%}
+                    {% if permissions.EditVocabulary %}
                     <div class="list-group">
                         <a class="list-group-item list-group-item-info"
                             href="{{control.snacURL}}/vocab_administrator/concept_edit/{{data.concept.id}}">

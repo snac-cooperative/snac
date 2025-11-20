@@ -288,9 +288,21 @@
         "display" : "Alternate Terms",
         "tooltip" : "Alternative terms for this concept"
     },
+    "conceptRelationRelated" : {
+        "display" : "Related Concept",
+        "tooltip" : "Related other concepts"
+    },
+    "conceptRelation" : {
+        "display" : "Relation",
+        "tooltip" : "How related to other concept"
+    },
     "conceptRelations" : {
         "display" : "Related Concepts",
         "tooltip" : "Relationships to other concepts"
+    },
+    "conceptCategory" : {
+        "display" : "Category",
+        "tooltip" : "Category associated with this concept"
     },
     "conceptCategories" : {
         "display" : "Categories",

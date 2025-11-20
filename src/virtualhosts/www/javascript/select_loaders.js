@@ -32,7 +32,9 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
                         url: function() {
                             var query = snacUrl + "/vocabulary?type="+type+"&id=";
                                 query += $("#constellationid").val()+"&version="+$("#version").val();
-                                query += "&entity_type="+$("#entityType").val();
+                                if ($("#entityType").length) {
+                                    query += "&entity_type="+$("#entityType").val();
+                                }
                                 return query;
                         },
                         dataType: 'json',
@@ -111,7 +113,9 @@ function geovocab_select_replace(selectItem, idMatch) {
                 ajax: {
                     url: function() {
                         var query = snacUrl+"/vocabulary?type=geo_place&format=term";
-                            query += "&entity_type="+$("#entityType").val();
+                            if ($("#entityType").length) {
+                                query += "&entity_type="+$("#entityType").val();
+                            }
                             return query;
                     },
                     dataType: 'json',
@@ -178,7 +182,9 @@ function scm_source_select_replace(selectItem, idMatch) {
                         url: function() {
                             var query = snacUrl+"/vocabulary?type=ic_sources&id=";
                                 query += $("#constellationid").val()+"&version="+$("#version").val();
-                                query += "&entity_type="+$("#entityType").val();
+                                if ($("#entityType").length) {
+                                    query += "&entity_type="+$("#entityType").val();
+                                }
                                 return query;
                         },
                         dataType: 'json',

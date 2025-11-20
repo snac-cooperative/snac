@@ -760,6 +760,42 @@ class ServerExecutor {
 
 
     /**
+     * Save Concept
+     *
+     * Given a concept in the input, saves and returns the concept object in the
+     * response to the user.  If there is an error, it will add that.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function saveConcept(&$input) {
+        $response = [];
+        $written = null;
+        $concept = null;
+
+        try {
+            if (!isset($input["concept"])) {
+                throw new \snac\exceptions\SNACInputException("No concept to save", 400);
+            }
+            $concept = new \snac\data\Concept($input["concept"]);
+            $written = $this->cStore->writeConcept($this->user, $concept);
+
+            if (isset($written) && $written !== false) {
+                $response["concept"] = $written->toArray();
+                $this->logger->addDebug("Saved and serialized concept for output to client", $response);
+            } else {
+                $response["error"] = "Could not save concept.";
+            }
+        } catch (Exception $e) {
+            $response["error"] = $e;
+            $this->logger->addDebug("Error when saving concept", $response);
+        }
+        return $response;
+    }
+
+
+    /**
      * Read Resource
      *
      * Given a resource id in the input, returns the resource object in the

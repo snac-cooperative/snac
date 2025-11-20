@@ -1,0 +1,13 @@
+
+{% macro optionsList(X, inEdit, showSubElements, short, i) %}
+    {% if showSubElements or inEdit %}
+        <div class="col-sm-2 data-element-options">
+            <div class="list-group snac-options-list">
+                {% if inEdit %}
+                    <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-2x fa-pencil-square-o" aria-hidden="true"></span><br>{{ X.edit.display }}</a>
+                    <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-2x fa-trash-o" aria-hidden="true"></span><br>{{ X.trash.display }}</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endmacro %}

@@ -2214,7 +2214,7 @@ class WebUIExecutor {
                     $display->setData([
                         "categories" => $this->connect->listTerms("concept_category")
                         ]);
-                    $display->setTemplate("concept_browse");
+                    $display->setTemplate("concepts/browse");
                 } else {
                     $this->displayPermissionDeniedPage("Concept Browse", $display);
                 }
@@ -2239,10 +2239,85 @@ class WebUIExecutor {
                 if (isset($response, $response["concept"])) {
                     $display->setData(array("title"=> "View Concept",
                                             "concept" => $response["concept"]));
-                    $display->setTemplate("concept_view");
+                    $display->setTemplate("concepts/view");
                 } else {
                     $error = ["error" => ["type" => "Not Found", "message" => "The concept you were looking for does not exist."]];
                     $this->drawErrorPage($error, $display);
+                }
+                break;
+            case "concept_new":
+                if (isset($this->permissions["EditResources"])) {
+                    $display->setData(array("title"=> "New Concept", "operation"=>"insert"));
+                    $display->setTemplate("concepts/edit");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+
+            case "concept_edit":
+                $conceptID = $input["constellationid"] ?? null; // id passed is actually a conceptID,
+
+                if (isset($this->permissions["EditResources"])) {
+                    $request = [
+                        "command" => "read_concept",
+                        "conceptid" => $conceptID
+                    ];
+
+                    $response = $this->connect->query($request);
+                    
+                    if (isset($response, $response["concept"])) {
+                        $display->setData(array("title"=> "Edit Concept",
+                                                "concept" => $response["concept"],
+                                                "operation" => "update"));
+                        $display->setTemplate("concepts/edit");
+                    } else {
+                        $error = ["error" => ["type" => "Not Found", "message" => "The concept you were looking for does not exist."]];
+                        $this->drawErrorPage($error, $display);
+                    }
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+
+            case "concept_save":
+                if (isset($this->permissions["EditResources"])) {
+
+                    $mapper = new \snac\client\webui\util\ConceptPostMapper();
+
+                    // Get the constellation object
+                    $concept = $mapper->serializeToConcept($input);
+
+                    $this->logger->addDebug("writing concept", $concept->toArray());
+
+                    // Build a data structure to send to the server
+                    $request = [
+                        "command" => "save_concept",
+                        "concept" => $concept->toArray()
+                    ];
+
+                    $serverResponse = $this->connect->query($request);
+
+                    $response = array();
+                    $response["server_debug"] = $serverResponse;
+
+                    if (!is_array($serverResponse)) {
+                        $this->logger->addDebug("server's response: $serverResponse");
+                    } else {
+                        if (isset($serverResponse["result"]))
+                            $response["result"] = $serverResponse["result"];
+                        if (isset($serverResponse["error"])) {
+                            //$response["error"] = $serverResponse["error"];
+                            $response["result"] = "success"; 
+                        }
+                        // Get the server's response constellation
+                        if (isset($serverResponse["concept"])) {
+                            $this->logger->addDebug("server's response written concept", $serverResponse["concept"]);
+                        }
+                    }
+
+                    return $response;
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
                 }
                 break;
 
@@ -3803,7 +3878,7 @@ class WebUIExecutor {
         $request["command"] = "vocabulary";
         $request["type"] = $input["type"];
         $request["entity_type"] = null;
-        if (isset($input["entity_type"]))
+        if (isset($input["entity_type"]) && !empty($input["entity_type"]))
             $request["entity_type"] = $input["entity_type"];
         if (isset($request["type"])) {
             if (strpos($request["type"], "ic_") !== false) {
