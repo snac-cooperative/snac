@@ -54,7 +54,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 <link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
 
 <meta name="viewport" content="initial-scale = 1.0" />
+
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
+
 <body role="document">
 {% import 'widgets.html' as widgets %}
 {% import 'edit_components.html' as components %}

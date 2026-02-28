@@ -22,6 +22,8 @@
 <!-- SNAC Javascript -->
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
 
 <body role="document">

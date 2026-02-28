@@ -22,7 +22,10 @@
 <!-- SNAC Scripts -->
 <script src="{{control.snacURL}}/javascript/html2canvas.js{{control.noCache}}"></script>
 <script src="{{control.snacURL}}/javascript/feedback.js{{control.noCache}}"></script>
+
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
+
 <body role="document">
 {% from 'page_navigation.html' import topNavigation,footer %}
 {{ topNavigation(X, user, permissions, control) }}

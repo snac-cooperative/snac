@@ -60,6 +60,7 @@ $(document).ready(function() {
 })
 </script>
 
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
 
 
@@ -91,7 +92,7 @@ $(document).ready(function() {
                     <div class="col-xs-9">
                         <select class="form-control" name="topic" id='contact-topic-select'>
                             <option></option>
-                            <option value="Data Correction"> Data Correction (Please include evidence)</option>
+                            <option value="Data Correction"> Data Correction </option>
                             <option value="Technical Feedback"> Technical Feedback </option>
                             <option value="Other"> Other </option>
                         </select>

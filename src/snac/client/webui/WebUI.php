@@ -269,6 +269,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Workflow: Handle user commands, perform actions
         // *************************************************
 
+        $response = "";
 
         switch($this->input["command"]) {
 

@@ -673,6 +673,8 @@ $(document).ready(function() {
 </script>
 
 <meta name="viewport" content="initial-scale = 1.0" />
+
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
 
 <body role="document">

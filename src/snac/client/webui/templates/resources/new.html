@@ -51,7 +51,9 @@
     });
 </script>
 
+{% from 'google_analytics.html' import googleAnalytics %} {{ googleAnalytics(X, user, permissions, control) }}
 </head>
+
 <body role="document">
     {% import "resources/_resource_form.html" as resources %}
     {% from 'page_navigation.html' import topNavigation,footer %}
