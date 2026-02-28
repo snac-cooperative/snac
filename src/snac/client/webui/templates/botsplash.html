@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="viewport" content="width=device-width">
+{% if control.interfaceVersion == "development" %}
+<link rel="apple-touch-icon" href="images/snacdev-icon.png"/>
+<meta property="og:image" content="{{control.snacURL}}/images/snacdev-icon.png">
+{% elseif control.interfaceVersion == "demo" %}
+<link rel="apple-touch-icon" href="images/snacdemo-icon.png"/>
+<meta property="og:image" content="{{control.snacURL}}/images/snacdemo-icon.png">
+{% else %}
+<link rel="apple-touch-icon" href="images/snac-icon.png"/>
+{% endif %}
+
+<meta property="og:title" content="Social Networks and Archival Context">
+<meta property="og:image" content="{{control.snacURL}}/images/snac-icon.png">
+<meta property="og:description" content="SNAC is an aggregate of biographical information about people, both individuals and groups, who created or are documented in historical resources. Users can search for names of individual people, organizations, and families, browse featured descriptions, and discover and locate connected historical resources.">
+
+<!-- SNAC Icons -->
+<link rel="apple-touch-icon" sizes="180x180" href="{{control.snacURL}}/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="{{control.snacURL}}/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="{{control.snacURL}}/images/favicon-16x16.png">
+<link rel="mask-icon" href="{{control.snacURL}}/images/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#5bbad5">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="search"
+      type="application/opensearchdescription+xml"
+      title="Social Networks and Archival Context"
+      href="{{control.snacURL}}/opensearch.xml">
+
+<!-- SNAC HRT Template code -->
+<link href="{{control.snacURL}}/css/hrt/hrt.css"
+            media="all"
+            rel="stylesheet"
+            type="text/css">
+<style>
+    .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
+    .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
+    .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
+    .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov, .sprite-icons-cbw, .sprite-icons-fs, .sprite-icons-nara
+    { float: left;
+    margin-right: 0.33em; }
+</style>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="{{control.snacURL}}/css/snac.css{{control.noCache}}">
+
+
+<meta name="viewport" content="initial-scale = 1.0" />
+
+
+
+<script>
+$(document).ready(function() {
+    $.post("{{control.snacURL}}/botverify", { hashverify: "{{data.hash}}"})
+        .done(function(res) {
+            if (res.success == "true") {
+                location.reload();
+            } else {
+                $("#message").text("Could not verify. Please try again later.");
+            }
+        });
+
+});
+</script>
+
+</head>
+<body role="document">
+
+
+<div class="container snac" role="main">
+
+    <div class="row">
+        <div class="col-md-3">
+        </div>
+        <div class="col-md-6">
+        <h1>Social Networks and Archival Context</h1>
+        <p>Verifying that you are not a bot... please wait.  (JavaScript and cookies are required).</p>
+
+        <p id="message"></p>
+        </div>
+        <div class="col-md-3">
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+
