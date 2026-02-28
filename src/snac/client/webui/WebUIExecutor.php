@@ -1513,6 +1513,29 @@ class WebUIExecutor {
     }
 
     /**
+     * Display Splash Page for Bots 
+     *
+     * Fills the display object with the bot splash page.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySplash($hashvalue, &$display) {
+        $display->setTemplate("botsplash");
+
+        $display->setData(["hash" => $hashvalue]);
+    }
+
+    public function verifyNonBot(&$input, $hashvalue) {
+        if (isset($input["hashverify"]) && !empty($input["hashverify"]) &&
+            $input["hashverify"] == $hashvalue) {
+                return ["success" => "true"];
+        }
+        unset($_SESSION["snac_hash"]);
+        return ["success" => "false"];
+    }
+
+    /**
      * Display Grid Page
      *
      * Fills the display object with the explore grid.

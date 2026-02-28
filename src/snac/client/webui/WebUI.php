@@ -101,6 +101,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // These are the things you are allowed to do without logging in.
         $publicCommands = array(
+                "splash",
+                "botverify",
                 "login",
                 "login2",
                 "login3",
@@ -137,6 +139,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // These are read-only commands that are allowed in read-only mode
         $readOnlyCommands = array(
+            "splash",
+            "botverify",
             "search",
             "view",
             "snippet",
@@ -153,7 +157,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "visualize",
             "stats",
             "history",
-            "browse",
+            "browse"
         );
 
 
@@ -211,6 +215,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 !(in_array($this->input["command"], $publicCommands)))
                 $this->input["command"] = "";
 
+
+            // Check for bots with a quick splash page
+            if (empty($_SESSION['snac_hash'])) {
+               $this->input["command"] = "splash"; 
+            }
+
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
@@ -261,6 +271,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
 
         switch($this->input["command"]) {
+
+            case "splash":
+                $_SESSION["snac_hash"] = hash('sha256', $_SERVER["REMOTE_ADDR"] . "::".time());
+                $executor->displaySplash($_SESSION["snac_hash"], $display);
+                break;
+            case "botverify":
+                $response = $executor->verifyNonBot($this->input, $_SESSION["snac_hash"]);
+                break;
 
             // Session-Level Commands
             case "login":
