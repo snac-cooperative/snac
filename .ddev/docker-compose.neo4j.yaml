@@ -1,0 +1,22 @@
+services:
+  neo4j:
+    image: neo4j:3.5.14
+    platform: linux/amd64
+    container_name: "ddev-${DDEV_SITENAME}-neo4j"
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
+    expose:
+      - "7474"
+      - "7687"
+    ports:
+      - 57687:7687
+    volumes:
+      - neo4j:/data
+    environment:
+      NEO4J_AUTH: none
+      VIRTUAL_HOST: $DDEV_HOSTNAME
+      HTTP_EXPOSE: 7474:7474
+
+volumes:
+  neo4j:

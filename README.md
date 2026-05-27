@@ -4,7 +4,7 @@
 
 This repository contains the entirety of the SNAC Server code, including all components written by the UVA development team.
 
-The [Testing Install](INSTALL_TEST.md) file includes instructions for how to install the server locally for testing purposes.
+The [Local Setup](./docs/local-setup.md) file includes instructions for how to install the server locally for testing purposes.
 
 ## Codebase Organization
 
