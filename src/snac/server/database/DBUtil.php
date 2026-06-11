@@ -177,6 +177,13 @@ class DBUtil
     private $db = null;
 
     /**
+     * Laravel connector object
+     *
+     * @var snac\client\util\LaravelUtil object.
+     */
+    private $lvUtil = null;
+
+    /**
      * Term Cache
      *
      * Cache of term objects to use when filling out structures so we don't have to repeat lookups

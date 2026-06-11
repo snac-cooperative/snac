@@ -688,8 +688,11 @@ class User implements \Serializable {
      * Allows PHP's serialize() method to correctly serialize the object.
      *
      * {@inheritDoc}
+     * 
+     * Note: The use of this interface is deprecated and included only for
+     * backward compatibility.
      *
-     * @return string The serialized form of this object
+     * @return string Serialized form of this object
      */
     public function serialize() {
         return $this->toJSON();
@@ -701,11 +704,37 @@ class User implements \Serializable {
      * Allows PHP's unserialize() method to correctly unserialize the object.
      *
      * {@inheritDoc}
+     * 
+     * Note: The use of this interface is deprecated and included only for
+     * backward compatibility.
      *
-     * @param string $data the serialized object
+     * @param string $data Serialized version of this object
      */
     public function unserialize($data) {
         $this->fromJSON($data);
+    }
+
+    
+    /**
+     * Serialization Magic Method
+     *
+     * Allows PHP's serialize() function to correctly serialize the object.
+     *
+     * @return array Serialized form of this object
+     */
+    public function __serialize() {
+        return $this->toArray();
+    }
+
+    /**
+     * Un-Serialization Method
+     *
+     * Allows PHP's unserialize() function to correctly unserialize the object.
+     *
+     * @param array $data Serialized version of this object
+     */
+    public function __unserialize($data) {
+        $this->fromArray($data);
     }
 
 }
