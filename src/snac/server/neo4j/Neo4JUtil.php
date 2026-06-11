@@ -759,6 +759,7 @@ class Neo4JUtil {
             $relatedConstellationIDs = $result->getRecord()->get("ids");
             return $relatedConstellationIDs;
         }
+        return [];
     }
 
     /**

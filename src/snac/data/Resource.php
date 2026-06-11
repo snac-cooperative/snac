@@ -105,7 +105,6 @@ class Resource extends AbstractData {
      */
     private $abstract = null;
 
-
     /**
      * Extent of the resource
      *
@@ -113,6 +112,12 @@ class Resource extends AbstractData {
      */
     private $extent = null;
 
+    /**
+     * Content of the archival resource
+     *
+     * @var string Resource content
+     */
+    private $content = null;
 
     /**
      * Repository
