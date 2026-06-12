@@ -3720,9 +3720,10 @@ class ServerExecutor {
      * looks them up in our database to get summary constellations for each of the most recently published versions.
      * Puts them as a list on the response for the client.
      *
+     * @param string[] $input Input array from the Server object
      * @return string[] The response to send to the client
      */
-    public function getRecentlyPublished() {
+    public function getRecentlyPublished(&$input) {
         $response = array();
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
