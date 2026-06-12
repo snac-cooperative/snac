@@ -3666,6 +3666,8 @@ class ServerExecutor {
 
             $return = array();
             foreach ($results as $i => $val) {
+                if ($i >= $numConstellations) break;
+
                 $related = new \snac\data\Constellation();
                 $related->setID($val["_source"]["id"]);
                 $related->setArkID($val["_source"]["arkID"]);
