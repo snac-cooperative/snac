@@ -3652,11 +3652,17 @@ class ServerExecutor {
             $withImages = true;
         }
 
+        $numConstellations = 30;
+        if (isset($input["count"]) && is_numeric($input["count"]) && $input["count"] < 100) {
+            $numConstellations = $input["count"];
+        }
+
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
             $results = $this->elasticSearch->listRandomConstellations(
                         \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                        $withImages);
+                        $withImages,
+                        $numConstellations);
 
             $return = array();
             foreach ($results as $i => $val) {

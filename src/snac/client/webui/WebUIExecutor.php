@@ -2562,7 +2562,8 @@ class WebUIExecutor {
 
         $randomQuery = $this->connect->query(array(
                 "command"=>"random_constellations",
-                "images" => true
+                "images" => true,
+                "count" => 12
             ));
 
         $randomConstellations = [];
