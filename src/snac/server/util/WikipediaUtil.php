@@ -86,7 +86,6 @@ class WikipediaUtil {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_ENCODING, 'Accept-Encoding: gzip,deflate');
         $response = curl_exec($ch);
-        curl_close($ch);
 
         $imgdata = json_decode($response, true);
         if (is_array($imgdata) && isset($imgdata["results"]) && isset($imgdata["results"]["bindings"])
@@ -120,7 +119,6 @@ class WikipediaUtil {
                 ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
-        curl_close($ch);
 
         if ($response === null) {
             return array(true, $imgURL, $metadata);

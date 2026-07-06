@@ -97,7 +97,6 @@ class OSTicket {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $response = curl_exec($ch);
             $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
 
             $this->logger->addDebug("Got the following result: $response");
             if ($responseCode == 201)

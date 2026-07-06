@@ -120,7 +120,6 @@ class ServerConnect {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         $this->code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
 
         // Return the server response as associative array

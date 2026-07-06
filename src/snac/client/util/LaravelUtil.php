@@ -46,7 +46,6 @@ class LaravelUtil {
         curl_setopt_array($ch, $options);
 
         $response = curl_exec($ch);
-        curl_close($ch);
         $response = json_decode($response, true);
         return $response;
     }
@@ -73,7 +72,6 @@ class LaravelUtil {
         curl_setopt_array($ch, $options);
 
         $response = curl_exec($ch);
-        curl_close($ch);
         $response = json_decode($response, true);
         return $response;
     }

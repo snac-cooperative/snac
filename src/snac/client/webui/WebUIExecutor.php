@@ -1815,7 +1815,6 @@ class WebUIExecutor {
             ));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $verifyResponse = curl_exec($ch);
-            curl_close($ch);
             $verified = array ("success" => false);
 
             if ($verifyResponse != null) {
