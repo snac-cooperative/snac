@@ -64,8 +64,8 @@ class Neo4JUtil {
         $this->logger->pushHandler($log);
 
         if (\snac\Config::$USE_NEO4J) {
-            $this->connector = \GraphAware\Neo4j\Client\ClientBuilder::create()
-                ->addConnection('bolt', \snac\Config::$NEO4J_BOLT_URI)
+            $this->connector = \Laudis\Neo4j\ClientBuilder::create()
+                ->withDriver('bolt', \snac\Config::$NEO4J_BOLT_URI)
                 ->build();
         }
         $this->logger->addDebug("Created neo4j client");

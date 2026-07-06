@@ -3661,6 +3661,7 @@ class ServerExecutor {
 
             $results = $this->elasticSearch->listRandomConstellations(
                         \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                        null,
                         $withImages,
                         $numConstellations);
 

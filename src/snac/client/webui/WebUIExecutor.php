@@ -1555,7 +1555,12 @@ class WebUIExecutor {
         $randomQuery = $this->connect->query(array(
                 "command"=>"random_constellations",
                 "images" => true
-            ));
+              ));
+
+        if (!$randomQuery || !is_array($randomQuery)) {
+          $this->logger->addDebug("Bad Random Constellation Query", [$randomQuery]);
+          $randomQuery = [];
+        }
 
         if (isset($randomQuery["constellation"]) && $randomQuery["constellation"] != null) {
             $randomConstellations = $randomQuery["constellation"];
