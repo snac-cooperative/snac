@@ -3652,14 +3652,22 @@ class ServerExecutor {
             $withImages = true;
         }
 
+        $numConstellations = 30;
+        if (isset($input["count"]) && is_numeric($input["count"]) && $input["count"] < 100) {
+            $numConstellations = $input["count"];
+        }
+
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
             $results = $this->elasticSearch->listRandomConstellations(
                         \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                        $withImages);
+                        $withImages,
+                        $numConstellations);
 
             $return = array();
             foreach ($results as $i => $val) {
+                if ($i >= $numConstellations) break;
+
                 $related = new \snac\data\Constellation();
                 $related->setID($val["_source"]["id"]);
                 $related->setArkID($val["_source"]["arkID"]);
@@ -3714,12 +3722,19 @@ class ServerExecutor {
      * looks them up in our database to get summary constellations for each of the most recently published versions.
      * Puts them as a list on the response for the client.
      *
+     * @param string[] $input Input array from the Server object
      * @return string[] The response to send to the client
      */
-    public function getRecentlyPublished() {
+    public function getRecentlyPublished(&$input) {
         $response = array();
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
+
+            $withImages = false;
+            if (isset($input["images"]) && $input["images"] == true) {
+                $withImages = true;
+            }
+
 
             $results = $this->elasticSearch->listRecentlyUpdated(
                         \snac\Config::$ELASTIC_SEARCH_BASE_INDEX);
@@ -3732,6 +3747,33 @@ class ServerExecutor {
                 $relatedName = new \snac\data\NameEntry();
                 $relatedName->setOriginal($val["_source"]["nameEntry"]);
                 $related->addNameEntry($relatedName);
+                if ($withImages && $val["_source"]["hasImage"]) {
+                    $image = new \snac\data\Image();
+                    $image->setURL($val["_source"]["imageURL"]);
+                    if (isset($val["_source"]["imageMeta"]) && $val["_source"]["imageMeta"] !== null) {
+                        $meta = $val["_source"]["imageMeta"];
+                        if (isset($meta["infoURL"])) {
+                            $image->setInfoURL($meta["infoURL"]);
+                        }
+                        if (isset($meta["info"])) {
+                            $image->setInfo($meta["info"]);
+                        }
+                        if (isset($meta["author"]) && isset($meta["author"]["name"])) {
+                            $image->setAuthor($meta["author"]["name"]);
+                        }
+                        if (isset($meta["author"]) && isset($meta["author"]["url"])) {
+                            $image->setAuthorURL($meta["author"]["url"]);
+                        }
+                        if (isset($meta["license"]) && isset($meta["license"]["name"])) {
+                            $image->setLicense($meta["license"]["name"]);
+                        }
+                        if (isset($meta["license"]) && isset($meta["license"]["url"])) {
+                            $image->setLicenseURL($meta["license"]["url"]);
+                        }
+
+                    }
+                    $related->addImage($image);
+                }
                 array_push($return, $related->toArray());
             }
 

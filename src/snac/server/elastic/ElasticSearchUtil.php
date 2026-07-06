@@ -31,6 +31,11 @@ class ElasticSearchUtil {
     private $connector = null;
 
     /**
+     * @var \Monolog\Logger $logger the logger for this class
+     */
+    private $logger = null;
+
+    /**
      * Default Constructor
      *
      * Constructor for the elastic search utility.  It connects to a logger and to elastic search.
@@ -208,9 +213,10 @@ class ElasticSearchUtil {
      * @param string $index The elastic search index
      * @param string $type The elastic search index type
      * @param boolean $withImage optional Whether or not to require images
+     * @param integer $size optional Number of results to return
      * @return string[] List of recently updated records in the elastic search index
      */
-    public function listRandomConstellations($index, $type, $withImage=true) {
+    public function listRandomConstellations($index, $type, $withImage=true, $size=30) {
         $imagePart = '"match": {"hasImage": true}';
         if ($withImage === false)
             $imagePart = '"match_all" : {}';
@@ -221,7 +227,7 @@ class ElasticSearchUtil {
                         "random_score" : {}
                     }
                 },
-                "size" : 30
+                "size" : '.$size.'
             }';
 
         $params = [

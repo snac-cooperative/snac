@@ -357,7 +357,7 @@ class Server implements \snac\interfaces\ServerInterface {
 
 
             case "recently_published":
-                $this->response = $executor->getRecentlyPublished();
+                $this->response = $executor->getRecentlyPublished($this->input);
                 break;
             case "random_constellations":
                 $this->response = $executor->getRandomConstellations($this->input);

@@ -50,6 +50,11 @@ class Neo4JUtil {
      * @var \GraphAware\Neo4j\Client\ClientInterface The Neo4J Client interface connector
      */
     private $connector = null;
+    
+    /**
+     * @var \Monolog\Logger $logger the logger for this class
+     */
+    private $logger = null;
 
     /**
      * Default Constructor
@@ -754,6 +759,7 @@ class Neo4JUtil {
             $relatedConstellationIDs = $result->getRecord()->get("ids");
             return $relatedConstellationIDs;
         }
+        return [];
     }
 
     /**

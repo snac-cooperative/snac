@@ -2574,29 +2574,41 @@ class WebUIExecutor {
      *
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displayLandingPage(&$display) {
+    public function displayLandingPage($input, &$display) {
+        $display->setTemplate("landing_page");
+
+        $otherInfo = array();
+
+        if (isset($input["redirected"])) {
+            $otherInfo["message"] = "redirected";
+        }
+
+        $randomQuery = $this->connect->query(array(
+                "command"=>"random_constellations",
+                "images" => true,
+                "count" => 12
+            ));
+
+        $randomConstellations = [];
+        if (isset($randomQuery["constellation"]) && $randomQuery["constellation"] != null) {
+            $randomConstellations = $randomQuery["constellation"];
+        }
 
         // Get the list of recently published constellations
+        $recentQuery = $this->connect->query(array(
+                "command"=>"recently_published",
+                "images" => true
+            ));
 
-        $request = array();
-        $request["command"] = "recently_published";
-        $response = $this->connect->query($request);
-        $this->logger->addDebug("Got the following response from the server for recently published", array($response));
-        if (!isset($response["constellation"])) {
-            return $this->drawErrorPage($response, $display);
-        }
-        $recentConstellations = $response["constellation"];
-
-        $recents = array();
-        foreach ($recentConstellations as $constellationArray) {
-            $constellation = new \snac\data\Constellation($constellationArray);
-            array_push($recents, array(
-                    "id"=>$constellation->getID(),
-                    "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+        $recentConstellations = [];
+        if (isset($recentQuery["constellation"]) && $recentQuery["constellation"] != null) {
+            $recentConstellations = $recentQuery["constellation"];
         }
 
-        $display->setData(array("recents"=>$recents));
-        $display->setTemplate("landing_page");
+        $display->setData(array_merge([
+            "random" => $randomConstellations,
+            "recent" => $recentConstellations
+          ], $otherInfo));
     }
 
     /**

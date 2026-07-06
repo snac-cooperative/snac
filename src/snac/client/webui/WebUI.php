@@ -121,6 +121,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "maybesame",
                 "diff",
                 "explore",
+                "landing",
                 "visualize",
                 "history",
                 "history_diff",
@@ -778,7 +779,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "analytics":
                 $executor->recordAnalytics($this->input);
                 break;
-            // If dropping through, then show the landing page
+                // If dropping through, then show the landing page
+            case "landing":
+                $executor->displayLandingPage($this->input, $display);
+                break;
             default:
                 // The WebUI is displaying the landing page only
                 // $executor->displayLandingPage($display);
