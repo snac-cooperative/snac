@@ -5,7 +5,7 @@
 /* Note: Calibri = Roboto and Minion Pro = Crimson Text */
 
 body {
-    padding-top: 35px;
+    padding-top: 50px;
     min-height: 100%;
 }
 
@@ -332,6 +332,7 @@ h1 {
 
 div.snac {
     min-height: 815px;
+    padding-top: 20px;
 }
 
 .snac .navbar .container {
@@ -356,7 +357,7 @@ div.snac {
 .snac-system-notice {
     text-align: center!important;
     background-color: #ebccd1;
-    margin-top: 16px;
+    margin-top: 0px;
     color: #a94442;
 }
 
