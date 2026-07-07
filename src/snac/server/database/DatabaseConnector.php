@@ -273,4 +273,73 @@ class DatabaseConnector {
         return $this->dbHandle;
     }
 
+    /**
+     * Using Cursors to efficiently handle large result sets:
+     *
+     * $db->cursorQuery("allRows","select * from large_table")
+     * while ($resource = $db->cursorFetch("allRows",10000)) {
+     *   if (pg_num_rows($resource) == 0) { break; }
+     *   while ($row = $db->fetchRow($resource)) {
+     *     // process $row
+     *   }
+     *   pg_free_result($resource);
+     * }
+     * $db->cursorClose("allRows")
+     */
+
+    /**
+     * Declare a Cursor
+     *
+     * Begins a transcaction and declares a named cursor. Used with $db->cursorFetch() to retrieve results
+     * from large queries in memory-efficient batches.  The statement should be named, and the query given.
+     *
+     * @param string $cursorName Name for the cursor
+     * @param string $query Query to prepare
+     */
+    public function cursorQuery($cursorName, $query) {
+        try {
+            \pg_query($this->dbHandle, "BEGIN");
+            \pg_query($this->dbHandle, "DECLARE $cursorName CURSOR FOR ".$query);
+        } catch (\Exception $e) {
+            // Replace any exceptions with the SNAC Database Exception and re-throw back out
+            throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
+        }
+    }
+
+    /**
+     * Fetch Rows from a Cursor
+     *
+     * Used after $db->cursorQuery(), and then with $db->fetchRow(). Fetches the next batch of results.
+     *
+     * @param string $cursorName Name for the cursor
+     * @param integer $batchSize for the fetch
+     * @return \resource Postgres resource for the result
+     */
+    public function cursorFetch($cursorName, $batchSize=10000) {
+        try {
+            $resource = \pg_query($this->dbHandle, "FETCH FORWARD $batchSize FROM $cursorName");
+            return $resource;
+        } catch (\Exception $e) {
+            // Replace any exceptions with the SNAC Database Exception and re-throw back out
+            throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
+        }
+    }
+
+    /**
+     * Close a Cursor
+     *
+     * Closes the named cursor and the transaction after all results have been fetched.
+     *
+     * @param string $cursorName Name for the cursor
+     */
+    public function cursorClose($cursorName) {
+        try {
+            \pg_query($this->dbHandle, "CLOSE $cursorName");
+            \pg_query($this->dbHandle, "COMMIT");
+        } catch (\Exception $e) {
+            // Replace any exceptions with the SNAC Database Exception and re-throw back out
+            throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
+        }
+    }
+
 }
