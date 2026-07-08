@@ -107,103 +107,87 @@ class Neo4JUtil {
      * @return string[][] A multi-dimensional array of nodes and edges constituting the graph
      */
     public function getAlchemyData($icid, $degree = 2, $delta = 10) {
-    
-        if ($degree == 1) { $query_for_limits = "MATCH (n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"}) RETURN avg(DISTINCT size((i1)-[:RRELATION]-())) AS avg_1, max(size((i1)-[:RRELATION]-())) AS max_1"; }        
-        if ($degree == 2) { $query_for_limits = "MATCH (n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"}) RETURN avg(DISTINCT size((i1)-[:RRELATION]-())) AS avg_1, avg(DISTINCT size((i2)-[:RRELATION]-())) AS avg_2, max(size((i1)-[:RRELATION]-())) AS max_1, max(size((i2)-[:RRELATION]-())) AS max_2"; }
-        if ($degree == 3) { $query_for_limits = "MATCH (n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"})-[ir3:ICRELATION]->(i3:Identity {entity_type:\"person\"}) RETURN avg(DISTINCT size((i1)-[:RRELATION]-())) AS avg_1, avg(DISTINCT size((i2)-[:RRELATION]-())) AS avg_2, avg(DISTINCT size((i3)-[:RRELATION]-())) AS avg_3, max(size((i1)-[:RRELATION]-())) AS max_1, max(size((i2)-[:RRELATION]-())) AS max_2, max(size((i3)-[:RRELATION]-())) AS max_3"; }
-        if ($degree == 4) { $query_for_limits = "MATCH (n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"})-[ir3:ICRELATION]->(i3:Identity {entity_type:\"person\"})-[ir4:ICRELATION]->(i4:Identity {entity_type:\"person\"}) RETURN avg(DISTINCT size((i1)-[:RRELATION]-())) AS avg_1, avg(DISTINCT size((i2)-[:RRELATION]-())) AS avg_2, avg(DISTINCT size((i3)-[:RRELATION]-())) AS avg_3, avg(DISTINCT size((i4)-[:RRELATION]-())) AS avg_4, max(size((i1)-[:RRELATION]-())) AS max_1, max(size((i2)-[:RRELATION]-())) AS max_2, max(size((i3)-[:RRELATION]-())) AS max_3, max(size((i4)-[:RRELATION]-())) AS max_4"; }
-        
-        $result_for_limits = $this->connector->run($query_for_limits);
-        
-        $limits = $result_for_limits->firstRecord();
-        
+        if ($degree > 4) { $degree = 4; }
+        $minimum_records = array();
+        for ($i = 1; $i <= $degree; $i++) { $minimum_records[$i] = 0; }
         $delta_limit = $delta * 0.1;
-        
-        $minimum_records_1 = round($limits->value('avg_1') * $delta_limit);
-        if ($minimum_records_1 > $limits->value('max_1')) { $minimum_records_1 = $limits->value('max_1'); }
-        if ($minimum_records_1 < 1) { $minimum_records_1 = 0; }
-        
-        if ($degree > 1)
-        {
-            $minimum_records_2 = round($limits->value('avg_2') * $delta_limit);
-            if ($minimum_records_2 > $limits->value('max_2')) { $minimum_records_2 = $limits->value('max_2'); }
-            if ($minimum_records_2 < 1) { $minimum_records_2 = 0; }
-        }
-        if ($degree > 2)
-        {
-            $minimum_records_3 = round($limits->value('avg_3') * $delta_limit);
-            if ($minimum_records_3 > $limits->value('max_3')) { $minimum_records_3 = $limits->value('max_3'); }
-            if ($minimum_records_3 < 1) { $minimum_records_3 = 0; }
-        }
-        if ($degree > 3)
-        {
-            $minimum_records_4 = round($limits->value('avg_4') * $delta_limit);
-            if ($minimum_records_4 > $limits->value('max_4')) { $minimum_records_4 = $limits->value('max_4'); }
-            if ($minimum_records_4 < 1) { $minimum_records_4 = 0; }
-        }
-        
-        if ($degree == 1) { $query = "MATCH p=((n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})) WHERE (size((i1)-[:RRELATION]-()) >= " . $minimum_records_1 . ") RETURN relationships(p) AS the_rels, nodes(p) AS the_nods"; }
-        if ($degree == 2) { $query = "MATCH p=((n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"})) WHERE (size((i1)-[:RRELATION]-()) >= " . $minimum_records_1 . ") AND (size((i2)-[:RRELATION]-()) >= " . $minimum_records_2 . ") RETURN relationships(p) AS the_rels, nodes(p) AS the_nods"; }
-        if ($degree == 3) { $query = "MATCH p=((n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"})-[ir3:ICRELATION]->(i3:Identity {entity_type:\"person\"})) WHERE (size((i1)-[:RRELATION]-()) >= " . $minimum_records_1 . ") AND (size((i2)-[:RRELATION]-()) >= " . $minimum_records_2 . ") AND (size((i3)-[:RRELATION]-()) >= " . $minimum_records_3 . ") RETURN relationships(p) AS the_rels, nodes(p) AS the_nods"; }
-        if ($degree == 4) { $query = "MATCH p=((n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"})-[ir3:ICRELATION]->(i3:Identity {entity_type:\"person\"})-[ir4:ICRELATION]->(i4:Identity {entity_type:\"person\"})) WHERE (size((i1)-[:RRELATION]-()) >= " . $minimum_records_1 . ") AND (size((i2)-[:RRELATION]-()) >= " . $minimum_records_2 . ") AND (size((i3)-[:RRELATION]-()) >= " . $minimum_records_3 . ") AND (size((i4)-[:RRELATION]-()) >= " . $minimum_records_4 . ") RETURN relationships(p) AS the_rels, nodes(p) AS the_nods"; }
-                
-        $result = $this->connector->run($query);
-    
-        $some_edges = array();
-        foreach ($result->records() as $record) {
-        foreach ($record->get('the_rels') as $rel)
-        {
-            $some_edges[] = "\n{ \"source\": " . $rel->startNodeIdentity() . ", \"target\": " . $rel->endNodeIdentity() . " }" ;
-        }
-        }
-        
-        $unique_edges = array_unique($some_edges);
-        
-        $some_nodes = array();
-        foreach ($result->records() as $record) {
-        $node_degree = 0;
-        foreach ($record->get('the_nods') as $nod)
-        {
-            $dbid = $nod->value('id');
-            $caption = $dbid;
-            if ($nod->hasValue('name')) { $caption = $this->shortenString($nod->value('name')); }
-            $root = "";
-            if ($dbid == $icid) { $root = ", \"root\": true"; }
-            
-            $some_nodes[] = "\n{ \"id\": " . $nod->identity() . ", \"dbid\": " . $dbid . ", \"caption\": \"" . addcslashes($caption, '"') . "\", \"dgr\": \"x" . $node_degree++ . "\"" . $root . " }" ;
-        }
-        }
-        
-        $semi_unique_nodes = array_unique($some_nodes);
-        
-        sort($semi_unique_nodes);
-        
-        $unique_nodes = array();
-        $max = sizeof($semi_unique_nodes);
-        $last_node_substr = "X";
-        for($i = 0; $i < $max; $i++)
-        {
-            $this_node_substr = substr($semi_unique_nodes[$i], 0, 36);
-            if($this_node_substr != $last_node_substr)
-            {
-                $unique_nodes[] = $semi_unique_nodes[$i];
+
+        try {
+            for ($i = 1; $i <= $degree; $i++) {
+              $query = "MATCH (n:Identity {id:\"" . $icid . "\"})";
+              for ($j = 1; $j <= $i; $j++) {
+                $query .= "-[ir$j:ICRELATION]->(i$j:Identity {entity_type:\"person\"})";
+              }
+              $query .= " WITH DISTINCT count{(i$i)-[:RRELATION]-()} as acnt, count{(i$i)-[:RRELATION]-()} as mcnt";
+              $query .= " RETURN avg(acnt) as avg, max(mcnt) as max";
+              $result = $this->connector->run($query);
+              $record = $result->first();
+              $avg = $record->get('avg');
+              $max = $record->get('max');
+              $min = round($avg * $delta_limit);
+              if ($min > $max) { $min = $max; }
+              $minimum_records[$i] = $min;
             }
-            $last_node_substr = $this_node_substr;
+
+            if ($degree == 1) { $query = "MATCH p=((n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})) WHERE (count{(i1)-[:RRELATION]-()} >= " . $minimum_records[1] . ") RETURN relationships(p) AS the_rels, nodes(p) AS the_nods"; }
+            if ($degree == 2) { $query = "MATCH p=((n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"})) WHERE (count{(i1)-[:RRELATION]-()} >= " . $minimum_records[1] . ") AND (count{(i2)-[:RRELATION]-()} >= " . $minimum_records[2] . ") RETURN relationships(p) AS the_rels, nodes(p) AS the_nods"; }
+            if ($degree == 3) { $query = "MATCH p=((n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"})-[ir3:ICRELATION]->(i3:Identity {entity_type:\"person\"})) WHERE (count{(i1)-[:RRELATION]-()} >= " . $minimum_records[1] . ") AND (count{(i2)-[:RRELATION]-()} >= " . $minimum_records[2] . ") AND (count{(i3)-[:RRELATION]-()} >= " . $minimum_records[3] . ") RETURN relationships(p) AS the_rels, nodes(p) AS the_nods"; }
+            if ($degree == 4) { $query = "MATCH p=((n:Identity {id:\"" . $icid . "\"})-[ir1:ICRELATION]->(i1:Identity {entity_type:\"person\"})-[ir2:ICRELATION]->(i2:Identity {entity_type:\"person\"})-[ir3:ICRELATION]->(i3:Identity {entity_type:\"person\"})-[ir4:ICRELATION]->(i4:Identity {entity_type:\"person\"})) WHERE (count{(i1)-[:RRELATION]-()} >= " . $minimum_records[1] . ") AND (count{(i2)-[:RRELATION]-()} >= " . $minimum_records[2] . ") AND (count{(i3)-[:RRELATION]-()} >= " . $minimum_records[3] . ") AND (count{(i4)-[:RRELATION]-()} >= " . $minimum_records[4] . ") RETURN relationships(p) AS the_rels, nodes(p) AS the_nods"; }
+
+            $result = $this->connector->run($query);
+
+            $some_edges = array();
+            foreach ($result as $record) {
+                foreach ($record->get('the_rels') as $rel) {
+                    $some_edges[] = "\n{ \"source\": " . $rel->getStartNodeId() . ", \"target\": " . $rel->getEndNodeId() . " }" ;
+                }
+            }
+            $unique_edges = array_unique($some_edges);
+            $some_nodes = array();
+
+            foreach ($result as $record) {
+                $node_degree = 0;
+                foreach ($record->get('the_nods') as $nod) {
+                    $dbid = $nod->getId();
+                    $caption = $dbid;
+                    if ($nod->__isset('name')) { $caption = $this->shortenString($nod->__get('name')); }
+                    $root = "";
+                    if ($dbid == $icid) { $root = ", \"root\": true"; }
+                    $some_nodes[] = "\n{ \"id\": " . $nod->getId() . ", \"dbid\": " . $dbid . ", \"caption\": \"" . addcslashes($caption, '"') . "\", \"dgr\": \"x" . $node_degree++ . "\"" . $root . " }" ;
+                }
+            }
+
+            $semi_unique_nodes = array_unique($some_nodes);
+
+            sort($semi_unique_nodes);
+        
+            $unique_nodes = array();
+            $max = sizeof($semi_unique_nodes);
+            $last_node_substr = "X";
+            for ($i = 0; $i < $max; $i++) {
+                $this_node_substr = substr($semi_unique_nodes[$i], 0, 36);
+                if ($this_node_substr != $last_node_substr) {
+                    $unique_nodes[] = $semi_unique_nodes[$i];
+                }
+                $last_node_substr = $this_node_substr;
+            }
+        
+            $json = "{\n\"nodes\": [" . implode(",", $unique_nodes) . "],\n\"edges\": [" . implode(",", $unique_edges) . "]\n}";
+        
+            if ($max < 1) {
+                $query_for_root = "MATCH (n:Identity {id:\"" . $icid . "\"}) RETURN n.name AS root_name";
+                $result_for_root = $this->connector->run($query_for_root);
+                $the_root = $result_for_root->firstRecord();
+                $root_name = $icid;
+                if ($the_root->hasValue('root_name')) { $root_name = $this->shortenString($the_root->value('root_name')); }
+                $json = "{\n\"nodes\": [{ \"id\": 1, \"dbid\": " . $icid . ", \"caption\": \"" . addcslashes($root_name, '"') . "\", \"dgr\": \"x0\", \"root\": true }],\n\"edges\": [ ]\n}";
+            }
+        
+            return json_decode($json, true);
+        } catch (\Throwable $e) {
+            $this->logger->addDebug("Neo4j error occurred: " . $e->getMessage() );
+            return false;
         }
-        
-        $json = "{\n\"nodes\": [" . implode(",", $unique_nodes) . "],\n\"edges\": [" . implode(",", $unique_edges) . "]\n}";
-        
-        if($max < 1)
-        {
-            $query_for_root = "MATCH (n:Identity {id:\"" . $icid . "\"}) RETURN n.name AS root_name";
-            $result_for_root = $this->connector->run($query_for_root);
-            $the_root = $result_for_root->firstRecord();
-            $root_name = $icid;
-            if ($the_root->hasValue('root_name')) { $root_name = $this->shortenString($the_root->value('root_name')); }
-            $json = "{\n\"nodes\": [{ \"id\": 1, \"dbid\": " . $icid . ", \"caption\": \"" . addcslashes($root_name, '"') . "\", \"dgr\": \"x0\", \"root\": true }],\n\"edges\": [ ]\n}";
-        }
-        
-        return json_decode($json, true);
     }
 
 }

@@ -104,8 +104,7 @@ class Neo4JUtil {
             );
 
             // Check to see if anything was added
-            $records = $result->getRecords();
-            if (empty($records)) {
+            if ($result->isEmpty()) {
                 // Must create this record instead
                 $result = $this->connector->run("CREATE (n:Identity) SET n += \$infos;",
                     [
@@ -133,13 +132,13 @@ class Neo4JUtil {
 
             // List out relations
             $icRels = array();
-            foreach ($result->getRecords() as $record) {
-                $path = $record->pathValue("p");
+            foreach ($result as $record) {
+                $path = $record->get("p");
                 array_push($icRels, [
-                    "arcrole" => $path->relationships()[0]->hasValue('arcrole') ? $path->relationships()[0]->value('arcrole') : null,
-                    "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
-                    "version" => $path->relationships()[0]->hasValue('version') ? $path->relationships()[0]->value('version') : null,
-                    "target" => $path->end()->value("id"),
+                    "arcrole" => $path->getRelationships()[0]->getProperties()->hasKey('arcrole') ? $path->getRelationships()[0]->getProperty('arcrole') : null,
+                    "id" => $path->getRelationships()[0]->getProperties()->hasKey('id') ? $path->getRelationships()[0]->getProperty('id') : null,
+                    "version" => $path->getRelationships()[0]->getProperties()->hasKey('version') ? $path->getRelationships()[0]->getProperty('version') : null,
+                    "target" => $path->getNodes()->last()->getProperty("id"),
                     "operation" => "delete"
                     ]
                 );
@@ -232,13 +231,13 @@ class Neo4JUtil {
                 );
 
                 // List out relations
-                foreach ($result->getRecords() as $record) {
-                    $path = $record->pathValue("p");
+                foreach ($result as $record) {
+                    $path = $record->get("p");
                     array_push($rRels, [
-                        "target" => $path->end()->value("id"),
-                        "role" => $path->relationships()[0]->hasValue('role') ? $path->relationships()[0]->value('role') : null,
-                        "id" => $path->relationships()[0]->hasValue('id') ? $path->relationships()[0]->value('id') : null,
-                        "version" => $path->relationships()[0]->hasValue('version') ? $path->relationships()[0]->value('version') : null,
+                        "target" => $path->getNodes()->last()->getProperty("id"),
+                        "role" => $path->getRelationships()[0]->getProperties()->hasKey('role') ? $path->getRelationships()[0]->getProperty('role') : null,
+                        "id" => $path->getRelationships()[0]->getProperties()->hasKey('id') ? $path->getRelationships()[0]->getProperty('id') : null,
+                        "version" => $path->getRelationships()[0]->getProperties()->hasKey('version') ? $path->getRelationships()[0]->getProperty('version') : null,
                         "operation" => "delete"
                         ]
                     );
@@ -371,37 +370,37 @@ class Neo4JUtil {
                 ]
             );
 
-            foreach ($result->getRecords() as $record) {
-                $path = $record->pathValue("p");
+            foreach ($result as $record) {
+                $path = $record->get("p");
 
                 // Source of relation
-                $startID = $path->start()->value("id");
-                $startLabels = $path->start()->labels();
+                $startID = $path->getNodes()->first()->getProperty("id");
+                $startLabels = $path->getNodes()->first()->labels();
                 $startType = $startLabels[0] ?? null;
 
                 if ($startType == null) {
                     throw new \snac\exceptions\SNACDatabaseException("Neo4J Node did not have a type");
                 }
 
-                if (count($path->relationships()) > 1) {
+                if (count($path->getRelationships()) > 1) {
                     $this->logger->addWarning("Redirected a Constellation, {$from->getID()}, which had two in-relations from the same source.");
                 }
                 // Relationship id/version
-                foreach ($path->relationships() as $relation) {
+                foreach ($path->getRelationships() as $relation) {
                     // Need to know Relation type (ICRELATION, RRELATION, HIRELATION)
                     $type = $relation->type();
 
                     $data = [];
 
                     // Resource Relations have id/version
-                    if ($relation->hasValue('id'))
-                        $data["id"] = $relation->value('id');
-                    if ($relation->hasValue('version'))
-                        $data["version"] = $relation->value('version');
+                    if ($relation->getProperties()->hasKey('id'))
+                        $data["id"] = $relation->getProperty('id');
+                    if ($relation->getProperties()->hasKey('version'))
+                        $data["version"] = $relation->getProperty('version');
 
                     // Constellation Relations have arcrole
-                    if ($relation->hasValue('arcrole'))
-                        $data["arcrole"] = $relation->value('arcrole');
+                    if ($relation->getProperties()->hasKey('arcrole'))
+                        $data["arcrole"] = $relation->getProperty('arcrole');
 
                     // Add the relation to the other Constellation if the ids are different
                     if ($startID != $to->getID()) {
@@ -451,26 +450,27 @@ class Neo4JUtil {
 
         // List out relations
         $rels = array();
-        foreach ($result->getRecords() as $record) {
-            $path = $record->pathValue("p");
+        foreach ($result as $record) {
+            $path = $record->get("p");
 
             $target = new \snac\data\Constellation();
-            $target->setID($path->start()->value("id"));
-            $target->setArkID($path->start()->value("ark"));
-            $target->setVersion($path->start()->value("version"));
+            $start = $path->getNodes()->first();
+            $target->setID($start->getProperty("id"));
+            $target->setArkID($start->getProperty("ark"));
+            $target->setVersion($start->getProperty("version"));
 
             $targetName = new \snac\data\NameEntry();
-            $targetName->setOriginal($path->start()->value("name"));
+            $targetName->setOriginal($start->getProperty("name"));
 
             $target->addNameEntry($targetName);
 
             $relation = new \snac\data\ConstellationRelation();
-            if ($path->relationships()[0]->hasValue('id'))
-                $relation->setID($path->relationships()[0]->value('id'));
-            if ($path->relationships()[0]->hasValue('version'))
-                $relation->setVersion($path->relationships()[0]->value('version'));
+            if ($path->getRelationships()[0]->getProperties()->hasKey('id'))
+                $relation->setID($path->getRelationships()[0]->getProperty('id'));
+            if ($path->getRelationships()[0]->getProperties()->hasKey('version'))
+                $relation->setVersion($path->getRelationships()[0]->getProperty('version'));
             $type = new \snac\data\Term();
-            $type->setTerm($path->relationships()[0]->value('arcrole'));
+            $type->setTerm($path->getRelationships()[0]->getProperty('arcrole'));
             $relation->setType($type);
 
             array_push($rels, [
@@ -511,10 +511,10 @@ class Neo4JUtil {
 
         // List out relations
         $matches = array();
-        foreach ($result->getRecords() as $record) {
+        foreach ($result as $record) {
             array_push($matches, [
-                "id" => $record->get("a")->value("id"),
-                "term" => $record->get("a")->value("name")
+                "id" => $record->get("a")->getProperty("id"),
+                "term" => $record->get("a")->getProperty("name")
             ]);
         }
 
@@ -536,7 +536,8 @@ class Neo4JUtil {
             ]
         );
 
-        $isHoldingInstitution = $result->getResults()->first()->values()[0];
+        if ($result->isEmpty()) { return false; }
+        $isHoldingInstitution = $result->first()->values()[0];
 
         if ($isHoldingInstitution === true) {
                 $constellation->setFlag("holdingRepository");
@@ -555,25 +556,25 @@ class Neo4JUtil {
      * @param  \snac\data\Constellation $constellation Constellation to search
      * @return string[] An associative array of statistical data
      */
-    public function getHoldingInstitutionStats(&$constellation) {
+   public function getHoldingInstitutionStats(&$constellation) {
         $return = [];
         $result = $this->connector->run("MATCH p=()-[r:HIRELATION]->(a:Identity {id: \$icid}) return count(r) as count;",
             [
                 'icid' => $constellation->getID()
             ]
         );
-        if (count($result->getRecords()) == 1) {
-            if ($result->firstRecord()->get('count') > 0) {
-                $return['instRes'] = $result->firstRecord()->get('count');;
+        if (count($result) == 1) {
+            if ($result->first()->get('count') > 0) {
+                $return['instRes'] = $result->first()->get('count');;
             }
         }
         $result = $this->connector->run("MATCH (r:Resource) return count(r) as count;",
             [
             ]
         );
-        if (count($result->getRecords()) == 1) {
-            if ($result->firstRecord()->get('count') > 0) {
-                $return['allRes'] = $result->firstRecord()->get('count');;
+        if (count($result) == 1) {
+            if ($result->first()->get('count') > 0) {
+                $return['allRes'] = $result->first()->get('count');;
             }
         }
 
@@ -582,18 +583,18 @@ class Neo4JUtil {
                 'icid' => $constellation->getID()
             ]
         );
-        if (count($result->getRecords()) == 1) {
-            if ($result->firstRecord()->get('count') > 0) {
-                $return['instCons'] = $result->firstRecord()->get('count');;
+        if (count($result) == 1) {
+            if ($result->first()->get('count') > 0) {
+                $return['instCons'] = $result->first()->get('count');;
             }
         }
         $result = $this->connector->run("MATCH (r:Identity) return count(r) as count;",
             [
             ]
         );
-        if (count($result->getRecords()) == 1) {
-            if ($result->firstRecord()->get('count') > 0) {
-                $return['allCons'] = $result->firstRecord()->get('count');;
+        if (count($result) == 1) {
+            if ($result->first()->get('count') > 0) {
+                $return['allCons'] = $result->first()->get('count');;
             }
         }
 
@@ -618,26 +619,27 @@ class Neo4JUtil {
 
         // List out relations
         $rels = array();
-        foreach ($result->getRecords() as $record) {
-            $path = $record->pathValue("p");
+        foreach ($result as $record) {
+            $path = $record->get("p");
 
             $target = new \snac\data\Constellation();
-            $target->setID($path->end()->value("id"));
-            $target->setArkID($path->end()->value("ark"));
-            $target->setVersion($path->end()->value("version"));
+            $end = $path->getNodes()->last();
+            $target->setID($end->getProperty("id"));
+            $target->setArkID($end->getProperty("ark"));
+            $target->setVersion($end->getProperty("version"));
 
             $targetName = new \snac\data\NameEntry();
-            $targetName->setOriginal($path->end()->value("name"));
+            $targetName->setOriginal($end->getProperty("name"));
 
             $target->addNameEntry($targetName);
 
             $relation = new \snac\data\ConstellationRelation();
-            if ($path->relationships()[0]->hasValue('id'))
-                $relation->setID($path->relationships()[0]->value('id'));
-            if ($path->relationships()[0]->hasValue('version'))
-                $relation->setVersion($path->relationships()[0]->value('version'));
+            if ($path->getRelationships()[0]->getProperties()->hasKey('id'))
+                $relation->setID($path->getRelationships()[0]->getProperty('id'));
+            if ($path->getRelationships()[0]->getProperties()->hasKey('version'))
+                $relation->setVersion($path->getRelationships()[0]->getProperty('version'));
             $type = new \snac\data\Term();
-            $type->setTerm($path->relationships()[0]->value('arcrole'));
+            $type->setTerm($path->getRelationships()[0]->getProperty('arcrole'));
             $relation->setType($type);
 
             array_push($rels, [
@@ -679,8 +681,7 @@ class Neo4JUtil {
             );
 
             // Check to see if anything was added
-            $records = $result->getRecords();
-            if (empty($records)) {
+            if ($result->isEmpty()) {
                 // Must create this record instead
                 $result = $this->connector->run("CREATE (n:Resource) SET n += \$infos;",
                     [
@@ -701,8 +702,7 @@ class Neo4JUtil {
                     'id' => $resource->getID(),
                 ]
             );
-            $records = $result->getRecords();
-            if (!empty($records)) {
+            if (!$result->isEmpty()) {
                 // delete the one there so that we can add the correct one (just in case)
                 $result = $this->connector->run("MATCH (a:Resource {id: \$id})-[r:HIRELATION]->() delete r;",
                     [
@@ -757,7 +757,7 @@ class Neo4JUtil {
         if ($this->connector != null) {
             // Returning a single array of ids using collect()
             $result = $this->connector->run("MATCH (r:Resource {id: '{$resourceID}' })-[:RRELATION]-(i:Identity) return collect(i.id) as ids ");
-            $relatedConstellationIDs = $result->getRecord()->get("ids");
+            $relatedConstellationIDs = $result->first()->get("ids");
             return $relatedConstellationIDs;
         }
         return [];
@@ -774,11 +774,11 @@ class Neo4JUtil {
     public function getHoldings($icid) {
         if ($this->connector != null) {
             $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})<-[:HIRELATION]-(r:Resource)
-                return r.id as id, r.title as title, r.href as href, size((r)<-[:RRELATION]-(:Identity)) as relation_count
+                return r.id as id, r.title as title, r.href as href, count{(r)<-[:RRELATION]-(:Identity)} as relation_count
                 order by r.title");
             $holdings = [];
 
-            foreach ($result->getRecords() as $record) {
+            foreach ($result as $record) {
                 $id = $record->get('id');
                 $title = $record->get('title');
                 $href = $record->get('href');
@@ -795,12 +795,12 @@ class Neo4JUtil {
      *
      * Given a constellation id, returns count of its holdings.
      *
-     * @param $icid The constellation id of the holding reposity
+     * @param $icid The constellation id of the holding repository
      * @return int $count Count of resources
      */
     public function countHoldings($icid) {
-        $result = $this->connector->run("MATCH (c:Identity {id: '{$icid}'}) RETURN size((c)<-[:HIRELATION]-(:Resource)) as count");
-        $count = $result->getRecord()->get("count");
+        $result = $this->connector->run("MATCH (c:Identity {id: '{$icid}'}) RETURN count{(c)<-[:HIRELATION]-(:Resource)} as count");
+        $count = $result->first()->get("count");
         return $count;
     }
 
@@ -816,7 +816,7 @@ class Neo4JUtil {
     public function getICRelations($icid) {
         $result = $this->connector->run("MATCH (:Identity {id: '{$icid}'})-[:ICRELATION]-(i:Identity) return i.id, i.entity_type, i.name;");
         $relations = [];
-        foreach ($result->getRecords() as $record) {
+        foreach ($result as $record) {
             $relations[] = [ "id" => $record->get("i.id"),
                              "entity_type" => $record->get("i.entity_type"),
                              "name" => $record->get("i.name")
@@ -838,7 +838,7 @@ class Neo4JUtil {
             return r.id as id, r.title as title, r.href as href order by r.title");
         $resources = [];
 
-        foreach ($result->getRecords() as $record) {
+        foreach ($result as $record) {
             $id = $record->get('id');
             $title = $record->get('title');
             $href = $record->get('href');
@@ -892,7 +892,7 @@ class Neo4JUtil {
         );
         $resources = [];
 
-        foreach ($result->getRecords() as $record) {
+        foreach ($result as $record) {
             $id = $record->get("id");
             $title = $record->get("title");
             $href = $record->get("href");
