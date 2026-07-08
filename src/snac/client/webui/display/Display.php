@@ -188,6 +188,8 @@ class Display {
                 $this->data["control"]["interfaceVersion"] = "demo";
         }
 
+        $this->data["control"]["systemNotice"] = \snac\Config::$SYSTEM_NOTICE ?? "";
+
         $this->data["control"]["includeDevelopmentFeatures"] = \snac\Config::$INCLUDE_DEVELOPMENT_FEATURES ?? false;
 
         if (isset(\snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID) &&

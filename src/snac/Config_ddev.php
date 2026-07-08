@@ -29,6 +29,11 @@ class Config {
 
 
     /**
+     * @var string A message to be displayed as a system notice
+     */
+    public static $SYSTEM_NOTICE = '';
+
+    /**
      * @var string Session name to use for SNAC (cookie name)
      */
     public static $SESSION_NAME = 'SNACWebUI';

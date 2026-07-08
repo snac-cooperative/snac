@@ -123,6 +123,9 @@
     {% elseif control.interfaceVersion == "demo" %}
     <p class="snac-system-notice">This is the <b>demo version</b>.  Edits made to these Constellations will not be permanent.</p>
     {% endif %}
+    {% if control.systemNotice is not empty %}
+    <p class="snac-system-notice"><b>{{control.systemNotice}}</b></p>
+    {% endif %}
 {% endmacro %}
 
 {% macro footer(X, user, permissions, control) %}
