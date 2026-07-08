@@ -52,6 +52,57 @@ class WikipediaUtil {
      * @return mixed[]      The array of information about the image [hasImage, url, metadata]
      */
     function getWikiImage($ark) {
+        if (!$ark) { return array(false, null, null); }
+        $shortArk = str_replace("http://n2t.net/ark:/99166/", "", $ark);
+        $results = $this->getWikiImageURLs(array($shortArk));
+        $imgURL = null;
+        if (count($results) >= 1) {
+            $imgURL = $results[0]["_image"]["value"] ?? null;
+        } else {
+            return array(false, null, null);
+        }
+        $metadata = $this->getWikiMetadata($imgURL);
+        return array(true, $imgURL, $metadata);
+    }
+
+    /**
+     * Get one or more Image URLs from Wikipedia
+     *
+     * Given an array of arks, this function queries wikidata and wikimedia commons for the ark IDs and image URLs.
+     * It returns an array of associative arrays with _arkId and _image keys.
+     *
+     * @param  array $arkIDs ARK IDs for the constellations to query
+     * @return mixed[]       The array of information about the images [arkID, url]
+     */
+    function getWikiImageURLs($arkIDs = array()) {
+        if (!is_array($arkIDs)) { return array(); }
+
+        $values = '"' . implode('" "', $arkIDs) . '"';
+        $query = "SELECT  ?_arkID ?_image WHERE { VALUES ?arkIDs { $values } ?q wdt:P3430 ?arkIDs".
+                " OPTIONAL { ?q wdt:P3430 ?_arkID } OPTIONAL { ?q wdt:P18 ?_image } }";
+
+        // Ask wikidata for the image URL
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://query.wikidata.org/sparql?format=json&query=" . urlencode($query));
+        curl_setopt($ch, CURLOPT_HTTPHEADER,
+                array (
+                        'User-Agent: SNAC-Web-Client-Bot/1.0 (https://snaccooperative.org/)'
+                ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_ENCODING, 'Accept-Encoding: gzip,deflate');
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $imgdata = json_decode($response, true);
+        if (is_array($imgdata) && isset($imgdata["results"]) && isset($imgdata["results"]["bindings"])) {
+            return $imgdata["results"]["bindings"];
+        }
+
+        return array();
+    }
+
+    function getWikiMetadata($imgURL) {
+        if (!$imgURL) { return null; }
 
         $wikipediaLicenses = [
              ['cc-by-sa-4.0', 'CC BY-SA 4.0', 'https://creativecommons.org/licenses/by-sa/4.0/legalcode'],
@@ -67,41 +118,9 @@ class WikipediaUtil {
              ['cc-zero', 'CC0 1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'],
              ['pd', 'Public Domain', null]];
 
-        $imgURL = null;
         $metadata = null;
-        $shortArk = str_replace("http://n2t.net/ark:/99166/", "", $ark);
-
-        $query = "SELECT ?_image WHERE {" .
-            "?q wdt:P3430 \"". $shortArk ."\"." .
-            "OPTIONAL { ?q wdt:P18 ?_image.}" .
-            "}";
-
-        // Ask wikidata for the image URL
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://query.wikidata.org/sparql?format=json&query=" . urlencode($query));
-        curl_setopt($ch, CURLOPT_HTTPHEADER,
-                array (
-                        'User-Agent: SNAC-Web-Client-Bot/1.0 (https://snaccooperative.org/)'
-                ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_ENCODING, 'Accept-Encoding: gzip,deflate');
-        $response = curl_exec($ch);
-
-        $imgdata = json_decode($response, true);
-        if (is_array($imgdata) && isset($imgdata["results"]) && isset($imgdata["results"]["bindings"])
-                && isset($imgdata["results"]["bindings"][0]) && isset($imgdata["results"]["bindings"][0]["_image"])) {
-            // We have an image!
-            $imgURL = $imgdata["results"]["bindings"][0]["_image"]["value"];
-        }
-        /** STOPED HERE **/
-        if ($imgURL === null) {
-            return array(false, null, null);
-        }
-
         $parts = explode("/Special:FilePath/", $imgURL);
-        if (count($parts) < 1) {
-            return array(false, null, null);
-        }
+        if (count($parts) < 1) { return  null; }
         $imgFileName = $parts[1];
 
         $metadata = array(
@@ -119,9 +138,10 @@ class WikipediaUtil {
                 ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
+        curl_close($ch);
 
         if ($response === null) {
-            return array(true, $imgURL, $metadata);
+            return $metadata;
         }
 
         $imgdata = json_decode($response, true);
@@ -187,11 +207,11 @@ class WikipediaUtil {
                         }
                     }
 
-                    return array(true, $imgURL, $metadata);
+                    return $metadata;
                 }
             }
         }
-        return array(false, null, null);
+        return null;
 
     }
 
