@@ -100,6 +100,7 @@ class ElasticSearchUtil {
                 'id' => $constellation->getID(),
                 'body' => [
                     'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
+                    'nameVariants' => $constellation->getNameEntries(),
                     'entityType' => $constellation->getEntityType()->getTerm(),
                     'arkID' => $constellation->getArk(),
                     'id' => (int) $constellation->getID(),
@@ -117,6 +118,7 @@ class ElasticSearchUtil {
             ];
 
             $this->connector->index($params);
+            /*
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
                     // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
@@ -135,6 +137,7 @@ class ElasticSearchUtil {
                 ];
                 $this->connector->index($params);
             }
+            */
             $this->logger->addDebug("Updated elastic search with new constellation name entries");
         }
     }
@@ -158,6 +161,7 @@ class ElasticSearchUtil {
             } catch (\Exception $e) {
                 $this->logger->addWarning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
             }
+            /*
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
                     // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
@@ -170,6 +174,7 @@ class ElasticSearchUtil {
                     $this->logger->addWarning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
                 }
             }
+            */
             $this->logger->addDebug("Updated elastic search to remove constellation");
         }
 
@@ -366,7 +371,7 @@ class ElasticSearchUtil {
                         'bool' => [
                             'must' => [
                                'simple_query_string' => [
-                                   'fields' => ['nameEntry'],
+                                   'fields' => ['nameVariants'],
                                    'query' => $query .'*',
                                    'default_operator' => 'and'
                                ]
@@ -422,7 +427,7 @@ class ElasticSearchUtil {
                         'bool' => [
                             'must' => [
                                'simple_query_string' => [
-                                   'fields' => ['nameEntry'],
+                                   'fields' => ['nameVariants'],
                                    'query' => $query,
                                    'default_operator' => 'and'
                                ]
@@ -446,7 +451,7 @@ class ElasticSearchUtil {
             $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
                 [
                     'simple_query_string' => [
-                        'fields' => ['nameEntry', 'biogHist'],
+                        'fields' => ['nameVariants', 'biogHist'],
                         'query' => $query,
                         'default_operator' => 'and'
                     ]
@@ -517,7 +522,7 @@ class ElasticSearchUtil {
                         'bool' => [
                             'must' => [
                                 'match' => [
-                                    'nameEntry' => [
+                                    'nameVariants' => [
                                         'query' => $query,
                                         'operator' => 'and'
                                     ]
@@ -544,7 +549,7 @@ class ElasticSearchUtil {
             $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
                 [
                     'match' => [
-                        'nameEntry' => [
+                        'nameVariants' => [
                             'query' => $query,
                             'operator' => 'and'
                         ]
