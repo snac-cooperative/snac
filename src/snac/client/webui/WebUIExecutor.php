@@ -1810,23 +1810,33 @@ class WebUIExecutor {
         $response = array();
         if (isset($input["subject"]) && isset($input["body"]) && isset($input["token"])) {
 
-            // confirm the token first
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-            curl_setopt($ch, CURLOPT_POSTFIELDS, array(
-                "secret" => "6LdjGCwUAAAAAMRzQh-sVk9DF7ST9oVBGLDIogHv",
-                "response" => $input["token"]
-            ));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $verifyResponse = curl_exec($ch);
-            $verified = array ("success" => false);
+            $permissionToSend = true;
 
-            if ($verifyResponse != null) {
-                $verified = json_decode($verifyResponse, true);
+            if (\snac\Config::$USE_RECAPTCHA) {
+
+                $permissionToSend = false;
+                // confirm the token first
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, array(
+                            "secret" => \snac\Config::$RECAPTCHA_SECRET,
+                            "response" => $input["token"]
+                            ));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $verifyResponse = curl_exec($ch);
+                $verified = array ("success" => false);
+
+                if ($verifyResponse != null) {
+                    $verified = json_decode($verifyResponse, true);
+                }
+
+                if (isset($verified["success"]) && $verified["success"] === true) {
+                    $permissionToSend = true;
+                }
             }
 
-            if (isset($verified["success"]) && $verified["success"] === true) {
+            if ($permissionToSend) {
                 // split out the users to send to
                 $message = new \snac\data\Message();
                 $message->setSubject($input["subject"]);
@@ -1848,7 +1858,7 @@ class WebUIExecutor {
                 }
 
                 $ask = array("command"=>"send_feedback",
-                            "message"=>$message->toArray());
+                        "message"=>$message->toArray());
                 $serverResponse = $this->connect->query($ask);
 
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {

@@ -347,6 +347,16 @@ class Config {
      */
     public static $FEEDBACK_EMAIL_ONLY = false;
 
+    /**
+     * @var boolean Whether or not to use Google Recaptcha
+     */
+    public static $USE_RECAPTCHA = false;
+
+    /**
+     * @var string Recaptcha secret key
+     */
+    public static $RECAPTCHA_SECRET = "";
+
 
     /**
      * @var string Temporary directory to parse EAD
