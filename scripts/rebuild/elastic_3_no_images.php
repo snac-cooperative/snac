@@ -33,6 +33,7 @@ pg_query($db->getHandle(),"CREATE TABLE IF NOT EXISTS _elastic_images (
     , ark_id text
     , image_url text
     , image_metadata text
+    , is_featured_image boolean DEFAULT false
 );");
 pg_query($db->getHandle(),"CREATE INDEX _elastic_images_ndx_1 ON _elastic_images (ark_id)");
 

@@ -103,6 +103,9 @@ try {
                     "hasImage"=> [
                         "type"=> "boolean"
                     ],
+                    "hasFeaturedImage"=> [
+                        "type"=> "boolean"
+                    ],
                     "id"=> [
                         "type"=> "long"
                     ],
@@ -180,7 +183,8 @@ echo "Updating the Elastic Search indices. This may take a while...\n";
 $db->cursorQuery("indexMain","select n.ic_id, n.name_entry, n.names_variant, 
         n.entity_type, n.ark_id, r.degree, r.resources,
         array_to_json(r.subject) as subject, array_to_json(r.occupation) as occupation,
-        array_to_json(r.activity) as activity, r.biog_hist, i.image_url, i.image_metadata
+        array_to_json(r.activity) as activity, r.biog_hist,
+        i.image_url, i.image_metadata, i.is_featured_image::int
            from _elastic_names n
             left join _elastic_relational r on n.ic_id = r.ic_id
             left join _elastic_images i on n.ic_id = i.ic_id");
@@ -192,7 +196,7 @@ while ($resource = $db->cursorFetch("indexMain",$batchSize)) {
             $activity = json_decode($name["activity"]);
             $metadata = json_decode($name["image_metadata"]);
 
-            indexMain($name["name_entry"], $name["names_variant"], $name["ark_id"], (int) $name["ic_id"], $name["entity_type"], $name["degree"], $name["resources"], $subject, $occupation, $activity, $name["biog_hist"],$name["image_url"],$metadata);
+            indexMain($name["name_entry"], $name["names_variant"], $name["ark_id"], (int) $name["ic_id"], $name["entity_type"], $name["degree"], $name["resources"], $subject, $occupation, $activity, $name["biog_hist"],$name["image_url"],$metadata,$name["is_featured_image"]);
             $count++;
     }
     pg_free_result($resource);
@@ -222,7 +226,7 @@ bulkUpdate($secondaryBody, $secondaryCount);
  */
 
 
-function indexMain($nameText, $nameVariants, $ark, $icid, $entityType, $degree, $resources, $subject, $occupation, $activity, $biogHist, $imgURL, $imgMeta) {
+function indexMain($nameText, $nameVariants, $ark, $icid, $entityType, $degree, $resources, $subject, $occupation, $activity, $biogHist, $imgURL, $imgMeta, $imgFeatured) {
     global $eSearch, $primaryBody, $primaryStart, $primaryCount, $batchSize;
     
     $degree ??= 0;
@@ -234,7 +238,10 @@ function indexMain($nameText, $nameVariants, $ark, $icid, $entityType, $degree, 
     $nameVariants ??= array();
 
     $hasImage = false;
+    $hasFeaturedImage = false;
     if ($imgURL) { $hasImage = true; }
+    if ($hasImage && $imgFeatured) { $hasFeaturedImage = true; }
+
 
     if ($eSearch != null) {
         // do one first to get the index going
@@ -255,6 +262,7 @@ function indexMain($nameText, $nameVariants, $ark, $icid, $entityType, $degree, 
                             'activity' => $activity,
                             'biogHist' => $biogHist,
                             'hasImage' => $hasImage,
+                            'hasFeaturedImage' => $hasFeaturedImage,
                             'imageURL' => $imgURL,
                             'imageMeta' => $imgMeta,
                             'timestamp' => date("c")
@@ -287,6 +295,7 @@ function indexMain($nameText, $nameVariants, $ark, $icid, $entityType, $degree, 
                 'activity' => $activity,
                 'biogHist' => $biogHist,
                 'hasImage' => $hasImage,
+                'hasFeaturedImage' => $hasFeaturedImage,
                 'imageURL' => $imgURL,
                 'imageMeta' => $imgMeta,
                 'timestamp' => date("c")
@@ -357,6 +366,14 @@ function bulkUpdate(&$body, &$count) {
         $count = 0;
 
         $responses = $eSearch->bulk($body);
+
+        if ($responses['errors'] === true) {
+            foreach ($responses['items'] as $item) {
+                if (isset($item['index']['error'])) {
+                    print_r($item['index']['error'])."\n";
+                }
+            }
+        }
 
         // erase the old bulk request
         $body = array();

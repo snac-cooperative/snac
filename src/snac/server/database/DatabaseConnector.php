@@ -295,11 +295,14 @@ class DatabaseConnector {
      *
      * @param string $cursorName Name for the cursor
      * @param string $query Query to prepare
+     * @param boolean $withHold Declare cursor WITH HOLD, which uses more memnory but allows COMMITs 
      */
-    public function cursorQuery($cursorName, $query) {
+    public function cursorQuery($cursorName, $query, $withHold=false) {
         try {
+            $hold = "";
+            if ($withHold) { $hold = "WITH HOLD"; }
             \pg_query($this->dbHandle, "BEGIN");
-            \pg_query($this->dbHandle, "DECLARE $cursorName CURSOR FOR ".$query);
+            \pg_query($this->dbHandle, "DECLARE $cursorName CURSOR $hold FOR ".$query);
         } catch (\Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out
             throw new \snac\exceptions\SNACDatabaseException($e->getMessage());

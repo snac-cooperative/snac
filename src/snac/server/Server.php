@@ -362,6 +362,9 @@ class Server implements \snac\interfaces\ServerInterface {
             case "random_constellations":
                 $this->response = $executor->getRandomConstellations($this->input);
                 break;
+            case "featured_constellations":
+                $this->response = $executor->getFeaturedConstellations($this->input);
+                break;
             case "list_constellations":
                 $this->response = $executor->listConstellations($this->input);
                 break;

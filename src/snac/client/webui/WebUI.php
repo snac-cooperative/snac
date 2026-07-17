@@ -122,6 +122,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "diff",
                 "explore",
                 "landing",
+                "featured",
                 "visualize",
                 "history",
                 "history_diff",
@@ -782,6 +783,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // If dropping through, then show the landing page
             case "landing":
                 $executor->displayLandingPage($this->input, $display);
+                break;
+            case "featured":
+                $executor->displayFeaturedPage($this->input, $display);
                 break;
             default:
                 // The WebUI is displaying the landing page only

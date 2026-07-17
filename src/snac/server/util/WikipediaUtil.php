@@ -80,18 +80,10 @@ class WikipediaUtil {
         $values = '"' . implode('" "', $arkIDs) . '"';
         $query = "SELECT  ?_arkID ?_image WHERE { VALUES ?arkIDs { $values } ?q wdt:P3430 ?arkIDs".
                 " OPTIONAL { ?q wdt:P3430 ?_arkID } OPTIONAL { ?q wdt:P18 ?_image } }";
+        $url = "https://query.wikidata.org/sparql?format=json&query=" . urlencode($query);
 
-        // Ask wikidata for the image URL
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://query.wikidata.org/sparql?format=json&query=" . urlencode($query));
-        curl_setopt($ch, CURLOPT_HTTPHEADER,
-                array (
-                        'User-Agent: SNAC-Web-Client-Bot/1.0 (https://snaccooperative.org/)'
-                ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_ENCODING, 'Accept-Encoding: gzip,deflate');
-        $response = curl_exec($ch);
-        curl_close($ch);
+        $response = $this->getWikidata($url);
+        if (!$response) { return array(); }
 
         $imgdata = json_decode($response, true);
         if (is_array($imgdata) && isset($imgdata["results"]) && isset($imgdata["results"]["bindings"])) {
@@ -102,6 +94,7 @@ class WikipediaUtil {
     }
 
     function getWikiMetadata($imgURL) {
+        // rate limits: https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits
         if (!$imgURL) { return null; }
 
         $wikipediaLicenses = [
@@ -118,31 +111,19 @@ class WikipediaUtil {
              ['cc-zero', 'CC0 1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'],
              ['pd', 'Public Domain', null]];
 
-        $metadata = null;
         $parts = explode("/Special:FilePath/", $imgURL);
         if (count($parts) < 1) { return  null; }
         $imgFileName = $parts[1];
+        $url = 'https://commons.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&origin=*&titles=File:'. $imgFileName;
 
+        $metadata = null;
         $metadata = array(
             "infoURL" => "https://commons.wikimedia.org/wiki/File:".$imgFileName,
             "info" => "Image from Wikimedia Commons"
         );
 
-
-        // Ask wikimedia commons for the image information
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://commons.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&origin=*&titles=File:'. $imgFileName);
-        curl_setopt($ch, CURLOPT_HTTPHEADER,
-                array (
-                    'User-Agent: SNAC-Web-Client-Bot/1.0 (https://snaccooperative.org/)'
-                ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        if ($response === null) {
-            return $metadata;
-        }
+        $response = $this->getWikidata($url);
+        if (!$response) { return $metadata; }
 
         $imgdata = json_decode($response, true);
         if (is_array($imgdata) && isset($imgdata["query"]) && isset($imgdata["query"]["pages"])
@@ -164,7 +145,7 @@ class WikipediaUtil {
                         $licenseStr = $matches[1][0];
 
                     if ($authorStr === null || $licenseStr === null) {
-                        return array(true, $imgURL, $metadata);
+                        return $metadata;
                     }
 
                     // Clean out the author and license strings
@@ -213,6 +194,31 @@ class WikipediaUtil {
         }
         return null;
 
+    }
+
+    function getWikidata($url) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER,
+                array (
+                    'User-Agent: SNAC-Web-Client-Bot/1.0 (https://snaccooperative.org/)'
+                ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        if(curl_errno($ch)) {
+            $this->logger->addError("Rrror retrieving wiki data: " . curl_error($ch));
+            return null;
+        } else {
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($http_code == "200") {
+                return $response;
+            } else {
+                $this->logger->addError("Rrror retrieving wiki data: HTTP code $http_code");
+                return null;
+            }
+        }
     }
 
 }
