@@ -103,7 +103,7 @@ class ServerConnect {
             $userQuery["user"] = $this->user->toArray();
         $realQuery = array_merge($query, $userQuery);
 
-        $this->logger->addDebug("Sending the following server query", $realQuery);
+        $this->logger->debug("Sending the following server query", $realQuery);
         // Encode the query as json
         $data = json_encode($realQuery);
 
@@ -125,11 +125,11 @@ class ServerConnect {
         // Return the server response as associative array
         $return = json_decode($response, true);
         if ($return == null) {
-            $this->logger->addDebug("Got the following improper server response", array($response));
+            $this->logger->debug("Got the following improper server response", array($response));
             return $response;
         }
 
-        $this->logger->addDebug("Got the following server response", $return);
+        $this->logger->debug("Got the following server response", $return);
 
         if (isset($return["user"]) && $return["user"] != null) {
             $tmpUser = new \snac\data\User($return["user"]);
@@ -212,9 +212,9 @@ class ServerConnect {
     public function reloadUser() {
         $ask = array("command"=>"user_information"
         );
-        $this->logger->addDebug("Sending user information query to the server", $ask);
+        $this->logger->debug("Sending user information query to the server", $ask);
         $serverResponse = $this->query($ask);
-        $this->logger->addDebug("Received server response", array($serverResponse));
+        $this->logger->debug("Received server response", array($serverResponse));
 
         if (isset($serverResponse["user"]) && $serverResponse["user"] != null) {
             $tmpUser = new \snac\data\User($serverResponse["user"]);

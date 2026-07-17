@@ -44,7 +44,7 @@ if (!(\snac\Config::$USE_ELASTIC_SEARCH)) {
     die("This version of SNAC does not currently use Elastic Search.  Please check your configuration file.\n");
 }
 
-$eSearch = Elasticsearch\ClientBuilder::create()
+$eSearch = Elastic\Elasticsearch\ClientBuilder::create()
     ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
     ->setRetries(0)
     ->build();

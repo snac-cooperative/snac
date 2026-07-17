@@ -763,7 +763,7 @@ class DBUser
      * @return boolean Whether the key was successfully revoked
      */
     public function revokeUserAPIKey($user, $label) {
-        $this->logger->addDebug("Attempting to revoke key for user", [$label]);
+        $this->logger->debug("Attempting to revoke key for user", [$label]);
         $success = $this->sql->revokeUserKey($user->getUserID(), $label);
         return $success;
     }
@@ -1460,12 +1460,12 @@ class DBUser
      * @return boolean True if successful, false otherwise
      */
     public function archiveMessage(&$message) {
-        $this->logger->addDebug("Archiving message1", $message->toArray());
+        $this->logger->debug("Archiving message1", $message->toArray());
         if ($message == null || $message->getID() == null) {
             return false;
         }
 
-        $this->logger->addDebug("Archiving message2", $message->toArray());
+        $this->logger->debug("Archiving message2", $message->toArray());
 
         return $this->sql->archiveMessageByID($message->getID());
     }

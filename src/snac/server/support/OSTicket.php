@@ -50,7 +50,7 @@ class OSTicket {
 
         $payload = array();
 
-        $this->logger->addDebug('Trying to submit message', $message->toArray());
+        $this->logger->debug('Trying to submit message', $message->toArray());
         if ($message->getFromString() !== null) {
             list($name, $email, $junk) = explode("|", $message->getFromString());
             if ($email == null)
@@ -78,7 +78,7 @@ class OSTicket {
             );
         }
         
-        $this->logger->addDebug("Sending the following osTicket query", $payload);
+        $this->logger->debug("Sending the following osTicket query", $payload);
         // Encode the query as json
         $data = json_encode($payload);
 
@@ -98,12 +98,12 @@ class OSTicket {
             $response = curl_exec($ch);
             $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-            $this->logger->addDebug("Got the following result: $response");
+            $this->logger->debug("Got the following result: $response");
             if ($responseCode == 201)
                 return true;
-            $this->logger->addDebug("Errored out on response code $responseCode");
+            $this->logger->debug("Errored out on response code $responseCode");
         } catch (\Exception $e) {
-            $this->logger->addDebug("CURL ERROR: " . $e->getTraceAsString());
+            $this->logger->debug("CURL ERROR: " . $e->getTraceAsString());
         }
     }
 }

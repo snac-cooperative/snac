@@ -104,9 +104,9 @@ class ReportingEngine {
         foreach ($this->reports as $report) {
             $result = null;
             try {
-                $this->logger->addDebug("Running report: ", array($report->getName()));
+                $this->logger->debug("Running report: ", array($report->getName()));
                 $result = $report->compute($this->postgres);
-                $this->logger->addDebug("Finished report: ", array($report->getName()));
+                $this->logger->debug("Finished report: ", array($report->getName()));
             } catch (\Exception $e) {
                 // Right now, ignore any errors
             }

@@ -104,7 +104,7 @@ class Mailer {
         $this->mailer->AltBody    = $textBody;
 
         if(!$this->mailer->send()) {
-            $this->logger->addDebug('Message could not be sent: ' . $this->mailer->ErrorInfo);
+            $this->logger->debug('Message could not be sent: ' . $this->mailer->ErrorInfo);
         }
         $this->resetMailer();
     }
@@ -117,7 +117,7 @@ class Mailer {
      * @param \snac\data\Message $message The message to send via email
      */
     public function sendUserMessage(&$message) {
-        $this->logger->addDebug('Trying to send message', $message->toArray());
+        $this->logger->debug('Trying to send message', $message->toArray());
         $this->mailer->setFrom($this->fromEmail, $this->fromName);
 
         $toEmail = $message->getToUser()->getEmail();
@@ -129,23 +129,23 @@ class Mailer {
 
         $this->mailer->Subject = "SNAC Mail: " . $message->getSubject();
 
-        $this->logger->addDebug('Building template message');
+        $this->logger->debug('Building template message');
         // Use Twig to style the message body using the snac style
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$EMAIL_TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array());
-        $this->logger->addDebug('Building HTML template message');
+        $this->logger->debug('Building HTML template message');
         $htmlBody = $twig->render("default.html", $message->toArray());
         $this->mailer->Body    = $htmlBody;
-        $this->logger->addDebug('Building TXT template message');
+        $this->logger->debug('Building TXT template message');
         $textMessage = $message->toArray();
         $textMessage["body"] = \Html2Text\Html2Text::convert($message->getBody());
         $textBody = $twig->render("default.txt", $textMessage);
         $this->mailer->AltBody    = $textBody;
 
-        $this->logger->addDebug('Sending message');
+        $this->logger->debug('Sending message');
 
         if(!$this->mailer->send()) {
-            $this->logger->addDebug('Message could not be sent: ' . $this->mailer->ErrorInfo);
+            $this->logger->debug('Message could not be sent: ' . $this->mailer->ErrorInfo);
         }
 
         $this->resetMailer();

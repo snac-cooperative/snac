@@ -28,7 +28,7 @@ $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE,
 // SNAC Postgres DB Connector
 $db = new \snac\server\database\DatabaseConnector();
 
-$batchSize = 5000;
+$batchSize = 2000;
 
 $connector = null;
 

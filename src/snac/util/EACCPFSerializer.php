@@ -61,7 +61,7 @@ class EACCPFSerializer {
         global $logger;
         if ($logger)
         {
-            $logger->addDebug($msg, $debugArray);
+            $logger->debug($msg, $debugArray);
         }
     }
 

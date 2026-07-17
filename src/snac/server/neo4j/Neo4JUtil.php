@@ -74,7 +74,7 @@ class Neo4JUtil {
                 ->withDriver('bolt', \snac\Config::$NEO4J_BOLT_URI)
                 ->build();
         }
-        $this->logger->addDebug("Created neo4j client");
+        $this->logger->debug("Created neo4j client");
     }
 
     /**
@@ -90,7 +90,7 @@ class Neo4JUtil {
         if ($this->connector != null) {
 
             // STEP 1: Update or insert this identity as a node:
-            $this->logger->addDebug("Updating/Inserting Node into Neo4J database");
+            $this->logger->debug("Updating/Inserting Node into Neo4J database");
             $result = $this->connector->run("MATCH (a:Identity {id: \$icid }) SET a.name = \$name, a.name_lower = \$name_lower,  a.version = \$version, a.ark = \$ark,
                 a.entity_type = \$entityType return a;",
                 [
@@ -122,7 +122,7 @@ class Neo4JUtil {
 
             // ************************************
             // STEP 2: Check all the constellation relations. Update, insert, or delete as appropriate
-            $this->logger->addDebug("Reading relationships from Neo4J");
+            $this->logger->debug("Reading relationships from Neo4J");
 
             $result = $this->connector->run("MATCH p=(a:Identity {id: \$icid })-[r:ICRELATION]->(b:Identity) return p;",
                 [
@@ -144,7 +144,7 @@ class Neo4JUtil {
                 );
             }
 
-            $this->logger->addDebug("Reconciling Relationships to Current IC");
+            $this->logger->debug("Reconciling Relationships to Current IC");
             $icRelsToDelete = array();
             $icRelsToModify = array();
             foreach($constellation->getRelations() as $relation) {
@@ -176,7 +176,7 @@ class Neo4JUtil {
                         "operation" => "insert"
                     ]);
             }
-            $this->logger->addDebug("List of related identity paths", $icRels);
+            $this->logger->debug("List of related identity paths", $icRels);
 
             // Make the relationship changes
             foreach ($icRels as $rel) {
@@ -221,7 +221,7 @@ class Neo4JUtil {
 
             // ************************************
             // STEP 3: Check all the resource relations. Update, insert, or delete as appropriate
-            $this->logger->addDebug("Reading resource relationships from Neo4J");
+            $this->logger->debug("Reading resource relationships from Neo4J");
             $rRels = array();
             try {
                 $result = $this->connector->run("MATCH p=(a:Identity {id: \$icid })-[r:RRELATION]->(b:Resource) return p;",
@@ -243,10 +243,10 @@ class Neo4JUtil {
                     );
                 }
             } catch (\Exception $e) {
-                $this->logger->addError("Neo4J threw an exception: ".$e->getMessage(), $e->getTrace());
+                $this->logger->error("Neo4J threw an exception: ".$e->getMessage(), $e->getTrace());
                 throw $e;
             }
-            $this->logger->addDebug("Reconciling Resource Relationships to Current IC");
+            $this->logger->debug("Reconciling Resource Relationships to Current IC");
             $rRelsToDelete = array();
             $rRelsToModify = array();
             foreach($constellation->getResourceRelations() as $relation) {
@@ -277,7 +277,7 @@ class Neo4JUtil {
                         "operation" => "insert"
                     ]);
             }
-            $this->logger->addDebug("List of related resource paths", $rRels);
+            $this->logger->debug("List of related resource paths", $rRels);
 
             // Make the relationship changes
             foreach ($rRels as $rel) {
@@ -321,7 +321,7 @@ class Neo4JUtil {
 
 
             /** May want to include the other name entries as part of the node **/
-            $this->logger->addDebug("Updated neo4j with constellation data");
+            $this->logger->debug("Updated neo4j with constellation data");
         }
     }
 
@@ -336,13 +336,13 @@ class Neo4JUtil {
     public function deleteConstellation(&$constellation) {
 
         if ($this->connector != null) {
-            $this->logger->addDebug("Deleting Identity Node from Neo4J database");
+            $this->logger->debug("Deleting Identity Node from Neo4J database");
             $result = $this->connector->run("MATCH (a:Identity {id: \$icid}) detach delete a;",
                 [
                     'icid' => $constellation->getID()
                 ]
             );
-            $this->logger->addDebug("Updated neo4j to remove constellation");
+            $this->logger->debug("Updated neo4j to remove constellation");
         }
 
     }
@@ -440,7 +440,7 @@ class Neo4JUtil {
      */
     public function listConstellationInEdges(&$constellation) {
         $results = array();
-        $this->logger->addDebug("Reading relationships from Neo4J");
+        $this->logger->debug("Reading relationships from Neo4J");
 
         $result = $this->connector->run("MATCH p=(a:Identity)-[r:ICRELATION]->(b:Identity {id: \$icid}) return p;",
             [
@@ -669,7 +669,7 @@ class Neo4JUtil {
         if ($this->connector != null) {
 
             // STEP 1: Update or insert this resource as a node:
-            $this->logger->addDebug("Updating/Inserting Node into Neo4J database");
+            $this->logger->debug("Updating/Inserting Node into Neo4J database");
             $result = $this->connector->run("MATCH (a:Resource {id: \$id }) SET a.title = \$title, a.version = \$version, a.href = \$href
                 return a;",
                 [
@@ -733,13 +733,13 @@ class Neo4JUtil {
     public function deleteResource(&$resource) {
 
         if ($this->connector != null) {
-            $this->logger->addDebug("Deleting Resource Node from Neo4J database");
+            $this->logger->debug("Deleting Resource Node from Neo4J database");
             $result = $this->connector->run("MATCH (a:Resource {id: \$id}) detach delete a;",
                 [
                     'id' => $resource->getID()
                 ]
             );
-            $this->logger->addDebug("Updated neo4j to remove resource");
+            $this->logger->debug("Updated neo4j to remove resource");
         }
 
     }

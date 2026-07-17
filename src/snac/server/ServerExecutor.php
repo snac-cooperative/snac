@@ -82,7 +82,7 @@ class ServerExecutor {
         $this->elasticSearch = new \snac\server\elastic\ElasticSearchUtil();
         $this->neo4J = new \snac\server\neo4j\Neo4JUtil();
         $this->mailer = new \snac\server\mailer\Mailer();
-        $this->logger->addDebug("Starting ServerExecutor");
+        $this->logger->debug("Starting ServerExecutor");
 
         $this->permissions = array();
         /***************************************
@@ -108,13 +108,13 @@ class ServerExecutor {
          */
         if ($user != null) {
             // authenticate user here!
-            $this->logger->addDebug("Authenticating User");
+            $this->logger->debug("Authenticating User");
             $userObj = new \snac\data\User($user);
             // authenticateUser sets $this->user
             if (!$this->authenticateUser($userObj)) {
                 throw new \snac\exceptions\SNACUserException("User is not authorized", 403);
             }
-            $this->logger->addDebug("User authenticated successfully");
+            $this->logger->debug("User authenticated successfully");
 
             $this->getUserPermissions();
 
@@ -129,7 +129,7 @@ class ServerExecutor {
             if (!$this->authenticateUser($userObj)) {
                 throw new \snac\exceptions\SNACUserException("User is not authorized", 403);
             }
-            $this->logger->addDebug("User authenticated successfully");
+            $this->logger->debug("User authenticated successfully");
 
             $this->getUserPermissions();
             $this->authType = "apikey";
@@ -163,7 +163,7 @@ class ServerExecutor {
         $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
 
         try {
-            $this->logger->addDebug("Trying to connect to OAuth2 Server to get user details");
+            $this->logger->debug("Trying to connect to OAuth2 Server to get user details");
 
             $accessToken = new AccessToken($user->getToken());
 
@@ -171,12 +171,12 @@ class ServerExecutor {
 
             if (strtolower($ownerDetails->getEmail()) != strtolower($user->getEmail())) {
                 // This user's token doesn't match the user's email
-                $this->logger->addDebug("Email mismatch from the user and OAuth details");
+                $this->logger->debug("Email mismatch from the user and OAuth details");
                 return false;
             }
-            $this->logger->addDebug("Successfully got user details from OAuth2 Server");
+            $this->logger->debug("Successfully got user details from OAuth2 Server");
         } catch (\Exception $e) {
-            $this->logger->addDebug("Could not get user details from OAuth2 Server: ".$e->getMessage());
+            $this->logger->debug("Could not get user details from OAuth2 Server: ".$e->getMessage());
             return false;
         }
 
@@ -235,9 +235,9 @@ class ServerExecutor {
      * @return boolean true if user authenticated, false if not
      */
     public function authenticateUser($user) {
-        $this->logger->addDebug("Starting Authentication function");
+        $this->logger->debug("Starting Authentication function");
         if ($user != null) {
-            $this->logger->addDebug("Attempting to authenticate user", $user->toArray());
+            $this->logger->debug("Attempting to authenticate user", $user->toArray());
 
             // If the user exists in our database and we know about this token,
             // then we'll let them continue. Else, we will try to authenticate
@@ -251,7 +251,7 @@ class ServerExecutor {
                 // For purposes of authentication, the UserName is required
 
                 $this->user = $this->uStore->readUser($user);
-                $this->logger->addDebug("Read user", array($this->user));
+                $this->logger->debug("Read user", array($this->user));
 
                 if ($this->user === false) {
                     // The user wasn't found in the database
@@ -261,7 +261,7 @@ class ServerExecutor {
                 throw new \snac\exceptions\SNACUserException("Username required for login", 400);
             }
 
-            $this->logger->addDebug("The user was found in the database", $this->user->toArray());
+            $this->logger->debug("The user was found in the database", $this->user->toArray());
             $this->user->setToken($user->getToken());
 
             // Use the values passed in from the client to update the user object,
@@ -278,16 +278,16 @@ class ServerExecutor {
             if ($this->user->getEmail() == null)
                 $this->user->setEmail($user->getEmail());
             $this->uStore->saveUser($this->user);
-            $this->logger->addDebug("Updated the user with their token", $this->user->toArray());
+            $this->logger->debug("Updated the user with their token", $this->user->toArray());
 
             if ($this->user !== false && $this->uStore->sessionExists($this->user)) {
                 if ($this->uStore->sessionActive($this->user)) {
                     // The session is still active
-                    $this->logger->addDebug("User is valid from SNAC details");
+                    $this->logger->debug("User is valid from SNAC details");
                     return true;
                 } else {
                     // The session has expired, so we will be nice and extend
-                    $this->logger->addDebug("User is valid from SNAC details");
+                    $this->logger->debug("User is valid from SNAC details");
                     return $this->uStore->sessionExtend($this->user);
                 }
 
@@ -311,13 +311,13 @@ class ServerExecutor {
                 throw new \snac\exceptions\SNACUserException("User did not have session", 400);
             }
 
-            $this->logger->addDebug("Something went wrong checking user in SNAC");
+            $this->logger->debug("Something went wrong checking user in SNAC");
             return false;
         }
 
 
         // If the user is null, then we're okay on authentication (no permissions)
-        $this->logger->addDebug("User object was null: no permissions but okay auth");
+        $this->logger->debug("User object was null: no permissions but okay auth");
         return true;
     }
 
@@ -535,14 +535,14 @@ class ServerExecutor {
     public function endSession() {
         $response = array();
         if ($this->user != null) {
-            $this->logger->addDebug("Ending Session for user", $this->user->toArray());
+            $this->logger->debug("Ending Session for user", $this->user->toArray());
             $this->uStore->removeSession($this->user);
             $response["user"] = $this->user->toArray();
             $response["result"] = "success";
         } else {
             $response["result"] = "failure";
         }
-        $this->logger->addDebug("User Session ended");
+        $this->logger->debug("User Session ended");
 
         return $response;
     }
@@ -710,7 +710,7 @@ class ServerExecutor {
             $response = $this->elasticSearch->searchResourceIndex($input["term"], $start, $count, $filters);
             // If there are results from the search, then replace them with full
             // resources from the database (rather than from ES results)
-            $this->logger->addDebug("Got the following ES result", $response);
+            $this->logger->debug("Got the following ES result", $response);
             if (isset($response["results"])) {
                 $results = $response["results"];
                 $response["results"] = array();
@@ -723,7 +723,7 @@ class ServerExecutor {
             }
         }
 
-        $this->logger->addDebug("Returning the following resource search results", $response);
+        $this->logger->debug("Returning the following resource search results", $response);
         return $response;
     }
 
@@ -764,7 +764,7 @@ class ServerExecutor {
                     }
                 }
             }
-            $this->logger->addDebug("Serialized resource for output to client", $response);
+            $this->logger->debug("Serialized resource for output to client", $response);
         } catch (Exception $e) {
             $response["error"] = $e;
         }
@@ -923,7 +923,7 @@ class ServerExecutor {
         if ($message === false) {
             throw new \snac\exceptions\SNACInputException("Message does not exist", 404);
         }
-        $this->logger->addDebug("Archiving message", $message->toArray());
+        $this->logger->debug("Archiving message", $message->toArray());
 
         if (($message->getToUser() !== null && $message->getToUser()->getUserID() === $this->user->getUserID()) ||
             ($message->getFromUser() !== null && $message->getFromUser()->getUserID() === $this->user->getUserID())) {
@@ -932,15 +932,15 @@ class ServerExecutor {
             throw new \snac\exceptions\SNACPermissionException("User does not have permission to archive the message.", 403);
         }
 
-        $this->logger->addDebug("Starting to archive");
+        $this->logger->debug("Starting to archive");
         $success = $this->uStore->archiveMessage($message);
-        $this->logger->addDebug("Done archiving");
+        $this->logger->debug("Done archiving");
         if ($success)
             $response["result"] = "success";
         else
             $response["result"] = "failure";
 
-        $this->logger->addDebug("Archived", $response);
+        $this->logger->debug("Archived", $response);
         return $response;
 
     }
@@ -1036,7 +1036,7 @@ class ServerExecutor {
         $response = array("result" => "failure");
 
         $message = new \snac\data\Message($input["message"]);
-        $this->logger->addDebug("Message received", $message->toArray());
+        $this->logger->debug("Message received", $message->toArray());
 
         if ($message->getFromUser() === null && $message->getFromString() === null) {
             throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent completely anonymously.", 403);
@@ -1118,11 +1118,11 @@ class ServerExecutor {
         // affiliation has been merged
         $affil = $this->cStore->readPublishedConstellationByID($icid, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
 
-        $this->logger->addDebug("Getting stats from postgres");
+        $this->logger->debug("Getting stats from postgres");
         $stats = $this->cStore->getInstitutionReportData($affil);
-        $this->logger->addDebug("Done with postgres, getting stats from neo4j");
+        $this->logger->debug("Done with postgres, getting stats from neo4j");
         $counts = $this->neo4J->getHoldingInstitutionStats($affil);
-        $this->logger->addDebug("Done with neo4j stats");
+        $this->logger->debug("Done with neo4j stats");
         $response = [
             "result" => "success",
             "constellation" => $affil->toArray(),
@@ -1251,7 +1251,7 @@ class ServerExecutor {
          * "editing_lock" = currently locked from the user because they are editing
          */
 
-        $this->logger->addDebug("Getting list of locked constellations to user");
+        $this->logger->debug("Getting list of locked constellations to user");
 
         // First look for constellations editable
         $editList = $this->cStore->listConstellationsWithStatusForUser($user, "locked editing");
@@ -1264,7 +1264,7 @@ class ServerExecutor {
                         "version" => $constellation->getVersion(),
                         "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
-                $this->logger->addDebug("User has checked out", $item);
+                $this->logger->debug("User has checked out", $item);
                 array_push($info["editing"], $item);
             }
         }
@@ -1286,7 +1286,7 @@ class ServerExecutor {
                         "version" => $constellation->getVersion(),
                         "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
-                $this->logger->addDebug("User was currently editing", $item);
+                $this->logger->debug("User was currently editing", $item);
                 array_push($info["editing_lock"], $item);
             }
         }
@@ -1308,7 +1308,7 @@ class ServerExecutor {
                         "version" => $constellation->getVersion(),
                         "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
-                $this->logger->addDebug("User had for review", $item);
+                $this->logger->debug("User had for review", $item);
                 array_push($info["review_lock"], $item);
             }
         }
@@ -1330,7 +1330,7 @@ class ServerExecutor {
                         "version" => $constellation->getVersion(),
                         "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
-                $this->logger->addDebug("User needed to review", $item);
+                $this->logger->debug("User needed to review", $item);
                 array_push($info["review"], $item);
             }
         }
@@ -1450,8 +1450,8 @@ class ServerExecutor {
         $response = array();
         if (isset($input["constellation"])) {
             $constellation = new \snac\data\Constellation($input["constellation"]);
-            $this->logger->addDebug("Writing Constellation Data", $input["constellation"]);
-            $this->logger->addDebug("Writing Constellation toArray", $constellation->toArray());
+            $this->logger->debug("Writing Constellation Data", $input["constellation"]);
+            $this->logger->debug("Writing Constellation toArray", $constellation->toArray());
 
             try {
                 $validation = new \snac\server\validation\ValidationEngine();
@@ -1486,7 +1486,7 @@ class ServerExecutor {
                         // Read the constellation summary and make sure the last version matches the current version
                         // if they match, write, else send failure back with note about updating old version
 
-                        $this->logger->addDebug("Constellation had an ID, so we're doing an update", array($constellation->getID()));
+                        $this->logger->debug("Constellation had an ID, so we're doing an update", array($constellation->getID()));
                         $inList = false;
                         $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
                         foreach ($userList as $item) {
@@ -1504,7 +1504,7 @@ class ServerExecutor {
                     // If the constellation does not currently have and ID, then we should write it and have it checked
                     // out to the user that wrote it.  Also, update the status to be currently editing
                     } else {
-                        $this->logger->addDebug("Writing a new constellation");
+                        $this->logger->debug("Writing a new constellation");
                         if ($saveLog == null)
                             $saveLog = "New Constellation from Web UI";
                         $result = $this->cStore->writeConstellation($this->user, $constellation, $saveLog);
@@ -1514,7 +1514,7 @@ class ServerExecutor {
                             if ($version !== false)
                                 $result->setVersion($version);
                         } else {
-                            $this->logger->addDebug("Couldn't write the new constellation for some reason");
+                            $this->logger->debug("Couldn't write the new constellation for some reason");
                             $response["result"] = "failure";
                             $response["error"] = "an unknown error occurred while trying to write";
                             return $response;
@@ -1522,22 +1522,22 @@ class ServerExecutor {
                     }
 
                     if (isset($result) && $result != null) {
-                        $this->logger->addDebug("successfully wrote constellation");
+                        $this->logger->debug("successfully wrote constellation");
                         $response["constellation"] = $result->toArray();
                         $response["result"] = "success";
                     } else {
-                        $this->logger->addDebug("writeConstellation returned a null result or edits not allowed");
+                        $this->logger->debug("writeConstellation returned a null result or edits not allowed");
                         $response["result"] = "failure";
                         $response["error"] = "this version is not the current version, other edits have happened";
                     }
                 }
             } catch (\Exception $e) {
-                $this->logger->addError("writeConstellation threw an exception");
+                $this->logger->error("writeConstellation threw an exception");
                 // Rethrow it, since we just wanted a log statement
                 throw $e;
             }
         } else {
-            $this->logger->addDebug("Constellation input value wasn't set to write");
+            $this->logger->debug("Constellation input value wasn't set to write");
             $response["result"] = "failure";
             $response["error"] = "no constellation to write";
         }
@@ -1583,22 +1583,22 @@ class ServerExecutor {
                 if (isset($result) && $result != false) {
                     $this->elasticSearch->writeToResourceIndices($resource);
                     $this->neo4J->updateResourceIndex($resource);
-                    $this->logger->addDebug("successfully wrote resource");
+                    $this->logger->debug("successfully wrote resource");
                     $response["resource"] = $result->toArray();
                     $response["result"] = "success";
                 } else {
-                    $this->logger->addDebug("writeResource returned a null result or edits not allowed");
+                    $this->logger->debug("writeResource returned a null result or edits not allowed");
                     $response["result"] = "failure";
                     $response["error"] = "could not write the resource";
                 }
             } catch (\Exception $e) {
-                $this->logger->addError("writeResource threw an exception");
+                $this->logger->error("writeResource threw an exception");
                 // Rethrow it, since we just wanted a log statement
                 throw $e;
             }
 
         } else {
-            $this->logger->addDebug("Resource input value wasn't set to write");
+            $this->logger->debug("Resource input value wasn't set to write");
             $response["result"] = "failure";
             $response["error"] = "no resource to write";
         }
@@ -1716,7 +1716,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function listAssertions(&$input) {
-        $this->logger->addDebug("Listing Assertions For Constellation");
+        $this->logger->debug("Listing Assertions For Constellation");
         $response = array();
 
         if (isset($input["constellationid"])) {
@@ -1724,14 +1724,14 @@ class ServerExecutor {
 
             try {
                 // Read the constellation
-                $this->logger->addDebug("Reading constellation status & summary from the database");
+                $this->logger->debug("Reading constellation status & summary from the database");
 
                 $cId = $input["constellationid"];
                 $status = $this->cStore->readConstellationStatus($cId);
 
                 // read the constellation into response
                 $constellation = $this->cStore->readConstellation($cId, null, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
-                $this->logger->addDebug("Finished reading constellation from the database");
+                $this->logger->debug("Finished reading constellation from the database");
                 $response["constellation"] = $constellation->toArray();
 
                 $assertions = $this->cStore->listAssertions($constellation,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY, $this->uStore);
@@ -1838,7 +1838,7 @@ class ServerExecutor {
     public function reassignConstellation(&$input) {
         $response = array();
         try {
-            $this->logger->addDebug("Reassigning the constellation");
+            $this->logger->debug("Reassigning the constellation");
             if (isset($input["constellation"]) && isset($input["to_user"])) {
                 $constellation = new \snac\data\Constellation($input["constellation"]);
                 $toUser = new \snac\data\User($input["to_user"]);
@@ -1874,7 +1874,7 @@ class ServerExecutor {
 
 
                     if (isset($result) && $result !== false) {
-                        $this->logger->addDebug("successfully reassigned constellation");
+                        $this->logger->debug("successfully reassigned constellation");
                         $constellation->setVersion($result);
                         $response["constellation"] = $constellation->toArray();
                         $response["result"] = "success";
@@ -1891,7 +1891,7 @@ class ServerExecutor {
                                 $msgBody .= "<p>".$logNote."</p>";
                             }
                             $name = "Unknown";
-                            $this->logger->addDebug("Sending message for reviewer", $newest->toArray());
+                            $this->logger->debug("Sending message for reviewer", $newest->toArray());
                             $prefName = $newest->getPreferredNameEntry();
                             if ($prefName != null)
                                 $name = $prefName->getOriginal();
@@ -1910,23 +1910,23 @@ class ServerExecutor {
 
                     } else {
 
-                        $this->logger->addDebug("could not reassign the constellation");
+                        $this->logger->debug("could not reassign the constellation");
                         $response["result"] = "failure";
                         $response["error"] = "writing status failed";
                     }
                 } else {
-                    $this->logger->addDebug("constellation versions didn't match or no permissions");
+                    $this->logger->debug("constellation versions didn't match or no permissions");
                     $response["result"] = "failure";
                     $response["error"] = "other changes have been made to this constellation";
                     $response["constellation"] = $constellation->toArray();
                 }
             } else {
-                $this->logger->addDebug("no constellation or user given");
+                $this->logger->debug("no constellation or user given");
                 $response["result"] = "failure";
                 $response["error"] = "no constellation or user given";
             }
         } catch (\Exception $e) {
-            $this->logger->addError("unlocking constellation threw an exception");
+            $this->logger->error("unlocking constellation threw an exception");
             $response["result"] = "failure";
             throw $e;
         }
@@ -1946,7 +1946,7 @@ class ServerExecutor {
     public function unlockConstellation(&$input) {
         $response = array();
         try {
-            $this->logger->addDebug("Lowering the lock on the constellation");
+            $this->logger->debug("Lowering the lock on the constellation");
             if (isset($input["constellation"])) {
                 $constellation = new \snac\data\Constellation($input["constellation"]);
 
@@ -1970,7 +1970,7 @@ class ServerExecutor {
 
                     $result = false;
                     if ($this->cStore->readConstellationStatus($constellation->getID(), -1) === "published") {
-                        $this->logger->addDebug("re-publishing to unlock constellation");
+                        $this->logger->debug("re-publishing to unlock constellation");
                         $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
                                         "published", "Republish: User canceled edit without making changes");
                         $this->updateIndexesAfterPublish($constellation->getID());
@@ -1980,7 +1980,7 @@ class ServerExecutor {
                     }
 
                     if (isset($result) && $result !== false) {
-                        $this->logger->addDebug("successfully unlocked constellation");
+                        $this->logger->debug("successfully unlocked constellation");
                         $constellation->setVersion($result);
                         $response["constellation"] = $constellation->toArray();
                         $response["result"] = "success";
@@ -1988,23 +1988,23 @@ class ServerExecutor {
 
                     } else {
 
-                        $this->logger->addDebug("could not unlock the constellation");
+                        $this->logger->debug("could not unlock the constellation");
                         $response["result"] = "failure";
                         $response["error"] = "writing status failed";
                     }
                 } else {
-                    $this->logger->addDebug("constellation versions didn't match or was not in users currently editing list");
+                    $this->logger->debug("constellation versions didn't match or was not in users currently editing list");
                     $response["result"] = "failure";
                     $response["error"] = "other changes have been made to this constellation";
                     $response["constellation"] = $constellation->toArray();
                 }
             } else {
-                $this->logger->addDebug("no constellation given to unlock");
+                $this->logger->debug("no constellation given to unlock");
                 $response["result"] = "failure";
                 $response["error"] = "no constellation given";
             }
         } catch (\Exception $e) {
-            $this->logger->addError("unlocking constellation threw an exception");
+            $this->logger->error("unlocking constellation threw an exception");
             $response["result"] = "failure";
             throw $e;
         }
@@ -2024,7 +2024,7 @@ class ServerExecutor {
     public function sendForReviewConstellation(&$input) {
         $response = array();
         try {
-            $this->logger->addDebug("Marking the constellation as needs review");
+            $this->logger->debug("Marking the constellation as needs review");
             if (isset($input["constellation"])) {
                 $constellation = new \snac\data\Constellation($input["constellation"]);
 
@@ -2083,7 +2083,7 @@ class ServerExecutor {
                                 $msgBody .= "<p>".$logNote."</p>";
                             }
                             $name = "Unknown";
-                            $this->logger->addDebug("Sending message for reviewer", $newest->toArray());
+                            $this->logger->debug("Sending message for reviewer", $newest->toArray());
                             $prefName = $newest->getPreferredNameEntry();
                             if ($prefName != null)
                                 $name = $prefName->getOriginal();
@@ -2099,28 +2099,28 @@ class ServerExecutor {
                             // Email the message, if needed
                             $this->mailer->sendUserMessage($message);
                         }
-                        $this->logger->addDebug("successfully sent constellation for review");
+                        $this->logger->debug("successfully sent constellation for review");
                         $constellation->setVersion($result);
                         $response["constellation"] = $constellation->toArray();
                         $response["result"] = "success";
                     } else {
-                        $this->logger->addDebug("could not send the constellation for review");
+                        $this->logger->debug("could not send the constellation for review");
                         $response["result"] = "failure";
                         $response["error"] = "writing status failed";
                     }
                 } else {
-                    $this->logger->addDebug("constellation versions didn't match or was not in users currently editing list");
+                    $this->logger->debug("constellation versions didn't match or was not in users currently editing list");
                     $response["result"] = "failure";
                     $response["error"] = "other changes have been made to this constellation";
                     $response["constellation"] = $constellation->toArray();
                 }
             } else {
-                $this->logger->addDebug("no constellation given to send for review");
+                $this->logger->debug("no constellation given to send for review");
                 $response["result"] = "failure";
                 $response["error"] = "no constellation given";
             }
         } catch (\Exception $e) {
-            $this->logger->addError("sending constellation for review threw an exception");
+            $this->logger->error("sending constellation for review threw an exception");
             $response["result"] = "failure";
             throw $e;
         }
@@ -2142,7 +2142,7 @@ class ServerExecutor {
 
         $response = array();
         try {
-            $this->logger->addDebug("Publishing constellation");
+            $this->logger->debug("Publishing constellation");
             if (isset($input["constellation"])) {
                 $constellation = new \snac\data\Constellation($input["constellation"]);
 
@@ -2173,7 +2173,7 @@ class ServerExecutor {
                 }
 
                 if (isset($result) && $result !== false) {
-                    $this->logger->addDebug("successfully published constellation");
+                    $this->logger->debug("successfully published constellation");
                     // Return the passed-in constellation from the user, with the new version number
                     $constellation->setVersion($result);
                     $constellation->setArkID($current->getArk()); // corePublish updates current's ARK
@@ -2182,17 +2182,17 @@ class ServerExecutor {
 
                     $this->updateIndexesAfterPublish($constellation->getID());
                 } else {
-                    $this->logger->addDebug("could not publish the constellation");
+                    $this->logger->debug("could not publish the constellation");
                     $response["result"] = "failure";
                     $response["error"] = "cannot publish an out-of-date copy of the constellation";
                 }
             } else {
-                $this->logger->addDebug("no constellation given to publish");
+                $this->logger->debug("no constellation given to publish");
                 $response["result"] = "failure";
                 $response["error"] = "missing constellation information";
             }
         } catch (\Exception $e) {
-            $this->logger->addError("publishing constellation threw an exception");
+            $this->logger->error("publishing constellation threw an exception");
             $response["result"] = "failure";
             throw $e;
         }
@@ -2270,7 +2270,7 @@ class ServerExecutor {
      * @param  integer $icid Identity Constellation id to index
      */
     protected function updateIndexesAfterPublish($icid) {
-        $this->logger->addDebug("Updating indexes after publish");
+        $this->logger->debug("Updating indexes after publish");
         // Read in the constellation from the database to update elastic search
         //      currently, we need NRD, names, relations and resource relations (for counts)
         /*$published = $this->cStore->readPublishedConstellationByID($icid,
@@ -2305,7 +2305,7 @@ class ServerExecutor {
 
         $response = array();
         try {
-            $this->logger->addDebug("Deleting constellation");
+            $this->logger->debug("Deleting constellation");
             if (isset($input["constellation"])) {
                 $constellation = new \snac\data\Constellation($input["constellation"]);
 
@@ -2341,7 +2341,7 @@ class ServerExecutor {
 
                 // If the update worked, then finish out the delete
                 if (isset($result) && $result !== false) {
-                    $this->logger->addDebug("successfully published constellation");
+                    $this->logger->debug("successfully published constellation");
                     // Return the passed-in constellation from the user, with the new version number
                     $constellation->setVersion($result);
                     $response["constellation"] = $constellation->toArray();
@@ -2359,17 +2359,17 @@ class ServerExecutor {
                     // Since the Constellation still "exists" we should leave it in the DAG table
 
                 } else {
-                    $this->logger->addDebug("could not delete the constellation");
+                    $this->logger->debug("could not delete the constellation");
                     $response["result"] = "failure";
                     $response["error"] = "cannot delete an out-of-date copy of the constellation";
                 }
             } else {
-                $this->logger->addDebug("no constellation given to delete");
+                $this->logger->debug("no constellation given to delete");
                 $response["result"] = "failure";
                 $response["error"] = "missing constellation information";
             }
         } catch (\Exception $e) {
-            $this->logger->addError("deleting constellation threw an exception");
+            $this->logger->error("deleting constellation threw an exception");
             $response["result"] = "failure";
             throw $e;
         }
@@ -2392,7 +2392,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function readConstellation(&$input) {
-        $this->logger->addDebug("Reading constellation");
+        $this->logger->debug("Reading constellation");
         $reponse = array();
         $constellation = null;
 
@@ -2465,10 +2465,10 @@ class ServerExecutor {
 
                 $response["maybesame_count"] = $this->cStore->countMaybeSameConstellations($constellation->getID());
 
-                $this->logger->addDebug("Finished checking constellation status against the user");
+                $this->logger->debug("Finished checking constellation status against the user");
                 $response["constellation"] = $constellation->toArray();
             }
-            $this->logger->addDebug("Serialized constellation for output to client");
+            $this->logger->debug("Serialized constellation for output to client");
         } catch (Exception $e) {
             $response["error"] = $e;
             $response["result"] = "failure";
@@ -2488,7 +2488,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function getConstellationHistory(&$input) {
-        $this->logger->addDebug("Reading constellation history");
+        $this->logger->debug("Reading constellation history");
         $reponse = array();
         $constellation = null;
 
@@ -2505,7 +2505,7 @@ class ServerExecutor {
             $history = $this->cStore->listVersionHistory($constellation->getID(), $constellation->getVersion(), true);
             $response["history"] = $history;
 
-            $this->logger->addDebug("Serialized constellation for output to client");
+            $this->logger->debug("Serialized constellation for output to client");
         } catch (Exception $e) {
             $response["error"] = $e;
         }
@@ -2538,7 +2538,7 @@ class ServerExecutor {
             $readFlags = $readFlags | \snac\server\database\DBUtil::$READ_MAINTENANCE_INFORMATION;
         }
 
-        $this->logger->addDebug("Getting the current ICIDs for the requested constellation");
+        $this->logger->debug("Getting the current ICIDs for the requested constellation");
 
         $constellations = array();
         $icids = array();
@@ -2557,7 +2557,7 @@ class ServerExecutor {
                 // if asking for a specific version, then just try to read this
                 // id and version number.
 
-                $this->logger->addDebug("Reading specific constellation from the database, flags=$readFlags");
+                $this->logger->debug("Reading specific constellation from the database, flags=$readFlags");
                 $constellation = $this->cStore->readConstellation(
                         $input["constellationid"],
                         $input["version"],
@@ -2567,7 +2567,7 @@ class ServerExecutor {
                             $input["constellationid"] . " does not have version" .
                             $input["version"] . ".", 404);
                 }
-                $this->logger->addDebug("Finished reading constellation from the database");
+                $this->logger->debug("Finished reading constellation from the database");
                 return array($constellation);
 
             }
@@ -2591,7 +2591,7 @@ class ServerExecutor {
 
 
 
-        $this->logger->addDebug("Reading constellation(s) from the database, flags=$readFlags");
+        $this->logger->debug("Reading constellation(s) from the database, flags=$readFlags");
 
         // If we have gotten here, we have a list of icids to read.  It is probably just one,
         // but may be multiple.
@@ -2606,7 +2606,7 @@ class ServerExecutor {
             throw new \snac\exceptions\SNACInputException("Constellation does not exist.", 404);
         }
 
-        $this->logger->addDebug("Finished reading constellation from the database");
+        $this->logger->debug("Finished reading constellation from the database");
 
         return $constellations;
 
@@ -2625,14 +2625,14 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function checkoutConstellation(&$input) {
-        $this->logger->addDebug("Checking out Constellation");
+        $this->logger->debug("Checking out Constellation");
         $response = array();
 
         if (isset($input["constellation"])) {
             $constellation = new \snac\data\Constellation($input["constellation"]);
             try {
                 // Read the constellation
-                $this->logger->addDebug("Reading constellation status from the database");
+                $this->logger->debug("Reading constellation status from the database");
 
                 $cId = $constellation->getID();
                 $info = $this->cStore->readConstellationUserStatus($cId);
@@ -2655,7 +2655,7 @@ class ServerExecutor {
                     // lock the constellation to the user as locked editing
                     $success = $this->cStore->writeConstellationStatus($this->user, $cId, "locked editing");
                     if ($success === false) {
-                        $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId));
+                        $this->logger->error("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId));
                     }
 
                     $response["result"] = "success";
@@ -2684,7 +2684,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function editConstellation(&$input) {
-        $this->logger->addDebug("Editing Constellation");
+        $this->logger->debug("Editing Constellation");
         $response = array();
 
         if (isset($input["arkid"])) {
@@ -2696,7 +2696,7 @@ class ServerExecutor {
 
             try {
                 // Read the constellation
-                $this->logger->addDebug("Reading constellation from the database");
+                $this->logger->debug("Reading constellation from the database");
 
                 $cId = $input["constellationid"];
                 $info = $this->cStore->readConstellationUserStatus($cId);
@@ -2734,7 +2734,7 @@ class ServerExecutor {
                     // lock the constellation to the user as currently editing
                     $success = $this->cStore->writeConstellationStatus($this->user, $cId, "currently editing");
                     if ($success === false) {
-                        $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId));
+                        $this->logger->error("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId));
                     }
 
                     $reviewNote = $this->cStore->readLastReviewStatusForConstellation($cId);
@@ -2744,9 +2744,9 @@ class ServerExecutor {
                     // read the constellation into response
                     $constellation = $this->cStore->readConstellation($cId);
 
-                    $this->logger->addDebug("Finished reading constellation from the database");
+                    $this->logger->debug("Finished reading constellation from the database");
                     $response["constellation"] = $constellation->toArray();
-                    $this->logger->addDebug("Serialized constellation for output to client");
+                    $this->logger->debug("Serialized constellation for output to client");
                 } else {
                     throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user.", 403);
                 }
@@ -2772,7 +2772,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function subEditConstellation(&$input) {
-        $this->logger->addDebug("Editing Constellation (Sub)");
+        $this->logger->debug("Editing Constellation (Sub)");
         $response = array();
 
         if (isset($input["constellationid"])) {
@@ -2780,7 +2780,7 @@ class ServerExecutor {
 
             try {
                 // Read the constellation
-                $this->logger->addDebug("Reading constellation from the database");
+                $this->logger->debug("Reading constellation from the database");
 
                 $cId = $input["constellationid"];
                 $status = $this->cStore->readConstellationStatus($cId);
@@ -2806,10 +2806,10 @@ class ServerExecutor {
                     // read the constellation into response
                     $constellation = $this->cStore->readConstellation($cId);
 
-                    $this->logger->addDebug("Finished reading constellation from the database");
+                    $this->logger->debug("Finished reading constellation from the database");
                     $response["constellation"] = $constellation->toArray();
                     $response["result"] = "success";
-                    $this->logger->addDebug("Serialized constellation for output to client");
+                    $this->logger->debug("Serialized constellation for output to client");
                 } else {
                     throw new \snac\exceptions\SNACPermissionException("Constellation is not currently being edited, so can not sub-edit.  Must be opened in edit first.", 403);
                 }
@@ -2896,7 +2896,7 @@ class ServerExecutor {
      */
     public function diffConstellations(&$input, $startMerge=false) {
         $response = array();
-        $this->logger->addDebug("Diffing constellations");
+        $this->logger->debug("Diffing constellations");
 
         if (isset($input["constellationid1"]) && isset($input["constellationid1"])) {
             // If two constellations were given
@@ -2922,21 +2922,21 @@ class ServerExecutor {
                     // CURRENTLY EDITING.  This is the same level of modification as doing an edit, so we don't
                     // want the user to be able to open them for editing unless they unlock them.
                     if ($startMerge === true) {
-                        $this->logger->addDebug("User is requesting to diff the constellations for a merge");
+                        $this->logger->debug("User is requesting to diff the constellations for a merge");
 
                         // lock the constellation to the user as currently editing
                         $success1 = $this->cStore->writeConstellationStatus($this->user, $cId1, "currently editing");
                         if ($success1 === false) {
-                            $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId1));
+                            $this->logger->error("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId1));
                             throw new \snac\exceptions\SNACDatabaseException("Could not open the Constellation $cId1 for Editing", 403);
                         }
                         $success2 = $this->cStore->writeConstellationStatus($this->user, $cId2, "currently editing");
                         if ($success2 === false) {
-                            $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId2));
+                            $this->logger->error("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId2));
 
                             // Must unlock the first constellation if the second one failed
                             if ($success1 === true) {
-                                $this->logger->addDebug("re-publishing to unlock constellation");
+                                $this->logger->debug("re-publishing to unlock constellation");
                                 $result = $this->cStore->writeConstellationStatus($this->user, $cId1,
                                                 "published", "Republish: An error occurred when trying to merge");
                                 $this->updateIndexesAfterPublish($cId1);
@@ -2951,14 +2951,14 @@ class ServerExecutor {
                         $response["assertion"] = $mergeable->toArray();
                     }
                 }
-                $this->logger->addDebug("Reading Constellations from the database");
+                $this->logger->debug("Reading Constellations from the database");
                 $constellation1 = $this->cStore->readConstellation($cId1, $cV1, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
                 $constellation2 = $this->cStore->readConstellation($cId2, $cV2, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
 
-                $this->logger->addDebug("Starting Diff");
+                $this->logger->debug("Starting Diff");
                 $diffParts = $constellation1->diff($constellation2);
 
-                $this->logger->addDebug("Finished Diff");
+                $this->logger->debug("Finished Diff");
 
                 if ($diffParts["this"] !== null)
                     $response["constellation1"] = $diffParts["this"]->toArray();
@@ -3004,7 +3004,7 @@ class ServerExecutor {
      */
     function mergeConstellations(&$input) {
         $response = array();
-        $this->logger->addDebug("Merging constellations");
+        $this->logger->debug("Merging constellations");
 
         if (isset($input["constellationids"]) && is_array($input["constellationids"]) && isset($input["constellation"])) {
 
@@ -3087,7 +3087,7 @@ class ServerExecutor {
         }
 
 
-        $this->logger->addDebug("Writing initial sources-level constellation", $sourceConstellation->toArray());
+        $this->logger->debug("Writing initial sources-level constellation", $sourceConstellation->toArray());
 
         // Write the copy of the constellation with only Source objects
         $sourceConstellation = $this->cStore->writeConstellation($this->user, $sourceConstellation, "Loading Source objects", 'initialize');
@@ -3156,7 +3156,7 @@ class ServerExecutor {
         ];
         $mergeNote = json_encode($mergeNoteArray, JSON_PRETTY_PRINT);
         $written = $this->cStore->writeConstellation($this->user, $constellation, $mergeNote, 'merge split');
-        $this->logger->addDebug("Wrote the merged constellation", $constellation->toArray());
+        $this->logger->debug("Wrote the merged constellation", $constellation->toArray());
         if ($written === false) {
             throw new \snac\exceptions\SNACDatabaseException("Could not write the merged constellation in full", 500);
         }
@@ -3164,10 +3164,10 @@ class ServerExecutor {
         // Publish the merged constellation and update the indexes
         $result = $this->corePublish($written);
         if (!isset($result) || $result === false) {
-            $this->logger->addDebug("could not publish the constellation");
+            $this->logger->debug("could not publish the constellation");
             throw new \snac\exceptions\SNACDatabaseException("Could not publish the merged constellation", 500);
         }
-        $this->logger->addDebug("successfully published constellation");
+        $this->logger->debug("successfully published constellation");
         $this->updateIndexesAfterPublish($written->getID());
 
         // Tombstone the other constellations and remove them from the indexes
@@ -3186,7 +3186,7 @@ class ServerExecutor {
             $success = $this->cStore->writeConstellationStatus($this->user, $c->getID(),
                                                                 "tombstone", $tombstoneNote);
             if ($success === false) {
-                $this->logger->addError("Writing Constellation Status failed",
+                $this->logger->error("Writing Constellation Status failed",
                     array("user"=>$this->user, "id"=>$c->getID()));
                 throw new \snac\exceptions\SNACDatabaseException("Could not tombstone Constellation " .
                     $c->getID(), 500);
@@ -3247,7 +3247,7 @@ class ServerExecutor {
      */
     function autoMergeConstellations(&$input) {
         $response = array();
-        $this->logger->addDebug("Merging constellations");
+        $this->logger->debug("Merging constellations");
 
         if (isset($input["constellationids"]) && is_array($input["constellationids"])) {
 
@@ -3291,7 +3291,7 @@ class ServerExecutor {
             foreach ($input["constellationids"] as $cId) {
                 $originals[$cId] = $this->cStore->readConstellation($cId, null,
                     \snac\server\database\DBUtil::$FULL_CONSTELLATION);
-                $this->logger->addDebug("Merging from", $originals[$cId] ? $originals[$cId]->toArray() : []);
+                $this->logger->debug("Merging from", $originals[$cId] ? $originals[$cId]->toArray() : []);
             }
 
             $constellation = new \snac\data\Constellation();
@@ -3301,7 +3301,7 @@ class ServerExecutor {
             foreach ($originals as $c) {
                 $constellation->combine($c);
             }
-            $this->logger->addDebug("Auto-Merged Constellation is ", $constellation->toArray());
+            $this->logger->debug("Auto-Merged Constellation is ", $constellation->toArray());
             return $this->coreMerge($constellation, $originals);
 
         } else {
@@ -3319,7 +3319,7 @@ class ServerExecutor {
      * @return string[] The response to send to the client
      */
     public function listMaybeSameConstellations(&$input) {
-        $this->logger->addDebug("Listing MaybeSame For Constellation");
+        $this->logger->debug("Listing MaybeSame For Constellation");
         $response = array();
 
         if (isset($input["constellationid"])) {
@@ -3327,7 +3327,7 @@ class ServerExecutor {
 
             try {
                 // Read the constellation
-                $this->logger->addDebug("Reading constellation from the database");
+                $this->logger->debug("Reading constellation from the database");
 
                 $cId = $input["constellationid"];
                 $status = $this->cStore->readConstellationStatus($cId);
@@ -3341,7 +3341,7 @@ class ServerExecutor {
 
                 // read the constellation into response
                 $constellation = $this->cStore->readConstellation($cId, null, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
-                $this->logger->addDebug("Finished reading constellation from the database");
+                $this->logger->debug("Finished reading constellation from the database");
                 $response["constellation"] = $constellation->toArray();
 
                 $maybeSame = $this->cStore->listMaybeSameConstellations($cId,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
@@ -3520,7 +3520,7 @@ class ServerExecutor {
             foreach ($list as $constellation) {
                 // Error handling
                 if ($constellation->getPreferredNameEntry() == null) {
-                    $this->logger->addError("Constellation did not have name entry", $constellation->toArray());
+                    $this->logger->error("Constellation did not have name entry", $constellation->toArray());
                     continue;
                 }
 
@@ -3529,7 +3529,7 @@ class ServerExecutor {
                     "version" => $constellation->getVersion(),
                     "nameEntry" => ($constellation->getPreferredNameEntry() ? $constellation->getPreferredNameEntry()->getOriginal() : null)
                 );
-                $this->logger->addDebug("Listing (".$status.")", $item);
+                $this->logger->debug("Listing (".$status.")", $item);
                 array_push($response["results"], $item);
             }
         }
@@ -3602,19 +3602,19 @@ class ServerExecutor {
         } else {
             // If not using Neo4J, then we must ask DBUtil to get the information from Postgres.
             $return = array("in" => array(), "out" => array());
-            $this->logger->addDebug("Getting In Edges from Postgres");
+            $this->logger->debug("Getting In Edges from Postgres");
             $results = $this->cStore->listConstellationInEdges($constellation);
             foreach ($results as $result) {
                 array_push($return["in"], array("constellation" => $result["constellation"]->toArray(),
                                                 "relation" => $result["relation"]->toArray()));
             }
 
-            $this->logger->addDebug("Reading full constellation for out edges");
+            $this->logger->debug("Reading full constellation for out edges");
             $fullConstellation = $this->cStore->readPublishedConstellationByID($constellation->getID(),
                                         \snac\server\database\DBUtil::$READ_MICRO_SUMMARY
                                         | \snac\server\database\DBUtil::$READ_RELATIONS);
 
-            $this->logger->addDebug("Parsing out edges and grabbing micro summaries");
+            $this->logger->debug("Parsing out edges and grabbing micro summaries");
             foreach ($fullConstellation->getRelations() as $rel) {
                 $target = $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
                                                 \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
@@ -3626,7 +3626,7 @@ class ServerExecutor {
                 }
             }
 
-            $this->logger->addDebug("Created postgres constellation relations response to the user");
+            $this->logger->debug("Created postgres constellation relations response to the user");
 
             $response = $return;
             $response["result"] = "success";
@@ -3705,7 +3705,7 @@ class ServerExecutor {
                 array_push($return, $related->toArray());
             }
 
-            $this->logger->addDebug("Created search response to the user", $return);
+            $this->logger->debug("Created search response to the user", $return);
 
             // Send the response back to the web client
             $response["constellation"] = $return;
@@ -3778,7 +3778,7 @@ class ServerExecutor {
                 array_push($return, $related->toArray());
             }
 
-            $this->logger->addDebug("Created search response to the user", $return);
+            $this->logger->debug("Created search response to the user", $return);
 
             // Send the response back to the web client
             $response["constellation"] = $return;
@@ -3849,7 +3849,7 @@ class ServerExecutor {
 
         // error condition
         if (!isset($input["term"]) || !isset($input["start"]) || !isset($input["count"])) {
-            $this->logger->addDebug("Something was not set correctly", $input);
+            $this->logger->debug("Something was not set correctly", $input);
             return $response;
         }
 
@@ -4249,7 +4249,7 @@ class ServerExecutor {
 
         // Set input for writing SameAs to constellation
         $input["constellation"] = $constellation->toArray();
-        $this->logger->addDebug("going to write constellation: ", $constellation->toArray());
+        $this->logger->debug("going to write constellation: ", $constellation->toArray());
         $writtenResult = $this->writeConstellation($input);
 
         // Publish
@@ -4276,7 +4276,7 @@ class ServerExecutor {
             return $response;
         }
 
-        $this->logger->addDebug("Retrieving holdings from Neo4J");
+        $this->logger->debug("Retrieving holdings from Neo4J");
 
         $icid = $input["constellationid"];
         $resources = $this->neo4J->getHoldings($icid);
@@ -4308,7 +4308,7 @@ class ServerExecutor {
         $icid2 = $this->cStore->getCurrentIDsForID($input["icid2"])[0] ?? null;
 
 
-        $this->logger->addDebug("Retrieving shared resources from Neo4J");
+        $this->logger->debug("Retrieving shared resources from Neo4J");
 
         $resources = $this->neo4J->getSharedResources($icid1, $icid2);
 

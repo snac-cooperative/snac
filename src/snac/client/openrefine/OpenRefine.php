@@ -75,8 +75,8 @@ class OpenRefine {
      * Starts the server
      */
     public function run() {
-        $this->logger->addDebug("Handling query", $this->input);
-        $this->logger->addDebug("Handling query JSON", array($this->json));
+        $this->logger->debug("Handling query", $this->input);
+        $this->logger->debug("Handling query JSON", array($this->json));
 
         $this->connect = new ServerConnect();
         $this->lvUtil = new LaravelUtil();
@@ -96,14 +96,14 @@ class OpenRefine {
             return $this->response;
         }
 
-        $this->logger->addDebug("Made it past the initial section", []);
+        $this->logger->debug("Made it past the initial section", []);
 
         // Decide what to do based on the OpenRefine parameters:
         //  - query = only one search being done at this point
         //  - queries = multiple searches in an array being requested
         //  - else give information about the endpoint
         if (isset($this->input["queries"]["q0"]["type"]) && $this->input["queries"]["q0"]["type"] != "CPF") {
-            $this->logger->addDebug("Reconciling Concept", []);
+            $this->logger->debug("Reconciling Concept", []);
             // Concept reconciliation
             $results = [];
             foreach ($this->input["queries"] as $qid => $query) {
@@ -114,7 +114,7 @@ class OpenRefine {
                     $results[$qid]["result"] = [$result];
                 }
             }
-            $this->logger->addDebug("Concept reconciliation results", $results);
+            $this->logger->debug("Concept reconciliation results", $results);
             // Set the response appropriately for OpenRefine
             $this->response = json_encode($results, JSON_PRETTY_PRINT);
         } elseif (isset($this->input["query"])) {
@@ -131,9 +131,9 @@ class OpenRefine {
                 "command" => "reconcile",
                 "constellation" => $testC->toArray()
             ];
-            $this->logger->addDebug("Reconciling.", array($ask));
+            $this->logger->debug("Reconciling.", array($ask));
             $response = $this->connect->query($ask);
-            $this->logger->addDebug("Reconciling.", array($response));
+            $this->logger->debug("Reconciling.", array($response));
 
             // Convert the reconciliation results into OpenRefine results
             if (isset($response["reconciliation"])) {
@@ -161,7 +161,7 @@ class OpenRefine {
                   && $this->input["queries"]["q0"]["type"] == "CPF")
         {
             // CPF Reconciliation
-            $this->logger->addDebug("CPF Reconciliation");
+            $this->logger->debug("CPF Reconciliation");
             $queries = $this->input["queries"];
             $results = array();
 
@@ -199,7 +199,7 @@ class OpenRefine {
             }
 
             // Set the response appropriately for OpenRefine
-            $this->logger->addDebug("Reconciliation results: ", $results);
+            $this->logger->debug("Reconciliation results: ", $results);
             $this->response = json_encode($results, JSON_PRETTY_PRINT);
         } else {
             // Default response: give information about this OpenRefine endpoint

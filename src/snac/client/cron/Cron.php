@@ -71,20 +71,20 @@ class Cron implements \snac\interfaces\ServerInterface {
         $user->setUserName("system@localhost");
         $user->generateTemporarySession(1);
 
-        $this->logger->addDebug("Creating Server Connection.");
+        $this->logger->debug("Creating Server Connection.");
         $this->connect = new ServerConnect($user);
         
-        $this->logger->addDebug("Starting System User Session.");
+        $this->logger->debug("Starting System User Session.");
         // Start the session
         $query = [
             "command" => "start_session"
         ];
         $serverResponse = $this->connect->query($query);
 
-        $this->logger->addDebug("Handling input.", $this->input);
+        $this->logger->debug("Handling input.", $this->input);
         switch($this->input["command"]) {
             case "public_reports":
-                $this->logger->addDebug("Running Report Query.");
+                $this->logger->debug("Running Report Query.");
                 $query = [
                     "command" => "report_generate",
                     "type" => "public"
@@ -92,7 +92,7 @@ class Cron implements \snac\interfaces\ServerInterface {
                 $serverResponse = $this->connect->query($query);
                 break;
             case "weekly_reports":
-                $this->logger->addDebug("Running Report Query.");
+                $this->logger->debug("Running Report Query.");
                 $query = [
                     "command" => "report_generate",
                     "type" => "general"
@@ -105,7 +105,7 @@ class Cron implements \snac\interfaces\ServerInterface {
                 $serverResponse = $this->connect->query($query);
                 break;
             case "monthly_reports":
-                $this->logger->addDebug("Running Report Query.");
+                $this->logger->debug("Running Report Query.");
                 $query = [
                     "command" => "report_generate",
                     "type" => "holdings"
@@ -116,13 +116,13 @@ class Cron implements \snac\interfaces\ServerInterface {
 
         
         // End the session
-        $this->logger->addDebug("Ending System User Session.");
+        $this->logger->debug("Ending System User Session.");
         $query = [
             "command" => "end_session"
         ];
         $serverResponse = $this->connect->query($query);
 
-        $this->logger->addDebug("Finished Cron Task.");
+        $this->logger->debug("Finished Cron Task.");
         return;
     }
 

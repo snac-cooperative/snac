@@ -192,12 +192,12 @@ class WebUIExecutor {
                 }
             } else {
                 // No constellation error
-                $this->logger->addDebug("Error page being drawn");
+                $this->logger->debug("Error page being drawn");
                 $this->drawErrorPage($serverResponse, $display);
             }
         }
         // No subcommand error
-        $this->logger->addDebug("Error page being drawn");
+        $this->logger->debug("Error page being drawn");
         $this->drawErrorPage("Subcommand required", $display);
     }
 
@@ -217,9 +217,9 @@ class WebUIExecutor {
             $c = new \snac\data\Constellation();
             $constellation = $c->toArray();
         } else {
-            $this->logger->addDebug("Sending query to the server", $query);
+            $this->logger->debug("Sending query to the server", $query);
             $serverResponse = $this->connect->query($query);
-            $this->logger->addDebug("Received server response", array($serverResponse));
+            $this->logger->debug("Received server response", array($serverResponse));
             if (isset($serverResponse["constellation"]))
                 $constellation = $serverResponse["constellation"];
         }
@@ -236,13 +236,13 @@ class WebUIExecutor {
             }
 
 
-            $this->logger->addDebug("Setting constellation data into the page template");
+            $this->logger->debug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation,
                 array("reviewNote" => isset($serverResponse["review_note"]) ? $serverResponse["review_note"] : null)
             ));
         } else {
-                $this->logger->addDebug("Error page being drawn");
+                $this->logger->debug("Error page being drawn");
                 $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -262,7 +262,7 @@ class WebUIExecutor {
         if (\snac\Config::$DEBUG_MODE == true) {
             $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
         }
-        $this->logger->addDebug("Setting constellation data into the page template");
+        $this->logger->debug("Setting constellation data into the page template");
         $display->setData($constellation);
     }
 
@@ -281,13 +281,13 @@ class WebUIExecutor {
 
          // Get the constellation object
          $constellation = $mapper->serializeToConstellation($input);
-         $this->logger->addDebug("Setting NEW constellation data", $constellation->toArray());
+         $this->logger->debug("Setting NEW constellation data", $constellation->toArray());
 
          $display->setTemplate("edit_page");
          if (\snac\Config::$DEBUG_MODE == true) {
              $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
          }
-         $this->logger->addDebug("Setting constellation data into the page template");
+         $this->logger->debug("Setting constellation data into the page template");
          $display->setData($constellation);
     }
 
@@ -314,9 +314,9 @@ class WebUIExecutor {
             $query["type"] = $summary;
         }
 
-        $this->logger->addDebug("Sending query to the server", $query);
+        $this->logger->debug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response");
+        $this->logger->debug("Received server response");
         return $serverResponse;
     }
 
@@ -417,10 +417,10 @@ class WebUIExecutor {
             $results["aggregations"] = $results["aggregations"];
             $results["biog_hist"] = $input["biog_hist"];
             $display->setTemplate("search_page");
-            $this->logger->addDebug("Set the following results into the search page", $results);
+            $this->logger->debug("Set the following results into the search page", $results);
             $display->setData($results);
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->debug("Error page being drawn");
             $this->drawErrorPage($results, $display);
         }
     }
@@ -494,7 +494,7 @@ class WebUIExecutor {
 
                 $display->setTemplate("snippet_page");
 
-                $this->logger->addDebug("Setting constellation data into the page template");
+                $this->logger->debug("Setting constellation data into the page template");
 
                 $display->setData(
                     $constellation
@@ -504,7 +504,7 @@ class WebUIExecutor {
                 $this->displaySplitChoicePage($serverResponse, $display);
             }
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->debug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -532,7 +532,7 @@ class WebUIExecutor {
 
                 // if (isset($input["part"]) && $input["part"] == "relations") {
                     $display->setTemplate("view_page");
-                    $this->logger->addDebug("Getting Holding institution information from the resource relations");
+                    $this->logger->debug("Getting Holding institution information from the resource relations");
                     $c = new \snac\data\Constellation($constellation);
                     foreach ($c->getResourceRelations() as $resourceRel) {
                         if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
@@ -571,7 +571,7 @@ class WebUIExecutor {
                     $message = $serverResponse["message"];
                 }
 
-                $this->logger->addDebug("Setting constellation data into the page template");
+                $this->logger->debug("Setting constellation data into the page template");
 
                 $display->setData(array_merge(
                     $constellation,
@@ -588,7 +588,7 @@ class WebUIExecutor {
                 $this->displaySplitChoicePage($serverResponse, $display);
             }
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->debug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -611,7 +611,7 @@ class WebUIExecutor {
             $message = $serverResponse["message"];
         }
 
-        $this->logger->addDebug("Setting constellation data into the page template");
+        $this->logger->debug("Setting constellation data into the page template");
 
         $display->setData(
             array(
@@ -649,12 +649,12 @@ class WebUIExecutor {
             });
             $constellation->setAllSources($sources);
 
-            $this->logger->addDebug("Setting constellation data into the page template");
+            $this->logger->debug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation->toArray()
             ));
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->debug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -694,7 +694,7 @@ class WebUIExecutor {
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
 
-            $this->logger->addDebug("Getting Holding institution information from the resource relations");
+            $this->logger->debug("Getting Holding institution information from the resource relations");
             $c = new \snac\data\Constellation($constellation);
             $holdings = array();
             foreach ($c->getResourceRelations() as $resourceRel) {
@@ -716,7 +716,7 @@ class WebUIExecutor {
                 return $a["name"] <=> $b["name"];
             });
 
-            $this->logger->addDebug("Setting constellation data into the page template");
+            $this->logger->debug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation,
                 array("preview"=> (isset($input["preview"])) ? true : false,
@@ -725,7 +725,7 @@ class WebUIExecutor {
                     "editingUser" => $editingUser)
             ));
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->debug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -744,7 +744,7 @@ class WebUIExecutor {
             $icids = array();
             for ($i = 1; $i <= $count; $i++) {
                 if (!isset($input["constellationid" .$i])) {
-                    $this->logger->addDebug("Error page being drawn");
+                    $this->logger->debug("Error page being drawn");
                     $this->drawErrorPage(["error" => "Could not Make Assertion"], $display);
                 }
                 array_push($icids, $input["constellationid" . $i]);
@@ -768,9 +768,9 @@ class WebUIExecutor {
                 $query["command"] = "constellation_remove_maybesame";
             }
 
-            $this->logger->addDebug("Asking server to make the assertion");
+            $this->logger->debug("Asking server to make the assertion");
             $serverResponse = $this->connect->query($query);
-            $this->logger->addDebug("Received server response", array($serverResponse));
+            $this->logger->debug("Received server response", array($serverResponse));
 
             return $serverResponse;
 
@@ -792,7 +792,7 @@ class WebUIExecutor {
             $icids = array();
             for ($i = 1; $i <= $count; $i++) {
                 if (!isset($input["constellationid" .$i])) {
-                    $this->logger->addDebug("Error page being drawn");
+                    $this->logger->debug("Error page being drawn");
                     $this->drawErrorPage(["error" => "Could not Make Assertion"], $display);
                 }
                 array_push($icids, $input["constellationid" . $i]);
@@ -809,9 +809,9 @@ class WebUIExecutor {
                 $query["assertion"] = $input["statement"];
             }
 
-            $this->logger->addDebug("Asking server to make the maybe-same assertion");
+            $this->logger->debug("Asking server to make the maybe-same assertion");
             $serverResponse = $this->connect->query($query);
-            $this->logger->addDebug("Received server response", array($serverResponse));
+            $this->logger->debug("Received server response", array($serverResponse));
 
             return $serverResponse;
         }
@@ -834,17 +834,17 @@ class WebUIExecutor {
             "command" => "constellation_list_maybesame",
             "constellationid" => $input["constellationid"]
         );
-        $this->logger->addDebug("Sending query to the server", $query);
+        $this->logger->debug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response", array($serverResponse));
+        $this->logger->debug("Received server response", array($serverResponse));
 
         $query = array(
             "command" => "constellation_list_assertions",
             "constellationid" => $input["constellationid"]
         );
-        $this->logger->addDebug("Sending query to the server", $query);
+        $this->logger->debug("Sending query to the server", $query);
         $serverResponse2 = $this->connect->query($query);
-        $this->logger->addDebug("Received server response", array($serverResponse));
+        $this->logger->debug("Received server response", array($serverResponse));
 
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("maybesame_list_page");
@@ -863,7 +863,7 @@ class WebUIExecutor {
             }
             $display->setData($displayData);
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->debug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -894,7 +894,7 @@ class WebUIExecutor {
             $display->setTemplate("view_page_full");
             $constellation = $serverResponse["intersection"];
 
-            $this->logger->addDebug("Setting constellation data into the page template");
+            $this->logger->debug("Setting constellation data into the page template");
 
             $display->setData(array_merge(
                 $constellation,
@@ -905,7 +905,7 @@ class WebUIExecutor {
                 )
             );
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->debug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -935,10 +935,10 @@ class WebUIExecutor {
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
-            $this->logger->addDebug("Setting constellation data into the page template");
+            $this->logger->debug("Setting constellation data into the page template");
             $display->setData($serverResponse);
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->debug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -973,9 +973,9 @@ class WebUIExecutor {
                 ],
                 "constellation" => $constellation->toArray()
             ];
-            $this->logger->addDebug("Asking server to do the merge");
+            $this->logger->debug("Asking server to do the merge");
             $serverResponse = $this->connect->query($query);
-            $this->logger->addDebug("Received server response", array($serverResponse));
+            $this->logger->debug("Received server response", array($serverResponse));
 
             if (isset($serverResponse["constellation"])) {
                 $display->setTemplate("detailed_view_page");
@@ -987,10 +987,10 @@ class WebUIExecutor {
                 // Since this was just merged, it is currently editable
                 $serverResponse["constellation"]["status"] = "editable";
 
-                $this->logger->addDebug("Setting constellation data into the page template");
+                $this->logger->debug("Setting constellation data into the page template");
                 $display->setData($serverResponse["constellation"]);
             } else {
-                $this->logger->addDebug("Error page being drawn");
+                $this->logger->debug("Error page being drawn");
                 $this->drawErrorPage($serverResponse, $display);
             }
         }
@@ -1013,7 +1013,7 @@ class WebUIExecutor {
             $icids = array();
             for ($i = 1; $i <= $count; $i++) {
                 if (!isset($input["constellationid" .$i])) {
-                    $this->logger->addDebug("Error page being drawn");
+                    $this->logger->debug("Error page being drawn");
                     $this->drawErrorPage(["error" => "Could not auto-merge"], $display);
                 }
                 array_push($icids, $input["constellationid" . $i]);
@@ -1025,9 +1025,9 @@ class WebUIExecutor {
                 "constellationids" => $icids
             ];
 
-            $this->logger->addDebug("Asking server to do the auto merge");
+            $this->logger->debug("Asking server to do the auto merge");
             $serverResponse = $this->connect->query($query);
-            $this->logger->addDebug("Received server response", array($serverResponse));
+            $this->logger->debug("Received server response", array($serverResponse));
 
             if (isset($serverResponse["constellation"])) {
                 $display->setTemplate("detailed_view_page");
@@ -1039,10 +1039,10 @@ class WebUIExecutor {
                 // Since this was just merged, it is currently editable
                 $serverResponse["constellation"]["status"] = "editable";
 
-                $this->logger->addDebug("Setting constellation data into the page template");
+                $this->logger->debug("Setting constellation data into the page template");
                 $display->setData($serverResponse["constellation"]);
             } else {
-                $this->logger->addDebug("Error page being drawn");
+                $this->logger->debug("Error page being drawn");
                 $this->drawErrorPage($serverResponse, $display);
             }
         }
@@ -1110,9 +1110,9 @@ class WebUIExecutor {
             "constellationid1" => $input["constellationid1"],
             "constellationid2" => $input["constellationid2"]
         );
-        $this->logger->addDebug("Sending query to the server", $query);
+        $this->logger->debug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response", array($serverResponse));
+        $this->logger->debug("Received server response", array($serverResponse));
         if (isset($serverResponse["intersection"])) {
             if ($forMerge === false || ($forMerge === true && $serverResponse["mergeable"] === true)) {
                 // Can only merge if the webUI has requested diff to merge (forMerge) and
@@ -1149,7 +1149,7 @@ class WebUIExecutor {
                 }
             }
         } else {
-            $this->logger->addDebug("Error page being drawn - no intersection");
+            $this->logger->debug("Error page being drawn - no intersection");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -1166,7 +1166,7 @@ class WebUIExecutor {
                 "command" => "start_session"
                 );
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Server Responded to starting session", array($serverResponse));
+        $this->logger->debug("Server Responded to starting session", array($serverResponse));
 
         if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
             return new \snac\data\User($serverResponse["user"]);
@@ -1367,9 +1367,9 @@ class WebUIExecutor {
             ];
         }
 
-        $this->logger->addDebug("Sending query to the server", $query);
+        $this->logger->debug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response", [$serverResponse]);
+        $this->logger->debug("Received server response", [$serverResponse]);
 
         /*
             Ask server to "parse_ead"
@@ -1387,8 +1387,8 @@ class WebUIExecutor {
             array_push($headers, "Expires: 0");
             array_push($headers, "Cache-Control: must-revalidate, post-check=0, pre-check=0");
             array_push($headers, 'Content-Length: ' . strlen($filedata));
-            $this->logger->addDebug("Content-length: ".  strlen($filedata));
-            $this->logger->addDebug("Content: $filedata");
+            $this->logger->debug("Content-length: ".  strlen($filedata));
+            $this->logger->debug("Content: $filedata");
             return $filedata;
         } else {
             $this->drawErrorPage($serverResponse, $display);
@@ -1472,9 +1472,9 @@ class WebUIExecutor {
             ];
         }
 
-        $this->logger->addDebug("Sending query to the server", $query);
+        $this->logger->debug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response", $serverResponse);
+        $this->logger->debug("Received server response", $serverResponse);
 
         return $serverResponse;
 	}
@@ -1507,7 +1507,7 @@ class WebUIExecutor {
             if (\snac\Config::$DEBUG_MODE === true) {
                 $display->addDebugData("constellationSource", $constellation->toJSON());
             }
-            $this->logger->addDebug("Setting constellation data into the page template");
+            $this->logger->debug("Setting constellation data into the page template");
             $display->setData(array_merge($constellation->toArray(), array("preview" => true)));
         }
     }
@@ -1558,7 +1558,7 @@ class WebUIExecutor {
               ));
 
         if (!$randomQuery || !is_array($randomQuery)) {
-          $this->logger->addDebug("Bad Random Constellation Query", [$randomQuery]);
+          $this->logger->debug("Bad Random Constellation Query", [$randomQuery]);
           $randomQuery = [];
         }
 
@@ -1594,10 +1594,10 @@ class WebUIExecutor {
         // Ask the server for a list of records to edit
         $ask = array("command"=>"user_information"
         );
-        $this->logger->addDebug("Sending query to the server", $ask);
+        $this->logger->debug("Sending query to the server", $ask);
         $serverResponse = $this->connect->query($ask);
-        $this->logger->addDebug("Received server response", array($serverResponse));
-        $this->logger->addDebug("Setting dashboard data into the page template");
+        $this->logger->debug("Received server response", array($serverResponse));
+        $this->logger->debug("Setting dashboard data into the page template");
 
         $needsReview = $this->connect->query(array(
             "command"=>"list_constellations",
@@ -1653,9 +1653,9 @@ class WebUIExecutor {
         $query["type"] = $input["type"];
         $query["command"] = "download_constellation";
 
-        $this->logger->addDebug("Sending query to the server", $query);
+        $this->logger->debug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response");
+        $this->logger->debug("Received server response");
         /*
             Ask server to "download_constellation" with the type parameter and constellationid, arkid, etc.
 
@@ -2425,7 +2425,7 @@ class WebUIExecutor {
      * @return boolean False, since an error occurred to get here
      */
     public function drawErrorPage($serverResponse, &$display) {
-        $this->logger->addDebug("Drawing Error page", array($serverResponse));
+        $this->logger->debug("Drawing Error page", array($serverResponse));
         if (is_array($serverResponse) && isset($serverResponse["error"]) && isset($serverResponse["error"]["type"])) {
             if ($serverResponse["error"]["type"] == "Permission Error") {
                 return $this->displayPermissionDeniedPage(null, $display);
@@ -2438,7 +2438,7 @@ class WebUIExecutor {
             $display->setTemplate("error_page");
             $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true), "display" => "pre"));
         } else {
-            $this->logger->addDebug("Drawing the text version of the error page");
+            $this->logger->debug("Drawing the text version of the error page");
             $display->setTemplate("error_page");
             $display->setData(array("type" => "System Error", "message" => $serverResponse, "display" => "pre"));
         }
@@ -2463,12 +2463,12 @@ class WebUIExecutor {
             case "generate":
                 $display->setTemplate("api_key_generate");
                 $ask = array("command"=>"generate_key_user");
-                $this->logger->addDebug("Sending query to the server", $ask);
+                $this->logger->debug("Sending query to the server", $ask);
                 $serverResponse = $this->connect->query($ask);
-                $this->logger->addDebug("Received server response", [$serverResponse]);
-                $this->logger->addDebug("Setting api key data into the page template");
+                $this->logger->debug("Received server response", [$serverResponse]);
+                $this->logger->debug("Setting api key data into the page template");
                 $display->setData($serverResponse);
-                $this->logger->addDebug("Finished setting api key data into the page template");
+                $this->logger->debug("Finished setting api key data into the page template");
                 $this->reloadUser();
                 break;
             case "revoke":
@@ -2481,10 +2481,10 @@ class WebUIExecutor {
                         "command"=>"revoke_key_user",
                         "apikey_label" => $input["label"]
                     );
-                    $this->logger->addDebug("Sending query to the server", $ask);
+                    $this->logger->debug("Sending query to the server", $ask);
                     $serverResponse = $this->connect->query($ask);
-                    $this->logger->addDebug("Received server response", [$serverResponse]);
-                    $this->logger->addDebug("Setting data into the page template");
+                    $this->logger->debug("Received server response", [$serverResponse]);
+                    $this->logger->debug("Setting data into the page template");
                     if (isset($serverResponse["result"]) && $serverResponse["result"] == "success") {
                         $data["message"] = "Successfully revoked key <strong>" . $input["label"] . "</strong>";
                         $data["messageType"] = "success";
@@ -2498,7 +2498,7 @@ class WebUIExecutor {
                 }
                 $display->setData($data);
                 $this->reloadUser();
-                $this->logger->addDebug("Finished setting api key data into the page template");
+                $this->logger->debug("Finished setting api key data into the page template");
                 break;
             default:
                 $display->setTemplate("api_keys");
@@ -2563,12 +2563,12 @@ class WebUIExecutor {
         // Ask the server for a list of records to edit
         $ask = array("command"=>"user_information"
         );
-        $this->logger->addDebug("Sending query to the server", $ask);
+        $this->logger->debug("Sending query to the server", $ask);
         $serverResponse = $this->connect->query($ask);
-        $this->logger->addDebug("Received server response", $serverResponse);
-        $this->logger->addDebug("Setting dashboard data into the page template");
+        $this->logger->debug("Received server response", $serverResponse);
+        $this->logger->debug("Setting dashboard data into the page template");
         $display->setData($serverResponse);
-        $this->logger->addDebug("Finished setting dashboard data into the page template");
+        $this->logger->debug("Finished setting dashboard data into the page template");
     }
 
     /**
@@ -2672,7 +2672,7 @@ class WebUIExecutor {
             }
         }
 
-        $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
+        $this->logger->debug("Updated the User Object", $tmpUser->toArray());
 
         // Build a data structure to send to the server
         $request = array("command"=>"update_user");
@@ -2690,7 +2690,7 @@ class WebUIExecutor {
         $response["server_debug"] = $serverResponse;
 
         if (!is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
             if (isset($serverResponse["result"]))
                 $response["result"] = $serverResponse["result"];
@@ -2738,7 +2738,7 @@ class WebUIExecutor {
             }
         }
 
-        $this->logger->addDebug("Updated the Group Object", $group->toArray());
+        $this->logger->debug("Updated the Group Object", $group->toArray());
 
         // Build a data structure to send to the server
         $request = array("command"=>"update_group");
@@ -2752,7 +2752,7 @@ class WebUIExecutor {
         $response["server_debug"] = $serverResponse;
 
         if (!is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
             if (isset($serverResponse["result"]))
                 $response["result"] = $serverResponse["result"];
@@ -2783,7 +2783,7 @@ class WebUIExecutor {
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
-        $this->logger->addDebug("reconciling constellation", $constellation->toArray());
+        $this->logger->debug("reconciling constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array("command"=>"reconcile");
@@ -2795,7 +2795,7 @@ class WebUIExecutor {
         $response = array("results" => array());
 
         if (!is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
             return array($serverResponse);
         } else if (isset($serverResponse["reconciliation"])) {
             $response["result"] = $serverResponse["result"];
@@ -2824,7 +2824,7 @@ class WebUIExecutor {
         // Get the resource object
         $resource = $mapper->serializeToResource($input);
 
-        $this->logger->addDebug("writing resource", $resource->toArray());
+        $this->logger->debug("writing resource", $resource->toArray());
 
         // Build a data structure to send to the server
         $command = $resource->getOperation() === "insert" ? "insert_resource" : "update_resource";
@@ -2838,7 +2838,7 @@ class WebUIExecutor {
         $response["server_debug"] = $serverResponse;
 
         if (!is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
             if (isset($serverResponse["result"]))
                 $response["result"] = $serverResponse["result"];
@@ -2847,7 +2847,7 @@ class WebUIExecutor {
             }
             // Get the server's response constellation
             if (isset($serverResponse["resource"])) {
-                $this->logger->addDebug("server's response written resource", $serverResponse["resource"]);
+                $this->logger->debug("server's response written resource", $serverResponse["resource"]);
                 $resource = new \snac\data\Resource($serverResponse["resource"]);
 
                 $response["resource"] = $resource->toArray();
@@ -2867,7 +2867,7 @@ class WebUIExecutor {
      */
     public function deleteResource(&$input) {
 
-        $this->logger->addDebug("deleting resource!", $input);
+        $this->logger->debug("deleting resource!", $input);
 
         $request = ["command" => "delete_resource",
                     "resourceid" => $input["resourceid"]];
@@ -2877,7 +2877,7 @@ class WebUIExecutor {
         $response = [];
         $response["server_debug"] = $serverResponse;
         if (!is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
             if (isset($serverResponse["result"]))
                 $response["result"] = $serverResponse["result"];
@@ -2909,7 +2909,7 @@ class WebUIExecutor {
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
-        $this->logger->addDebug("writing constellation", $constellation->toArray());
+        $this->logger->debug("writing constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array("command"=>"update_constellation");
@@ -2931,7 +2931,7 @@ class WebUIExecutor {
         $response["server_debug"] = $serverResponse;
 
         if (!is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
             if (isset($serverResponse["result"]))
                 $response["result"] = $serverResponse["result"];
@@ -2940,12 +2940,12 @@ class WebUIExecutor {
                 }
                 // Get the server's response constellation
                 if (isset($serverResponse["constellation"])) {
-                    $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+                    $this->logger->debug("server's response written constellation", $serverResponse["constellation"]);
                     $updatedConstellation = new \snac\data\Constellation($serverResponse["constellation"]);
                     $mapper->reconcile($updatedConstellation);
 
                     $response["updates"] = $mapper->getUpdates();
-                    $this->logger->addDebug("Requires the following UI updates", array($response["updates"]));
+                    $this->logger->debug("Requires the following UI updates", array($response["updates"]));
                 }
         }
 
@@ -2973,7 +2973,7 @@ class WebUIExecutor {
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
-        $this->logger->addDebug("writing constellation", $constellation->toArray());
+        $this->logger->debug("writing constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3002,11 +3002,11 @@ class WebUIExecutor {
             $response["error"] = $serverResponse["error"];
 
         if (! is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
 
             if (isset($serverResponse["constellation"])) {
-                $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+                $this->logger->debug("server's response written constellation", $serverResponse["constellation"]);
             }
 
             if (isset($serverResponse["result"]) && $serverResponse["result"] == "success" &&
@@ -3047,7 +3047,7 @@ class WebUIExecutor {
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
-        $this->logger->addDebug("writing constellation", $constellation->toArray());
+        $this->logger->debug("writing constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3076,11 +3076,11 @@ class WebUIExecutor {
             $response["error"] = $serverResponse["error"];
 
         if (! is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
 
             if (isset($serverResponse["constellation"])) {
-                $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+                $this->logger->debug("server's response written constellation", $serverResponse["constellation"]);
             }
 
             if (isset($serverResponse["result"]) && $serverResponse["result"] == "success" &&
@@ -3093,7 +3093,7 @@ class WebUIExecutor {
                     $editor = new \snac\data\User();
                     $editor->setUserName($input["editor"]);
                     $request["to_user"] = $editor->toArray();
-                    $this->logger->addDebug("Sending Constellation to ".$input["editor"], $editor->toArray());
+                    $this->logger->debug("Sending Constellation to ".$input["editor"], $editor->toArray());
 
                     $serverResponse = $this->connect->query($request);
                     $response["server_debug"]["send"] = $serverResponse;
@@ -3136,7 +3136,7 @@ class WebUIExecutor {
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
-        $this->logger->addDebug("writing constellation", $constellation->toArray());
+        $this->logger->debug("writing constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3165,11 +3165,11 @@ class WebUIExecutor {
             $response["error"] = $serverResponse["error"];
 
         if (! is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
 
             if (isset($serverResponse["constellation"])) {
-                $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+                $this->logger->debug("server's response written constellation", $serverResponse["constellation"]);
             }
 
             if (isset($serverResponse["result"]) && $serverResponse["result"] == "success" &&
@@ -3182,7 +3182,7 @@ class WebUIExecutor {
                     $reviewer = new \snac\data\User();
                     $reviewer->setUserID($input["reviewer"]);
                     $request["reviewer"] = $reviewer->toArray();
-                    $this->logger->addDebug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
+                    $this->logger->debug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
                 }
 
                 $serverResponse = $this->connect->query($request);
@@ -3219,7 +3219,7 @@ class WebUIExecutor {
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
-        $this->logger->addDebug("writing constellation", $constellation->toArray());
+        $this->logger->debug("writing constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3248,11 +3248,11 @@ class WebUIExecutor {
             $response["error"] = $serverResponse["error"];
 
         if (! is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
 
             if (isset($serverResponse["constellation"])) {
-                $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+                $this->logger->debug("server's response written constellation", $serverResponse["constellation"]);
             }
 
             if (isset($serverResponse["result"]) && $serverResponse["result"] == "success" &&
@@ -3299,8 +3299,8 @@ class WebUIExecutor {
             return array( "result" => "failure", "error" => "No user id given");
         }
 
-        $this->logger->addDebug("reassigning constellation", $constellation->toArray());
-        $this->logger->addDebug("reassigning to user", $toUser->toArray());
+        $this->logger->debug("reassigning constellation", $constellation->toArray());
+        $this->logger->debug("reassigning to user", $toUser->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3348,7 +3348,7 @@ class WebUIExecutor {
             return array( "result" => "failure", "error" => "No constellation or version number");
         }
 
-        $this->logger->addDebug("unlocking constellation", $constellation->toArray());
+        $this->logger->debug("unlocking constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3393,7 +3393,7 @@ class WebUIExecutor {
             return array( "result" => "failure", "error" => "No constellation or version number");
         }
 
-        $this->logger->addDebug("checking out constellation", $constellation->toArray());
+        $this->logger->debug("checking out constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3431,7 +3431,7 @@ class WebUIExecutor {
             return array( "result" => "failure", "error" => "No constellation or version number");
         }
 
-        $this->logger->addDebug("publishing constellation", $constellation->toArray());
+        $this->logger->debug("publishing constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3479,7 +3479,7 @@ class WebUIExecutor {
 
 
 
-        $this->logger->addDebug("sending constellation", $constellation->toArray());
+        $this->logger->debug("sending constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3491,7 +3491,7 @@ class WebUIExecutor {
             $editor = new \snac\data\User();
             $editor->setUserName($input["editor"]);
             $request["to_user"] = $editor->toArray();
-            $this->logger->addDebug("Sending Constellation to ".$input["editor"], $editor->toArray());
+            $this->logger->debug("Sending Constellation to ".$input["editor"], $editor->toArray());
         } else {
             return array( "result" => "failure", "error" => "No editor to send constellation");
         }
@@ -3546,7 +3546,7 @@ class WebUIExecutor {
 
 
 
-        $this->logger->addDebug("sending constellation for review", $constellation->toArray());
+        $this->logger->debug("sending constellation for review", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3558,7 +3558,7 @@ class WebUIExecutor {
             $reviewer = new \snac\data\User();
             $reviewer->setUserID($input["reviewer"]);
             $request["reviewer"] = $reviewer->toArray();
-            $this->logger->addDebug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
+            $this->logger->debug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
         }
 
         // Add a message if we have it
@@ -3609,7 +3609,7 @@ class WebUIExecutor {
             return array( "result" => "failure", "error" => "No constellation or version number");
         }
 
-        $this->logger->addDebug("deleting constellation", $constellation->toArray());
+        $this->logger->debug("deleting constellation", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
@@ -3698,9 +3698,9 @@ class WebUIExecutor {
             $query["arkid"] = $input["arkid"];
         $query["command"] = "constellation_read_relations";
 
-        $this->logger->addDebug("Sending query to the server", $query);
+        $this->logger->debug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response");
+        $this->logger->debug("Received server response");
         return $serverResponse;
 
     }
@@ -3768,7 +3768,7 @@ class WebUIExecutor {
      */
     public function performVocabularySearch(&$input) {
 
-        $this->logger->addDebug("Requesting Vocabulary");
+        $this->logger->debug("Requesting Vocabulary");
         // Check what kind of vocabulary is wanted, and ask server for it
         $request = array ();
         $request["command"] = "vocabulary";
@@ -3778,7 +3778,7 @@ class WebUIExecutor {
             $request["entity_type"] = $input["entity_type"];
         if (isset($request["type"])) {
             if (strpos($request["type"], "ic_") !== false) {
-                $this->logger->addDebug("Requesting Sources as Vocabulary List");
+                $this->logger->debug("Requesting Sources as Vocabulary List");
                 // This is a query into a constellation for "vocabulary"
                 if (isset($input["id"]) && isset($input["version"])) {
                     $serverResponse = $this->connect->query(
@@ -3787,7 +3787,7 @@ class WebUIExecutor {
                                     "version" => $input["version"],
                                     "command" => "read"
                             ));
-                    $this->logger->addDebug("tried to get the constellation with response", $serverResponse);
+                    $this->logger->debug("tried to get the constellation with response", $serverResponse);
                     if (isset($serverResponse["constellation"])) {
                         $constellation = new \snac\data\Constellation($serverResponse["constellation"]);
                         $response = array ();
@@ -3803,7 +3803,7 @@ class WebUIExecutor {
                             array_push($response["results"],
                                     $source->toArray());
                         }
-                        $this->logger->addDebug("created the following response list of sources", $response);
+                        $this->logger->debug("created the following response list of sources", $response);
                         return $response;
                     }
                 }
@@ -3836,7 +3836,7 @@ class WebUIExecutor {
 
                 return $response;
             } else {
-                $this->logger->addDebug("Requesting Controlled Vocabulary List");
+                $this->logger->debug("Requesting Controlled Vocabulary List");
                 // This is a strict query for a controlled vocabulary term
                 $queryString = "";
                 if (isset($input["q"]))
@@ -3883,7 +3883,7 @@ class WebUIExecutor {
                     }
                 }
 
-                $this->logger->addDebug("Sending response back to client", $serverResponse);
+                $this->logger->debug("Sending response back to client", $serverResponse);
                     // Send the response back to the web client
                 return $serverResponse;
             }
@@ -3902,7 +3902,7 @@ class WebUIExecutor {
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
     public function performUserSearch(&$input) {
-        $this->logger->addDebug("Searching users");
+        $this->logger->debug("Searching users");
 
         $request = array ();
         $request["command"] = "search_users";
@@ -3935,7 +3935,7 @@ class WebUIExecutor {
             }
         }
 
-        $this->logger->addDebug("Sending response back to client", $serverResponse);
+        $this->logger->debug("Sending response back to client", $serverResponse);
             // Send the response back to the web client
         return $serverResponse;
     }
@@ -3987,7 +3987,7 @@ class WebUIExecutor {
         $response["server_debug"] = $serverResponse;
 
         if (!is_array($serverResponse)) {
-            $this->logger->addDebug("server's response: $serverResponse");
+            $this->logger->debug("server's response: $serverResponse");
         } else {
             if (isset($serverResponse["result"]))
                 $response["result"] = $serverResponse["result"];

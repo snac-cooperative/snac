@@ -684,7 +684,7 @@ class EACCPFParser {
                                         }
                                         else
                                         {
-                                            $this->logger->addDebug("Warning: exists date note, but no exists date: {$this->arkID}\n");
+                                            $this->logger->debug("Warning: exists date note, but no exists date: {$this->arkID}\n");
                                         }
                                         $this->markUnknownAtt(
                                             array (

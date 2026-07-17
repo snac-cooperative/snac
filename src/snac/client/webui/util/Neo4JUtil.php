@@ -68,7 +68,7 @@ class Neo4JUtil {
                 ->withDriver('bolt', \snac\Config::$NEO4J_BOLT_URI)
                 ->build();
         }
-        $this->logger->addDebug("Created neo4j client");
+        $this->logger->debug("Created neo4j client");
     }
 
     /**
@@ -185,7 +185,7 @@ class Neo4JUtil {
         
             return json_decode($json, true);
         } catch (\Throwable $e) {
-            $this->logger->addDebug("Neo4j error occurred: " . $e->getMessage() );
+            $this->logger->debug("Neo4j error occurred: " . $e->getMessage() );
             return false;
         }
     }
