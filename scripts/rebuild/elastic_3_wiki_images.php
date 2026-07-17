@@ -30,12 +30,14 @@ $db = new \snac\server\database\DatabaseConnector();
 $wikiUtil = new \snac\server\util\WikipediaUtil();
 
 $wikiBatchSize = 50;
+
 pg_query($db->getHandle(),"DROP TABLE IF EXISTS _elastic_images");
 pg_query($db->getHandle(),"CREATE TABLE _elastic_images (
     ic_id integer not null primary key
     , ark_id text
     , image_url text
     , image_metadata text
+    , is_featured_image boolean DEFAULT false
 );");
 
 echo "Querying relevant ark IDs from the database.\n";
@@ -48,7 +50,7 @@ pg_query($db->getHandle(),"CREATE INDEX _elastic_images_ndx_1 ON _elastic_images
 echo "Querying wikipedia URLs from the database.\n";
 $count = 0;
 $db->cursorQuery("wikiURLs","select ic_id, ark_id from _elastic_images");
-$updateURLs = $db->prepare("updateWikiURLs","update _elastic_images set image_url=\$2, image_metadata=\$3 where ark_id=\$1");
+$updateURLs = $db->prepare("updateWikiURLs","update _elastic_images set image_url=\$2 where ark_id=\$1");
 while ($resource = $db->cursorFetch("wikiURLs",$wikiBatchSize)) {
     if (pg_num_rows($resource) == 0) { break; }
     $ark_ids = array();
@@ -64,12 +66,34 @@ while ($resource = $db->cursorFetch("wikiURLs",$wikiBatchSize)) {
         if ($image) {
             $count++;
             if ($count % 10000 == 0) { echo "$count...\n"; }
-            $metadata = $wikiUtil->getWikiMetadata($image);
-            $db->execute("updateWikiURLs",array($ark_id,$image,json_encode($metadata)));
+            $db->execute("updateWikiURLs",array($ark_id,$image));
         }
     }
 }
 $db->cursorClose("wikiURLs");
+
+// Requests are limited to 200 per minute
+// https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits
+echo "Querying wikipedia metadata from the database.\n";
+$count = 0;
+$db->cursorQuery("wikiMeta","select ic_id, image_url from _elastic_images where image_url is not null and image_metadata is null",true);
+$updateURLs = $db->prepare("updateWikiMeta","update _elastic_images set image_metadata=\$2 where ic_id=\$1");
+while ($resource = $db->cursorFetch("wikiMeta",200)) {
+    if (pg_num_rows($resource) == 0) { break; }
+    while($row = $db->fetchrow($resource)) {
+        $ic_id  = $row["ic_id"];
+        $image  = $row["image_url"];
+        $metadata = $wikiUtil->getWikiMetadata($image);
+        if ($metadata) { 
+          $db->execute("updateWikiMeta",array($ic_id,json_encode($metadata)));
+        }
+        $count++;
+        if ($count % 1000 == 0) { echo "$count...\n"; }
+    }
+    pg_query($db->getHandle(),"COMMIT");
+    sleep(60);
+}
+$db->cursorClose("wikiMeta");
 
 echo "Done\n";
 

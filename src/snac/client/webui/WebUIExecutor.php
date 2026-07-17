@@ -1569,6 +1569,43 @@ class WebUIExecutor {
         $display->setData(array_merge($randomQuery, $otherInfo));
     }
 
+    /**
+     * Display Featured Grid Page
+     *
+     * Fills the display object with the explore grid.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayFeaturedPage(&$input, &$display) {
+        $display->setTemplate("grid_page");
+
+        $otherInfo = array();
+
+        if (isset($input["redirected"])) {
+            $otherInfo["message"] = "redirected";
+        }
+
+        $randomQuery = $this->connect->query(array(
+                "command"=>"featured_constellations",
+                "images" => true,
+                "random" => 20,
+                "featured" => 10 
+              ));
+
+        if (!$randomQuery || !is_array($randomQuery)) {
+          $this->logger->addDebug("Bad Random Constellation Query", [$randomQuery]);
+          $randomQuery = [];
+        }
+
+        if (isset($randomQuery["constellation"]) && $randomQuery["constellation"] != null) {
+            $randomConstellations = $randomQuery["constellation"];
+        }
+
+        $display->setData(array_merge($randomQuery, $otherInfo));
+    }
+
+
 
     /**
      * Display Dashboard Page
@@ -4144,5 +4181,32 @@ class WebUIExecutor {
         $request["url"] = $input["url"];
         $request["repo_ic_id"] = $input["repo_ic_id"];
         $this->connect->query($request);
+    }
+
+    /**
+     * Preferred Image
+     */
+
+    public function hasFeaturedImage(&$input) {
+        $id = $input["constellationid"];
+        $elasticSearch = new \snac\server\elastic\ElasticSearchUtil();
+        if (\snac\Config::$USE_ELASTIC_SEARCH) {
+            $response = $elasticSearch->hasFeaturedImage(
+                        \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                        $id);
+        }
+        return $response;
+    }
+    public function setFeaturedImage(&$input) {
+        $id = $input["constellationid"];
+        $isFeatured = ($input["subcommand"] === "true");
+        $elasticSearch = new \snac\server\elastic\ElasticSearchUtil();
+        if (\snac\Config::$USE_ELASTIC_SEARCH) {
+            $response = $elasticSearch->setFeaturedImage(
+                        \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                        $id,
+                        $isFeatured);
+        }
+        return $response;
     }
 }

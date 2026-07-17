@@ -249,6 +249,91 @@ class ElasticSearchUtil {
         return $results["hits"]["hits"];
     }
 
+    public function listFeaturedConstellations($index, $size=5) {
+        $imagePart = '"match": {"hasFeaturedImage": true}';
+
+        $json = '{"query": {
+                    "function_score" : {
+                        "query" : { '.$imagePart.' },
+                        "random_score" : {}
+                    }
+                },
+                "size" : '.$size.'
+            }';
+
+        $params = [
+            'index' => $index,
+            'body' => $json
+
+        ];
+
+        $this->logger->addDebug("Defined parameters for search", $params);
+        $results = $this->connector->search($params);
+        $this->logger->addDebug("Completed Elastic Search", $results);
+
+        return $results["hits"]["hits"];
+    }
+
+    public function hasFeaturedImage($index, $constellationID) {
+        $imagePart = '"match": {"hasFeaturedImage": true}';
+
+        $json = '{"query": {
+                    "match" : {
+                        "id" : '.$constellationID.'
+                    }
+                },
+                "_source" : ["id","hasFeaturedImage"] 
+            }';
+
+        $params = [
+            'index' => $index,
+            'body' => $json
+        ];
+
+        $result = "error";
+        $hasFeaturedImage = false;
+        $error = null;
+        try {
+            $results = $this->connector->search($params);
+            $hasFeaturedImage = $results["hits"]["hits"][0]["_source"]["hasFeaturedImage"];
+            $result = "success";
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+        return json_encode( array(
+           "id" => $constellationID, 
+           "result" => $result,
+           "hasFeaturedImage" => $hasFeaturedImage,
+           "message" => $error
+       ));
+    }
+
+    public function setFeaturedImage($index, $constellationID, $isFeatured) {
+        $params = [
+          'index' => $index,
+          'id'    => $constellationID,
+          'body'  => [
+            'doc' => [
+              'hasFeaturedImage' => $isFeatured
+            ]
+          ]
+        ];
+        $result = "error";
+        $error = null;
+        try {
+            $this->connector->update($params);
+            $result = "success";
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+        return json_encode( array(
+           "id" => $constellationID, 
+           "result" => $result,
+           "hasFeaturedImage" => $isFeatured,
+           "message" => $error
+       ));
+    }
+
     /**
      * Search SNAC Main Index
      *
