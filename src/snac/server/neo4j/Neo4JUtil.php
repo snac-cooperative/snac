@@ -375,7 +375,7 @@ class Neo4JUtil {
 
                 // Source of relation
                 $startID = $path->getNodes()->first()->getProperty("id");
-                $startLabels = $path->getNodes()->first()->labels();
+                $startLabels = $path->getNodes()->first()->getLabels();
                 $startType = $startLabels[0] ?? null;
 
                 if ($startType == null) {
@@ -388,7 +388,7 @@ class Neo4JUtil {
                 // Relationship id/version
                 foreach ($path->getRelationships() as $relation) {
                     // Need to know Relation type (ICRELATION, RRELATION, HIRELATION)
-                    $type = $relation->type();
+                    $type = $relation->getType();
 
                     $data = [];
 

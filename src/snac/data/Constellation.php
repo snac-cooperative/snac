@@ -523,6 +523,21 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Get the name entries as text-only array
+     *
+     * @return string[] List of names as strings only
+     */
+    public function getNameEntriesStrings() {
+		$ret = [];
+		if ($this->nameEntries != null) {
+			foreach ($this->nameEntries as $name) {
+				array_push($ret, $name->getOriginal());
+			}
+		}
+		return $ret;
+	}
+
+    /**
      * Get the preferred name
      *
      * Gets the preferred name entry for this constellation.  If the preferred

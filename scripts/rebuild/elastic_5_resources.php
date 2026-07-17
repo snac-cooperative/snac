@@ -31,7 +31,7 @@ $primaryCount = 0;
 $primaryStart = false;
 $primaryBody = array();
 if (\snac\Config::$USE_ELASTIC_SEARCH) {
-    $eSearch = Elasticsearch\ClientBuilder::create()
+    $eSearch = Elastic\Elasticsearch\ClientBuilder::create()
         ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
         ->setRetries(0)
         ->build();

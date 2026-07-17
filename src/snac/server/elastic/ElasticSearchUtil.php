@@ -100,7 +100,7 @@ class ElasticSearchUtil {
                 'id' => $constellation->getID(),
                 'body' => [
                     'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
-                    'nameVariants' => $constellation->getNameEntries(),
+                    'nameVariants' => $constellation->getNameEntriesStrings(),
                     'entityType' => $constellation->getEntityType()->getTerm(),
                     'arkID' => $constellation->getArk(),
                     'id' => (int) $constellation->getID(),

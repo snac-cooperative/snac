@@ -52,6 +52,11 @@ class Neo4JUtil {
     private $connector = null;
 
     /**
+     * @var \Monolog\Logger $logger the logger for this class
+     */
+    private $logger = null;
+
+    /**
      * Default Constructor
      *
      * Constructor for the elastic search utility.  It connects to a logger and to elastic search.
