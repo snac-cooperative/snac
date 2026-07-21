@@ -269,7 +269,7 @@ class ElasticSearchUtil {
 
         $this->logger->debug("Defined parameters for search", $params);
         $results = $this->connector->search($params);
-        $this->logger->debug("Completed Elastic Search", $results);
+        $this->logger->debug("Completed Elastic Search", [$results]);
 
         return $results["hits"]["hits"];
     }
