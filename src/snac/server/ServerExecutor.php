@@ -3794,7 +3794,7 @@ class ServerExecutor {
                 array_push($return, $related->toArray());
             }
 
-            $this->logger->addDebug("Created search response to the user", $return);
+            $this->logger->debug("Created search response to the user", $return);
 
             // Send the response back to the web client
             $response["constellation"] = $return;

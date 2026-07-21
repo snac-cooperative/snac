@@ -1594,7 +1594,7 @@ class WebUIExecutor {
               ));
 
         if (!$randomQuery || !is_array($randomQuery)) {
-          $this->logger->addDebug("Bad Random Constellation Query", [$randomQuery]);
+          $this->logger->debug("Bad Random Constellation Query", [$randomQuery]);
           $randomQuery = [];
         }
 
