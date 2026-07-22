@@ -96,11 +96,11 @@ class Mailer {
         $this->mailer->Subject = $subject;
 
         // Use Twig to style the message body using the snac style
-        $loader = new \Twig_Loader_Filesystem(\snac\Config::$EMAIL_TEMPLATE_DIR);
-        $twig = new \Twig_Environment($loader, array());
+        $loader = new \Twig\Loader\FilesystemLoader(\snac\Config::$EMAIL_TEMPLATE_DIR);
+        $twig = new \Twig\Environment($loader, array());
         $htmlBody = $twig->render("default.html", array("body" => $body));
         $this->mailer->Body    = $htmlBody;
-        $textBody = $twig->render("default.txt", array("body" => \Html2Text\Html2Text::convert($body)));
+        $textBody = $twig->render("default.txt", array("body" => \Soundasleep\Html2Text::convert($body)));
         $this->mailer->AltBody    = $textBody;
 
         if(!$this->mailer->send()) {
@@ -131,14 +131,14 @@ class Mailer {
 
         $this->logger->debug('Building template message');
         // Use Twig to style the message body using the snac style
-        $loader = new \Twig_Loader_Filesystem(\snac\Config::$EMAIL_TEMPLATE_DIR);
-        $twig = new \Twig_Environment($loader, array());
+        $loader = new \Twig\Loader\FilesystemLoader(\snac\Config::$EMAIL_TEMPLATE_DIR);
+        $twig = new \Twig\Environment($loader, array());
         $this->logger->debug('Building HTML template message');
         $htmlBody = $twig->render("default.html", $message->toArray());
         $this->mailer->Body    = $htmlBody;
         $this->logger->debug('Building TXT template message');
         $textMessage = $message->toArray();
-        $textMessage["body"] = \Html2Text\Html2Text::convert($message->getBody());
+        $textMessage["body"] = \Soundasleep\Html2Text::convert($message->getBody());
         $textBody = $twig->render("default.txt", $textMessage);
         $this->mailer->AltBody    = $textBody;
 
