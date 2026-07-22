@@ -203,7 +203,7 @@ class ElasticSearchUtil {
         ];
         $this->logger->debug("Defined parameters for search", $params);
         $results = $this->connector->search($params);
-        $this->logger->debug("Completed Elastic Search", $results);
+        $this->logger->debug("Completed Elastic Search", [$results]);
 
         return $results["hits"]["hits"];
     }
@@ -402,7 +402,7 @@ class ElasticSearchUtil {
 
             $results = $this->connector->search($params);
 
-            $this->logger->debug("Completed Elastic Search", $results);
+            $this->logger->debug("Completed Elastic Search", [$results]);
 
             $return = array ();
             foreach ($results["hits"]["hits"] as $i => $val) {
@@ -918,7 +918,7 @@ class ElasticSearchUtil {
 
             $results = $this->connector->search($params);
 
-            $this->logger->debug("Completed Elastic Search", $results);
+            $this->logger->debug("Completed Elastic Search", [$results]);
 
             $return = array ();
             foreach ($results["hits"]["hits"] as $i => $val) {
@@ -964,7 +964,7 @@ class ElasticSearchUtil {
         ];
         $this->logger->debug("Defined parameters for search", $params);
         $results = $this->connector->search($params);
-        $this->logger->debug("Completed Elastic Search", $results);
+        $this->logger->debug("Completed Elastic Search", [$results]);
 
         if (isset($results["_shards"]))
             unset($results["_shards"]);

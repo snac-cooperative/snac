@@ -41,6 +41,10 @@ class APIKey extends AbstractData {
      */
     private $keyString = null;
 
+    /**
+     * string Data type for this object
+     */
+    private $dataType = null;
 
     /**
      * Constructor

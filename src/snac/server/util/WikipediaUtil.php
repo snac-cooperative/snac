@@ -207,14 +207,14 @@ class WikipediaUtil {
         $response = curl_exec($ch);
 
         if(curl_errno($ch)) {
-            $this->logger->addError("Rrror retrieving wiki data: " . curl_error($ch));
+            $this->logger->error("Error retrieving wiki data: " . curl_error($ch));
             return null;
         } else {
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($http_code == "200") {
                 return $response;
             } else {
-                $this->logger->addError("Rrror retrieving wiki data: HTTP code $http_code");
+                $this->logger->error("Error retrieving wiki data: HTTP code $http_code");
                 return null;
             }
         }
