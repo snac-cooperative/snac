@@ -3733,7 +3733,7 @@ class ServerExecutor {
         if (isset($input["featured"]) && is_numeric($input["featured"]) && $input["featured"] < 100) {
             $numFeatured = $input["featured"];
         }
-        $numConstellations-= $numRandom + $numFeatured;
+        $numConstellations = $numRandom + $numFeatured;
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
