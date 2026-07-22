@@ -97,17 +97,18 @@ class EACCPFSerializer {
     private function serializeCore($expCon) {
 
         $data['data'] = $expCon;
-        $loader = new \Twig_Loader_Filesystem(\snac\Config::$CPF_TEMPLATE_DIR);
-        $twig = new \Twig_Environment($loader, array());
+        $loader = new \Twig\Loader\FilesystemLoader(\snac\Config::$CPF_TEMPLATE_DIR);
+        $twig = new \Twig\Environment($loader, array());
 
         /*
          * Create a custom filter and connect it to the Twig filter via the environment. Yes, the second arg
          * is an inline anonymous function. Looks like a closure.
          */
-        $filter = new \Twig_SimpleFilter('decode_entities', function ($string) {
-                return html_entity_decode($string);
-            });
-        $twig->addFilter($filter);
+        //$filter = new \Twig\SimpleFilter('decode_entities', function ($string) {
+        //        return html_entity_decode($string);
+        //    });
+        //$twig->addFilter($filter);
+        $twig->addFilter(new \Twig\TwigFilter('decode_entities','html_entity_decode'));
 
         $this->cpfSameAs($data['data']);
 
