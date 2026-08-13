@@ -40,42 +40,47 @@ while($v = $db->fetchrow($vocQuery)) { $vocab[$v["id"]] = $v["value"]; }
 $countQry = pg_query($db->getHandle(),"DROP TABLE IF EXISTS _elastic_relational;");
 $countQry = pg_query($db->getHandle(),"CREATE TABLE _elastic_relational (
     ic_id integer not null primary key
-    , degree integer
-    , resources integer
+    , degree integer DEFAULT 0
+    , resources integer DEFAULT 0
     , subject text[]
     , occupation text[]
     , activity text[]
     , biog_hist text[]
         );");
 
+echo "Inserting stub records.\n";
+$db->query("INSERT INTO _elastic_relational (ic_id) SELECT ic_id from _elastic_names", array());
+
 echo "Querying the relation degrees from the database.\n";
 
-$allRelCount = $db->query("INSERT INTO _elastic_relational (ic_id, degree)
-            SELECT a.ic_id, count(*) as degree from
+$db->query("UPDATE _elastic_relational r
+        SET degree = q.degree
+        FROM (SELECT a.ic_id, count(*) as degree from
             (select r.id, r.ic_id from
                 related_identity r,
                 (select distinct id, max(version) as version from related_identity group by id) a
                 where a.id = r.id and a.version = r.version and not r.is_deleted) a
-                group by ic_id", array());
+                group by ic_id) q
+        WHERE r.ic_id = q.ic_id", array());
 
 echo "Querying the resource relation degrees from the database.\n";
 
 $db->query("UPDATE _elastic_relational r
-        SET resources = q.degree
-        FROM (select a.ic_id, count(*) as degree from
+        SET resources = q.resources
+        FROM (select a.ic_id, count(*) as resources from
             (select r.id, r.ic_id from
                 related_resource r,
                 (select distinct id, max(version) as version from related_resource group by id) a
                 where a.id = r.id and a.version = r.version and not r.is_deleted) a
                 group by ic_id) q
-         WHERE r.ic_id = q.ic_id", array());
+        WHERE r.ic_id = q.ic_id", array());
 
 echo "Querying the controlled vocabulary terms (subject) from the database:\n";
 $vocabQuery = $db->query("select a.ic_id, a.term_id from
             (select v.id, v.ic_id, v.term_id from
                 subject v,
                 (select distinct id, max(version) as version from subject group by id) a
-                where a.id = v.id and a.version = v.version and not v.is_deleted) a;", array());
+                where a.id = v.id and a.version = v.version and not v.is_deleted and v.term_id is not null) a;", array());
 pg_query($db->getHandle(),"BEGIN");
 $updateCount = $db->prepare("subject_terms","update _elastic_relational set subject=array_append(COALESCE(subject, '{}'),\$2) where ic_id=\$1");
 $n = 0;
@@ -93,7 +98,7 @@ $vocabQuery = $db->query("select a.ic_id, a.term_id from
             (select v.id, v.ic_id, v.occupation_id as term_id from
                 occupation v,
                 (select distinct id, max(version) as version from occupation group by id) a
-                where a.id = v.id and a.version = v.version and not v.is_deleted) a;", array());
+                where a.id = v.id and a.version = v.version and not v.is_deleted and v.occupation_id is not null) a;", array());
 $countSQL = pg_query($db->getHandle(),"BEGIN");
 $updateCount = $db->prepare("occupation_terms","update _elastic_relational set occupation=array_append(COALESCE(occupation, '{}'),\$2) where ic_id=\$1");
 $n = 0;
@@ -135,4 +140,3 @@ $biogHistQuery = pg_query($db->getHandle(),"UPDATE _elastic_relational c SET bio
 pg_query($db->getHandle(),"COMMIT");
 
 echo "Done\n";
-
