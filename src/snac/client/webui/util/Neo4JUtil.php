@@ -153,7 +153,7 @@ class Neo4JUtil {
             foreach ($result as $record) {
                 $node_degree = 0;
                 foreach ($record->get('the_nods') as $nod) {
-                    $dbid = $nod->getId();
+                    $dbid = $nod->__get('id');
                     $caption = $dbid;
                     if ($nod->__isset('name')) { $caption = $this->shortenString($nod->__get('name')); }
                     $root = "";
