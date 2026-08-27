@@ -18,8 +18,6 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Demographics <span class="caret"></span></a>
             <ul class="dropdown-menu">
-                <li><a href="#genders" id="genderstab" role="tab" data-toggle="tab">Genders</a></li>
-                <li><a href="#nationalities" id="nationalitiestab" role="tab" data-toggle="tab">Nationalities</a></li>
                 <li><a href="#languagesUsed" id="languagesUsedtab" role="tab" data-toggle="tab">Languages Used</a></li>
                 <li><a href="#occupations" id="occupationstab" role="tab" data-toggle="tab">Occupations</a></li>
                 <li><a href="#subjects" id="subjectstab" role="tab" data-toggle="tab">Subjects</a></li>
@@ -54,44 +52,6 @@
 
 
 
-{% macro displayGender(X, inEdit, showSubElements, gender, i) %}
-    {% import 'widgets.html' as widgets %}
-
-        <div class="panel panel-default" id="gender_panel_{{i}}">
-            <div class="panel-body">
-                    <div class="col-sm-10" id="gender_datapart_{{i}}">
-                        <input type="hidden" id="gender_id_{{i}}" name="gender_id_{{i}}" value="{{gender.id}}"/>
-                        <input id="gender_version_{{i}}" name="gender_version_{{i}}" type="hidden" value="{{ gender.version}}"/>
-                        <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value="{{ gender.operation}}"/>
-                        <div class="form-group">
-                            <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
-                               {{ X.term.display }}
-                            </label>
-                            <div class="col-xs-8" id="select_gender_term_{{i}}">
-                                <input type="hidden" id="gender_term_id_{{i}}" name="gender_term_id_{{i}}" value="{{gender.term.id}}"/>
-                                <input type="hidden" id="gender_term_term_{{i}}" name="gender_term_term_{{i}}" value="{{gender.term.term}}"/>
-                                <input type="hidden" id="gender_term_vocabtype_{{i}}" name="gender_term_vocabtype_{{i}}" value="gender"/>
-                                <input type="hidden" id="gender_term_minlength_{{i}}" name="gender_term_minlength_{{i}}" value="0"/>
-                                <p class="form-control-static">{{ gender.term.term }}</p>
-                            </div>
-                        </div>
-                        <!--
-                        <div class="form-group">
-                            <label class="control-label col-xs-2" data-content="{{X.uri.tooltip}}" data-toggle="popover" data-placement="top">
-                                {{ X.uri.display }}
-                            </label>
-                            <div class="col-xs-8">
-                                {{ widgets.displayURI(X, inEdit, showSubElements, gender.term.uri) }}
-                            </div>
-                        </div>
-                        -->
-                    </div>
-                    {{ widgets.scmModal(X, inEdit, showSubElements, "gender", i, gender.term.term, "Gender", gender) }}
-                    {{ widgets.optionsList(X, inEdit, showSubElements, "gender", i) }}
-                </div>
-            </div>
-
-{% endmacro %}
 
 {% macro displayNameEntry(X, inEdit, showSubElements, nameEntry, i, isPrimary) %}
     {% import 'widgets.html' as widgets %}
@@ -1041,43 +1001,6 @@
 
 {% endmacro %}
 
-{% macro displayNationality(X, inEdit, showSubElements, nationality, i) %}
-    {% import 'widgets.html' as widgets %}
-        <div class="panel panel-default" id="nationality_panel_{{i}}">
-            <div class="panel-body">
-                <div class="col-sm-10" id="nationality_datapart_{{i}}">
-                    <input type="hidden" id="nationality_id_{{i}}" name="nationality_id_{{i}}" value="{{nationality.id}}"/>
-                    <input id="nationality_version_{{i}}" name="nationality_version_{{i}}" type="hidden" value="{{ nationality.version }}"/>
-                    <input id="nationality_operation_{{i}}" name="nationality_operation_{{i}}" type="hidden" value="{{ nationality.operation }}"/>
-                    <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
-                            {{ X.term.display }}
-                        </label>
-                        <div class="col-xs-8" id="select_nationality_term_{{i}}">
-                            <input type="hidden" id="nationality_term_id_{{i}}" name="nationality_term_id_{{i}}" value="{{nationality.term.id}}"/>
-                            <input type="hidden" id="nationality_term_term_{{i}}" name="nationality_term_term_{{i}}" value="{{nationality.term.term}}"/>
-                            <input type="hidden" id="nationality_term_vocabtype_{{i}}" name="nationality_term_vocabtype_{{i}}" value="nationality"/>
-                            <input id="nationality_term_minlength_{{i}}" name="nationality_term_minlength_{{i}}" type="hidden" class="form-control" value="2"/>
-                            <p class="form-control-static">{{ nationality.term.term }}</p>
-                        </div>
-                    </div>
-                    <!--
-                    <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{ X.uri.tooltip }}" data-toggle="popover" data-placement="top">
-                            {{ X.uri.display }}
-                        </label>
-                        <div class="col-xs-10">
-                            {{ widgets.displayURI(X, inEdit, showSubElements, nationality.term.uri) }}
-                        </div>
-                    </div>
-                    -->
-                </div>
-                {{ widgets.scmModal(X, inEdit, showSubElements, "nationality", i, nationality.term.term, "Nationality", nationality) }}
-                {{ widgets.optionsList(X, inEdit, showSubElements, "nationality", i) }}
-            </div>
-        </div>
-
-{% endmacro %}
 
 {% macro displayActivity(X, inEdit, showSubElements, activity, i) %}
     {% import 'widgets.html' as widgets %}

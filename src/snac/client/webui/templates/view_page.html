@@ -1251,26 +1251,6 @@ $(document).ready(function() {
                         {% endif %}
                     </div>
                     <div class="row">
-                        {% if data.genders %}
-                            <label class="col-xs-6">Gender:</label>
-                            <div class="col-xs-6">
-                            {% for gender in data.genders %}
-                                <p>{{gender.term.term}}</p>
-                            {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="row">
-                        {% if data.nationalities %}
-                            <label class="col-xs-6">Nationality: </label>
-                            <div class="col-xs-6">
-                            {% for nat in data.nationalities %}
-                            <p>{{ nat.term.term }}{{loop.last ? '' : ','}}</p>
-                            {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="row">
                         {% if data.languagesUsed %}
                            <label class="col-xs-6">Languages Used: </label>
                             <div class="col-xs-6">

@@ -253,11 +253,6 @@
                 <script scriptCode="{{lang.script.term}}">{{ lang.script.description}}</script>
             </languageUsed>
             {% endfor %}
-            {% for gender in data.genders %}
-            <localDescription localType="http://viaf.org/viaf/terms#gender">
-                <term>{{ gender.term.term }}</term>
-            </localDescription>
-            {% endfor %}
             {% for subject in data.subjects %}
             <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
                 {% if subject.term.uri %}
@@ -355,11 +350,6 @@
                 {% endif %}
             </place>
             {% endif %}
-            {% endfor %}
-            {% for nation in data.nationalities %}
-            <localDescription localType="http://viaf.org/viaf/terms#nationalityOfEntity">
-                <term>{{nation.term.term}}</term>
-            </localDescription>
             {% endfor %}
             {% for occupation in data.occupations %}
             <occupation><term>{{ occupation.term.term }}</term></occupation>

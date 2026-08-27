@@ -872,8 +872,6 @@ class Constellation extends AbstractData {
             "activities" => array(),
             "places" => array(),
             "subjects" => array(),
-            "nationalities" => array(),
-            "genders" => array(),
             "generalContexts" => array(),
             "structureOrGenealogies" => array(),
             "mandates" => array(),
@@ -896,9 +894,6 @@ class Constellation extends AbstractData {
         foreach ($this->conventionDeclarations as $i => $v)
             $return["conventionDeclarations"][$i] = $v->toArray($shorten);
 
-        foreach ($this->nationalities as $i => $v)
-            $return["nationalities"][$i] = $v->toArray($shorten);
-
         foreach ($this->entityIDs as $i => $v)
             $return["entityIDs"][$i] = $v->toArray($shorten);
 
@@ -913,9 +908,6 @@ class Constellation extends AbstractData {
 
         foreach ($this->sources as $i => $v)
             $return["sources"][$i] = $v->toArray($shorten);
-
-        foreach ($this->genders as $i => $v)
-            $return["genders"][$i] = $v->toArray($shorten);
 
         foreach ($this->nameEntries as $i => $v)
             $return["nameEntries"][$i] = $v->toArray($shorten);
