@@ -68,3 +68,6 @@ RewriteRule ^static/.*/([a-zA-Z_\.\-0-9]+\.css)$ %{ENV:CWD}css/$1 [L,QSA]
 
 # Catch new constellation in edit
 RewriteRule ^(edit_part)/.*?$ %{ENV:CWD}index.php?command=$1 [L,QSA]
+
+# Force traffic to the standalone Laravel instance
+RewriteRule ^v2/(.*)$ https://snac-dev-laravel.snaccooperative.org/$1 [R=301,L]
