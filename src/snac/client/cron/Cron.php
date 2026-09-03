@@ -44,6 +44,11 @@ class Cron implements \snac\interfaces\ServerInterface {
     private $logger;
 
     /**
+     * @var ServerConnect $connect connector for running server commands
+     */
+    private $connect;
+
+    /**
      * Constructor
      *
      * Requires the input to the server as an associative array

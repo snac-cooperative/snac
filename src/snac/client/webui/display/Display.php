@@ -200,7 +200,7 @@ class Display {
         // If the system is in DEBUG mode, then the display will disallow
         // caching of javascript.
         if (\snac\Config::$DEBUG_MODE == true) {
-            $this->data["control"]["noCache"] = trim("?_=".`git rev-parse HEAD`);
+            $this->data["control"]["noCache"] = trim("?_=".shell_exec("git rev-parse HEAD"));
         } else if (isset(\snac\Config::$CACHE_COOKIE)) {
             $this->data["control"]["noCache"] = trim("?_=".\snac\Config::$CACHE_COOKIE);
         }

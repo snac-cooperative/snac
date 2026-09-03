@@ -65,7 +65,7 @@ class ReconciliationEngine {
      * Constructor
      */
     public function __construct() {
-        $this->raw_results = array();
+        $this->rawResults = array();
         $this->tests = array();
         $this->results = array();
         $this->postProcessingTests = array();
