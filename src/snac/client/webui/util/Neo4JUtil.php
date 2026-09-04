@@ -182,7 +182,7 @@ class Neo4JUtil {
             if ($max < 1) {
                 $query_for_root = "MATCH (n:Identity {id:\"" . $icid . "\"}) RETURN n.name AS root_name";
                 $result_for_root = $this->connector->run($query_for_root);
-                $the_root = $result_for_root->firstRecord();
+                $the_root = $result_for_root->first();
                 $root_name = $icid;
                 if ($the_root->hasValue('root_name')) { $root_name = $this->shortenString($the_root->value('root_name')); }
                 $json = "{\n\"nodes\": [{ \"id\": 1, \"dbid\": " . $icid . ", \"caption\": \"" . addcslashes($root_name, '"') . "\", \"dgr\": \"x0\", \"root\": true }],\n\"edges\": [ ]\n}";
