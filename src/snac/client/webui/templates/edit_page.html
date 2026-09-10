@@ -274,13 +274,6 @@
 
                     </div>
 
-                    <div class="tab-pane" id="genders">
-                        <div class="loading-box text-center">
-                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
-                            <p>Loading ...</p>
-                        </div>
-                    </div>
-
                     <div class="tab-pane" id="dates">
                         <div class="loading-box text-center">
                             <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
@@ -340,13 +333,6 @@
                     </div>
 
                     <div class="tab-pane" id="subjects">
-                        <div class="loading-box text-center">
-                            <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
-                            <p>Loading ...</p>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane" id="nationalities">
                         <div class="loading-box text-center">
                             <p><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
                             <p>Loading ...</p>
@@ -417,9 +403,6 @@
     </div>
 
     <div id="hidden_field_options" style="display:none">
-        <div id="gender_template" style="display:none">
-        {{ components.displayGender(X, true, true, null, 'ZZ') }}
-        </div>
         <div id="nameEntry_template" style="display:none">
         {{ components.displayNameEntry(X, true, true, null, 'ZZ', false) }}
         </div>
@@ -446,9 +429,6 @@
         </div>
         <div id="subject_template" style="display:none">
         {{ components.displaySubject(X, true, true, null, 'ZZ') }}
-        </div>
-        <div id="nationality_template" style="display:none">
-        {{ components.displayNationality(X, true, true, null, 'ZZ') }}
         </div>
         <div id="activity_template" style="display:none">
         {{ components.displayActivity(X, true, true, null, 'ZZ') }}

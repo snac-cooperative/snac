@@ -193,34 +193,8 @@
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
-                        {% if data.genders or data.new.genders or data.old.genders%}
-                            <dt>Gender:</dt>
-                            {% for gender in data.new.genders %}
-                                <dd><span class="updated">{{gender.term.term}}</span></dd>
-                            {% endfor %}
-                            {% for gender in data.genders %}
-                                <dd>{{gender.term.term}}</dd>
-                            {% endfor %}
-                            {% for gender in data.old.genders %}
-                                <dd><span class="older">{{gender.term.term}}</span></dd>
-                            {% endfor %}
-                        {% endif %}
                      </div>
                      <div>
-                        {% if data.nationalities or data.new.nationalities or data.old.nationalities %}
-                        <div data-xsl="nationality">
-                           <label>Nationality: </label>
-                           {% for nat in data.new.nationalities %}
-                               <span class="updated">{{ nat.term.term }},</span>
-                           {% endfor %}
-                           {% for nat in data.nationalities %}
-                               {{ nat.term.term }}{{loop.last ? '' : ','}}
-                           {% endfor %}
-                           {% for nat in data.old.nationalities %}
-                               <span class="older">{{ nat.term.term }},</span>
-                           {% endfor %}
-                        </div>
-                        {% endif %}
                         {% if data.languagesUsed or data.new.languagesUsed or data.old.languagesUsed %}
                         <div data-xsl="language">
                            <label>Language: </label>

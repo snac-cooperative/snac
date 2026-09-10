@@ -87,7 +87,7 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     public function run() {
 
-        $this->logger->addDebug("Server starting to handle request", array("input" => $this->input));
+        $this->logger->debug("Server starting to handle request", array("input" => $this->input));
 
         if ($this->input == null || empty($this->input)) {
             throw new \snac\exceptions\SNACInputException("No input given", 400);
@@ -114,7 +114,7 @@ class Server implements \snac\interfaces\ServerInterface {
         $executor = new \snac\server\ServerExecutor($user, $apikey);
 
 
-        $this->logger->addDebug("Switching on command");
+        $this->logger->debug("Switching on command");
 
         if (!isset($this->input["command"])) {
             throw new \snac\exceptions\SNACUnknownCommandException("No command given", 400);
@@ -361,6 +361,9 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
             case "random_constellations":
                 $this->response = $executor->getRandomConstellations($this->input);
+                break;
+            case "featured_constellations":
+                $this->response = $executor->getFeaturedConstellations($this->input);
                 break;
             case "list_constellations":
                 $this->response = $executor->listConstellations($this->input);

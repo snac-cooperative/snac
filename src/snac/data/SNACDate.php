@@ -554,7 +554,8 @@ class SNACDate extends AbstractData {
      * @param \snac\data\Term $type Type of the date, a full Term object.
      */
     public function setFromDate($original, $standardDate, $type) {
-        list ($this->fromBC, $this->fromDate) = $this->parseBC($standardDate);
+        if ($standardDate != null)
+          list ($this->fromBC, $this->fromDate) = $this->parseBC($standardDate);
         $this->fromDateOriginal = $original;
         $this->fromType = $type;
     }
@@ -580,8 +581,8 @@ class SNACDate extends AbstractData {
      * @param \snac\data\Term $type Type of the date, a full Term object.
      */
     public function setToDate($original, $standardDate, $type) {
-
-        list ($this->toBC, $this->toDate) = $this->parseBC($standardDate);
+        if ($standardDate != null)
+          list ($this->toBC, $this->toDate) = $this->parseBC($standardDate);
         $this->toDateOriginal = $original;
         $this->toType = $type;
     }

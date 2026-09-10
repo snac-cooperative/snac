@@ -101,6 +101,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // These are the things you are allowed to do without logging in.
         $publicCommands = array(
+                "splash",
+                "botverify",
                 "login",
                 "login2",
                 "login3",
@@ -120,6 +122,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "diff",
                 "explore",
                 "landing",
+                "featured",
                 "visualize",
                 "history",
                 "history_diff",
@@ -138,6 +141,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // These are read-only commands that are allowed in read-only mode
         $readOnlyCommands = array(
+            "splash",
+            "botverify",
             "search",
             "view",
             "snippet",
@@ -154,7 +159,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "visualize",
             "stats",
             "history",
-            "browse",
+            "browse"
         );
 
 
@@ -212,6 +217,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 !(in_array($this->input["command"], $publicCommands)))
                 $this->input["command"] = "";
 
+
+            // Check for bots with a quick splash page
+            if (empty($_SESSION['snac_hash'])) {
+               $this->input["command"] = "splash"; 
+            }
+
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
@@ -231,7 +242,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $user = $tmpUser;
                     $_SESSION["snac_user"] = serialize($user);
                 } else {
-                    $this->logger->addError("User was unable to restart session, but we allowed them through", array($user));
+                    $this->logger->error("User was unable to restart session, but we allowed them through", array($user));
                     // TODO in Version 1.2, this needs to actually redirect them to the login page or give an error
                     // if they were actually trying to get a JSON response.
                 }
@@ -263,6 +274,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $response = "";
 
         switch($this->input["command"]) {
+
+            case "splash":
+                $_SESSION["snac_hash"] = hash('sha256', $_SERVER["REMOTE_ADDR"] . "::".time());
+                $executor->displaySplash($_SESSION["snac_hash"], $display);
+                break;
+            case "botverify":
+                $response = $executor->verifyNonBot($this->input, $_SESSION["snac_hash"]);
+                break;
 
             // Session-Level Commands
             case "login":
@@ -765,6 +784,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "landing":
                 $executor->displayLandingPage($this->input, $display);
                 break;
+            case "featured":
+                $executor->displayFeaturedPage($this->input, $display);
+                break;
             default:
                 // The WebUI is displaying the landing page only
                 // $executor->displayLandingPage($display);
@@ -792,10 +814,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // If the display has been given a template, then use it.  Else, print out JSON.
         if ($display->hasTemplate()) {
-            $this->logger->addDebug("Creating response page from template with data");
+            $this->logger->debug("Creating response page from template with data");
             array_push($this->responseHeaders, "Content-Type: text/html");
             $this->response = $display->getDisplay();
-            $this->logger->addDebug("Response page created, sending back to user");
+            $this->logger->debug("Response page created, sending back to user");
         } else {
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: application/json");
@@ -810,7 +832,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
      * @see \snac\interfaces\ServerInterface::getResponse()
      */
     public function getResponse() {
-        $this->logger->addDebug("Sending response: ", [$this->response]);
+        $this->logger->debug("Sending response: ", [$this->response]);
         return $this->response;
     }
 

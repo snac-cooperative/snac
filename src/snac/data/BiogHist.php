@@ -102,6 +102,10 @@ class BiogHist extends AbstractData {
      */
     public function formatXML() {
         $orig = $this->text;
+        if ($orig == null) {
+            $this->text = "<biogHist></biogHist>";
+            return;
+        }
 
         // check for <p> tags, and if none, then add them to each line
         if (strpos($orig, "<p") === false) {

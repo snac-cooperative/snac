@@ -1,6 +1,6 @@
 services:
   neo4j:
-    image: neo4j:3.5.14
+    image: neo4j
     platform: linux/amd64
     container_name: "ddev-${DDEV_SITENAME}-neo4j"
     labels:

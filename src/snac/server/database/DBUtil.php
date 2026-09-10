@@ -375,7 +375,7 @@ class DBUtil
     {
         if ($this->logger)
         {
-            $this->logger->addDebug($msg, $debugArray);
+            $this->logger->debug($msg, $debugArray);
         }
     }
 
@@ -753,7 +753,7 @@ class DBUtil
                 if (!isset($current["version"]) || $current["version"] >= $idVer["latest_version"])
                     array_push($constellationList, $cObj);
             }
-            $this->logger->addDebug("User had recently touched", $constellationList);
+            $this->logger->debug("User had recently touched", $constellationList);
             return $constellationList;
         }
         return array();
@@ -1060,31 +1060,31 @@ class DBUtil
         $cObj = new \snac\data\Constellation();
 
         // Log what completeness of constellation we're getting
-        $this->logger->addDebug("The flags are set at " . $flags);
+        $this->logger->debug("The flags are set at " . $flags);
 
         // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
 
         // IF the user wants metadata, then populate the cache for it
         if (($flags & (DBUtil::$READ_SCM_METADATA)) != 0) {
-            $this->logger->addDebug("Populating Caches: Meta");
+            $this->logger->debug("Populating Caches: Meta");
             $this->populateMetaCache($vhInfo);
         }
 
 
         // If getting more than a "summary," then populate the caches.  If not, then we can ignore them
         if (($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS)) != 0) {
-            $this->logger->addDebug("Populating Caches: Date");
+            $this->logger->debug("Populating Caches: Date");
             $this->populateDateCache($vhInfo);
-            $this->logger->addDebug("Populating Caches: Name");
+            $this->logger->debug("Populating Caches: Name");
             $this->populateNameCache($vhInfo);
-            $this->logger->addDebug("Populating Caches: Language");
+            $this->logger->debug("Populating Caches: Language");
             $this->populateLanguageCache($vhInfo);
         }
 
         // If the caller has requested any names, then we should pull them out
         if (($flags & (DBUtil::$READ_ALL_NAMES | DBUtil::$READ_PREFERRED_NAME)) != 0) {
-            $this->logger->addDebug("The user wants name(s)");
+            $this->logger->debug("The user wants name(s)");
             $getAllNames = false;
             if (($flags & DBUtil::$READ_ALL_NAMES) != 0)
                 $getAllNames = true;
@@ -1092,75 +1092,75 @@ class DBUtil
         }
 
         if (($flags & (DBUtil::$READ_BIOGHIST)) != 0) {
-            $this->logger->addDebug("The user wants BiogHist");
+            $this->logger->debug("The user wants BiogHist");
             $this->populateBiogHist($vhInfo, $cObj);
         }
 
         if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0 ||
             ($flags & DBUtil::$READ_PLACE_INFORMATION) != 0) {
-            $this->logger->addDebug("The user wants place information");
+            $this->logger->debug("The user wants place information");
             $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
         }
 
         // If the user wants metadata, then include sources and convention declarations
         if (($flags & (DBUtil::$READ_SCM_METADATA)) != 0) {
-            $this->logger->addDebug("The user wants metadata information");
-            $this->logger->addDebug("  Source");
+            $this->logger->debug("The user wants metadata information");
+            $this->logger->debug("  Source");
             $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
-            $this->logger->addDebug("  CD");
+            $this->logger->debug("  CD");
             $this->populateConventionDeclaration($vhInfo, $cObj);
         }
 
         if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0) {
-            $this->logger->addDebug("The user wants data except relations");
-            $this->logger->addDebug("  Meta");
+            $this->logger->debug("The user wants data except relations");
+            $this->logger->debug("  Meta");
             $this->populateMeta($vhInfo, $cObj, $tableName);
-            $this->logger->addDebug("  Dates");
+            $this->logger->debug("  Dates");
             $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
-            $this->logger->addDebug("  Gender");
+            $this->logger->debug("  Gender");
             $this->populateGender($vhInfo, $cObj);
-            $this->logger->addDebug("  General Context");
+            $this->logger->debug("  General Context");
             $this->populateGeneralContext($vhInfo, $cObj);
-            $this->logger->addDebug("  Languages");
+            $this->logger->debug("  Languages");
             $this->populateLanguage($vhInfo, $cObj, $cObj->getID(), $tableName); // Constellation->getID() returns ic_id aka nrd.ic_id
-            $this->logger->addDebug("  Legal Status");
+            $this->logger->debug("  Legal Status");
             $this->populateLegalStatus($vhInfo, $cObj);
-            $this->logger->addDebug("  Mandate");
+            $this->logger->debug("  Mandate");
             $this->populateMandate($vhInfo, $cObj);
-            $this->logger->addDebug("  Nationality");
+            $this->logger->debug("  Nationality");
             $this->populateNationality($vhInfo, $cObj);
-            $this->logger->addDebug("  OtherRecordID");
+            $this->logger->debug("  OtherRecordID");
             $this->populateOtherRecordID($vhInfo, $cObj);
-            $this->logger->addDebug("  EntityID");
+            $this->logger->debug("  EntityID");
             $this->populateEntityID($vhInfo, $cObj);
-            $this->logger->addDebug("  SoG");
+            $this->logger->debug("  SoG");
             $this->populateStructureOrGenealogy($vhInfo, $cObj);
             // populateConcepts
-            $this->logger->addDebug("  Concepts");
+            $this->logger->debug("  Concepts");
             $this->populateIdentityConceptTerms($vhInfo, $cObj);
             // Deprecated 2/2022
-            // $this->logger->addDebug("  Subject");
+            // $this->logger->debug("  Subject");
             // $this->populateSubject($vhInfo, $cObj);
-            // $this->logger->addDebug("  Occupation");
+            // $this->logger->debug("  Occupation");
             // $this->populateOccupation($vhInfo, $cObj);
-            // $this->logger->addDebug("  Activity");
+            // $this->logger->debug("  Activity");
             // $this->populateActivity($vhInfo, $cObj);
         }
 
 
         if (($flags & DBUtil::$READ_RELATIONS) != 0) {
-            $this->logger->addDebug("The user wants relations");
+            $this->logger->debug("The user wants relations");
             $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
         }
 
         if (($flags & DBUtil::$READ_RESOURCE_RELATIONS) != 0) {
-            $this->logger->addDebug("The user wants resource relations");
+            $this->logger->debug("The user wants resource relations");
             $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
         }
 
         // If the user requested maintenance history be added to the constellation, then add it.
         if (($flags & DBUtil::$READ_MAINTENANCE_INFORMATION) != 0) {
-            $this->logger->addDebug("The user wants maintenance info");
+            $this->logger->debug("The user wants maintenance info");
             $this->populateMaintenanceInformation($vhInfo, $cObj);
 
             $cObj->setMaintenanceAgency("SNAC: Social Networks and Archival Context");
@@ -3484,13 +3484,13 @@ class DBUtil
         $rrCache = array();
         $rCache = array();
 
-        $this->logger->addDebug("Reading resource and resource relation information");
+        $this->logger->debug("Reading resource and resource relation information");
 
         // Select Resource Relation is smart enough to also grab the Resource information.  This saves
         // much computation time in pulling the resources individually (or even caching them separately)
         // NOTE: It does NOT grab origination names or languages for the Resource.
         $rrRows = $this->sql->selectResourceRelation($vhInfo);
-        $this->logger->addDebug("Done reading resource and resource relation information: now parsing through");
+        $this->logger->debug("Done reading resource and resource relation information: now parsing through");
         foreach ($rrRows as $oneRes)
         {
             $rrObj = new \snac\data\ResourceRelation();
@@ -3526,7 +3526,7 @@ class DBUtil
             $rrCache[$rrObj->getID()] = array("object" => $rrObj, "resource_id" => $rObj->getID());
         }
 
-        $this->logger->addDebug("Reading resource language information");
+        $this->logger->debug("Reading resource language information");
 
         // Right now, this will use the Resource Language view that only pulls back the current published versions.
         // TODO: This should change
@@ -3541,7 +3541,7 @@ class DBUtil
             $newObj->setDBInfo($item['version'], $item['id']);
             $rCache[$item["resource_id"]]->addLanguage($newObj);
         }
-        $this->logger->addDebug("Reading resource origination name information");
+        $this->logger->debug("Reading resource origination name information");
         $gRows = $this->sql->selectOriginationNamesByList(array_keys($rCache));
         foreach ($gRows as $rec)
         {
@@ -3551,7 +3551,7 @@ class DBUtil
             $rCache[$rec["resource_id"]]->addOriginationName($gObj);
         }
 
-        $this->logger->addDebug("Finished reading resource information, adding to Constellation object");
+        $this->logger->debug("Finished reading resource information, adding to Constellation object");
 
         foreach ($rrCache as $rr) {
             $rrObj = $rr["object"];
@@ -3559,7 +3559,7 @@ class DBUtil
             $cObj->addResourceRelation($rrObj);
         }
 
-        $this->logger->addDebug("Finished reading resources from the database");
+        $this->logger->debug("Finished reading resources from the database");
     }
 
     /**
@@ -3710,7 +3710,7 @@ class DBUtil
             if ($event["status"] == 'ingest cpf') {
                 // Put all the previous snac information in
                 $preSnac = json_decode($event["note"], true);
-                $this->logger->addDebug("Got the following pre-snac history", array($preSnac));
+                $this->logger->debug("Got the following pre-snac history", array($preSnac));
                 if (isset($preSnac["maintenanceEvents"])) {
                     foreach ($preSnac["maintenanceEvents"] as $oldEvent) {
                         $cObj->addMaintenanceEvent(new \snac\data\MaintenanceEvent($oldEvent));
@@ -3768,7 +3768,7 @@ class DBUtil
             $readVersion = $version;
         } else {
             $versionList = $this->listAllVersions($mainID);
-            $this->logger->addDebug("The versions of this constelllation are ", $versionList);
+            $this->logger->debug("The versions of this constelllation are ", $versionList);
             if ((count($versionList) - 1 + $version) >= 0) {
                 $readVersion = $versionList[count($versionList) - 1 + $version];
             }

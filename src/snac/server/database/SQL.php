@@ -125,7 +125,7 @@ class SQL
     {
         if ($this->logger)
         {
-            $this->logger->addDebug($msg, $debugArray);
+            $this->logger->debug($msg, $debugArray);
         }
     }
 
@@ -1192,11 +1192,11 @@ class SQL
                 group by id order by latest_version desc %s %s;', $limitStr, $offsetStr);
 
 
-        $this->logger->addDebug("Sending the following SQL request: " . $queryString);
+        $this->logger->debug("Sending the following SQL request: " . $queryString);
 
         $result = $this->sdb->query($queryString,
                                     array($appUserID));
-        $this->logger->addDebug("Done request");
+        $this->logger->debug("Done request");
         $all = array();
         while($row = $this->sdb->fetchrow($result)) {
             array_push($all, $row);
@@ -1262,11 +1262,11 @@ class SQL
                             aa.status = $2 %s %s', $limitStr, $offsetStr);
         }
 
-        $this->logger->addDebug("Sending the following SQL request: " . $queryString);
+        $this->logger->debug("Sending the following SQL request: " . $queryString);
 
         $result = $this->sdb->query($queryString,
                                     array($appUserID, $status));
-        $this->logger->addDebug("Done request");
+        $this->logger->debug("Done request");
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {

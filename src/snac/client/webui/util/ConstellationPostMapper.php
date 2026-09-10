@@ -195,7 +195,7 @@ class ConstellationPostMapper {
             $map["operation"] = $this->getOperation($data);
             $map["object"] = $object;
 
-            $this->logger->addDebug("Adding to mapping", $map);
+            $this->logger->debug("Adding to mapping", $map);
             array_push($this->mapping, $map);
         }
     }
@@ -382,7 +382,7 @@ class ConstellationPostMapper {
             $piece = $this->getMatchInfo($object);
 
             if ($piece != null && !empty($piece)) {
-                $this->logger->addDebug("Reconciling an object", array("info"=>$piece, "object"=>$object->toArray(), "other"=>$other->toArray()));
+                $this->logger->debug("Reconciling an object", array("info"=>$piece, "object"=>$object->toArray(), "other"=>$other->toArray()));
 
                 // Other object is the one that we received from the server (with new ID and/or version)
                 $this->updates[$piece["idField"]] = $other->getID();
@@ -467,9 +467,9 @@ class ConstellationPostMapper {
 
         foreach ($this->constellation->getGenders() as $gender) {
             foreach ($constellation->getGenders() as $other) {
-                $this->logger->addDebug("Reconciling Gender", array("obj" => $gender->toArray(), "other"=>$other->toArray()));
-                $this->logger->addDebug("Reconciling Gender", array("obj" => print_r($gender->toArray(), true), "other"=>print_r($other->toArray(), true)));
-                $this->logger->addDebug("Gender Match is " . (int) $gender->equals($other, false));
+                $this->logger->debug("Reconciling Gender", array("obj" => $gender->toArray(), "other"=>$other->toArray()));
+                $this->logger->debug("Reconciling Gender", array("obj" => print_r($gender->toArray(), true), "other"=>print_r($other->toArray(), true)));
+                $this->logger->debug("Gender Match is " . (int) $gender->equals($other, false));
                 $this->reconcileObject($gender, $other);
             }
         }
@@ -764,7 +764,7 @@ class ConstellationPostMapper {
             }
         }
 
-        $this->logger->addDebug("parsed values", $nested);
+        $this->logger->debug("parsed values", $nested);
 
         // NRD-level Information
         if (!$this->mapAsNew) {
@@ -1033,7 +1033,7 @@ class ConstellationPostMapper {
             // If the user added an object, but didn't actually edit it
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
-            $this->logger->addDebug("Parsing Name Entry", $data);
+            $this->logger->debug("Parsing Name Entry", $data);
             $nameEntry = new \snac\data\NameEntry();
             if (!$this->mapAsNew) {
                 $nameEntry->setID($data["id"]);
@@ -1058,7 +1058,7 @@ class ConstellationPostMapper {
                 foreach ($data["contributor"] as $l => $cData) {
                     if ($cData["id"] == "" && $cData["operation"] != "insert")
                         continue;
-                    $this->logger->addDebug("Parsing through contributor", $cData);
+                    $this->logger->debug("Parsing through contributor", $cData);
                     $contributor = new \snac\data\Contributor();
                     if (!$this->mapAsNew) {
                         $contributor->setID($cData["id"]);
@@ -1087,7 +1087,7 @@ class ConstellationPostMapper {
                 foreach ($data["rule"] as $l => $cData) {
                     if ($cData["id"] == "" && $cData["operation"] != "insert")
                         continue;
-                    $this->logger->addDebug("Parsing through name rume", $cData);
+                    $this->logger->debug("Parsing through name rume", $cData);
                     $contributor = new \snac\data\Contributor();
                     $contributor->setID($cData["id"]);
                     $contributor->setVersion($cData["version"]);
@@ -1113,7 +1113,7 @@ class ConstellationPostMapper {
                 foreach ($data["component"] as $l => $cData) {
                     if ($cData["id"] == "" && $cData["operation"] != "insert")
                         continue;
-                    $this->logger->addDebug("Parsing through component", $cData);
+                    $this->logger->debug("Parsing through component", $cData);
                     $component = new \snac\data\NameComponent();
                     if (!$this->mapAsNew) {
                         $component->setID($cData["id"]);
@@ -1130,7 +1130,7 @@ class ConstellationPostMapper {
                     $component->setType($this->parseTerm($cData["type"]));
                     $component->setOrder($cData["order"]);
 
-                    $this->logger->addDebug("Adding component to mapping:", $component->toArray());
+                    $this->logger->debug("Adding component to mapping:", $component->toArray());
                     $this->addToMapping("nameEntry_component_".$l, $k, $cData, $component);
 
                     $nameEntry->addComponent($component);
@@ -1352,7 +1352,7 @@ class ConstellationPostMapper {
                 foreach ($data["address"] as $l => $aData) {
                     if ($aData["id"] == "" && $aData["operation"] != "insert")
                         continue;
-                    $this->logger->addDebug("Parsing through address", $aData);
+                    $this->logger->debug("Parsing through address", $aData);
                     $part = new \snac\data\AddressLine();
                     if (!$this->mapAsNew) {
                         $part->setID($aData["id"]);

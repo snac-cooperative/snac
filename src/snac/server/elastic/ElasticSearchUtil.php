@@ -48,12 +48,12 @@ class ElasticSearchUtil {
         $this->logger->pushHandler($log);
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
-            $this->connector = \Elasticsearch\ClientBuilder::create()
+            $this->connector = \Elastic\Elasticsearch\ClientBuilder::create()
             ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
             ->setRetries(0)
             ->build();
         }
-        $this->logger->addDebug("Created elastic search client");
+        $this->logger->debug("Created elastic search client");
     }
 
     /**
@@ -100,6 +100,7 @@ class ElasticSearchUtil {
                 'id' => $constellation->getID(),
                 'body' => [
                     'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
+                    'nameVariants' => $constellation->getNameEntriesStrings(),
                     'entityType' => $constellation->getEntityType()->getTerm(),
                     'arkID' => $constellation->getArk(),
                     'id' => (int) $constellation->getID(),
@@ -117,6 +118,7 @@ class ElasticSearchUtil {
             ];
 
             $this->connector->index($params);
+            /*
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
                     // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
@@ -135,7 +137,8 @@ class ElasticSearchUtil {
                 ];
                 $this->connector->index($params);
             }
-            $this->logger->addDebug("Updated elastic search with new constellation name entries");
+            */
+            $this->logger->debug("Updated elastic search with new constellation name entries");
         }
     }
 
@@ -158,6 +161,7 @@ class ElasticSearchUtil {
             } catch (\Exception $e) {
                 $this->logger->addWarning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
             }
+            /*
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
                     // 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
@@ -170,7 +174,8 @@ class ElasticSearchUtil {
                     $this->logger->addWarning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
                 }
             }
-            $this->logger->addDebug("Updated elastic search to remove constellation");
+            */
+            $this->logger->debug("Updated elastic search to remove constellation");
         }
 
     }
@@ -196,9 +201,9 @@ class ElasticSearchUtil {
                 ]
             ]
         ];
-        $this->logger->addDebug("Defined parameters for search", $params);
+        $this->logger->debug("Defined parameters for search", $params);
         $results = $this->connector->search($params);
-        $this->logger->addDebug("Completed Elastic Search", $results);
+        $this->logger->debug("Completed Elastic Search", [$results]);
 
         return $results["hits"]["hits"];
     }
@@ -237,11 +242,96 @@ class ElasticSearchUtil {
 
         ];
 
-        $this->logger->addDebug("Defined parameters for search", $params);
+        $this->logger->debug("Defined parameters for search", $params);
         $results = $this->connector->search($params);
-        $this->logger->addDebug("Completed Elastic Search", $results);
+        $this->logger->debug("Completed Elastic Search", [$results]);
 
         return $results["hits"]["hits"];
+    }
+
+    public function listFeaturedConstellations($index, $size=5) {
+        $imagePart = '"match": {"hasFeaturedImage": true}';
+
+        $json = '{"query": {
+                    "function_score" : {
+                        "query" : { '.$imagePart.' },
+                        "random_score" : {}
+                    }
+                },
+                "size" : '.$size.'
+            }';
+
+        $params = [
+            'index' => $index,
+            'body' => $json
+
+        ];
+
+        $this->logger->debug("Defined parameters for search", $params);
+        $results = $this->connector->search($params);
+        $this->logger->debug("Completed Elastic Search", [$results]);
+
+        return $results["hits"]["hits"];
+    }
+
+    public function hasFeaturedImage($index, $constellationID) {
+        $imagePart = '"match": {"hasFeaturedImage": true}';
+
+        $json = '{"query": {
+                    "match" : {
+                        "id" : '.$constellationID.'
+                    }
+                },
+                "_source" : ["id","hasFeaturedImage"] 
+            }';
+
+        $params = [
+            'index' => $index,
+            'body' => $json
+        ];
+
+        $result = "error";
+        $hasFeaturedImage = false;
+        $error = null;
+        try {
+            $results = $this->connector->search($params);
+            $hasFeaturedImage = $results["hits"]["hits"][0]["_source"]["hasFeaturedImage"];
+            $result = "success";
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+        return json_encode( array(
+           "id" => $constellationID, 
+           "result" => $result,
+           "hasFeaturedImage" => $hasFeaturedImage,
+           "message" => $error
+       ));
+    }
+
+    public function setFeaturedImage($index, $constellationID, $isFeatured) {
+        $params = [
+          'index' => $index,
+          'id'    => $constellationID,
+          'body'  => [
+            'doc' => [
+              'hasFeaturedImage' => $isFeatured
+            ]
+          ]
+        ];
+        $result = "error";
+        $error = null;
+        try {
+            $this->connector->update($params);
+            $result = "success";
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+        return json_encode( array(
+           "id" => $constellationID, 
+           "result" => $result,
+           "hasFeaturedImage" => $isFeatured,
+           "message" => $error
+       ));
     }
 
     /**
@@ -255,7 +345,7 @@ class ElasticSearchUtil {
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
     public function searchMainIndex($query, $start=0, $count=10) {
-        $this->logger->addDebug("Searching for a Constellation");
+        $this->logger->debug("Searching for a Constellation");
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
@@ -308,11 +398,11 @@ class ElasticSearchUtil {
                     'size' => $count
                 ]
             ];
-            $this->logger->addDebug("Defined parameters for search", $params);
+            $this->logger->debug("Defined parameters for search", $params);
 
             $results = $this->connector->search($params);
 
-            $this->logger->addDebug("Completed Elastic Search", $results);
+            $this->logger->debug("Completed Elastic Search", [$results]);
 
             $return = array ();
             foreach ($results["hits"]["hits"] as $i => $val) {
@@ -330,7 +420,7 @@ class ElasticSearchUtil {
                 $response["pagination"] = ceil($response["total"] / $count);
                 $response["page"] = floor($start / $count);
             }
-            $this->logger->addDebug("Created search response to the user", $response);
+            $this->logger->debug("Created search response to the user", $response);
 
             return $response;
         }
@@ -366,7 +456,7 @@ class ElasticSearchUtil {
                         'bool' => [
                             'must' => [
                                'simple_query_string' => [
-                                   'fields' => ['nameEntry'],
+                                   'fields' => ['nameVariants'],
                                    'query' => $query .'*',
                                    'default_operator' => 'and'
                                ]
@@ -422,7 +512,7 @@ class ElasticSearchUtil {
                         'bool' => [
                             'must' => [
                                'simple_query_string' => [
-                                   'fields' => ['nameEntry'],
+                                   'fields' => ['nameVariants'],
                                    'query' => $query,
                                    'default_operator' => 'and'
                                ]
@@ -446,7 +536,7 @@ class ElasticSearchUtil {
             $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
                 [
                     'simple_query_string' => [
-                        'fields' => ['nameEntry', 'biogHist'],
+                        'fields' => ['nameVariants', 'biogHist'],
                         'query' => $query,
                         'default_operator' => 'and'
                     ]
@@ -517,7 +607,7 @@ class ElasticSearchUtil {
                         'bool' => [
                             'must' => [
                                 'match' => [
-                                    'nameEntry' => [
+                                    'nameVariants' => [
                                         'query' => $query,
                                         'operator' => 'and'
                                     ]
@@ -544,7 +634,7 @@ class ElasticSearchUtil {
             $searchBody["query"]["function_score"]["query"]["bool"]["should"] = [
                 [
                     'match' => [
-                        'nameEntry' => [
+                        'nameVariants' => [
                             'query' => $query,
                             'operator' => 'and'
                         ]
@@ -615,7 +705,7 @@ class ElasticSearchUtil {
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
     private function elasticSearchQuery($searchBody, $start=0, $count=10) {
-        $this->logger->addDebug("Searching for a Constellation");
+        $this->logger->debug("Searching for a Constellation");
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
@@ -652,11 +742,11 @@ class ElasticSearchUtil {
                 'size' => $count
             ];
 
-            $this->logger->addDebug("Defined parameters for search", $params);
+            $this->logger->debug("Defined parameters for search", $params);
 
             $results = $this->connector->search($params);
 
-            $this->logger->addDebug("Completed Elastic Search", $results);
+            $this->logger->debug("Completed Elastic Search",[ $results]);
 
             $return = array ();
             foreach ($results["hits"]["hits"] as $i => $val) {
@@ -692,7 +782,7 @@ class ElasticSearchUtil {
                 $response["pagination"] = ceil($response["total"] / $count);
                 $response["page"] = floor($start / $count);
             }
-            $this->logger->addDebug("Created search response to the user", $response);
+            $this->logger->debug("Created search response to the user", $response);
 
             return $response;
         }
@@ -728,7 +818,7 @@ class ElasticSearchUtil {
             ];
 
             $this->connector->index($params);
-            $this->logger->addDebug("Updated elastic search with new resource");
+            $this->logger->debug("Updated elastic search with new resource");
         }
     }
 
@@ -747,7 +837,7 @@ class ElasticSearchUtil {
                     'id' => $resource->getID()
             ];
 
-            $this->logger->addDebug("Updated elastic search to remove resource");
+            $this->logger->debug("Updated elastic search to remove resource");
         }
 
     }
@@ -775,7 +865,7 @@ class ElasticSearchUtil {
             ];
 
             $this->connector->update($params);
-            $this->logger->addDebug("Updated resource in elasticsearch");
+            $this->logger->debug("Updated resource in elasticsearch");
         }
 
     }
@@ -792,7 +882,7 @@ class ElasticSearchUtil {
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
     public function searchResourceIndex($query, $start=0, $count=10, $filters=null) {
-        $this->logger->addDebug("Searching for a Resource");
+        $this->logger->debug("Searching for a Resource");
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
@@ -824,11 +914,11 @@ class ElasticSearchUtil {
                 $params['body']['query']['bool']['filter'][] = $queryFilter;
             }
 
-            $this->logger->addDebug("Defined parameters for search", $params);
+            $this->logger->debug("Defined parameters for search", $params);
 
             $results = $this->connector->search($params);
 
-            $this->logger->addDebug("Completed Elastic Search", $results);
+            $this->logger->debug("Completed Elastic Search", [$results]);
 
             $return = array ();
             foreach ($results["hits"]["hits"] as $i => $val) {
@@ -846,7 +936,7 @@ class ElasticSearchUtil {
                 $response["pagination"] = ceil($response["total"] / $count);
                 $response["page"] = floor($start / $count);
             }
-            $this->logger->addDebug("Created resource search response to the user", $response);
+            $this->logger->debug("Created resource search response to the user", $response);
 
             return $response;
         }
@@ -872,9 +962,9 @@ class ElasticSearchUtil {
             'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
             'body' => $query
         ];
-        $this->logger->addDebug("Defined parameters for search", $params);
+        $this->logger->debug("Defined parameters for search", $params);
         $results = $this->connector->search($params);
-        $this->logger->addDebug("Completed Elastic Search", $results);
+        $this->logger->debug("Completed Elastic Search", [$results]);
 
         if (isset($results["_shards"]))
             unset($results["_shards"]);

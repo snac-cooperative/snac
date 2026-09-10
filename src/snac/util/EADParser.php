@@ -107,31 +107,31 @@ class EADParser {
 
             }
             if ($return_value != 0) {
-                $this->logger->addDebug("Error occurred while running SAXON: $procOutput");
+                $this->logger->debug("Error occurred while running SAXON: $procOutput");
                 throw new \Exception("Error in SAXON\n$procOutput");
             }
-            $this->logger->addDebug("Done Running SAXON");
+            $this->logger->debug("Done Running SAXON");
 
             // Post-process the SAXON output
             $this->postProcess($outputdir);
 
             // Put the files into an exported ZIP file
-            $this->logger->addDebug("Creating output ZIP file");
+            $this->logger->debug("Creating output ZIP file");
             $zip = new \ZipArchive();
             if ($zip->open($outfile, \ZipArchive::CREATE) !== true) {
                 throw new \Exception("Could not create output Zip file");
             }
-            $this->logger->addDebug("Adding Zip Content");
+            $this->logger->debug("Adding Zip Content");
             $zip->addFile($outputdir."/Join-Table.tsv", "Join-Table.tsv");
             $zip->addFile($outputdir."/CPF-Table.tsv", "CPF-Table.tsv");
             $zip->addFile($outputdir."/RD-Table.tsv", "RD-Table.tsv");
 
-            $this->logger->addDebug("Done writing Zip");
+            $this->logger->debug("Done writing Zip");
             // close zip for downloading
             $zip->close();
 
 
-            $this->logger->addDebug("Loading Content of Zip file to return");
+            $this->logger->debug("Loading Content of Zip file to return");
             // show ZIP file
             $toReturn = file_get_contents($outfile);
 
@@ -141,10 +141,10 @@ class EADParser {
         }
 
 
-        $this->logger->addDebug("Cleaning up");
+        $this->logger->debug("Cleaning up");
         $this->cleanup($tmpdir);
 
-        $this->logger->addDebug("Returning Zip file");
+        $this->logger->debug("Returning Zip file");
         return $toReturn;
     }
 
@@ -159,7 +159,7 @@ class EADParser {
      */
     private function unzip($zipcontents) {
         $tmpdir = \snac\Config::$EAD_PARSETMP_DIR . "/". microtime(true);
-        $this->logger->addDebug("creating tmp directory");
+        $this->logger->debug("creating tmp directory");
         mkdir($tmpdir);
         $infile = $tmpdir."/upload.zip";
         $eaddir = $tmpdir."/ead/";
@@ -167,10 +167,10 @@ class EADParser {
         $errors = [];
 
         try {
-            $this->logger->addDebug("Writing zip contents");
+            $this->logger->debug("Writing zip contents");
             file_put_contents($infile, $zipcontents);
 
-            $this->logger->addDebug("Unzipping");
+            $this->logger->debug("Unzipping");
             $zip = new \ZipArchive();
 
             // NOTE: Mac OS Zip files seem to fail consistency checks
@@ -207,7 +207,7 @@ class EADParser {
 
             $zip->close();
 
-            $this->logger->addDebug("Unzipped");
+            $this->logger->debug("Unzipped");
 
         } catch (\Exception $e) {
             $this->cleanup($tmpdir);
@@ -301,7 +301,7 @@ class EADParser {
                     while (($file = readdir($dh)) !== false) {
                         if ($file == '.' || $file == '..')
                             continue;
-                        $this->logger->addDebug("Validating: $eaddir$file");
+                        $this->logger->debug("Validating: $eaddir$file");
 
                         $xml = new \DOMDocument();
                         $xml->load($eaddir . $file);
@@ -327,7 +327,7 @@ class EADParser {
                     }
                 }
             }
-            $this->logger->addDebug("EAD Validation Complete");
+            $this->logger->debug("EAD Validation Complete");
 
         } catch (\Exception $e) {
             $this->cleanup($tmpdir);
@@ -351,10 +351,10 @@ class EADParser {
         $eaddir = $tmpdir."/ead/";
         $errors = $this->validateDirectory($eaddir);
 
-        $this->logger->addDebug("Cleaning up");
+        $this->logger->debug("Cleaning up");
         $this->cleanup($tmpdir);
 
-        $this->logger->addDebug("Returning results");
+        $this->logger->debug("Returning results");
         return $errors;
     }
 

@@ -29,6 +29,11 @@ class Config {
 
 
     /**
+     * @var string A message to be displayed as a system notice
+     */
+    public static $SYSTEM_NOTICE = '';
+
+    /**
      * @var string Session name to use for SNAC (cookie name)
      */
     public static $SESSION_NAME = 'SNACWebUI';
@@ -342,7 +347,16 @@ class Config {
      */
     public static $FEEDBACK_EMAIL_ONLY = false;
 
+    /**
+     * @var boolean Whether or not to use Google Recaptcha
+     */
+    public static $USE_RECAPTCHA = false;
 
+    /**
+     * @var string Recaptcha secret key
+     */
+    public static $RECAPTCHA_SECRET = "";
+    
     /**
      * @var string Temporary directory to parse EAD
      */
