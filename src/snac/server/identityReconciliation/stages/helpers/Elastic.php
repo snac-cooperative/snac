@@ -80,7 +80,7 @@ abstract class Elastic implements Stage {
 
         // Create elastic search client
         try {
-            $client = \Elasticsearch\ClientBuilder::create()
+            $client = \Elastic\Elasticsearch\ClientBuilder::create()
             ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
             ->setRetries(0)
             ->build();

@@ -2898,18 +2898,18 @@ class ServerExecutor {
         $response = array();
         $this->logger->debug("Diffing constellations");
 
-        if (isset($input["constellationid1"]) && isset($input["constellationid1"])) {
+        if (isset($input["constellationid1"]) && isset($input["constellationid2"]) && is_numeric($input["constellationid1"]) && is_numeric($input["constellationid2"])) {
             // If two constellations were given
             try {
                 $cId1 = $input["constellationid1"];
                 $cId2 = $input["constellationid2"];
                 $cV1 = null;
-                if (isset($input["version1"]))
+                if (isset($input["version1"]) && is_numeric($input["version1"]))
                     $cV1 = $input["version1"];
 
                 $cId2 = $input["constellationid2"];
                 $cV2 = null;
-                if (isset($input["version2"]))
+                if (isset($input["version2"]) && is_numeric($input["version2"]))
                     $cV2 = $input["version2"];
 
                 $mergeable = $this->isMergeable($cId1, $cId2, $cV1, $cV2);

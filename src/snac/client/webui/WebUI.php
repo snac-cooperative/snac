@@ -159,7 +159,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             "visualize",
             "stats",
             "history",
-            "browse"
+            "browse",
+            "browse_data"
         );
 
 
@@ -171,12 +172,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
             return;
         }
         // End Code for maintenance
+        
+        // *****************************************
+        // Session Start 
+        // *****************************************
+
+        // Start the session
+        session_name(\snac\Config::$SESSION_NAME);
+        session_start();
+
         // Code to take the site into read-only mode (destroys login session)
         if (\snac\Config::$READ_ONLY) {
             // Make sure there is no session to keep track of anymore
-            session_name(\snac\Config::$SESSION_NAME);
-            session_start();
-            session_destroy();
+            if (isset($_SESSION["snac_user"]) || isset($_SESSION["token"]))
+                session_destroy();
 
             // Overrule commands that are not read-only
             if (!empty($this->input["command"]) &&
@@ -193,10 +202,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // *****************************************
         // Session and User Information
         // *****************************************
-
-        // Start the session
-        session_name(\snac\Config::$SESSION_NAME);
-        session_start();
 
         // Google OAuth Settings (from Config)
         $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
