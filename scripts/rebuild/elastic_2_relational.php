@@ -30,13 +30,6 @@ $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE,
 $db = new \snac\server\database\DatabaseConnector();
 
 
-$vocab = array();
-echo "Querying vocabulary cache from the database.\n";
-
-$vocQuery = $db->query("select distinct id, value from
-    vocabulary where type in ('subject', 'activity', 'occupation');", array());
-while($v = $db->fetchrow($vocQuery)) { $vocab[$v["id"]] = $v["value"]; }
-
 $countQry = pg_query($db->getHandle(),"DROP TABLE IF EXISTS _elastic_relational;");
 $countQry = pg_query($db->getHandle(),"CREATE TABLE _elastic_relational (
     ic_id integer not null primary key
@@ -76,17 +69,18 @@ $db->query("UPDATE _elastic_relational r
         WHERE r.ic_id = q.ic_id", array());
 
 echo "Querying the controlled vocabulary terms (subject) from the database:\n";
-$vocabQuery = $db->query("select a.ic_id, a.term_id from
-            (select v.id, v.ic_id, v.term_id from
-                subject v,
-                (select distinct id, max(version) as version from subject group by id) a
-                where a.id = v.id and a.version = v.version and not v.is_deleted and v.term_id is not null) a;", array());
+$vocabQuery = $db->query("select distinct aa.ic_id, aa.concept_id as term_id, v.text as term_value
+            from identity_concepts aa
+            left outer join terms v on aa.concept_id = v.concept_id
+	    inner join (select id, max(version) as version from identity_concepts where type='subject' group by id) as bb
+	    on aa.id=bb.id and aa.version=bb.version where v.preferred and not aa.is_deleted
+            and aa.type='subject' order by aa.ic_id,v.text;", array());
 pg_query($db->getHandle(),"BEGIN");
 $updateCount = $db->prepare("subject_terms","update _elastic_relational set subject=array_append(COALESCE(subject, '{}'),\$2) where ic_id=\$1");
 $n = 0;
 while($v = $db->fetchrow($vocabQuery))
 {
-    $result = $db->execute("subject_terms",array($v["ic_id"],$vocab[$v["term_id"]]));
+    $result = $db->execute("subject_terms",array($v["ic_id"],$v["term_value"]));
     $n++; if ($n % 100000 == 0) { echo "$n...\n"; }
 }
 pg_query($db->getHandle(),"COMMIT");
@@ -94,17 +88,18 @@ pg_query($db->getHandle(),"COMMIT");
 
 echo "Querying the controlled vocabulary terms (occupation) from the database:\n";
 pg_query($db->getHandle(),"BEGIN");
-$vocabQuery = $db->query("select a.ic_id, a.term_id from
-            (select v.id, v.ic_id, v.occupation_id as term_id from
-                occupation v,
-                (select distinct id, max(version) as version from occupation group by id) a
-                where a.id = v.id and a.version = v.version and not v.is_deleted and v.occupation_id is not null) a;", array());
+$vocabQuery = $db->query("select distinct aa.ic_id, aa.concept_id as term_id, v.text as term_value
+            from identity_concepts aa
+            left outer join terms v on aa.concept_id = v.concept_id
+	    inner join (select id, max(version) as version from identity_concepts where type='occupation' group by id) as bb
+	    on aa.id=bb.id and aa.version=bb.version where v.preferred and not aa.is_deleted
+            and aa.type='occupation' order by aa.ic_id,v.text;", array());
 $countSQL = pg_query($db->getHandle(),"BEGIN");
 $updateCount = $db->prepare("occupation_terms","update _elastic_relational set occupation=array_append(COALESCE(occupation, '{}'),\$2) where ic_id=\$1");
 $n = 0;
 while($v = $db->fetchrow($vocabQuery))
 {
-    $result = $db->execute("occupation_terms",array($v["ic_id"],$vocab[$v["term_id"]]));
+    $result = $db->execute("occupation_terms",array($v["ic_id"],$v["term_value"]));
     $n++; if ($n % 100000 == 0) { echo "$n...\n"; }
 }
 pg_query($db->getHandle(),"COMMIT");
@@ -112,17 +107,18 @@ pg_query($db->getHandle(),"COMMIT");
 
 echo "Querying the controlled vocabulary terms (activity) from the database:\n";
 pg_query($db->getHandle(),"BEGIN");
-$vocabQuery = $db->query("select a.ic_id, a.term_id from
-            (select v.id, v.ic_id, v.activity_id as term_id from
-                activity v,
-                (select distinct id, max(version) as version from activity group by id) a
-                where a.id = v.id and a.version = v.version and not v.is_deleted) a where a.term_id is not null;", array());
+$vocabQuery = $db->query("select distinct aa.ic_id, aa.concept_id as term_id, v.text as term_value
+            from identity_concepts aa
+            left outer join terms v on aa.concept_id = v.concept_id
+	    inner join (select id, max(version) as version from identity_concepts where type='activity' group by id) as bb
+	    on aa.id=bb.id and aa.version=bb.version where v.preferred and not aa.is_deleted
+            and aa.type='activity' order by aa.ic_id,v.text;", array());
 $countSQL = pg_query($db->getHandle(),"BEGIN");
 $updateCount = $db->prepare("activity_terms","update _elastic_relational set activity=array_append(COALESCE(activity, '{}'),\$2) where ic_id=\$1");
 $n = 0;
 while($v = $db->fetchrow($vocabQuery))
 {
-    $result = $db->execute("activity_terms",array($v["ic_id"],$vocab[$v["term_id"]]));
+    $result = $db->execute("activity_terms",array($v["ic_id"],$v["term_value"]));
     $n++; if ($n % 100000 == 0) { echo "$n...\n"; }
 }
 pg_query($db->getHandle(),"COMMIT");
