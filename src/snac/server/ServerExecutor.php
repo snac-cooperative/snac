@@ -3377,8 +3377,10 @@ class ServerExecutor {
             throw new \snac\exceptions\SNACInputException("No download type specified", 400);
         }
 
-
-        $constellations = $this->readConstellationFromDatabase($input, true);
+        $readFlags = \snac\server\database\DBUtil::$FULL_CONSTELLATION;
+        $readFlags = $readFlags | \snac\server\database\DBUtil::$READ_MAINTENANCE_INFORMATION;
+        $readFlags = $readFlags | \snac\server\database\DBUtil::$REDACT_MAINTENANCE_INFORMATION;
+        $constellations = $this->readConstellationFromDatabase($input, false, $readFlags);
         if ($constellations == null || count($constellations) > 1) {
             throw new \snac\exceptions\SNACInputException("Constellation does not exist", 404);
         }
@@ -3422,7 +3424,6 @@ class ServerExecutor {
                 $response["file"] = array();
                 $response["file"]["mime-type"] = "text/xml";
                 $response["file"]["filename"] = $this->arkToFilename($constellation->getArkID()).".xml";
-
                 $serializer = new \snac\util\EACCPFSerializer();
                 $response["file"]["content"] = base64_encode($serializer->serialize($constellation));
                 break;
