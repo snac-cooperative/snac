@@ -118,6 +118,7 @@ class Neo4JUtil {
                         ]
                     ]
                 );
+                if ($result->isEmpty()) { $this->logger->debug("Empty result for creation of ".$constellation->getID()); } // consume $result to prevent blocking
             }
 
             // ************************************
@@ -193,6 +194,7 @@ class Neo4JUtil {
                                 "arcrole" => $rel["arcrole"]
                             ]
                         ]);
+                        if ($result->isEmpty()) { $this->logger->debug("Empty result for creation of ".$constellation->getID()); } // consume $result to prevent blocking
                         break;
                     case "delete":
                         $result = $this->connector->run("match p=(n1:Identity {id:\$id1})-[r:ICRELATION {arcrole:\$arcrole}]->(n2:Identity {id:\$id2})
@@ -204,6 +206,7 @@ class Neo4JUtil {
                             "version" => $rel["version"],
                             "arcrole" => $rel["arcrole"]
                         ]);
+                        if ($result->isEmpty()) { $this->logger->debug("Empty result for deletion of ".$constellation->getID()); } // consume $result to prevent blocking
                         break;
                     case "update":
                         $result = $this->connector->run("match p=(n1:Identity {id:\$id1})-[r:ICRELATION]->(n2:Identity {id:\$id2})
@@ -215,6 +218,7 @@ class Neo4JUtil {
                             "version" => $rel["version"],
                             "arcrole" => $rel["arcrole"]
                         ]);
+                        if ($result->isEmpty()) { $this->logger->debug("Empty result for update of ".$constellation->getID()); } // consume $result to prevent blocking
                         break;
                 }
             }
@@ -294,6 +298,7 @@ class Neo4JUtil {
                                 "version" => $rel["version"]
                             ]
                         ]);
+                        if ($result->isEmpty()) { $this->logger->debug("Empty result for creation of ".$constellation->getID()); } // consume $result to prevent blocking
                         break;
                     case "delete":
                         $result = $this->connector->run("match p=(n1:Identity {id:\$id1})-[r:RRELATION {id:\$rid}]->(n2:Resource {id:\$id2})
@@ -303,6 +308,7 @@ class Neo4JUtil {
                             'id2' => $rel["target"],
                             "rid" => $rel["id"]
                         ]);
+                        if ($result->isEmpty()) { $this->logger->debug("Empty result for deletion of ".$constellation->getID()); } // consume $result to prevent blocking
                         break;
                     case "update":
                         $result = $this->connector->run("match p=(n1:Identity {id:\$id1})-[r:RRELATION]->(n2:Resource {id:\$id2})
@@ -314,6 +320,7 @@ class Neo4JUtil {
                             "rid" => $rel["id"],
                             "rversion" => $rel["version"]
                         ]);
+                        if ($result->isEmpty()) { $this->logger->debug("Empty result for update of ".$constellation->getID()); } // consume $result to prevent blocking
                         break;
                 }
             }
@@ -342,6 +349,7 @@ class Neo4JUtil {
                     'icid' => $constellation->getID()
                 ]
             );
+            if ($result->isEmpty()) { $this->logger->debug("Empty result for deletion of ".$constellation->getID()); } // consume $result to prevent blocking
             $this->logger->debug("Updated neo4j to remove constellation");
         }
 
@@ -383,7 +391,7 @@ class Neo4JUtil {
                 }
 
                 if (count($path->getRelationships()) > 1) {
-                    $this->logger->addWarning("Redirected a Constellation, {$from->getID()}, which had two in-relations from the same source.");
+                    $this->logger->warning("Redirected a Constellation, {$from->getID()}, which had two in-relations from the same source.");
                 }
                 // Relationship id/version
                 foreach ($path->getRelationships() as $relation) {
@@ -415,6 +423,7 @@ class Neo4JUtil {
                             'id2' => "{$to->getID()}", // need a string for neo4j
                             'infos' => $data
                         ]);
+                        if ($result->isEmpty()) { $this->logger->debug("Empty result for merge of ".$startID); } // consume $result to prevent blocking
                     }
                 }
 
@@ -693,6 +702,7 @@ class Neo4JUtil {
                         ]
                     ]
                 );
+                if ($result->isEmpty()) { $this->logger->debug("Empty result for creation of resource ".$resource->getID()); } // consume $result to prevent blocking
             }
 
             // STEP 2: Update or insert the resource's link to holding repository
@@ -709,16 +719,18 @@ class Neo4JUtil {
                         'id' => $resource->getID()
                     ]
                 );
+                if ($result->isEmpty()) { $this->logger->debug("Empty result for deletion of resource ".$resource->getID()); } // consume $result to prevent blocking
 
             }
 
             // If resource has a repository, then add a link
             if ($resource->getRepository() != null && $resource->getRepository()->getID() != null) {
-                $this->connector->run("MATCH (a:Identity {id: \$id1 }) MATCH (b:Resource {id: \$id2 }) CREATE (b)-[r:HIRELATION]->(a);",
+                $result = $this->connector->run("MATCH (a:Identity {id: \$id1 }) MATCH (b:Resource {id: \$id2 }) CREATE (b)-[r:HIRELATION]->(a);",
                     [
                         'id1' => (string) $resource->getRepository()->getID(),
                         'id2' => $resource->getID()
                     ]);
+                if ($result->isEmpty()) { $this->logger->debug("Empty result creating repository for resource ".$resource->getID()); } // consume $result to prevent blocking
             }
         }
     }
@@ -739,6 +751,7 @@ class Neo4JUtil {
                     'id' => $resource->getID()
                 ]
             );
+            if ($result->isEmpty()) { $this->logger->debug("Empty result for deletion of resource ".$resource->getID()); } // consume $result to prevent blocking
             $this->logger->debug("Updated neo4j to remove resource");
         }
 
@@ -869,6 +882,7 @@ class Neo4JUtil {
                     "targetResourceID" => "{$target->getID()}"
                 ]
             );
+            if ($result->isEmpty()) { $this->logger->debug("Empty result for merge of resource ".$victim->getID()); } // consume $result to prevent blocking
 
             return true;
     }

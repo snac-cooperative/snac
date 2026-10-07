@@ -1904,7 +1904,7 @@ class WebUIExecutor {
                 $response["result"] = "success";
             } else {
                 $response["result"] = "error";
-                $this->logger->addWarning("Failed feedback attempt", array_merge($input, $verified));
+                $this->logger->warning("Failed feedback attempt", array_merge($input, $verified));
             }
         } else {
             $response["result"] = "error";
