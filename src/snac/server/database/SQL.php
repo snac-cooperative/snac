@@ -5810,6 +5810,11 @@ class SQL
      */
     public function searchVocabulary($term, $query, $entityTypeID, $count = 100)
     {
+	if (in_array($term, array("subject","activity","occupation")))
+	{
+            return $this->searchConcepts($term, $query, $count = 100);
+	}
+
         $useStartsWith = array('script_code' => 1,
                                'language_code' => 1,
                                'gender' => 1,
@@ -5871,6 +5876,30 @@ class SQL
          *     return $this->specialSort($all);
          * }
          */
+        return $all;
+    }
+
+    public function searchConcepts ($term, $query, $count = 100)
+    {
+        $likeStr = "$query%";
+        $queryStr =
+                  "select t.concept_id as id, t.text as value, c.type, null as uri, null as description
+                  from terms t
+                  inner join (
+                    select distinct lower(v.value) as type, cc.concept_id from vocabulary v
+                    left join concept_categories cc
+                    on cc.category_id=v.id and v.type='concept_category' and lower(v.value)=$1
+                  ) as c
+                    on t.concept_id=c.concept_id
+                  where t.text ilike $2 and t.preferred order by lower(text) asc limit $3;";
+
+        $result = $this->sdb->query($queryStr, array($term, $likeStr, $count));
+
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
         return $all;
     }
 
@@ -5988,21 +6017,21 @@ class SQL
         $result = null;
 
         if ($position == "after") {
-            $queryStr = "select * from (select * from name_index where (name_entry = $1 and ic_id >= $2) $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) a union all (select * from name_index where name_entry > $1 $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) order by name_entry, ic_id asc limit 20;";
+            $queryStr = "select * from (select * from name_index where (name_entry_lower = lower($1) and ic_id >= $2) $entityQuery order by name_entry_lower, ic_id asc limit 20) a union all (select * from name_index where name_entry_lower > lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 20) order by name_entry_lower, ic_id asc limit 20;";
             $result = $this->sdb->query($queryStr, array($query, $icid));
         } else if ($position == "before") {
             if ($icid !== 0) {
                 // query using the ICID as well
-                $queryStr = "select * from (select * from (select * from name_index where (name_entry = $1 and ic_id <= $2) $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) a union all (select * from name_index where name_entry < $1 $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) order by name_entry desc, ic_id desc limit 20) a order by name_entry asc, ic_id asc limit 20;";
+                $queryStr = "select * from (select * from (select * from name_index where (name_entry_lower = lower($1) and ic_id <= $2) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) order by name_entry desc, ic_id desc limit 20) a order by name_entry_lower asc, ic_id asc limit 20;";
                 $result = $this->sdb->query($queryStr, array($query, $icid));
             } else {
                 // query without the ICID, since it is meaningless
-                $queryStr = "select * from (select * from name_index where name_entry_lower <= lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a order by name_entry, ic_id asc;";
+                $queryStr = "select * from (select * from name_index where name_entry_lower <= lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a order by name_entry_lower, ic_id asc;";
                 $result = $this->sdb->query($queryStr, array($query));
             }
         } else {
             $queryStr =
-                "select * from (select * from name_index where name_entry_lower >= lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 10) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 10) order by name_entry, ic_id asc;";
+                "select * from (select * from name_index where name_entry_lower >= lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 10) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 10) order by name_entry_lower, ic_id asc;";
 
             $result = $this->sdb->query($queryStr, array($query));
         }

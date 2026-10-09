@@ -142,6 +142,11 @@ class DBUtil
     public static $READ_MAINTENANCE_INFORMATION = 512;
 
     /**
+     * @var int Flag to hide agent email addresses in the maintenance history
+     */
+    public static $REDACT_MAINTENANCE_INFORMATION = 1024;
+
+    /**
      * @var int Flag to read the maintenance history and other maintenance info
      */
     public static $READ_SCM_METADATA = 128;
@@ -1160,8 +1165,10 @@ class DBUtil
 
         // If the user requested maintenance history be added to the constellation, then add it.
         if (($flags & DBUtil::$READ_MAINTENANCE_INFORMATION) != 0) {
+            $redacted = false;
+            if (($flags & DBUtil::$REDACT_MAINTENANCE_INFORMATION) != 0) { $redacted = true; }
             $this->logger->debug("The user wants maintenance info");
-            $this->populateMaintenanceInformation($vhInfo, $cObj);
+            $this->populateMaintenanceInformation($vhInfo, $cObj, $redacted);
 
             $cObj->setMaintenanceAgency("SNAC: Social Networks and Archival Context");
             $cObj->setMaintenanceStatus(new \snac\data\Term(array("term"=>"revised")));
@@ -3679,7 +3686,7 @@ class DBUtil
      * @param integer[] $vhInfo associative list with keys 'version' and 'ic_id'.
      * @param \snac\data\Constellation $cObj Constellation passed by reference, and changed in place
      */
-    public function populateMaintenanceInformation($vhInfo, &$cObj) {
+    public function populateMaintenanceInformation($vhInfo, &$cObj, $redacted=false) {
 
         // Need some terms
         $searchResult = $this->searchVocabulary("event_type", "revised");
@@ -3734,14 +3741,16 @@ class DBUtil
                 $newEvent->setEventDateTime($event["update_date"]);
                 $newEvent->setStandardDateTime($event["update_date"]);
                 $newEvent->setAgentType($humanTerm);
-                $newEvent->setAgent($event["fullname"] . " (".$event["username"].")");
+                if ($redacted) {
+                    $newEvent->setAgent($event["fullname"]);
+                } else {
+                    $newEvent->setAgent($event["fullname"] . " (".$event["username"].")");
+                }
                 $newEvent->setEventDescription($event["note"]);
                 $newEvent->setEventType($revisedTerm);
                 $cObj->addMaintenanceEvent($newEvent);
             }
         }
-
-
     }
 
     /**

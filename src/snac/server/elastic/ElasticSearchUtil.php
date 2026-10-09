@@ -159,7 +159,7 @@ class ElasticSearchUtil {
             try {
                 $this->connector->delete($params);
             } catch (\Exception $e) {
-                $this->logger->addWarning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
+                $this->logger->warning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
             }
             /*
             foreach ($constellation->getNameEntries() as $entry) {
@@ -171,7 +171,7 @@ class ElasticSearchUtil {
                 try {
                     $this->connector->delete($params);
                 } catch (\Exception $e) {
-                    $this->logger->addWarning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
+                    $this->logger->Warning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
                 }
             }
             */
