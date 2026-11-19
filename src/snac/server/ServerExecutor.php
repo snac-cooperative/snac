@@ -1488,12 +1488,14 @@ class ServerExecutor {
 
                         $this->logger->debug("Constellation had an ID, so we're doing an update", array($constellation->getID()));
                         $inList = false;
-                        $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
-                        foreach ($userList as $item) {
-                            if ($item->getID() == $constellation->getID() && $item->getVersion() == $constellation->getVersion()) {
-                                $inList = true;
-                                break;
-                            }
+                        $cId = $constellation->getID();
+                        $info = $this->cStore->readConstellationUserStatus($cId);
+                        if (!is_array($info)) {
+                            throw new \snac\exceptions\SNACInputException("Constellation does not have a current version", 404);
+                        }
+                        $status = $info["status"];
+                        if ($info["userid"] === $this->user->getUserID() && $status === "currently editing") {
+                            $inList = true;
                         }
 
                         if ($saveLog == null)
@@ -2717,12 +2719,8 @@ class ServerExecutor {
                 $current = $this->cStore->readConstellation($cId, null, DBUtil::$READ_NRD);
 
                 $inList = false;
-                $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing");
-                foreach ($userList as $item) {
-                    if ($item->getID() == $current->getID()) {
-                        $inList = true;
-                        break;
-                    }
+                if ($info["userid"] === $this->user->getUserID() && $status === "locked editing") {
+                    $inList = true;
                 }
 
                 // If the current status is published OR the user has that constellation locked editing (checked out to them),

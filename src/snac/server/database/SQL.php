@@ -1241,7 +1241,6 @@ class SQL
                 'select aa.version, aa.id as ic_id
                     from version_history as aa,
                         (select max(version) as version, id from version_history
-                            where id in (select distinct id from version_history where user_id=$1)
                             group by id) as cc
                     where
                         aa.id=cc.id and
@@ -1253,7 +1252,6 @@ class SQL
                     'select aa.version, aa.id as ic_id
                         from version_history as aa,
                             (select max(version) as version, id from version_history
-                                where id in (select distinct id from version_history where user_id_secondary=$1)
                                 group by id) as cc
                         where
                             aa.id=cc.id and
