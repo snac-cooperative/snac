@@ -36,6 +36,7 @@ namespace snac\server\neo4j;
 use \snac\Config as Config;
 use \snac\exceptions\SNACDatabaseException;
 use Laudis\Neo4J\Databags\Statement;
+use Laudis\Neo4j\ParameterHelper;
 
 /**
  * Neo4J Utility Class
@@ -421,7 +422,7 @@ class Neo4JUtil {
                         [
                             'id1' => $startID,
                             'id2' => "{$to->getID()}", // need a string for neo4j
-                            'infos' => $data
+                            'infos' => ParameterHelper::asMap($data) // if data is empty, define as Map rather than List
                         ]);
                         if ($result->isEmpty()) { $this->logger->debug("Empty result for merge of ".$startID); } // consume $result to prevent blocking
                     }
