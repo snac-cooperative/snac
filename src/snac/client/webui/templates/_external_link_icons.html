@@ -74,6 +74,9 @@
     {% elseif 'siv.archives-nationales.culture.gouv.fr' in sameas.uri %}
         {% set icon_class = 'sprite-icons-archives-nationales' %}
         {% set link_text = 'ANFrance' %}
+    {% elseif 'blackpast.org' in sameas.uri %}
+        {% set icon_class = 'sprite-icons-black-past' %}
+        {% set link_text = 'BlackPast' %}
     {% else %}
         {% set default = true %}
     {% endif %}
