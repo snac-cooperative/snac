@@ -5,6 +5,24 @@
 
 <link rel="canonical" href="{{control.snacURL}}/view/{{data.id}}" />
 
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="viewport" content="width=device-width">
+{% if control.interfaceVersion == "development" %}
+<link rel="apple-touch-icon" href="images/snacdev-icon.png"/>
+<meta property="og:image" content="{{control.snacURL}}/images/snacdev-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="{{control.snacURL}}/images/snacdev-icon.png">
+{% elseif control.interfaceVersion == "demo" %}
+<link rel="apple-touch-icon" href="images/snacdemo-icon.png"/>
+<meta property="og:image" content="{{control.snacURL}}/images/snacdemo-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="{{control.snacURL}}/images/snacdemo-icon.png">
+{% else %}
+<link rel="apple-touch-icon" href="images/snac-icon.png"/>
+<link rel="icon" type="image/png" sizes="32x32" href="{{control.snacURL}}/images/favicon-32x32.png">
+{% endif %}
+
+<meta property="og:title" content="{{data.nameEntries.0.original}} - Social Networks and Archival Context">
+<meta property="og:description" content="SNAC is an aggregate of biographical information about people, both individuals and groups, who created or are documented in historical resources. Users can search for names of individual people, organizations, and families, browse featured descriptions, and discover and locate connected historical resources.">
+
 <!-- JQuery -->
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
